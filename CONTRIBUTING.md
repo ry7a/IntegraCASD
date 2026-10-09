@@ -21,13 +21,13 @@ issue → branch → commits → pull request → revisão → merge
 
 Sempre a partir da `main`, com o tipo e uma descrição curta, em minúsculas e com hífens:
 
-| Tipo | Quando usar | Exemplo |
-| --- | --- | --- |
-| `feat/` | Funcionalidade nova | `feat/emitir-cobranca-avulsa` |
-| `fix/` | Correção de bug | `fix/cpf-duplicado-na-inclusao` |
+| Tipo        | Quando usar                               | Exemplo                          |
+| ----------- | ----------------------------------------- | -------------------------------- |
+| `feat/`     | Funcionalidade nova                       | `feat/emitir-cobranca-avulsa`    |
+| `fix/`      | Correção de bug                           | `fix/cpf-duplicado-na-inclusao`  |
 | `refactor/` | Mudança de código sem mudar comportamento | `refactor/extrair-cliente-asaas` |
-| `docs/` | Só documentação | `docs/adr-004-fila-no-postgres` |
-| `chore/` | Configuração, dependências, ferramentas | `chore/configurar-ci` |
+| `docs/`     | Só documentação                           | `docs/adr-004-fila-no-postgres`  |
+| `chore/`    | Configuração, dependências, ferramentas   | `chore/configurar-ci`            |
 
 ```powershell
 git switch main
@@ -126,7 +126,7 @@ Uma tarefa só está pronta quando **todos** os itens que se aplicam a ela estã
 
 Uma decisão que seria cara de mudar depois (nova biblioteca importante, mudança de padrão, novo serviço externo) precisa de um ADR em `docs/adr/`, revisado no próprio PR. Use o template da pasta.
 
-## Segurança e dados pessoais
+## Segurança e dados pessoai
 
 - **Nunca faça commit de planilhas, exportações ou qualquer dado real de alunos** (LGPD). Use dados fictícios.
 - **Nunca faça commit de segredos.** Chaves e senhas ficam no `.env`. Se um segredo for enviado por engano, avise a equipe na hora: ele precisa ser trocado, e apagar o commit não basta.
