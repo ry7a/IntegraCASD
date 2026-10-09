@@ -126,7 +126,7 @@ Uma tarefa só está pronta quando **todos** os itens que se aplicam a ela estã
 
 Uma decisão que seria cara de mudar depois (nova biblioteca importante, mudança de padrão, novo serviço externo) precisa de um ADR em `docs/adr/`, revisado no próprio PR. Use o template da pasta.
 
-## Segurança e dados pessoai
+## Segurança e dados pessoais
 
 - **Nunca faça commit de planilhas, exportações ou qualquer dado real de alunos** (LGPD). Use dados fictícios.
 - **Nunca faça commit de segredos.** Chaves e senhas ficam no `.env`. Se um segredo for enviado por engano, avise a equipe na hora: ele precisa ser trocado, e apagar o commit não basta.
