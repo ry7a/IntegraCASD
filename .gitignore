@@ -147,3 +147,27 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# --- Python (script de carga inicial) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- Dados reais: NUNCA no repositório (LGPD) ---
+scripts/carga-inicial/dados/
+*.xlsx
+*.xls
+*.csv
+!**/exemplos/*.csv
+
+# --- Código gerado ---
+apps/api/src/generated/
+
+# --- Editores e sistema ---
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store

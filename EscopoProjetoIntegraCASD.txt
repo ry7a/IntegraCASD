@@ -1,0 +1,136 @@
+# Escopo do projeto IntegraCASD
+
+## Funcionalidades Gerais
+### Cadastro
+- Alunos
+- Funcionários
+- Fornecedores
+- Organizações Parceiras
+
+### Registro
+- Contratos
+- Projetos 
+- Assinaturas Internas
+- Movimentações Financeiras
+
+### Automatização
+- Geração automática das cobranças recorrentes
+  - Pode-se fazer a geração manual de cobrança avulsa
+- Emissão automática do boleto e envio ao pagador
+  - Isso aqui já tem, tem que ver o sistema que tá envolvido, se for o caso incorporar ao nosso 
+    ou usar ele como um serviço externo
+- Conciliação automática de pagamentos
+- Indicaadores com a posição financeira do CASD
+  - Total de inadimplentes
+  - Relação dos maiores devedores
+  - Distribuição dos gastos por categoria
+
+## Requisitos que fazem sentido
+
+### Funcionais
+#### Cadastros
+Manter = inclusão, alteração, consulta e inativação
+- Nenhum registro cadastral é excluído fisicamente do sistema
+  - Inativação preserva o histórico financeiro associado
+
+1. Manter cadastro de alunos -> Banco de dados
+   - Aluno ativo passa a ser considerado na geração de cobranças recorrentes
+   - Aluno inativo deixa de sê-lo mas mantém visíveis as cobranças e as movimentações já registradas em seu nome
+
+2. Manter cadastro de funcionários -> Banco de dados
+   - Aqui é mais tranquilo, acredito que só conta gastos dos funcionários + salário fixo deles
+
+3. Manter contratos -> Banco de dados
+
+4. Manter Projetos -> Banco de dados
+
+#### Cobranças -> Gerencia as cobranças do aplicativo.
+
+1. Gerar Cobranças recorrentes -> Gerenciador de cobranças.
+
+2. Emitir cobranças avulsas -> Gerenciador de cobranças
+
+3. Cancelar cobrança -> Gerenciador de cobranças
+
+4. Conciliar pagamento de cobrança -> Conciliador de cobranças
+
+5. Registrar pagamento conciliado
+   - Importante pois pode ser que a Sheyla faça um acordo por wpp.
+
+6. Sincronizar cobranças com o Asaas
+
+7. Consultar Cobranças
+
+#### Movimentações -> Gerencia as movimentações do aplicativo, tem mini camadas dentro dele
+
+1. Registrar movimentação
+
+2. Estornar movimentação
+   - Importante pois se quer conservar o histórico de coisas
+
+3. Apurar movimentações
+
+#### Indicadores -> Responsável por mostrar os indicadores aá pessoa
+
+1. Consultar painéis de indicadores
+
+2. Consultar inadimplência
+
+3. Consultar gastos por categoria
+
+#### Administração -> Responsável pela área de configuração e usuários./
+
+1. Manter usuários e permissões
+
+2. Manter categorias de movimentação
+
+3. Parametrizar cobranças recorrentes
+
+4. Configurar integração com o Asaas
+
+5. Trilha de auditoria ??????
+
+
+## Telas presentes
+### Geral
+- Login
+- Inicio (Painel)
+
+### Cadastro
+1. Alunos
+   - lista
+     - busca por nome ou cpf
+     - oferece inclusão quando não encontra (? Feature adicional) 
+   - detalhe e edição
+     - Abas de dados, cobranças e movimentações
+     - Inativação com aviso de débito
+3. Fornecedores e parceiros (?) Vai ter não
+   - lista e detalhes 
+4. Contratos
+   - lista e detalhes
+5. Projetos
+   - lista e detalhe
+
+### Cobranças:
+- lista
+  - Padrão: abertas e vencidas, com totais por situação
+- detalhe
+  - É o centro das ações: obter boleto, cancelar/renegociar, registrar pagamento fora da plataforma
+  - mostra o histórico de eventos do asaas e a última sincronização
+- nova cobrança avulsa
+  - Melhor como painel lateral ou modal,
+  - Abrível de qualquer lugar (inclusive do aluno)
+
+### Movimentações
+- lista
+  - Padrão: mês corrente, com totais: opção de ocultar estornos
+- nova movimentação
+  - Painel lateral ou modal, como a cobrança avulsa; sugere valor quando há contrato vinculado
+- detalhe
+  - Estorno com motivo; mostra o lançamento esplho quando houver
+
+### Indicadores
+- Ranking de devedores, reenvio de boleto e sinalização de sincronização antiga
+- Gastos por categoria
+
+
