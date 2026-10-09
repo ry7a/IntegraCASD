@@ -25,14 +25,7 @@ Não precisa de ADR: escolha de nome de variável, biblioteca pequena e fácil d
 
 ## Índice
 
-| Número                           | Decisão                                         | Status     |
-| -------------------------------- | ----------------------------------------------- | ---------- |
-| [0001](0001-monolito-modular.md) | Monólito modular como estilo arquitetural       | Aceita     |
-| 0002                             | TypeScript no frontend e no backend             | A escrever |
-| 0003                             | NestJS 12 com TypeScript 6                      | A escrever |
-| 0004                             | PostgreSQL como banco e como fila (pg-boss)     | A escrever |
-| 0005                             | Webhook só grava e enfileira; o worker processa | A escrever |
-| 0006                             | SPA separada com contrato OpenAPI               | A escrever |
-| 0007                             | Sessão em cookie em vez de JWT                  | A escrever |
-| 0008                             | Local de hospedagem                             | Em aberto  |
-| 0009                             | Prisma fixado em versão explícita               | A escrever |
+| Número                           | Decisão                                     | Status     |
+| -------------------------------- | ------------------------------------------- | ---------- |
+| [0001](0001-monolito-modular.md) | Monólito modular como estilo arquitetural   | Aceita     |
+| 0002                             | PostgreSQL como banco e como fila (pg-boss) | A escrever |

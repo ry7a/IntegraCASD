@@ -1,0 +1,145 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="Componentes" id="Componentes">
+    <mxGraphModel dx="3026" dy="841" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" value="IntegraCASD · Nível 3: Componentes da API e do Worker" vertex="1">
+          <mxGeometry height="30" width="800" x="40" as="geometry" />
+        </mxCell>
+        <mxCell id="spa" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#438DD5;fontColor=#FFFFFF;strokeColor=#3C7FC0;" value="&lt;b&gt;SPA&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Container: React 19]&lt;/font&gt;&lt;/i&gt;" vertex="1">
+          <mxGeometry height="80" width="260" x="80" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="asaas" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#999999;fontColor=#FFFFFF;strokeColor=#8A8A8A;" value="&lt;b&gt;Asaas&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Sistema externo]&lt;/font&gt;&lt;/i&gt;" vertex="1">
+          <mxGeometry height="100" width="200" x="1220" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="fronteira" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#444444;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontSize=13;arcSize=2;" value="API e Worker [Container: NestJS 12]" vertex="1">
+          <mxGeometry height="660" width="1180" x="20" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="rest" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Controllers REST&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente: NestJS]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Recebem as requisições da SPA&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="80" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="wh" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Receptor do webhook&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente: NestJS]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Valida o token, grava o evento e enfileira&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="440" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="jobs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Handlers de jobs&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente: pg-boss]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Executam os jobs da fila (só no worker)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="800" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="grupo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#BBBBBB;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;fontSize=11;fontColor=#555555;arcSize=3;" value="Módulos de domínio (casos de uso e regras de negócio)" vertex="1">
+          <mxGeometry height="160" width="1060" x="60" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cad" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Cadastros&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Módulo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Alunos, funcionários, fornecedores, contratos, projetos&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="180" x="920" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cob" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Cobranças&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Módulo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Ciclo de vida da cobrança e conciliação&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="180" x="290" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="m_mov" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Movimentações&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Módulo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Entradas, saídas e estornos&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="180" x="500" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ind" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Indicadores&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Módulo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Painel, inadimplência e gastos (só leitura)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="180" x="710" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="m_adm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Administração&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Módulo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Usuários, categorias, parâmetros, integração&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="180" x="80" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="acesso" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Acesso e auditoria&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente transversal]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Sessão, perfis e trilha de auditoria&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="80" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="cliente" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Cliente Asaas&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente transversal]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Único componente que conversa com o Asaas&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="440" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="eventos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#85BBF0;fontColor=#000000;strokeColor=#78A8D8;" value="&lt;b&gt;Eventos internos&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Componente transversal]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Publicação e escuta de eventos entre módulos&lt;/font&gt;" vertex="1">
+          <mxGeometry height="100" width="260" x="800" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="db" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fontSize=12;fillColor=#438DD5;fontColor=#FFFFFF;strokeColor=#3C7FC0;" value="&lt;b&gt;Banco de dados&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Container: PostgreSQL 18]&lt;/font&gt;&lt;/i&gt;" vertex="1">
+          <mxGeometry height="110" width="260" x="440" y="860" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="spa" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;" target="rest" value="Chama&lt;br&gt;[JSON/HTTPS]">
+          <mxGeometry relative="1" x="-0.6" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="asaas" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" target="wh" value="Envia notificações&lt;br&gt;[Webhook HTTPS]">
+          <mxGeometry relative="1" x="0.1333" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1320" y="110" />
+              <mxPoint x="570" y="110" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="rest" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;" value="Executam casos de uso">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="210" y="378" />
+            </Array>
+            <mxPoint x="210" y="378" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="jobs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.821;entryY=-0.012;entryDx=0;entryDy=0;entryPerimeter=0;" target="grupo" value="Executam conciliação e rotinas">
+          <mxGeometry relative="1" x="-0.0079" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="wh" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_cob" value="Grava o evento e enfileira">
+          <mxGeometry relative="1" x="0.3333" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="380" y="280" />
+            </Array>
+            <mxPoint x="570" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="m_cob" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;" value="Cria, cancela &lt;br&gt;e consulta cobranças">
+          <mxGeometry relative="1" x="-0.4634" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="380" y="670" />
+            </Array>
+            <mxPoint x="440" y="670" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="cliente" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=1;exitDx=0;exitDy=0;" target="asaas" value="Chama a API&lt;br&gt;[REST/HTTPS]">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="780" />
+              <mxPoint x="1320" y="780" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="m_cad" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.804;entryY=0.01;entryDx=0;entryDy=0;entryPerimeter=0;" target="eventos" value="Publica &quot;aluno alterado&quot;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="eventos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=0;entryX=0.8;entryY=1;exitDx=0;exitDy=0;" target="m_cob" value="Atualiza o cliente no Asaas">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="580" />
+              <mxPoint x="434" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="acesso" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.5;entryX=0;entryY=0.5;" target="rest" value="Intercepta as requisições">
+          <mxGeometry relative="1" x="-0.4471" as="geometry">
+            <mxPoint y="-1" as="offset" />
+            <Array as="points">
+              <mxPoint x="40" y="670" />
+              <mxPoint x="40" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="grupo" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;entryX=0;entryY=0.5;exitX=0.198;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="db" value="Acessam as próprias tabelas&lt;br&gt;[Prisma]">
+          <mxGeometry relative="1" x="0.1802" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="270" y="610" />
+              <mxPoint x="360" y="610" />
+              <mxPoint x="360" y="915" />
+            </Array>
+            <mxPoint x="272" y="538" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
