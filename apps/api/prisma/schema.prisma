@@ -1,0 +1,95 @@
+// Esquema do banco do IntegraCASD.
+// Convenções (valem para todas as tabelas):
+// - Modelos e campos em camelCase no código; tabelas e colunas em snake_case no banco (@map / @@map).
+// - Chave primária uuid.
+// - Dinheiro em centavos, como Int.
+// - Nada é excluído fisicamente: use situação (inativação) ou estorno.
+
+generator client {
+  provider            = "prisma-client"
+  // Cliente gerado fica dentro de src/ para o TypeScript compilar junto. Está no .gitignore.
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  // O tsconfig usa "nodenext", que exige a extensão .js nos imports.
+  importFileExtension = "js"
+  // Índice parcial: usado no CPF único só entre alunos ativos.
+  previewFeatures     = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Cadastros
+// ---------------------------------------------------------------------------
+
+// Valores de enum sem acento nem espaço (exigência do Prisma).
+// O texto exibido na tela ("Intercâmbio", "Aluno militar") fica no frontend.
+enum SituacaoAluno {
+  MATRICULADO
+  TRANCADO
+  DESLIGADO
+  FORMADO
+  INTERCAMBIO
+
+  @@map("situacao_aluno")
+}
+
+enum PostoAluno {
+  CIVIL
+  ALUNO_MILITAR
+  ASP_OF
+
+  @@map("posto_aluno")
+}
+
+enum CursoAluno {
+  AER
+  ELE
+  MEC
+  CIV
+  COMP
+  AESP
+
+  @@map("curso_aluno")
+}
+
+// Turma é tabela, e não enum: uma turma nova é só um registro novo, sem migração.
+model Turma {
+  id            String   @id @default(uuid()) @db.Uuid
+  nome          String   @unique // ex.: "T28"
+  dataCriacao   DateTime @default(now()) @map("data_criacao")
+  dataAlteracao DateTime @updatedAt @map("data_alteracao")
+
+  alunos Aluno[]
+
+  @@map("turmas")
+}
+
+model Aluno {
+  id            String         @id @default(uuid()) @db.Uuid
+  nome          String
+  cpf           String         @db.Char(11) // só dígitos, sem pontuação
+  email         String
+  matricula     Int?           @unique
+  situacao      SituacaoAluno?
+  posto         PostoAluno?
+  curso         CursoAluno?
+  turmaId       String?        @map("turma_id") @db.Uuid
+  turma         Turma?         @relation(fields: [turmaId], references: [id], onDelete: Restrict)
+  celular       String?
+  alojamento    String?
+  apto          String?
+  vaga          String?
+  // Define quem entra na cobrança recorrente. Inativar = ativo false (nunca excluir).
+  ativo         Boolean        @default(true)
+  dataCriacao   DateTime       @default(now()) @map("data_criacao")
+  dataAlteracao DateTime       @updatedAt @map("data_alteracao")
+
+  // CPF único só entre alunos ativos (índice parcial): um aluno inativo
+  // não impede o recadastro da mesma pessoa.
+  @@unique([cpf], map: "alunos_cpf_ativo_key", where: { ativo: true })
+  @@index([turmaId])
+  @@map("alunos")
+}
