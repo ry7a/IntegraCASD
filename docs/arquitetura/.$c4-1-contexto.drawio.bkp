@@ -1,0 +1,64 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="Contexto" id="Contexto">
+    <mxGraphModel dx="1426" dy="841" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" value="IntegraCASD · Nível 1: Contexto" vertex="1">
+          <mxGeometry height="30" width="600" x="40" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#08427B;fontColor=#FFFFFF;strokeColor=#073B6F;" value="&lt;b&gt;Área administrativa&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Pessoa]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Mantém cadastros, emite cobranças e lança movimentações no dia a dia&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="240" x="80" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dir" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#08427B;fontColor=#FFFFFF;strokeColor=#073B6F;" value="&lt;b&gt;Diretoria do CASD&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Pessoa]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Acompanha indicadores e configura o sistema&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="240" x="560" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#1168BD;fontColor=#FFFFFF;strokeColor=#0B4884;" value="&lt;b&gt;IntegraCASD&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Sistema de software]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Gestão financeira e administrativa do CASD&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="280" x="300" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="asaas" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#999999;fontColor=#FFFFFF;strokeColor=#8A8A8A;" value="&lt;b&gt;Asaas&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Sistema externo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Emite cobranças, envia boletos e recebe pagamentos&lt;/font&gt;" vertex="1">
+          <mxGeometry height="130" width="240" x="760" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="email" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#999999;fontColor=#FFFFFF;strokeColor=#8A8A8A;" value="&lt;b&gt;Serviço de e-mail&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Sistema externo]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Envia os alertas do sistema&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="280" x="300" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="alunos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#999999;fontColor=#FFFFFF;strokeColor=#8A8A8A;" value="&lt;b&gt;Alunos&lt;/b&gt;&lt;br&gt;&lt;i&gt;&lt;font style=&#39;font-size:10px&#39;&gt;[Pessoa externa]&lt;/font&gt;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&#39;font-size:11px&#39;&gt;Pagadores; não acessam o sistema&lt;/font&gt;" vertex="1">
+          <mxGeometry height="110" width="240" x="760" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="admin" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.25;entryY=0;" target="sis" value="Mantém cadastros, cobranças&lt;br&gt;e movimentações">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="dir" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.75;entryY=0;" target="sis" value="Consulta indicadores e&lt;br&gt;configura o sistema">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="sis" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" target="asaas" value="Cria, cancela e consulta cobranças">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="asaas" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" target="sis" value="Notifica mudanças de situação">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="sis" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="email" value="Envia alertas de falha&lt;br&gt;na conciliação">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="asaas" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.3;exitY=1;entryX=0.3;entryY=0;" target="alunos" value="Envia o boleto&lt;br&gt;por e-mail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="alunos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;strokeColor=#707070;fontColor=#404040;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7;exitY=0;entryX=0.7;entryY=1;" target="asaas" value="Pagam as&lt;br&gt;cobranças">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_t" parent="1" style="text;html=1;fontSize=11;align=left;verticalAlign=middle;fontColor=#555555;" value="&lt;b&gt;Legenda&lt;/b&gt;" vertex="1">
+          <mxGeometry height="20" width="160" x="1080" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="leg0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#08427B;fontColor=#FFFFFF;strokeColor=#073B6F;" value="Pessoa" vertex="1">
+          <mxGeometry height="36" width="160" x="1080" y="88" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#1168BD;fontColor=#FFFFFF;strokeColor=#0B4884;" value="Sistema que construímos" vertex="1">
+          <mxGeometry height="36" width="160" x="1080" y="132" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=10;fontSize=12;fillColor=#999999;fontColor=#FFFFFF;strokeColor=#8A8A8A;" value="Sistema ou pessoa externa" vertex="1">
+          <mxGeometry height="36" width="160" x="1080" y="176" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
