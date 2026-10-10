@@ -1,0 +1,43 @@
+name: CI
+
+# Roda a cada pull request e a cada push na main (ou seja, nos merges).
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Se alguem empurrar um commit novo no mesmo PR, cancela a execucao
+# anterior em vez de rodar as duas. Economiza tempo de CI.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    # Este nome e o que aparece como status check na protecao da main.
+    name: Lint, testes e build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Precisa vir antes do setup-node: o cache do pnpm so funciona
+      # se o pnpm ja estiver instalado. Sem o campo "version", a action
+      # le a versao do "packageManager" do package.json da raiz.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.20.0
+          cache: pnpm
+
+      # --frozen-lockfile faz a instalacao falhar se o pnpm-lock.yaml
+      # estiver fora de sincronia com os package.json. E o que garante
+      # que o CI instale exatamente as mesmas versoes que voces.
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm test
+
+      - run: pnpm build
