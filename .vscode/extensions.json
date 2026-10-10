@@ -1,0 +1,18 @@
+{
+  // Extensoes que o VS Code sugere instalar ao abrir o projeto.
+  // A lista acompanha a etapa 3 do docs/playbooks/configuracao-windows.md.
+  "recommendations": [
+    // ESLint: avisos do linter direto no codigo.
+    "dbaeumer.vscode-eslint",
+    // Prettier: formata o codigo ao salvar, usando o .prettierrc da raiz.
+    "esbenp.prettier-vscode",
+    // Prisma: sintaxe e autocompletar no schema.prisma.
+    "Prisma.prisma",
+    // Tailwind CSS IntelliSense: autocompletar das classes no frontend.
+    "bradlc.vscode-tailwindcss",
+    // Container Tools: ver e controlar os conteineres do Docker no editor.
+    "ms-azuretools.vscode-containers",
+    // Draw.io Integration: abrir os diagramas de docs/arquitetura/.
+    "hediet.vscode-drawio"
+  ]
+}
