@@ -171,3 +171,7 @@ apps/api/src/generated/
 !.vscode/settings.json
 .idea/
 .DS_Store
+
+# --- Arquivos temporarios do draw.io ---
+.$*.drawio.bkp
+.$*.drawio.dtmp
