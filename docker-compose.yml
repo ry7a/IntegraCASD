@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: integracasd
       POSTGRES_DB: integracasd
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - dados-postgres:/var/lib/postgresql
 
