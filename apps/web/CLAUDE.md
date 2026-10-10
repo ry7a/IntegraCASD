@@ -41,6 +41,10 @@ src/
 - O amarelo é reservado para ação principal, item ativo e alertas; não usar como decoração.
 - Fontes: Archivo (títulos) e IBM Plex Sans (texto).
 - Componentes base do shadcn/ui, customizados com essas cores via variáveis do Tailwind.
+  - O tema (cores, fontes, raio) fica todo em `src/index.css`. Use as classes do tema (`bg-primary`, `text-muted-foreground`, `bg-sidebar`, `font-heading`), nunca a cor em hex direto no componente.
+  - Componentes do shadcn ficam em `src/compartilhado/componentes/ui/` (configurado no `components.json`). Para adicionar um, rode em `apps/web`: `pnpm dlx shadcn@4.21.4 add button`. Se ele pedir uma dependência nova, combine com a equipe antes.
+  - Imports a partir de `src/` usam o alias `@/` (ex.: `import { cn } from '@/compartilhado/utils'`).
+  - Anel de foco em preto (`ring`): amarelo sobre o fundo claro não tem contraste suficiente.
 - Selos de situação sempre com texto, nunca só cor (Aberta, Vencida, Paga, Paga com registro manual, Cancelada, Estornada).
 - Referência das telas: o canvas de design do projeto (pedir o link à equipe).
 
