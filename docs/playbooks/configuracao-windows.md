@@ -1,6 +1,6 @@
 # IntegraCASD — Playbook de configuração (Windows)
 
-> Última atualização: 09/10/2026. Se algo aqui estiver desatualizado, corrija no mesmo commit em que você descobriu.
+> Última atualização: 21/10/2026. Se algo aqui estiver desatualizado, corrija no mesmo commit em que você descobriu.
 
 Este guia leva uma máquina Windows do zero até o IntegraCASD rodando. Siga as etapas na ordem: cada uma termina com uma verificação, e só vale passar para a próxima quando ela der certo.
 
@@ -10,7 +10,7 @@ Reserve cerca de uma hora e tenha à mão três coisas:
 
 - **Permissão de administrador** no computador. Vários passos pedem o PowerShell aberto como administrador.
 - **Acesso ao repositório** no GitHub. Peça o convite a quem administra o projeto.
-- **Os valores do `.env`** (chave do sandbox do Asaas e token do webhook). Peça a quem administra; eles nunca ficam no repositório.
+- **Os valores do `.env`**: a chave do sandbox do Asaas (`ASAAS_API_KEY`) e o token do webhook (`ASAAS_WEBHOOK_TOKEN`). Peça a quem administra; eles nunca ficam no repositório. O `SESSION_SECRET` você mesmo gera, na etapa 2.3.
 
 Confira também se a **virtualização está ativa**, porque o Docker depende dela: abra o Gerenciador de Tarefas, vá em **Desempenho › CPU** e veja, no canto inferior direito, se aparece **Virtualização: Habilitado**. Se aparecer "Desabilitado", ela precisa ser ligada na BIOS do computador antes de seguir.
 
@@ -90,7 +90,7 @@ Escolha uma pasta sem espaços nem acentos no caminho, se possível, e clone:
 
 ```powershell
 cd C:\Users\SEU_USUARIO\Projetos
-git clone <url-do-repositorio> IntegraCASD
+git clone https://github.com/ry7a/IntegraCASD IntegraCASD
 cd IntegraCASD
 code .
 ```
@@ -113,7 +113,13 @@ Esse comando instala as bibliotecas das duas aplicações de uma vez, exatamente
 Copy-Item .env.example .env
 ```
 
-Abra o `.env` no VS Code e preencha com os valores que você pediu na etapa 0. **Nunca faça commit do `.env`**: o `.gitignore` já o protege, mas não force a inclusão.
+Abra o `.env` no VS Code e preencha com os valores que você pediu na etapa 0 (`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN`). **Nunca faça commit do `.env`**: o `.gitignore` já o protege, mas não force a inclusão.
+
+O `SESSION_SECRET` é um valor aleatório longo que você inventa. Para gerar um, rode isto e cole o resultado no `.env`:
+
+```powershell
+$b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
 
 ### 2.4 Subir o banco de dados
 
@@ -132,7 +138,18 @@ docker compose exec db psql -U integracasd -c "SELECT version();"
 
 Deve aparecer uma linha começando com `PostgreSQL 18.6`.
 
-### 2.5 Rodar a API e o frontend
+### 2.5 Criar as tabelas e carregar dados fictícios
+
+O banco recém-criado está vazio. Aplique as migrações para criar as tabelas e, em seguida, carregue alguns alunos fictícios para a tela de alunos ter o que mostrar:
+
+```powershell
+pnpm --filter api exec prisma migrate deploy
+pnpm --filter api dados-ficticios
+```
+
+O primeiro comando lê o `DATABASE_URL` do `.env` e aplica as migrações de `apps/api/prisma/migrations`. O segundo pode ser repetido à vontade: o que já existe não é duplicado. Quando alguém adicionar uma migração nova, rode o primeiro de novo.
+
+### 2.6 Rodar a API e o frontend
 
 Abra **dois terminais** na raiz e rode um comando em cada:
 
@@ -144,7 +161,7 @@ pnpm dev:api
 pnpm dev:web
 ```
 
-- A API responde em `http://localhost:3000`.
+- A API responde em `http://localhost:3000/api` (todas as rotas começam com `/api`). A documentação navegável fica em `http://localhost:3000/api/docs`.
 - O frontend abre em `http://localhost:5173`.
 
 Os dois recarregam sozinhos quando você salva um arquivo. Para parar, use **Ctrl + C** em cada terminal.
@@ -171,9 +188,10 @@ Sua máquina está pronta quando todos os itens estiverem marcados:
 - [ ] `node --version` mostra `v24.20.0`
 - [ ] `pnpm --version` mostra `11.28.5`
 - [ ] `docker compose ps` mostra o `db` como `running`
-- [ ] `http://localhost:3000` responde com a mensagem da API
-- [ ] `http://localhost:5173` abre o frontend
-- [ ] `pnpm lint`, `pnpm test` e `pnpm build` passam na raiz
+- [ ] `pnpm --filter api exec prisma migrate deploy` termina sem erro
+- [ ] `http://localhost:3000/api` mostra `Hello World!` e `http://localhost:3000/api/alunos` lista os alunos fictícios em JSON
+- [ ] `http://localhost:5173` abre o frontend e a lista de alunos mostra os alunos fictícios
+- [ ] `pnpm lint`, `pnpm test` e `pnpm build` passam na raiz (hoje só a API tem testes; o frontend ainda não tem)
 - [ ] Você criou uma branch de teste, fez um commit e enviou a branch ao GitHub (`git push -u origin <nome-da-branch>`)
 
 O último item confirma que seu acesso ao repositório e sua configuração do Git estão certos. Depois, apague a branch de teste sem fazer merge.
@@ -203,15 +221,16 @@ Todos estes aconteceram de verdade na primeira configuração do projeto.
 
 Todos na raiz do projeto.
 
-| Quando                            | Comando                                 |
-| --------------------------------- | --------------------------------------- |
-| Começar o dia: atualizar a `main` | `git switch main` e depois `git pull`   |
-| Alguém adicionou uma biblioteca   | `pnpm install`                          |
-| Subir o banco                     | `docker compose up -d`                  |
-| Rodar a API                       | `pnpm dev:api`                          |
-| Rodar o frontend                  | `pnpm dev:web`                          |
-| Começar uma tarefa                | `git switch -c feat/descricao-curta`    |
-| Antes do merge na `main`          | `pnpm lint`, `pnpm test` e `pnpm build` |
-| Desligar o banco no fim do dia    | `docker compose stop`                   |
+| Quando                            | Comando                                        |
+| --------------------------------- | ---------------------------------------------- |
+| Começar o dia: atualizar a `main` | `git switch main`, `git pull` e `pnpm install` |
+| Alguém adicionou uma biblioteca   | `pnpm install`                                 |
+| Alguém adicionou uma migração     | `pnpm --filter api exec prisma migrate deploy` |
+| Subir o banco                     | `docker compose up -d`                         |
+| Rodar a API                       | `pnpm dev:api`                                 |
+| Rodar o frontend                  | `pnpm dev:web`                                 |
+| Começar uma tarefa                | `git switch -c feat/descricao-curta`           |
+| Antes do merge na `main`          | `pnpm lint`, `pnpm test` e `pnpm build`        |
+| Desligar o banco no fim do dia    | `docker compose stop`                          |
 
 O fluxo completo de branches, commits e merge na `main` está no [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
