@@ -12,4 +12,11 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    // Em desenvolvimento, o Vite repassa /api para a API NestJS. Para o navegador
+    // tudo vem da mesma origem (localhost:5173), então não precisamos configurar CORS.
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
 })

@@ -1,0 +1,118 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/alunos": {
+      "get": {
+        "operationId": "listarAlunos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeAlunosDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Lista os alunos ativos",
+        "tags": [
+          "alunos"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "IntegraCASD",
+    "description": "API do sistema de gestão financeira do CASD",
+    "version": "0.0.1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "SituacaoAluno": {
+        "type": "string",
+        "enum": [
+          "MATRICULADO",
+          "TRANCADO",
+          "DESLIGADO",
+          "FORMADO",
+          "INTERCAMBIO"
+        ]
+      },
+      "AlunoResumoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Só dígitos, sem pontuação",
+            "example": "12345678901"
+          },
+          "email": {
+            "type": "string"
+          },
+          "turma": {
+            "type": "string",
+            "nullable": true,
+            "example": "T28"
+          },
+          "situacao": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoAluno"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "cpf",
+          "email",
+          "turma",
+          "situacao"
+        ]
+      },
+      "ListaDeAlunosDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlunoResumoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      }
+    }
+  }
+}

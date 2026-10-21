@@ -1,0 +1,19 @@
+{
+  "name": "@integracasd/api-client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "gerar": "orval"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "5.104.1"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "5.104.1",
+    "orval": "8.40.0"
+  }
+}

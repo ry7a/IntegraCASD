@@ -4,3 +4,7 @@ packages:
 allowBuilds:
   '@prisma/engines': true
   prisma: true
+  # Telemetria do swagger-ui (dependência do @nestjs/swagger); não precisa rodar.
+  '@scarf/scarf': false
+  # Dependência do orval; o binário nativo já vem pronto, o script só o confere.
+  esbuild: false
