@@ -18,7 +18,7 @@ Mudou ou criou uma rota, ou mudou um DTO? Na raiz, rode:
 pnpm gerar:cliente-api
 ```
 
-Isso compila a API, grava o `openapi.json` e roda o orval. Faça commit do `openapi.json` e de `src/gerado/` junto com a mudança da API, no mesmo PR: assim quem revisa vê o efeito no contrato.
+Isso compila a API, grava o `openapi.json` e roda o orval. Faça commit do `openapi.json` e de `src/gerado/` junto com a mudança da API, no mesmo commit: assim quem ler o histórico vê o efeito no contrato.
 
 ## Como usar no frontend
 

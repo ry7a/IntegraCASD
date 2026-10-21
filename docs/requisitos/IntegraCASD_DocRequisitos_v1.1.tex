@@ -1,0 +1,2170 @@
+% Documento de Requisitos do IntegraCASD, versão 1.1.
+% Compilar a partir desta pasta (docs/requisitos), duas vezes para o sumário:
+%   pdflatex IntegraCASD_DocRequisitos_v1.1.tex
+% As figuras vêm de docs/telas/prints/ (protótipo navegável em docs/telas/).
+
+\documentclass[11pt,a4paper,oneside]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm,headheight=14pt]{geometry}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[section]{placeins}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../telas/prints/}}
+
+% ---------------------------------------------------------------------------
+% Aparência
+% ---------------------------------------------------------------------------
+
+\definecolor{casdamarelo}{HTML}{FFC20E}
+\definecolor{casdpreto}{HTML}{0E0E0E}
+\definecolor{cinza}{HTML}{5A5A5A}
+
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.6em}
+\setlist{itemsep=0.2em,topsep=0.3em}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{casdpreto}}
+  {\filleft\large\color{cinza}\chaptertitlename\ \thechapter}
+  {0.5em}
+  {\filleft}
+  [\vspace{0.3em}{\color{casdamarelo}\titlerule[2pt]}]
+\titleformat{name=\chapter,numberless}[display]
+  {\normalfont\huge\bfseries\color{casdpreto}}
+  {}
+  {0pt}
+  {\filleft}
+  [\vspace{0.3em}{\color{casdamarelo}\titlerule[2pt]}]
+\titlespacing*{\chapter}{0pt}{0pt}{2em}
+\titleformat{\section}{\normalfont\Large\bfseries\color{casdpreto}}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{}{0pt}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyhead[L]{\small Documento de Requisitos -- IntegraCASD}
+\fancyhead[R]{\small\leftmark}
+\fancyfoot[L]{\small Versão 1.1}
+\fancyfoot[C]{\small\thepage}
+\fancyfoot[R]{\small Outubro/2026}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyhead[L]{\small Documento de Requisitos -- IntegraCASD}
+  \fancyfoot[L]{\small Versão 1.1}
+  \fancyfoot[C]{\small\thepage}
+  \fancyfoot[R]{\small Outubro/2026}}
+
+% ---------------------------------------------------------------------------
+% Macros dos requisitos
+% ---------------------------------------------------------------------------
+
+% Cabeçalho de um requisito: \req{RF001}{Manter cadastro de alunos}
+\newcommand{\req}[2]{%
+  \subsection*{[#1] #2}%
+  \addcontentsline{toc}{subsection}{[#1] #2}}
+
+% Requisito retirado do escopo: mantém o identificador reservado.
+\newcommand{\reqretirado}[3]{%
+  \subsection*{[#1] #2 \textmd{\textit{(retirado do MVP)}}}%
+  \addcontentsline{toc}{subsection}{[#1] #2 (retirado do MVP)}%
+  \begin{quote}\small\color{cinza}#3\end{quote}}
+
+\newcommand{\marcado}{$\boxtimes$}
+\newcommand{\vazio}{$\square$}
+\newcommand{\prioE}{\par\textbf{Prioridade:}\quad\marcado~Essencial\quad\vazio~Importante\quad\vazio~Desejável\par}
+\newcommand{\prioI}{\par\textbf{Prioridade:}\quad\vazio~Essencial\quad\marcado~Importante\quad\vazio~Desejável\par}
+\newcommand{\prioD}{\par\textbf{Prioridade:}\quad\vazio~Essencial\quad\vazio~Importante\quad\marcado~Desejável\par}
+
+\newcommand{\ator}[1]{\par\textbf{Ator:} #1\par}
+\newcommand{\entradas}{\textbf{Entradas e pré-condições:} }
+\newcommand{\saidas}{\par\textbf{Saídas e pós-condições:} }
+\newcommand{\fluxoprincipal}{\par\textbf{Fluxo de eventos principal}\par}
+\newcommand{\fluxossecundarios}{\par\textbf{Fluxos secundários (alternativos e de exceção)}\par}
+\newcommand{\fluxo}[2]{\par\smallskip\textit{#1 -- #2}\par}
+\newcommand{\casos}[1]{\par\textbf{Caso(s) de uso associado(s):} #1\par}
+
+% Figura de tela: \tela[altura relativa]{arquivo}{legenda}{rótulo}
+\newcommand{\tela}[4][0.42]{%
+  \begin{figure}[htbp]
+    \centering
+    \fbox{\includegraphics[width=0.97\linewidth,height=#1\textheight,keepaspectratio]{#2}}
+    \caption{#3}
+    \label{fig:#4}
+  \end{figure}}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% Ficha técnica
+% ---------------------------------------------------------------------------
+
+\begin{titlepage}
+  \pagestyle{empty}
+  {\large Departamento de Ciência da Computação, ITA-SJC\par}
+  \vspace{0.5em}
+  {\color{casdamarelo}\rule{\linewidth}{2pt}\par}
+  \vspace{2em}
+  {\Huge\bfseries Documento de Requisitos\par}
+  \vspace{0.5em}
+  {\LARGE IntegraCASD\par}
+  \vspace{0.3em}
+  {\large Sistema de gestão financeira do Centro Acadêmico Santos Dumont\par}
+
+  \vspace{3em}
+  {\large\bfseries Ficha Técnica\par}
+  \vspace{1em}
+  \textbf{Equipe Responsável pela Elaboração}\par
+  \begin{tabular}{@{}ll@{}}
+    João Gabriel de Magalhães Gonzaga & ITA-SJC \\
+    Gabriel Negreiro Oliveira         & ITA-SJC \\
+    Marcello Ryaj de Almeida Santos   & ITA-SJC \\
+    Mateus Levi Morais Feitosa        & ITA-SJC \\
+  \end{tabular}
+
+  \vspace{1.5em}
+  \textbf{Público Alvo}\par
+  Este documento destina-se aos integrantes do projeto IntegraCASD (analistas, projetistas,
+  programadores e testadores), à equipe financeira do CASD e aos docentes responsáveis pela
+  avaliação deste trabalho na disciplina CSI-28 -- Fundamentos de Engenharia de Software.
+
+  \vfill
+  \begin{center}
+    {\large\bfseries Versão 1.1 -- São José dos Campos, Outubro de 2026\par}
+  \end{center}
+  \vspace{1em}
+  Dúvidas, críticas e sugestões devem ser encaminhadas por escrito para um dos seguintes endereços
+  eletrônicos: \texttt{marcelloryaj37@gmail.com} ou \texttt{marcello.santos.9107@ga.ita.br}.
+  Recomendamos que o assunto seja identificado com o título desta obra e que a mensagem traga o
+  nome completo do remetente, para que seja possível o envio de respostas.
+\end{titlepage}
+
+% ---------------------------------------------------------------------------
+% Histórico de revisões
+% ---------------------------------------------------------------------------
+
+\chapter*{Histórico de revisões}
+\markboth{Histórico de revisões}{}
+
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+  \toprule
+  \textbf{Versão} & \textbf{Data} & \textbf{Descrição} \\
+  \midrule
+  1.0 & Setembro/2026 & Versão inicial, com o levantamento completo dos requisitos. \\
+  1.1 & Outubro/2026  & Ajuste ao escopo do MVP definido pela equipe: retirada dos requisitos
+                        fora do escopo, atualização dos casos de uso com as decisões tomadas desde
+                        a versão 1.0 e inclusão das telas do protótipo navegável. \\
+  \bottomrule
+\end{tabularx}
+
+\section*{Alterações em relação à versão 1.0}
+
+\textbf{Requisitos retirados do MVP.} Os identificadores abaixo permanecem reservados e não são
+reaproveitados, para que as referências já feitas no código, no protótipo e no quadro de tarefas
+continuem válidas. Cada um aparece no Capítulo~2 apenas com a indicação da retirada.
+\begin{itemize}
+  \item [Cadastros.RF003] Manter cadastro de fornecedores e parceiros. O contrato passa a guardar
+        apenas o nome da contraparte, em texto.
+  \item [Movimentações.RF004] Anexar comprovante a uma movimentação.
+  \item [Indicadores.RF004] Exportar relatório.
+\end{itemize}
+
+\textbf{Outros itens retirados do escopo.} O cadastro de assinaturas internas (por exemplo, a
+lavanderia) deixa de fazer parte do MVP; os valores correspondentes são lançados como
+movimentações de entrada classificadas por categoria.
+
+\textbf{Requisitos alterados.}
+\begin{itemize}
+  \item [Cadastros.RF001]: as entradas do cadastro de alunos seguem o modelo de dados definido pela
+        equipe (turma, curso, posto, matrícula, alojamento, celular e apelido); a data de
+        nascimento deixa de ser coletada, por não ser exigida pelo Asaas
+        ([Padrões.NF001]). Foi incluído o fluxo de cadastro incompleto vindo da carga inicial.
+  \item [Cadastros.RF002]: inclusão do salário de referência do funcionário.
+  \item [Cadastros.RF004]: o contrato deixa de depender do cadastro de fornecedores e passa a
+        apresentar o total pago no ano.
+  \item [Cobranças.RF006]: o caso de uso passa a se chamar ``Registrar pagamento manualmente'' e
+        cobre também o pagamento combinado diretamente com a área administrativa.
+  \item [Cobranças.RF007]: inclusão da sincronização de uma única cobrança e da execução periódica
+        automática.
+  \item [Movimentações.RF001]: o vínculo com fornecedor é substituído pelo vínculo com contrato;
+        inclusão da forma de pagamento ``Transferência''.
+  \item [Administração.RF003] e [Administração.RF004]: inclusão do histórico de execuções da
+        geração recorrente e da configuração do prazo de alerta de interrupção da conciliação.
+  \item [Desempenho.NF002], [Padrões.NF001], [Padrões.NF003], [Hardware e software.NF001] e
+        [Hardware e software.NF005]: atualização conforme as decisões de arquitetura já
+        registradas.
+\end{itemize}
+
+\textbf{Requisitos incluídos.} [Usabilidade.NF004] Informação que não depende apenas de cor.
+
+\textbf{Capítulo incluído.} Capítulo~4, com a descrição da interface com o usuário. As telas do
+protótipo também aparecem junto aos casos de uso a que se referem, no Capítulo~2.
+
+\tableofcontents
+
+% ---------------------------------------------------------------------------
+% Introdução
+% ---------------------------------------------------------------------------
+
+\chapter*{Introdução}
+\addcontentsline{toc}{chapter}{Introdução}
+\markboth{Introdução}{}
+
+Este documento especifica o sistema IntegraCASD, fornecendo aos desenvolvedores as informações
+necessárias para o projeto e a implementação, assim como para a realização dos testes e a
+homologação do sistema.
+
+O IntegraCASD destina-se à gestão financeira e administrativa do Centro Acadêmico Santos Dumont
+(CASD). Atualmente, essas informações encontram-se distribuídas em diferentes planilhas, mantidas
+de forma independente, o que dificulta o cruzamento de dados, torna a consulta lenta e sujeita a
+erros e impede uma visão consolidada da situação financeira do Centro Acadêmico. O sistema aqui
+especificado tem por finalidade centralizar esses dados em um único ambiente, automatizar a emissão
+e a conciliação de cobranças e disponibilizar indicadores que apoiem a tomada de decisão pela
+administração e pela diretoria do CASD.
+
+Esta versão 1.1 restringe a especificação ao escopo do produto mínimo viável (MVP), a ser entregue
+em dois meses. Os requisitos que ficaram de fora estão indicados no Histórico de revisões.
+
+\section*{Visão geral deste documento}
+\addcontentsline{toc}{section}{Visão geral deste documento}
+
+Esta introdução fornece as informações necessárias para fazer um bom uso deste documento,
+explicitando seus objetivos e as convenções que foram adotadas no texto, além de conter uma lista
+de referências para outros documentos relacionados. As demais partes apresentam a especificação do
+sistema IntegraCASD e estão organizadas como descrito abaixo.
+\begin{itemize}
+  \item \textbf{Capítulo 1 -- Descrição geral do sistema:} apresenta uma visão geral do sistema,
+        caracterizando qual é o seu escopo e descrevendo seus usuários.
+  \item \textbf{Capítulo 2 -- Requisitos funcionais (casos de uso):} especifica os requisitos
+        funcionais do sistema, descrevendo os fluxos de eventos, prioridades, atores, entradas e
+        saídas de cada caso de uso, acompanhados das telas do protótipo que os ilustram.
+  \item \textbf{Capítulo 3 -- Requisitos não funcionais:} especifica os requisitos não funcionais
+        do sistema, divididos em requisitos de usabilidade, confiabilidade, desempenho, segurança,
+        distribuição, adequação a padrões e requisitos de hardware e software.
+  \item \textbf{Capítulo 4 -- Descrição da interface com o usuário:} apresenta a organização das
+        telas, as decisões de interface que valem para todas elas e a correspondência entre telas e
+        casos de uso.
+  \item \textbf{Apêndice A -- Pontos em aberto:} lista as questões que ainda dependem de decisão
+        da equipe ou do CASD.
+\end{itemize}
+
+\section*{Convenções, termos e abreviações}
+\addcontentsline{toc}{section}{Convenções, termos e abreviações}
+
+A correta interpretação deste documento exige o conhecimento de algumas convenções e termos
+específicos, que são descritos a seguir.
+
+\begin{longtable}{@{}>{\bfseries}p{0.24\linewidth} p{0.70\linewidth}@{}}
+  \toprule
+  \textmd{\textbf{Termo}} & \textbf{Definição} \\
+  \midrule
+  \endhead
+  Asaas & Provedor externo de serviços financeiros contratado pelo CASD, responsável pela emissão
+          das cobranças e pela comunicação com a instituição bancária. \\
+  Baixa & Registro, no sistema, de que uma cobrança foi quitada, com a consequente atualização da
+          situação do pagador. \\
+  Boleto & Documento de cobrança emitido em favor do CASD, identificado por um número único, com
+           valor e data de vencimento definidos. \\
+  CASD & Centro Acadêmico Santos Dumont. \\
+  Categoria & Classificação atribuída a uma movimentação financeira, utilizada para agrupar
+              entradas e saídas na apuração dos indicadores. \\
+  Cobrança & Solicitação de pagamento registrada no sistema, dirigida a um aluno e sempre
+             correspondente a uma cobrança criada no Asaas. \\
+  Conciliação & Atualização automática da situação de uma cobrança a partir das notificações do
+                Asaas, com a criação da movimentação de entrada correspondente ao pagamento. \\
+  Contraparte & Pessoa ou empresa com a qual o CASD firma um contrato. No MVP é registrada apenas
+                pelo nome, sem cadastro próprio. \\
+  Estorno & Lançamento de sinal contrário que anula o efeito de uma movimentação, preservando o
+            registro original. \\
+  Inadimplente & Aluno que possui ao menos uma cobrança cuja data de vencimento já transcorreu sem
+                 que o pagamento tenha sido identificado. \\
+  Movimentação & Todo registro de entrada ou de saída de recursos financeiros do CASD, incluindo
+                 recebimentos de alunos, pagamentos de contratos, despesas de pessoal e gastos com
+                 projetos. \\
+  MVP & Produto mínimo viável: o conjunto de funcionalidades da primeira versão entregue. \\
+  Pagador & Pessoa a quem uma cobrança é dirigida, tipicamente um aluno do CASD. \\
+  Situação da cobrança & Uma das seguintes: Aberta, Vencida, Paga, Paga com registro manual,
+                         Cancelada ou Estornada. \\
+  Sincronização & Consulta ao Asaas que atualiza as cobranças cujas notificações não chegaram ao
+                  sistema. \\
+  Webhook & Notificação enviada automaticamente pelo Asaas ao IntegraCASD sempre que ocorre uma
+            mudança na situação de uma cobrança, empregada pelo sistema para realizar a
+            conciliação. \\
+  \bottomrule
+\end{longtable}
+
+\subsection*{1. Identificação dos requisitos}
+
+Por convenção, a referência a requisitos é feita através do nome da subseção onde eles estão
+descritos, seguido do identificador do requisito, de acordo com o esquema abaixo:
+\begin{center}
+  [nome da subseção.identificador do requisito]
+\end{center}
+Por exemplo, o requisito [Cobranças.RF005] está descrito na subseção ``Cobranças'' do
+Capítulo~2, em um bloco identificado por [RF005]. Já o requisito não funcional
+[Confiabilidade.NF004] está descrito na seção de requisitos não funcionais de Confiabilidade, em um
+bloco identificado por [NF004]. Os identificadores de requisitos retirados do escopo não são
+reaproveitados.
+
+\subsection*{2. Prioridades dos requisitos}
+
+Para estabelecer a prioridade dos requisitos foram adotadas as denominações ``essencial'',
+``importante'' e ``desejável''.
+\begin{itemize}
+  \item \textbf{Essencial} é o requisito sem o qual o sistema não entra em funcionamento.
+        Requisitos essenciais são imprescindíveis e têm que ser implementados impreterivelmente.
+  \item \textbf{Importante} é o requisito sem o qual o sistema entra em funcionamento, mas de forma
+        não satisfatória. Requisitos importantes devem ser implementados, mas, se não forem, o
+        sistema poderá ser implantado e usado mesmo assim.
+  \item \textbf{Desejável} é o requisito que não compromete as funcionalidades básicas do sistema,
+        isto é, o sistema pode funcionar de forma satisfatória sem ele. Requisitos desejáveis
+        podem ser deixados para versões posteriores, caso não haja tempo hábil para implementá-los
+        na versão que está sendo especificada.
+\end{itemize}
+
+\section*{Referências}
+\addcontentsline{toc}{section}{Referências}
+
+\begin{enumerate}
+  \item Lei nº 13.709, de 14 de agosto de 2018 (Lei Geral de Proteção de Dados Pessoais);
+        Presidência da República, Casa Civil;
+        \url{https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm}
+  \item Documentação da interface de programação do Asaas, seções de Cobranças e de Webhooks;
+        consultada em setembro de 2026; Asaas Gestão Financeira S.A.;
+        \url{https://docs.asaas.com/}
+  \item IntegraCASD -- Documento de Requisitos, versão 1.0; setembro de 2026;
+        \url{docs/requisitos/IntegraCASD_DocRequisitos_v1.pdf}.
+  \item IntegraCASD -- Relatório Descritivo do Projeto, versão 1.0 (Laboratório 03); setembro de
+        2026; \url{docs/requisitos/IntegraCASD_RelDescritivo_v1.pdf}.
+  \item Registros de decisões de arquitetura: ADR-0001, Monólito modular como estilo arquitetural;
+        ADR-0002, PostgreSQL como banco e como fila; outubro de 2026; \texttt{docs/adr/}.
+  \item Diagramas de arquitetura (C4 e implantação) e diagrama de sequência da conciliação;
+        \texttt{docs/arquitetura/}.
+  \item Protótipo navegável das telas, com dados fictícios; outubro de 2026;
+        \texttt{docs/telas/}.
+\end{enumerate}
+
+% ---------------------------------------------------------------------------
+% Capítulo 1
+% ---------------------------------------------------------------------------
+
+\chapter{Descrição geral do sistema}
+
+O IntegraCASD tem por objetivo centralizar, em um único ambiente, a gestão financeira e
+administrativa do Centro Acadêmico Santos Dumont, hoje distribuída entre planilhas mantidas de
+forma independente. O sistema reúne o cadastro dos alunos e dos funcionários, o registro dos
+contratos e dos projetos, o registro de todas as movimentações de entrada e saída de recursos, a
+emissão e a conciliação das cobranças dirigidas aos alunos e a apuração dos indicadores que
+descrevem a situação financeira do Centro Acadêmico.
+
+O propósito da aplicação não é apenas substituir as planilhas por um banco de dados. O ganho
+pretendido está no relacionamento entre informações que hoje vivem separadas: saber que determinado
+aluno possui mensalidades em atraso sem conferir o extrato bancário linha a linha; saber quanto foi
+gasto em um projeto ao longo de um semestre sem precisar somar linhas de três arquivos diferentes;
+saber quantos alunos estão inadimplentes sem depender de conferência manual. É esse cruzamento que o
+processo atual não oferece e que motiva o desenvolvimento do sistema.
+
+O projeto é relevante para todos os envolvidos. Para a responsável pela área administrativa,
+porque elimina o trabalho repetitivo de emitir cobranças uma a uma e de conferir manualmente quais
+foram pagas. Para a diretoria do CASD, porque disponibiliza indicadores confiáveis e atualizados
+para decidir sobre gastos, contratos e projetos. Para o próprio Centro Acadêmico como instituição,
+porque preserva a memória financeira entre gestões, hoje dependente da transferência informal de
+arquivos a cada troca de diretoria.
+
+Em linhas gerais, o IntegraCASD é uma aplicação web de três camadas: uma interface de usuário
+acessível por navegador, um servidor de aplicação que concentra as regras de negócio e um banco de
+dados relacional que armazena o cadastro, as movimentações e as cobranças. O servidor é organizado
+como um monólito modular, com um módulo para cada subseção do Capítulo~2, conforme o ADR-0001.
+
+\section{Abrangência e sistemas relacionados}
+
+O MVP do IntegraCASD contempla o cadastro de alunos e de funcionários; o registro de contratos e de
+projetos; o registro das movimentações financeiras de entrada e de saída, classificadas por
+categoria; a geração automática das cobranças recorrentes e a emissão manual de cobranças avulsas;
+a emissão do boleto e o seu envio ao pagador; a conciliação automática dos pagamentos; e a
+apresentação de um painel de indicadores com a posição financeira do Centro Acadêmico, o total de
+inadimplentes, a relação dos maiores devedores e a distribuição dos gastos por categoria. Essas
+funcionalidades são apenas citadas aqui, para dar ao leitor uma ideia geral dos serviços oferecidos;
+os detalhes constam do Capítulo~2.
+
+Estão fora do MVP, podendo ser retomados em versões futuras:
+\begin{itemize}
+  \item \textbf{Cadastro de fornecedores e de organizações parceiras.} O contrato registra apenas o
+        nome da contraparte, em texto ([Cadastros.RF004]).
+  \item \textbf{Assinaturas internas.} Serviços como a lavanderia não têm cadastro próprio nem
+        geram cobrança; seus valores são lançados como movimentações classificadas por categoria.
+  \item \textbf{Anexo de comprovante às movimentações.}
+  \item \textbf{Exportação de relatórios} em PDF ou CSV.
+\end{itemize}
+
+Estão, ainda, explicitamente fora do escopo do sistema:
+\begin{itemize}
+  \item \textbf{Acesso de alunos e de membros do CASD ao sistema.} O aluno é tratado como pagador,
+        e não como usuário: ele recebe a cobrança por e-mail e efetua o pagamento fora do
+        IntegraCASD, sem realizar acesso autenticado. A disponibilização de uma área em que o
+        próprio aluno consulte sua situação financeira foi avaliada e adiada para uma versão
+        futura.
+  \item \textbf{Processamento de pagamentos.} O sistema não recebe, não movimenta e não custodia
+        recursos financeiros. A emissão da cobrança e o recebimento do valor são realizados
+        integralmente pelo Asaas; ao IntegraCASD cabe solicitar a cobrança e registrar o seu
+        desfecho.
+  \item \textbf{Folha de pagamento e obrigações trabalhistas.} O sistema registra os pagamentos
+        efetuados a funcionários como movimentações de saída, mas não calcula salários, encargos,
+        férias ou tributos, atribuições que permanecem a cargo da contabilidade contratada pelo
+        CASD.
+  \item \textbf{Escrituração contábil e prestação de contas oficial.} O IntegraCASD é uma
+        ferramenta de gestão, e não um sistema contábil. Os indicadores que produz servem à
+        decisão interna e não substituem os demonstrativos elaborados pela contabilidade.
+  \item \textbf{Emissão de notas fiscais}, por não integrar a rotina hoje executada pela área
+        administrativa.
+  \item \textbf{Controle de estoque e de patrimônio.} Compras de materiais e bens são registradas
+        apenas como movimentações financeiras; o acompanhamento físico dos itens não faz parte do
+        escopo.
+\end{itemize}
+
+O IntegraCASD não é um sistema autocontido: sua operação depende de um sistema externo, descrito a
+seguir.
+
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+  \toprule
+  \textbf{Sistema} & \textbf{Papel e meio de comunicação} \\
+  \midrule
+  Asaas & Provedor de serviços financeiros responsável por emitir as cobranças em favor do CASD,
+          disponibilizar o boleto ao pagador, enviá-lo por e-mail e receber o pagamento. O
+          IntegraCASD solicita a criação e o cancelamento das cobranças por meio da API REST do
+          Asaas e recebe, por webhook, as notificações de mudança de situação de cada cobrança, que
+          utiliza para realizar a conciliação. A comunicação ocorre nos dois sentidos, e a
+          indisponibilidade do Asaas impede a emissão de novas cobranças, ainda que não impeça o uso
+          das demais funções do sistema. No código, apenas o componente Cliente Asaas comunica-se
+          com a plataforma; o restante do sistema depende de uma interface. \\
+  \bottomrule
+\end{tabularx}
+
+O envio do boleto por e-mail ao aluno é realizado pelo próprio Asaas, acionado pelo IntegraCASD no
+momento da criação da cobrança. O sistema não mantém servidor de correio próprio para essa
+finalidade, limitando-se a registrar que o envio foi solicitado e a oferecer o download do boleto
+para os casos em que a área administrativa opte por entregá-lo por outro meio.
+
+As planilhas hoje utilizadas pelo CASD não constituem um sistema relacionado, e sim a origem dos
+dados da carga inicial ([Distribuição.NF002]). Após a implantação, elas deixam de ser mantidas e o
+IntegraCASD passa a ser a única fonte da informação financeira do Centro Acadêmico. O cadastro de
+alunos é criado a partir dessas planilhas e, a partir de então, mantido dentro do sistema pela área
+administrativa.
+
+\section{Descrição dos usuários}
+
+O IntegraCASD possui dois tipos de usuário, ambos internos ao Centro Acadêmico e em número
+reduzido: a responsável pela área administrativa e os integrantes da diretoria do CASD. Não há uso
+pelo público externo, e o volume de acessos simultâneos é pequeno -- característica que afasta
+preocupações de escala, mas não reduz a exigência de correção: o sistema é a única fonte da
+informação financeira do Centro Acadêmico, e um dado errado nele é um dado errado em toda parte.
+
+O principal problema que limita a produtividade desses usuários hoje é a fragmentação da
+informação. Como cada assunto é controlado em uma planilha própria, qualquer pergunta que atravesse
+dois arquivos exige conferência manual: identificar quem está devendo obriga a confrontar a
+planilha de cobranças com o extrato bancário, linha a linha; apurar o gasto de um projeto obriga a
+somar lançamentos dispersos. Além do tempo consumido, o processo é sujeito a erro e não deixa
+registro de quem alterou o quê, o que dificulta tanto a auditoria quanto a transferência de
+responsabilidades entre gestões.
+
+Um terceiro grupo de pessoas relaciona-se com o sistema sem ser seu usuário: os alunos, na condição
+de pagadores. Eles recebem cobranças originadas no IntegraCASD e seus dados são nele armazenados,
+mas não realizam acesso autenticado nem interagem com qualquer interface do sistema. Essa distinção
+é relevante porque os alunos não geram requisitos de usabilidade, mas geram requisitos de segurança
+e de proteção de dados pessoais, tratados no Capítulo~3.
+
+\subsection*{1. Responsável pela área administrativa}
+
+Funcionária do CASD responsável pela rotina administrativa e financeira do Centro Acadêmico. É a
+usuária de uso mais intenso do sistema e a que realiza o maior volume de operações: mantém os
+cadastros de alunos e funcionários; lança as movimentações de entrada e de saída; emite cobranças
+avulsas; acompanha a situação das cobranças recorrentes; e verifica as pendências de conciliação.
+
+Utiliza o sistema diariamente, a partir de um computador, e conhece a fundo o processo financeiro
+do CASD, inclusive as exceções e os casos particulares que hoje só existem na sua memória e nas
+observações escritas à margem das planilhas. É, por isso, a principal fonte de informação para o
+levantamento de requisitos deste projeto. Por outro lado, não possui formação em informática, e o
+sistema não pode pressupor familiaridade com vocabulário técnico: mensagens de erro precisam
+explicar o que fazer, e não apenas o que falhou.
+
+Sua expectativa central em relação ao sistema é a redução do trabalho repetitivo. As operações que
+executa muitas vezes ao dia, como localizar um aluno, lançar uma movimentação ou emitir uma
+cobrança, precisam ser rápidas e alcançáveis em poucos passos, ainda que isso implique telas mais
+densas do que seria adequado a um usuário eventual.
+
+\subsection*{2. Diretoria do CASD}
+
+Alunos do ITA que ocupam cargos na diretoria do Centro Acadêmico, com destaque para a diretoria
+financeira. Utilizam o sistema com frequência menor e propósito distinto: acompanham os indicadores
+do painel para decidir sobre gastos, contratos e projetos, e consultam a situação de inadimplência
+para orientar as ações de cobrança.
+
+Concentram também as funções de configuração e administração do sistema: cadastro e permissão dos
+usuários, definição das categorias de movimentação, parametrização dos valores e das datas de
+vencimento das cobranças recorrentes e guarda das credenciais de integração com o Asaas. Essa
+separação é deliberada: as decisões que alteram o comportamento do sistema como um todo cabem à
+instância responsável pela gestão do Centro Acadêmico, e não a quem executa a rotina diária.
+
+Duas características desse grupo têm consequência direta sobre o projeto. A primeira é a alta
+rotatividade: a diretoria é renovada periodicamente, de modo que o sistema recebe usuários novos
+com regularidade, sem tempo hábil para treinamento extenso, e as telas de indicadores e de
+configuração precisam ser compreensíveis por si mesmas. A segunda é que se trata de usuários com
+boa familiaridade com tecnologia, mas não necessariamente com o processo financeiro do CASD,
+exatamente o inverso do perfil da área administrativa. O sistema precisa atender bem aos dois.
+
+% ---------------------------------------------------------------------------
+% Capítulo 2
+% ---------------------------------------------------------------------------
+
+\chapter{Requisitos funcionais (casos de uso)}
+
+Este capítulo apresenta os requisitos funcionais do MVP do IntegraCASD. Os casos de uso foram
+agrupados em cinco subseções de requisitos correlacionados, que correspondem também aos módulos do
+servidor, e a numeração dos identificadores é reiniciada em cada uma delas, conforme a convenção
+descrita na Introdução. Junto a cada caso de uso aparecem as telas do protótipo que o ilustram; os
+dados mostrados nelas são fictícios.
+
+Duas convenções valem para o capítulo inteiro. A primeira é que o perfil de diretoria possui todas
+as permissões do perfil da área administrativa, acrescidas das funções de configuração reunidas na
+subseção Administração. Quando um caso de uso indica a área administrativa como ator, a diretoria
+também pode executá-lo. A segunda é que nem todo caso de uso tem ator humano: a geração de
+cobranças recorrentes é disparada pela passagem do tempo, e a conciliação de pagamentos é disparada
+pelo Asaas. Esses casos de uso estão especificados aqui, e não entre os requisitos não funcionais,
+porque descrevem comportamento do sistema, e não qualidades dele.
+
+Valem, ainda, duas regras de dados para todos os casos de uso: valores monetários são registrados
+em centavos, como números inteiros, e toda operação que altera dados é registrada na trilha de
+auditoria ([Segurança.NF006]).
+
+% ===========================================================================
+\section{Cadastros}
+
+Esta subseção reúne os casos de uso de manutenção das pessoas e dos vínculos que dão origem a
+cobranças e a despesas. Todos seguem o padrão ``manter'', que reúne inclusão, alteração, consulta e
+inativação em um único caso de uso, com as variações descritas nos fluxos secundários. Nenhum
+registro cadastral é excluído fisicamente do sistema: a inativação preserva o histórico financeiro
+associado.
+
+Os cadastros ficam reunidos em uma única tela, com uma aba para cada tipo de registro.
+
+\textbf{Ator de todos os casos de uso desta subseção:} área administrativa.
+
+% ---------------------------------------------------------------------------
+\req{RF001}{Manter cadastro de alunos}
+
+Permite incluir, alterar, consultar e inativar o cadastro dos alunos do CASD, que são os pagadores
+de todas as cobranças emitidas pelo sistema.
+
+\prioE
+
+\entradas o usuário está autenticado. Para inclusão, o CPF informado não pode existir em outro
+cadastro ativo. Entradas: nome completo, CPF, e-mail, celular, apelido, matrícula, turma, curso,
+posto (civil, aluno militar ou aspirante a oficial), alojamento (bloco, apartamento e vaga) e
+situação (ativo ou inativo). O nome, o CPF e o e-mail são obrigatórios, sendo os dois últimos
+exigidos pelo Asaas para a emissão da cobrança.
+
+\saidas o cadastro é criado, alterado ou inativado. Aluno ativo passa a ser considerado na geração
+de cobranças recorrentes ([Cobranças.RF001]); aluno inativo deixa de sê-lo, mas mantém visíveis as
+cobranças e as movimentações já registradas em seu nome.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Cadastros'', aba ``Alunos'', ou usa a busca da barra
+        superior, e informa o nome ou o CPF a ser pesquisado (Figura~\ref{fig:cadastros-alunos}).
+  \item O sistema apresenta os cadastros correspondentes, com a situação e o valor em aberto de
+        cada aluno.
+  \item O usuário seleciona um aluno para abrir o seu cadastro, ou aciona ``Novo aluno''.
+  \item O usuário preenche ou altera os dados cadastrais (Figuras~\ref{fig:cadastros-novo-aluno}
+        e~\ref{fig:aluno-dados}).
+  \item O sistema valida os campos obrigatórios e a consistência do CPF e do e-mail.
+  \item O sistema grava o cadastro e registra a operação na trilha de auditoria.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Inativação de aluno}
+O usuário aciona a opção ``Inativar aluno'' e confirma. O sistema altera a situação do aluno, que
+deixa de gerar novas cobranças recorrentes, e mantém o cadastro consultável.
+
+\fluxo{A2}{Inclusão a partir da busca}
+Se a busca não encontrar nenhum cadastro, o sistema oferece a inclusão de um novo aluno, já com o
+nome ou o CPF pesquisado preenchido.
+
+\fluxo{A3}{Consulta do histórico do aluno}
+O cadastro do aluno apresenta, em abas, as cobranças em seu nome, com o total em aberto
+(Figura~\ref{fig:aluno-cobrancas}), e as movimentações de entrada geradas por elas
+(Figura~\ref{fig:aluno-movimentacoes}). A partir do cadastro, o usuário pode emitir uma cobrança
+avulsa com o aluno já preenchido ([Cobranças.RF002]). As movimentações exibidas ali não são
+corrigidas a partir do cadastro: a correção é feita pela própria cobrança.
+
+\fluxo{A4}{Cadastro incompleto}
+Alunos vindos da carga inicial podem não ter e-mail ou CPF válido. A lista sinaliza esses cadastros
+(``Falta e-mail''), porque eles não recebem cobrança enquanto não forem corrigidos
+([Cobranças.RF001], fluxo A2).
+
+\fluxo{E1}{CPF já cadastrado}
+Se o CPF informado já pertencer a outro cadastro ativo, o sistema não cria o novo registro e
+apresenta o cadastro existente para eventual atualização, evitando duplicidade de pagador. Um
+cadastro inativo com o mesmo CPF não impede a inclusão.
+
+\fluxo{E2}{Inativação de aluno com cobrança em aberto}
+Se o aluno possuir cobrança com situação ``Aberta'' ou ``Vencida'', o sistema informa a existência
+do débito e exige confirmação explícita (Figura~\ref{fig:aluno-inativar}). As cobranças em aberto
+não são canceladas automaticamente: permanecem válidas e continuam a compor a inadimplência
+([Indicadores.RF002]).
+
+\textit{Observação sobre o protótipo:} os formulários das Figuras~\ref{fig:cadastros-novo-aluno}
+e~\ref{fig:aluno-dados} ainda apresentam os campos ``Data de nascimento'' e ``Telefone'', anteriores
+à definição do modelo de dados. Prevalecem as entradas descritas neste caso de uso.
+
+\tela{cadastros-alunos}{Cadastros, aba Alunos: busca por nome ou CPF, filtro por situação, valor
+em aberto e sinalização de cadastro incompleto.}{cadastros-alunos}
+\tela{cadastros-dialogo-novo-aluno}{Inclusão de aluno, com o aviso de CPF já cadastrado
+(fluxo E1).}{cadastros-novo-aluno}
+\tela{aluno-dados}{Cadastro do aluno, aba Dados: alteração dos dados cadastrais.}{aluno-dados}
+\tela{aluno-cobrancas}{Cadastro do aluno, aba Cobranças: cobranças em seu nome e total em
+aberto.}{aluno-cobrancas}
+\tela{aluno-movimentacoes}{Cadastro do aluno, aba Movimentações: entradas geradas pelas cobranças
+pagas.}{aluno-movimentacoes}
+\tela{aluno-dialogo-inativar}{Inativação de aluno com débito: resumo do efeito e confirmação
+(fluxo E2).}{aluno-inativar}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF002}{Manter cadastro de funcionários}
+
+Permite incluir, alterar, consultar e inativar o cadastro dos funcionários do CASD, aos quais são
+vinculadas as movimentações de saída referentes a pagamento de pessoal.
+
+\prioE
+
+\entradas o usuário está autenticado. Entradas: nome completo, CPF, cargo, salário de referência,
+data de admissão, data de desligamento quando houver e situação.
+
+\saidas o cadastro é criado, alterado ou inativado, e passa a estar disponível para vinculação em
+[Movimentações.RF001]. O salário de referência é informativo: o pagamento efetivo é sempre lançado
+como movimentação de saída vinculada ao funcionário.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Cadastros'', aba ``Funcionários'', e pesquisa pelo nome ou
+        CPF (Figura~\ref{fig:cadastros-funcionarios}).
+  \item O sistema apresenta o cadastro correspondente ou oferece a inclusão de um novo
+        funcionário.
+  \item O usuário preenche ou altera os dados.
+  \item O sistema valida os campos obrigatórios e grava o cadastro.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Desligamento}
+O usuário informa a data de desligamento e o sistema inativa o funcionário automaticamente a partir
+dessa data, mantendo o histórico de pagamentos associado.
+
+\fluxo{E1}{CPF já cadastrado}
+Comportamento idêntico ao descrito em [Cadastros.RF001], fluxo E1.
+
+\tela{cadastros-funcionarios}{Cadastros, aba Funcionários: cargo, admissão, desligamento e
+situação.}{cadastros-funcionarios}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\reqretirado{RF003}{Manter cadastro de fornecedores e parceiros}{Retirado do escopo do MVP na
+versão 1.1. O contrato registra a contraparte apenas pelo nome ([Cadastros.RF004]), e as
+movimentações deixam de ser vinculadas a fornecedor ([Movimentações.RF001]). O identificador
+permanece reservado.}
+
+% ---------------------------------------------------------------------------
+\req{RF004}{Manter contratos}
+
+Permite registrar e acompanhar os contratos firmados pelo CASD, que são a origem das despesas
+recorrentes do Centro Acadêmico.
+
+\prioI
+
+\entradas o usuário está autenticado. Entradas: nome da contraparte, objeto do contrato, valor,
+periodicidade do pagamento (mensal, por demanda ou única), data de início e data de término.
+
+\saidas o contrato é registrado e fica disponível para vinculação nas movimentações de saída,
+permitindo apurar quanto foi efetivamente pago em cada contrato.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Cadastros'', aba ``Contratos''
+        (Figura~\ref{fig:cadastros-contratos}).
+  \item O sistema apresenta a relação de contratos, com a vigência, o total pago no ano corrente e a
+        situação de cada um, destacando os que vencem nos próximos sessenta dias.
+  \item O usuário inclui um novo contrato ou seleciona um existente para alteração.
+  \item O usuário informa a contraparte, o objeto, o valor, a periodicidade e a vigência.
+  \item O sistema valida os dados e grava o contrato.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Encerramento antecipado}
+O usuário informa a data efetiva de encerramento e a justificativa. O contrato passa à situação
+``Encerrado'' e deixa de aparecer entre os vigentes, sem afetar as movimentações já registradas.
+
+\fluxo{E1}{Vigência inconsistente}
+Se a data de término for anterior à de início, o sistema recusa a gravação e indica o campo
+inconsistente.
+
+\tela{cadastros-contratos}{Cadastros, aba Contratos: aviso de vencimento próximo, contraparte em
+texto e total pago no ano.}{cadastros-contratos}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF005}{Manter projetos}
+
+Permite registrar os projetos do CASD, que funcionam como unidade de agrupamento de despesas e
+receitas e permitem responder quanto custou cada iniciativa do Centro Acadêmico.
+
+\prioI
+
+\entradas o usuário está autenticado. Entradas: nome do projeto, responsável, período de execução,
+orçamento previsto quando houver e situação.
+
+\saidas o projeto fica disponível para vinculação em [Movimentações.RF001] e passa a compor os
+recortes de consulta das movimentações.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Cadastros'', aba ``Projetos''
+        (Figura~\ref{fig:cadastros-projetos}).
+  \item O sistema apresenta a relação de projetos, separando os em andamento dos encerrados, com o
+        total movimentado e o orçamento previsto de cada um.
+  \item O usuário inclui um novo projeto ou seleciona um existente.
+  \item O usuário informa nome, responsável, período e, opcionalmente, orçamento previsto.
+  \item O sistema valida os dados e grava o projeto.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Encerramento de projeto}
+O usuário encerra o projeto e o sistema passa a exibir, junto ao registro, o total efetivamente
+movimentado e a comparação com o orçamento previsto, quando este tiver sido informado.
+
+\fluxo{E1}{Encerramento com movimentação posterior}
+Movimentações podem ser vinculadas a projeto encerrado, já que despesas costumam chegar depois do
+término. O sistema aceita o lançamento e sinaliza a situação ao usuário, em vez de recusá-lo.
+
+\tela{cadastros-projetos}{Cadastros, aba Projetos: total movimentado comparado ao orçamento
+previsto.}{cadastros-projetos}
+
+\FloatBarrier
+
+% ===========================================================================
+\section{Cobranças}
+
+Esta subseção reúne todo o ciclo de vida da cobrança dirigida ao aluno, da emissão à baixa. Os
+casos de uso operam sobre a mesma entidade e compartilham as regras de integração com o Asaas, que
+é a plataforma responsável por emitir o boleto, entregá-lo ao pagador e receber o pagamento.
+
+Três regras gerais valem para toda a subseção. A primeira é que o IntegraCASD não recebe dinheiro:
+ele solicita a cobrança ao Asaas e registra o desfecho informado pela plataforma. A segunda é que
+nenhuma cobrança existe apenas no IntegraCASD: se o Asaas falhar, nada é gravado
+([Confiabilidade.NF005]). A terceira é que multa e juros de atraso são aplicados pelo Asaas, com os
+percentuais enviados na criação de cada cobrança ([Administração.RF003]); o sistema não calcula
+encargos, e o valor que exibe é sempre o valor original da cobrança.
+
+A lista de cobranças (Figura~\ref{fig:cobrancas}) apenas mostra e leva ao detalhe. O detalhe da
+cobrança (Figura~\ref{fig:cobranca}) é o centro das ações: dele saem a obtenção do boleto, a
+sincronização, o registro manual de pagamento e o cancelamento.
+
+Os atores variam entre os casos de uso e estão indicados em cada bloco.
+
+% ---------------------------------------------------------------------------
+\req{RF001}{Gerar cobranças recorrentes}
+
+Cria automaticamente, a cada período, as cobranças de mensalidade dos alunos ativos, sem intervenção
+humana.
+
+\ator{Tempo.}
+\prioE
+
+\entradas existem parâmetros de cobrança recorrente configurados ([Administração.RF003]); existe
+ao menos um aluno ativo; a integração com o Asaas está configurada e operacional
+([Administração.RF004]). Entradas: data corrente e parâmetros vigentes.
+
+\saidas para cada aluno ativo é criada uma cobrança com situação ``Aberta'', associada a uma
+cobrança correspondente no Asaas, com valor, vencimento e percentuais de multa e juros definidos
+pelos parâmetros. O Asaas envia o boleto por e-mail ao aluno. O resultado da execução fica
+registrado, com o total de cobranças geradas e as que falharam, e pode ser consultado na tela de
+parâmetros (Figura~\ref{fig:adm-parametros}).
+
+\fluxoprincipal
+\begin{enumerate}
+  \item Ao chegar o dia de geração definido nos parâmetros, o sistema inicia a rotina.
+  \item O sistema obtém a relação de alunos ativos.
+  \item Para cada aluno, o sistema verifica se já existe cobrança de mensalidade para o período de
+        referência.
+  \item Não havendo, o sistema solicita ao Asaas a criação da cobrança, informando pagador, valor,
+        data de vencimento e percentuais de multa e juros.
+  \item O sistema registra a cobrança retornada pelo Asaas, com a sua identificação na plataforma e
+        a situação ``Aberta''.
+  \item Ao final, o sistema grava o resultado da execução, com o horário de início e de término, o
+        número de cobranças criadas e a relação das que falharam.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Cobrança já existente para o período}
+Se já houver cobrança de mensalidade para aquele aluno e período de referência, o sistema não cria
+outra e segue para o próximo aluno. Essa verificação torna a rotina segura contra execução
+repetida, o que importa porque uma falha parcial exige nova execução.
+
+\fluxo{A2}{Aluno sem e-mail ou sem CPF válido}
+O sistema não cria a cobrança, registra a pendência na relação de falhas com a identificação do
+aluno e do campo faltante, e prossegue com os demais. A área administrativa corrige o cadastro e
+executa novamente a geração para os pendentes.
+
+\fluxo{E1}{Asaas indisponível}
+Se a plataforma não responder, o sistema interrompe a rotina, registra quais cobranças já haviam
+sido criadas e agenda nova tentativa. Nenhuma cobrança é criada apenas localmente.
+
+\fluxo{E2}{Falha após criar a cobrança no Asaas}
+Se a cobrança for criada na plataforma mas o registro local falhar, a sincronização
+([Cobranças.RF007]) identifica a divergência e registra a cobrança faltante, em vez de criar uma
+duplicata.
+
+% ---------------------------------------------------------------------------
+\req{RF002}{Emitir cobrança avulsa}
+
+Permite emitir, em uma única operação, uma cobrança fora do ciclo recorrente, dirigida a um aluno
+específico, como a inscrição em um evento ou a venda de um produto do CASD.
+
+\ator{Área administrativa.}
+\prioE
+
+\entradas o aluno está cadastrado e ativo, com e-mail e CPF válidos; a integração com o Asaas está
+operacional. Entradas: aluno, valor, data de vencimento e descrição da cobrança.
+
+\saidas a cobrança é criada no Asaas e registrada no sistema com situação ``Aberta''; o boleto é
+enviado por e-mail ao aluno pela plataforma; a confirmação da emissão fica disponível em tela.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário aciona ``Nova cobrança'', disponível na barra superior de todas as telas e no
+        cadastro do aluno.
+  \item O sistema apresenta o formulário em uma janela sobre a tela atual
+        (Figura~\ref{fig:nova-cobranca}), com data de vencimento sugerida a partir dos parâmetros
+        vigentes e, quando aberto a partir do cadastro do aluno, com o aluno já preenchido.
+  \item O usuário seleciona o aluno por nome ou CPF e informa valor, vencimento e descrição.
+  \item O usuário confirma a emissão.
+  \item O sistema solicita a criação da cobrança ao Asaas, informando também os percentuais de
+        multa e juros.
+  \item O sistema registra a cobrança retornada e exibe a confirmação, com a opção de obter o
+        boleto ([Cobranças.RF003]).
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Aluno com cadastro incompleto}
+Se faltar e-mail ou CPF, o sistema informa o campo pendente e oferece atalho para o cadastro do
+aluno ([Cadastros.RF001]), retornando ao formulário depois da correção.
+
+\fluxo{E1}{Asaas indisponível}
+O sistema informa a indisponibilidade, não registra a cobrança localmente e orienta nova tentativa.
+A operação não é enfileirada para execução posterior, para que a área administrativa saiba com
+certeza se a cobrança existe.
+
+\fluxo{E2}{Vencimento no passado}
+Se a data de vencimento informada for anterior à data corrente, o sistema recusa a emissão e
+solicita correção.
+
+\tela{topo-dialogo-nova-cobranca}{Nova cobrança avulsa, aberta pela barra superior.}{nova-cobranca}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF003}{Obter o boleto de uma cobrança}
+
+Permite baixar o boleto de uma cobrança ou solicitar que o Asaas o envie novamente ao aluno por
+e-mail.
+
+\ator{Área administrativa.}
+\prioI
+
+\entradas existe uma cobrança com situação ``Aberta'' ou ``Vencida''. Entrada: identificação da
+cobrança.
+
+\saidas o arquivo do boleto é disponibilizado para download, ou um novo envio é solicitado ao
+Asaas. Em ambos os casos, a operação é registrada no histórico da cobrança, com autor, data e hora.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário localiza a cobrança ([Cobranças.RF008]) e abre o seu detalhe
+        (Figura~\ref{fig:cobranca}).
+  \item O sistema apresenta os dados da cobrança, a data da última sincronização com o Asaas, o
+        histórico de eventos e as ações disponíveis.
+  \item O usuário escolhe entre ``Baixar boleto'' e ``Reenviar boleto por e-mail''.
+  \item O sistema aciona o Asaas e conclui a operação escolhida.
+  \item O sistema registra a operação.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Entrega por outro meio}
+Ao optar pelo download, o usuário obtém o arquivo e passa a ser responsável pela entrega, que pode
+ocorrer por qualquer canal. O sistema não acompanha essa entrega.
+
+\fluxo{A2}{Reenvio a partir da inadimplência}
+O reenvio também pode ser acionado a partir da relação de maiores devedores
+([Indicadores.RF002], fluxo A1).
+
+\fluxo{E1}{Cobrança já paga ou cancelada}
+O sistema não disponibiliza o boleto e informa a situação atual da cobrança, evitando que um
+documento sem validade circule.
+
+\tela[0.5]{cobranca}{Detalhe da cobrança: ações, dados, situação da sincronização e histórico de
+eventos do Asaas.}{cobranca}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF004}{Cancelar cobrança}
+
+Permite cancelar uma cobrança ainda não paga, tanto no IntegraCASD quanto no Asaas. É também o
+mecanismo pelo qual se opera uma renegociação, que consiste em cancelar a cobrança vigente e emitir
+outra em condições novas.
+
+\ator{Área administrativa.}
+\prioI
+
+\entradas existe uma cobrança com situação ``Aberta'' ou ``Vencida''. Entradas: identificação da
+cobrança e motivo do cancelamento.
+
+\saidas a cobrança passa à situação ``Cancelada'' nos dois sistemas, deixa de compor a
+inadimplência e o seu boleto perde a validade. O motivo, o autor, a data e a hora ficam
+registrados.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item No detalhe da cobrança, o usuário aciona ``Cancelar / renegociar''.
+  \item O sistema apresenta o resumo do efeito da operação e solicita o motivo
+        (Figura~\ref{fig:cobranca-cancelar}).
+  \item O usuário informa o motivo e confirma.
+  \item O sistema solicita o cancelamento ao Asaas.
+  \item Confirmado o cancelamento na plataforma, o sistema atualiza a situação da cobrança e
+        registra a operação.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Renegociação}
+Se o usuário marcar a opção de emitir nova cobrança em seguida, o sistema, concluído o
+cancelamento, abre a emissão de cobrança avulsa ao mesmo aluno ([Cobranças.RF002]) com os dados da
+cobrança cancelada pré-preenchidos. A vinculação entre as duas fica registrada, de modo que o
+histórico do aluno mostre que se trata de renegociação, e não de duas dívidas distintas.
+
+\fluxo{E1}{Cobrança já paga}
+Se a cobrança já estiver paga, o sistema recusa o cancelamento e informa que a devolução de valores
+é feita pelo Asaas, cujo estorno chega ao sistema pela conciliação ([Cobranças.RF005]).
+
+\fluxo{E2}{Falha no cancelamento junto ao Asaas}
+Se a plataforma recusar ou não responder, o sistema não altera a situação local e informa a falha.
+Cancelar apenas no IntegraCASD deixaria um boleto válido em circulação, com risco de o aluno pagar
+uma cobrança que o CASD considera inexistente.
+
+\tela{cobranca-dialogo-cancelar}{Cancelamento de cobrança: resumo do efeito, motivo e opção de
+renegociação.}{cobranca-cancelar}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF005}{Conciliar pagamento de cobrança}
+
+Atualiza automaticamente a situação de uma cobrança a partir das notificações enviadas pelo Asaas,
+sem intervenção humana. É o mecanismo que dispensa a conferência manual contra o extrato bancário.
+
+\ator{Asaas.}
+\prioE
+
+\entradas a integração está configurada e o endereço de notificação registrado na plataforma.
+Entrada: notificação de evento de cobrança enviada pelo Asaas.
+
+\saidas a situação da cobrança é atualizada; havendo pagamento, é criada a movimentação de entrada
+correspondente, vinculada à cobrança; a notificação processada fica registrada, com data, hora e
+conteúdo, e aparece no histórico de eventos da cobrança (Figura~\ref{fig:cobranca}).
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O Asaas envia ao sistema a notificação de um evento de cobrança.
+  \item O sistema verifica a autenticidade da notificação pelo token \texttt{asaas-access-token}.
+  \item O sistema grava a notificação, enfileira o seu processamento e confirma o recebimento ao
+        Asaas, sem processá-la nesse momento ([Desempenho.NF001]).
+  \item Em seguida, de forma desacoplada, o sistema localiza a cobrança correspondente pela
+        identificação da plataforma.
+  \item O sistema atualiza a situação da cobrança conforme o evento recebido: pagamento confirmado
+        e pagamento recebido levam à situação ``Paga''; vencimento sem pagamento leva à situação
+        ``Vencida''; estorno leva à situação ``Estornada''.
+  \item Tratando-se de pagamento, o sistema cria a movimentação de entrada correspondente, com a
+        categoria associada ao tipo da cobrança e forma de pagamento ``Asaas'', na mesma transação
+        em que atualiza a cobrança ([Confiabilidade.NF004]).
+  \item O sistema marca a notificação como processada.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Distinção entre pagamento confirmado e valor disponível}
+O Asaas sinaliza separadamente o pagamento processado e a disponibilidade do valor em conta. O
+sistema considera a cobrança paga já na confirmação e registra a data de disponibilidade quando ela
+chega, de modo que o painel possa distinguir o resultado do período do valor ainda aguardando
+liberação.
+
+\fluxo{A2}{Notificação repetida}
+Se a notificação já tiver sido processada, identificada pelo seu identificador no Asaas, o sistema
+a descarta sem alterar nada e confirma o recebimento. Sem essa verificação, um reenvio da
+plataforma criaria uma segunda movimentação de entrada para o mesmo pagamento
+([Confiabilidade.NF003]).
+
+\fluxo{E1}{Cobrança não encontrada}
+Se a notificação referir-se a cobrança inexistente no sistema, ela é registrada como pendência de
+conciliação e apresentada à área administrativa, que pode resolvê-la pela sincronização
+([Cobranças.RF007]). A notificação não é descartada.
+
+\fluxo{E2}{Notificação não autêntica}
+Notificação cuja origem não possa ser verificada é rejeitada e registrada como tentativa de acesso
+indevido, sem produzir qualquer alteração. Como o endereço de notificação é público, essa
+verificação é o que impede a alteração de dados financeiros por terceiros.
+
+% ---------------------------------------------------------------------------
+\req{RF006}{Registrar pagamento manualmente}
+
+Permite que a área administrativa registre o pagamento de uma cobrança que não foi refletido pela
+conciliação automática: seja porque o valor comprovadamente entrou e a notificação não chegou, seja
+porque o pagamento foi combinado e recebido diretamente pela área administrativa, por exemplo por
+Pix na conta do CASD. É um mecanismo de exceção, e não um fluxo de rotina.
+
+\ator{Área administrativa.}
+\prioI
+
+\entradas existe cobrança com situação ``Aberta'' ou ``Vencida''. Entradas: identificação da
+cobrança, data do pagamento, valor pago e justificativa escrita.
+
+\saidas a cobrança passa à situação ``Paga com registro manual'', distinta de ``Paga'', de modo que
+a origem do dado permaneça visível; a movimentação de entrada correspondente é criada; a
+justificativa, o autor, a data e a hora ficam registrados.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item No detalhe da cobrança, o usuário aciona ``Registrar pagamento manualmente''.
+  \item O sistema apresenta a data da última sincronização da cobrança com o Asaas e recomenda
+        sincronizar antes, porque o pagamento pode já estar na plataforma
+        (Figura~\ref{fig:cobranca-pagamento-manual}).
+  \item O usuário informa data do pagamento, valor e justificativa.
+  \item O sistema apresenta o resumo do efeito, alertando que o registro fará o sistema divergir da
+        plataforma, e exige confirmação.
+  \item O usuário confirma.
+  \item O sistema atualiza a situação da cobrança, cria a movimentação de entrada e registra a
+        operação com a justificativa, na mesma transação ([Confiabilidade.NF004]).
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Sincronização resolve a divergência}
+Se o usuário sincronizar a cobrança antes de prosseguir e o Asaas indicar o pagamento, a cobrança
+é baixada pela sincronização ([Cobranças.RF007]) e o caso de uso é encerrado sem registro manual.
+
+\fluxo{E1}{Justificativa não informada}
+O sistema não conclui a operação sem justificativa escrita. É o único registro de por que o sistema
+passou a divergir da plataforma.
+
+\fluxo{E2}{Conciliação posterior do mesmo pagamento}
+Se, depois do registro manual, chegar do Asaas a notificação de pagamento daquela mesma cobrança, o
+sistema não cria segunda movimentação: vincula a notificação ao registro manual e sinaliza a
+ocorrência para conferência, já que pode indicar pagamento em duplicidade pelo aluno.
+
+\tela{cobranca-dialogo-pagamento-manual}{Registro manual de pagamento: alerta de sincronização
+antiga, justificativa obrigatória e resumo do efeito.}{cobranca-pagamento-manual}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF007}{Sincronizar cobranças com o Asaas}
+
+Consulta a plataforma e atualiza a situação das cobranças, recuperando eventos que não tenham
+chegado por notificação.
+
+\ator{Área administrativa e Tempo.}
+\prioI
+
+\entradas a integração está configurada e operacional. Entrada: período de vencimento a
+sincronizar, ou uma cobrança específica.
+
+\saidas as cobranças cuja situação divergia são atualizadas; as movimentações de entrada
+correspondentes aos pagamentos recuperados são criadas; um resumo do que foi alterado é
+apresentado ao usuário e registrado, com a data e a hora da sincronização.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item Na lista de cobranças, o usuário aciona ``Sincronizar com o Asaas'' e informa o período
+        (Figura~\ref{fig:cobrancas-sincronizar}).
+  \item O sistema consulta na plataforma a situação das cobranças daquele período.
+  \item O sistema compara a situação de cada cobrança com a registrada localmente.
+  \item Havendo divergência, o sistema adota a situação informada pela plataforma e cria as
+        movimentações necessárias.
+  \item O sistema apresenta o resumo do que foi alterado (cobranças conferidas, situações
+        atualizadas, cobranças encontradas só no Asaas e cobranças com registro manual a conferir)
+        e registra a execução.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Sincronização de uma única cobrança}
+A partir do detalhe da cobrança, o usuário pode sincronizar apenas aquela cobrança
+(Figura~\ref{fig:cobranca-sincronizar}). É o passo recomendado antes de cobrar o aluno ou de
+registrar pagamento manualmente.
+
+\fluxo{A2}{Execução periódica}
+O sistema executa a sincronização automaticamente uma vez por dia, sem intervenção humana, e
+registra o resultado como as demais rotinas automáticas ([Confiabilidade.NF007]).
+
+\fluxo{A3}{Cobrança existente apenas no Asaas}
+Cobrança que exista na plataforma e não no sistema é registrada localmente, o que trata a falha
+descrita em [Cobranças.RF001], fluxo E2.
+
+\fluxo{A4}{Cobrança registrada manualmente}
+Cobrança com situação ``Paga com registro manual'' não é sobrescrita automaticamente. A divergência
+é apresentada ao usuário para conferência, porque sobrescrevê-la apagaria a justificativa que a
+originou.
+
+\fluxo{E1}{Asaas indisponível}
+O sistema informa a indisponibilidade e não altera nada, mantendo as situações locais.
+
+\tela{cobrancas-dialogo-sincronizar}{Sincronização geral a partir da lista de cobranças, com o
+resultado da última execução.}{cobrancas-sincronizar}
+\tela{cobranca-dialogo-sincronizar}{Sincronização de uma única cobrança, a partir do seu detalhe
+(fluxo A1).}{cobranca-sincronizar}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF008}{Consultar cobranças}
+
+Permite localizar cobranças e acompanhar a sua situação.
+
+\ator{Área administrativa.}
+\prioE
+
+\entradas o usuário está autenticado. Entradas: filtros por aluno, situação, período de vencimento
+e faixa de valor.
+
+\saidas a relação de cobranças é apresentada, com aluno, descrição, valor, vencimento, situação e
+dias de atraso quando houver. O sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Cobranças'' (Figura~\ref{fig:cobrancas}).
+  \item O sistema apresenta o estado da conciliação (hora da última notificação e da última
+        sincronização), os totais por situação e, por padrão, as cobranças abertas e vencidas,
+        ordenadas por vencimento.
+  \item O usuário ajusta os filtros ou seleciona outra situação pelos cartões de resumo.
+  \item O sistema apresenta o resultado.
+  \item O usuário pode selecionar uma cobrança para ver o detalhe e acessar as operações a ela
+        aplicáveis.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Consulta a partir do histórico do aluno}
+A consulta também pode ser iniciada a partir do cadastro do aluno, hipótese em que o filtro já vem
+aplicado ([Cadastros.RF001], fluxo A3).
+
+\fluxo{A2}{Sincronização antiga}
+Cobrança vencida cuja última sincronização com o Asaas seja antiga aparece sinalizada na lista,
+porque o aluno pode ter pago e a notificação não ter chegado.
+
+\tela[0.5]{cobrancas}{Lista de cobranças: estado da conciliação, totais por situação, filtros e
+cobranças abertas e vencidas.}{cobrancas}
+
+\FloatBarrier
+
+% ===========================================================================
+\section{Movimentações}
+
+Esta subseção reúne o registro e a consulta de todas as entradas e saídas de recursos do CASD. As
+movimentações têm duas origens: são criadas automaticamente pela conciliação de cobranças
+([Cobranças.RF005]) e pelo registro manual de pagamento ([Cobranças.RF006]), ou lançadas
+manualmente pela área administrativa, no caso de pagamentos de contratos, despesas de projeto,
+pessoal e recebimentos avulsos, que ocorrem por Pix, transferência, dinheiro ou cartão.
+
+Vale para toda a subseção a regra de que movimentação registrada não é editada nem excluída.
+Correções são feitas por estorno, na forma de [Movimentações.RF002].
+
+\textbf{Ator de todos os casos de uso desta subseção:} área administrativa.
+
+% ---------------------------------------------------------------------------
+\req{RF001}{Registrar movimentação}
+
+Permite lançar uma entrada ou uma saída de recursos, classificando-a e vinculando-a aos cadastros a
+que se refere.
+
+\prioE
+
+\entradas existe ao menos uma categoria de movimentação ativa ([Administração.RF002]). Entradas:
+tipo, valor, data, categoria, forma de pagamento (Pix, transferência, dinheiro ou cartão),
+descrição e, opcionalmente, vínculo com um contrato, um projeto ou um funcionário.
+
+\saidas a movimentação é registrada e passa a compor o resultado do período e os indicadores. Fica
+registrado o autor, com data e hora.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário aciona ``Nova movimentação'', disponível na barra superior de todas as telas.
+  \item O sistema apresenta o formulário em uma janela sobre a tela atual
+        (Figura~\ref{fig:nova-movimentacao}), com a data corrente sugerida.
+  \item O usuário informa o tipo, o valor, a data, a categoria e a forma de pagamento.
+  \item O usuário informa a descrição e, quando aplicável, vincula a movimentação a contrato,
+        projeto ou funcionário.
+  \item O sistema valida os campos obrigatórios e grava a movimentação.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Movimentação vinculada a contrato}
+Ao vincular a movimentação a um contrato, o sistema sugere o valor previsto e apresenta o total já
+pago naquele contrato no ano, permitindo que o usuário perceba divergências no momento do
+lançamento.
+
+\fluxo{A2}{Movimentação vinculada a projeto encerrado}
+O sistema aceita o lançamento e sinaliza a situação, conforme [Cadastros.RF005], fluxo E1.
+
+\fluxo{E1}{Data futura}
+O sistema recusa o lançamento com data posterior à corrente, porque movimentação registra fato
+ocorrido, e não previsão.
+
+\fluxo{E2}{Valor igual a zero}
+O sistema recusa a gravação e solicita correção.
+
+\tela{topo-dialogo-nova-movimentacao}{Nova movimentação, aberta pela barra superior, com a
+sugestão de valor do contrato vinculado (fluxo A1).}{nova-movimentacao}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF002}{Estornar movimentação}
+
+Permite corrigir uma movimentação errada sem apagar o registro original, por meio de um lançamento
+de sinal contrário que anula o seu efeito.
+
+\prioI
+
+\entradas existe movimentação lançada manualmente e ainda não estornada. Entradas: identificação
+da movimentação e motivo do estorno.
+
+\saidas a movimentação original permanece no sistema, marcada como estornada; é criada uma
+movimentação espelho, de sinal contrário, vinculada à original; o efeito das duas sobre o resultado
+é nulo; o motivo, o autor, a data e a hora ficam registrados.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item Na lista de movimentações, o usuário aciona ``Estornar'' na movimentação desejada.
+  \item O sistema apresenta os dados da movimentação, o resumo do efeito e solicita o motivo
+        (Figura~\ref{fig:movimentacoes-estornar}).
+  \item O usuário informa o motivo e confirma.
+  \item O sistema marca a movimentação original como estornada e cria a movimentação espelho.
+  \item O sistema registra a operação e, se o usuário tiver marcado a opção correspondente, abre o
+        lançamento da movimentação correta.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{E1}{Movimentação originada de cobrança}
+O sistema não oferece o estorno de movimentação criada pela conciliação ([Cobranças.RF005]) ou pelo
+registro manual de pagamento ([Cobranças.RF006]) e orienta o usuário a tratar a cobrança
+correspondente. Essas movimentações são espelho do que ocorreu no Asaas, e estorná-las diretamente
+faria o sistema divergir da plataforma. Devolução ao aluno gera evento de estorno na plataforma,
+que chega pela conciliação.
+
+\fluxo{E2}{Movimentação já estornada}
+O sistema informa que a movimentação já foi estornada e apresenta o lançamento espelho
+correspondente, sem criar outro.
+
+\tela{movimentacoes-dialogo-estornar}{Estorno de movimentação: resumo do efeito, motivo e opção de
+lançar a movimentação correta.}{movimentacoes-estornar}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF003}{Consultar movimentações}
+
+Permite localizar movimentações e apurar totais por recorte.
+
+\prioE
+
+\entradas o usuário está autenticado. Entradas: filtros por período, tipo, categoria, forma de
+pagamento, projeto ou contrato.
+
+\saidas a relação de movimentações é apresentada, com data, descrição, vínculo, categoria, forma,
+origem (manual, conciliação automática, registro manual de cobrança ou estorno) e valor, além dos
+totais de entrada, de saída e do resultado do recorte. Movimentações estornadas aparecem
+sinalizadas, junto ao seu espelho. O sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Movimentações'' (Figura~\ref{fig:movimentacoes}).
+  \item O sistema apresenta, por padrão, as movimentações do mês corrente, com os totais.
+  \item O usuário ajusta os filtros.
+  \item O sistema apresenta o resultado com os totais do recorte.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Ocultar estornos}
+O usuário pode optar por ocultar as movimentações estornadas e os seus espelhos. Os totais não
+mudam, já que o par se anula, mas a leitura da relação fica mais simples.
+
+\fluxo{A2}{Consulta a partir de um indicador}
+A consulta também pode ser aberta a partir do painel de indicadores, hipótese em que o filtro do
+indicador selecionado já vem aplicado ([Indicadores.RF001], [Indicadores.RF003]).
+
+\tela[0.5]{movimentacoes}{Lista de movimentações: totais do recorte, filtros, origem de cada
+lançamento e movimentação estornada com o seu espelho.}{movimentacoes}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\reqretirado{RF004}{Anexar comprovante a uma movimentação}{Retirado do escopo do MVP na versão
+1.1. O identificador permanece reservado.}
+
+% ===========================================================================
+\section{Indicadores}
+
+Esta subseção reúne as consultas que apoiam a decisão. Os dois perfis de usuário acessam os mesmos
+indicadores, com finalidades distintas: a área administrativa os utiliza para agir, sobretudo sobre
+a inadimplência, e a diretoria os utiliza para decidir sobre gastos, contratos e projetos. Os três
+indicadores ficam reunidos em uma única tela, que é a página inicial do sistema
+(Figura~\ref{fig:indicadores}).
+
+\textbf{Ator de todos os casos de uso desta subseção:} área administrativa e diretoria.
+
+% ---------------------------------------------------------------------------
+\req{RF001}{Consultar painel de indicadores}
+
+Apresenta a posição financeira do CASD em um período, reunindo os números que descrevem entradas,
+saídas e resultado.
+
+\prioE
+
+\entradas existem movimentações registradas. Entradas: período de referência, com o mês corrente
+como padrão.
+
+\saidas o painel apresenta o total de entradas, o total de saídas e o resultado do período,
+comparados ao período anterior, o valor já pago pelos alunos e ainda aguardando liberação pelo
+Asaas, e a evolução de entradas e saídas nos seis meses anteriores, além dos indicadores de
+inadimplência ([Indicadores.RF002]) e da distribuição por categoria ([Indicadores.RF003]). O
+sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário acessa o sistema e o painel é apresentado como página inicial.
+  \item O sistema apura os indicadores do mês corrente e os exibe.
+  \item O usuário pode alterar o período de referência.
+  \item O sistema recalcula e apresenta os indicadores do novo período.
+  \item O usuário pode selecionar um indicador para ver as movimentações que o compõem.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Período sem movimentação}
+O sistema apresenta o painel com valores zerados e a informação de que não há movimentação no
+período, em vez de retornar erro.
+
+\fluxo{A2}{Distinção entre resultado e disponibilidade}
+Quando houver pagamentos confirmados cujo valor ainda não esteja disponível em conta, o painel
+indica os dois números separadamente, de modo que o resultado apresentado não seja confundido com
+dinheiro disponível.
+
+\fluxo{A3}{Dados do gráfico em tabela}
+Os valores do gráfico de evolução também podem ser consultados em forma de tabela
+([Usabilidade.NF004]).
+
+% ---------------------------------------------------------------------------
+\req{RF002}{Consultar inadimplência}
+
+Apresenta a situação dos alunos com cobranças vencidas e não pagas.
+
+\prioE
+
+\entradas existem cobranças registradas. Entradas: período de referência.
+
+\saidas são apresentados o número de alunos inadimplentes, o valor total em aberto, a distribuição
+dos inadimplentes por tempo de atraso (até 30 dias, de 31 a 60 dias e mais de 60 dias) e a relação
+dos maiores devedores, com o número de cobranças e o atraso da mais antiga. Os valores exibidos são
+os originais das cobranças, sem multa e juros, que são apurados pelo Asaas apenas no momento do
+pagamento. O sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário acessa o indicador de inadimplência, no painel.
+  \item O sistema apura as cobranças com situação ``Vencida'' e as agrupa por aluno.
+  \item O sistema apresenta o total de inadimplentes, o valor em aberto e a relação de devedores,
+        ordenada por valor.
+  \item O usuário pode selecionar um aluno para ver as suas cobranças vencidas, ou abrir a lista
+        completa de cobranças vencidas ([Cobranças.RF008]).
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Ação de cobrança a partir da relação}
+A partir da relação, o usuário com perfil administrativo pode reenviar o boleto de uma cobrança
+vencida ([Cobranças.RF003]), o que atende ao uso que a área administrativa faz deste indicador.
+
+\fluxo{A2}{Divergência suspeita}
+Se houver cobranças vencidas cuja última sincronização com o Asaas tenha ocorrido há mais de sete
+dias, o sistema sinaliza a situação no topo do painel e oferece a sincronização
+([Cobranças.RF007]), reduzindo a chance de um aluno figurar como inadimplente por falha de
+integração.
+
+% ---------------------------------------------------------------------------
+\req{RF003}{Consultar gastos por categoria}
+
+Apresenta a distribuição das saídas por categoria de movimentação, permitindo identificar em que o
+CASD gasta os seus recursos.
+
+\prioI
+
+\entradas existem movimentações de saída no período. Entradas: período de referência.
+
+\saidas é apresentada a distribuição das saídas por categoria, com valor e participação
+percentual, ordenada por valor. O sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário acessa o indicador de gastos por categoria, no painel.
+  \item O sistema apura as saídas do período agrupadas por categoria.
+  \item O sistema apresenta a distribuição, com valores e percentuais.
+  \item O usuário pode selecionar uma categoria para ver as movimentações que a compõem
+        ([Movimentações.RF003]).
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Comparação com período anterior}
+O usuário pode solicitar a comparação com o período imediatamente anterior, hipótese em que o
+sistema apresenta a variação de cada categoria.
+
+\fluxo{A2}{Movimentação sem categoria}
+Movimentações que porventura estejam sem categoria, como as vindas da carga inicial, são agrupadas
+em ``Não classificadas'' e apresentadas em destaque, para que a pendência seja corrigida.
+
+\tela[0.8]{indicadores}{Painel de indicadores, página inicial do sistema: posição do período,
+evolução de seis meses, inadimplência com os maiores devedores e gastos por categoria.}{indicadores}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\reqretirado{RF004}{Exportar relatório}{Retirado do escopo do MVP na versão 1.1. O identificador
+permanece reservado.}
+
+% ===========================================================================
+\section{Administração}
+
+Esta subseção reúne as funções que alteram o comportamento do sistema como um todo. Elas são
+restritas à diretoria, por serem decisões de gestão do Centro Acadêmico, e não parte da rotina
+financeira diária. Esta é a única subseção do capítulo cujos casos de uso a área administrativa não
+executa. As funções ficam reunidas em uma única tela, com uma aba para cada caso de uso, visível
+apenas ao perfil de diretoria.
+
+\textbf{Ator de todos os casos de uso desta subseção:} diretoria.
+
+% ---------------------------------------------------------------------------
+\req{RF001}{Manter usuários e permissões}
+
+Permite conceder, alterar e revogar o acesso ao sistema.
+
+\prioE
+
+\entradas o usuário autenticado possui perfil de diretoria. Entradas: nome, e-mail, perfil
+(administrativo ou diretoria) e situação.
+
+\saidas o usuário é criado, alterado ou inativado; as permissões passam a valer no próximo acesso;
+a operação é registrada na trilha de auditoria.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Administração'', aba ``Usuários''
+        (Figura~\ref{fig:adm-usuarios}).
+  \item O sistema apresenta a relação de usuários, com o perfil, a situação e o último acesso de
+        cada um.
+  \item O usuário inclui um novo acesso ou seleciona um existente.
+  \item O usuário define o perfil, entre administrativo e diretoria.
+  \item O sistema grava a alteração e registra a operação.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Troca de gestão}
+Ao inativar os acessos da diretoria que deixa o cargo, o sistema exige que ao menos um usuário com
+perfil de diretoria permaneça ativo, para que o sistema não fique sem administrador.
+
+\fluxo{E1}{Autoinativação}
+O sistema recusa que um usuário inative o próprio acesso, evitando o bloqueio acidental do único
+administrador ativo.
+
+\tela{administracao-usuarios}{Administração, aba Usuários: perfis, situação e último
+acesso.}{adm-usuarios}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF002}{Manter categorias de movimentação}
+
+Permite definir as categorias pelas quais entradas e saídas são classificadas, que são o eixo de
+análise dos gastos do Centro Acadêmico.
+
+\prioE
+
+\entradas o usuário possui perfil de diretoria. Entradas: nome da categoria, tipo a que se aplica
+(entradas, saídas ou ambos) e situação.
+
+\saidas a categoria fica disponível para classificação em [Movimentações.RF001] e passa a compor
+os recortes de [Indicadores.RF003].
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Administração'', aba ``Categorias''
+        (Figura~\ref{fig:adm-categorias}).
+  \item O sistema apresenta as categorias existentes, com o número de movimentações associadas a
+        cada uma.
+  \item O usuário inclui, altera ou inativa uma categoria.
+  \item O sistema grava a alteração.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Inativação de categoria em uso}
+Categoria com movimentações associadas pode ser inativada, deixando de ser oferecida em novos
+lançamentos, mas não é excluída. As movimentações anteriores mantêm a classificação, para que os
+indicadores de períodos passados continuem reproduzíveis.
+
+\fluxo{E1}{Nome duplicado}
+O sistema recusa a criação de categoria com nome igual ao de outra ativa.
+
+\tela{administracao-categorias}{Administração, aba Categorias: tipo, uso e
+situação.}{adm-categorias}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF003}{Parametrizar cobranças recorrentes}
+
+Permite definir os parâmetros que regem a geração automática das mensalidades e as condições
+enviadas ao Asaas, e acompanhar as execuções da geração.
+
+\prioE
+
+\entradas o usuário possui perfil de diretoria. Entradas: valor da mensalidade, dia de vencimento,
+dia de geração, percentual de multa por atraso e percentual de juros ao mês.
+
+\saidas os parâmetros passam a valer para as cobranças geradas a partir de então. Cobranças já
+emitidas não são afetadas. A alteração fica registrada, com autor, data e hora.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Administração'', aba ``Parâmetros de cobrança''
+        (Figura~\ref{fig:adm-parametros}).
+  \item O sistema apresenta os parâmetros vigentes, a data e o autor da última alteração e as
+        últimas execuções da geração recorrente.
+  \item O usuário altera os valores desejados.
+  \item O sistema apresenta, para conferência, a data da próxima geração, o vencimento, o número de
+        alunos que serão cobrados e o total previsto.
+  \item O usuário confirma e o sistema grava os parâmetros.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Reajuste da mensalidade}
+O novo valor vale apenas para cobranças futuras. O sistema informa explicitamente que as cobranças
+já emitidas mantêm o valor anterior, inclusive as vencidas e não pagas.
+
+\fluxo{A2}{Consulta das falhas de uma execução}
+A partir de uma execução com falhas, o usuário pode consultar a relação dos alunos que não foram
+cobrados e o motivo de cada falha ([Cobranças.RF001], fluxo A2).
+
+\fluxo{E1}{Dia de geração posterior ao vencimento}
+O sistema recusa a combinação em que o dia de geração seja posterior ao dia de vencimento, que
+produziria cobranças já vencidas no momento da emissão.
+
+\tela{administracao-parametros}{Administração, aba Parâmetros de cobrança: parâmetros vigentes,
+conferência da próxima geração e últimas execuções.}{adm-parametros}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF004}{Configurar integração com o Asaas}
+
+Permite registrar e atualizar as credenciais que viabilizam a comunicação com a plataforma e
+acompanhar a situação da integração.
+
+\prioE
+
+\entradas o usuário possui perfil de diretoria. Entradas: chave de acesso à interface de
+programação do Asaas, ambiente de operação (testes ou produção) e prazo para o alerta de
+interrupção da conciliação.
+
+\saidas a chave fica armazenada de forma cifrada e passa a ser usada pelos casos de uso de
+cobrança; o endereço de notificação do sistema é apresentado para registro na plataforma. A
+operação é registrada, sem que a chave seja gravada na trilha.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Administração'', aba ``Integração com o Asaas''
+        (Figura~\ref{fig:adm-integracao}).
+  \item O sistema apresenta a situação atual da integração (ambiente, último teste, última
+        notificação recebida e falhas de entrega seguidas), a data de cadastro da chave e o
+        endereço de notificação a ser cadastrado na plataforma.
+  \item O usuário aciona ``Substituir chave'' e informa a nova chave e o ambiente
+        (Figura~\ref{fig:adm-chave}).
+  \item O sistema testa a comunicação com a plataforma.
+  \item Confirmada a comunicação, o sistema armazena a chave de forma cifrada e registra a
+        operação.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Ambiente de testes}
+O usuário pode apontar a integração para o ambiente de testes da plataforma, hipótese em que o
+sistema sinaliza, em faixa permanente no topo de todas as telas, que as cobranças emitidas não são
+reais.
+
+\fluxo{A2}{Prazo do alerta de interrupção}
+O usuário escolhe após quantas horas sem notificações a diretoria é alertada (12, 24 ou 48 horas),
+respeitado o limite de [Confiabilidade.NF002].
+
+\fluxo{E1}{Chave inválida}
+Se o teste de comunicação falhar, o sistema não substitui a chave vigente e informa a falha,
+preservando a integração que estava funcionando.
+
+\fluxo{E2}{Exibição da chave}
+A chave armazenada não é exibida em tela nem exportada em nenhuma hipótese, sendo apenas
+substituível ([Segurança.NF003]).
+
+\tela{administracao-integracao}{Administração, aba Integração com o Asaas: situação da integração,
+endereço de notificação e prazo do alerta.}{adm-integracao}
+\tela{administracao-dialogo-chave}{Substituição da chave do Asaas: a nova chave é testada antes de
+ser salva.}{adm-chave}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+\req{RF005}{Consultar trilha de auditoria}
+
+Permite consultar o registro das operações que alteraram dados no sistema.
+
+\prioD
+
+\entradas o usuário possui perfil de diretoria. Entradas: filtros por período, usuário (incluindo
+as rotinas automáticas), tipo de operação e tipo de registro afetado.
+
+\saidas é apresentada a relação de operações registradas, com usuário, data, hora, operação,
+registro afetado e detalhe. O sistema não sofre alteração de estado.
+
+\fluxoprincipal
+\begin{enumerate}
+  \item O usuário seleciona a opção ``Administração'', aba ``Trilha de auditoria''
+        (Figura~\ref{fig:adm-trilha}).
+  \item O sistema apresenta as operações do período corrente, ordenadas da mais recente para a mais
+        antiga.
+  \item O usuário ajusta os filtros.
+  \item O sistema apresenta o resultado.
+\end{enumerate}
+
+\fluxossecundarios
+
+\fluxo{A1}{Consulta a partir de um registro}
+A trilha também pode ser aberta a partir de uma cobrança ou movimentação, hipótese em que o filtro
+já vem aplicado àquele registro.
+
+\fluxo{E1}{Alteração da trilha}
+Não existe operação de alteração ou exclusão de registros da trilha, para nenhum perfil de
+usuário. A ausência dessa operação é deliberada e integra a especificação.
+
+\tela{administracao-trilha}{Administração, aba Trilha de auditoria: filtros e operações
+registradas, inclusive as das rotinas automáticas.}{adm-trilha}
+
+\FloatBarrier
+
+% ---------------------------------------------------------------------------
+% Capítulo 3
+% ---------------------------------------------------------------------------
+
+\chapter{Requisitos não funcionais}
+
+Este capítulo apresenta os requisitos não funcionais do IntegraCASD, agrupados por natureza. A
+numeração dos identificadores é reiniciada em cada subseção, conforme a convenção descrita na
+Introdução.
+
+Duas observações valem para o capítulo inteiro. A primeira é que os requisitos deste capítulo
+enunciam propriedades que a solução deve apresentar, e não produtos ou linguagens específicos:
+exige-se, por exemplo, que determinadas operações sejam atômicas, e não que se utilize um banco de
+dados determinado. A escolha dos meios cabe às decisões de arquitetura, registradas em
+\texttt{docs/adr/}. Desde a versão 1.0, foram registradas a adoção de um monólito modular
+(ADR-0001) e do PostgreSQL como banco de dados e como fila de tarefas (ADR-0002); onde uma decisão
+já atende a um requisito, isso é indicado no próprio requisito.
+
+A segunda é que vários requisitos derivam de características documentadas da plataforma Asaas, da
+qual o sistema depende para emitir e conciliar cobranças. Três delas são citadas repetidamente e
+convém enunciá-las desde já: as notificações são autenticadas por um token próprio, transmitido no
+cabeçalho \texttt{asaas-access-token}; a fila de notificações é interrompida após quinze falhas
+consecutivas de entrega, e os eventos não entregues são descartados depois de quatorze dias; e a
+conta está sujeita ao limite de vinte e cinco mil requisições a cada doze horas, respondendo com
+código 429 ao excedê-lo.
+
+Considera-se, para efeito de dimensionamento, o volume informado pelo CASD de 700 a 800 alunos
+cobrados mensalmente.
+
+% ===========================================================================
+\section{Usabilidade}
+
+Esta seção descreve os requisitos não funcionais associados à facilidade de uso da interface com o
+usuário, material de treinamento e documentação do sistema.
+
+\req{NF001}{Economia de passos nas operações de rotina}
+As três operações mais frequentes da área administrativa, que são localizar um aluno, registrar uma
+movimentação e emitir uma cobrança avulsa, devem ser alcançáveis em no máximo três interações a
+partir da tela inicial do sistema, sem exigir navegação por menus intermediários. No protótipo, o
+requisito é atendido pela barra superior, presente em todas as telas, com a busca de aluno e os
+botões ``Nova cobrança'' e ``Nova movimentação''.
+\prioI
+\casos{[Cadastros.RF001], [Cobranças.RF002], [Movimentações.RF001].}
+
+\req{NF002}{Mensagens de erro orientadas à ação}
+Toda mensagem de erro apresentada ao usuário deve informar o que deve ser feito para resolver a
+situação, e não apenas o que falhou. É vedada a exibição de código de erro, de mensagem originada
+da interface de programação do Asaas ou de qualquer termo técnico de integração nas telas de uso
+corrente, cabendo ao sistema traduzir essas ocorrências para linguagem compreensível pela área
+administrativa.
+\prioI
+
+\req{NF003}{Confirmação explícita em operação irreversível}
+As operações que não podem ser desfeitas devem exigir etapa adicional de confirmação, na qual o
+sistema apresente um resumo do efeito da operação antes de executá-la. Aplica-se ao cancelamento de
+cobrança, ao registro manual de pagamento, ao estorno de movimentação e à inativação de aluno com
+débito.
+\prioE
+\casos{[Cadastros.RF001], [Cobranças.RF004], [Cobranças.RF006], [Movimentações.RF002].}
+
+\req{NF004}{Informação que não depende apenas de cor}
+Nenhuma informação pode ser transmitida apenas por cor. As situações de cadastros, cobranças e
+movimentações são indicadas por selos com texto, acompanhados de ícone quando ajuda; os gráficos
+usam paleta legível por pessoas com daltonismo, apresentam o valor ao passar o mouse e oferecem os
+mesmos dados em tabela.
+\prioI
+\casos{[Indicadores.RF001], [Indicadores.RF003].}
+
+% ===========================================================================
+\section{Confiabilidade}
+
+Esta seção descreve os requisitos não funcionais associados à frequência e severidade de falhas do
+sistema e à habilidade de recuperação das mesmas, bem como à correção do sistema.
+
+\req{NF001}{Disponibilidade do endereço de notificação}
+O endereço que recebe as notificações do Asaas deve apresentar disponibilidade mínima de 99\% ao
+mês e, em nenhuma hipótese, acumular quinze falhas consecutivas de resposta, que é o limite a
+partir do qual a plataforma interrompe o envio da fila de eventos. A exigência aplica-se inclusive
+nos dias de vencimento das mensalidades, quando se concentra o maior volume de notificações.
+\prioE
+\casos{[Cobranças.RF005].}
+
+\req{NF002}{Alerta de interrupção da conciliação}
+O sistema deve emitir alerta à diretoria financeira do CASD quando deixar de receber notificações
+do Asaas por período superior ao configurado ([Administração.RF004]), não excedendo quarenta e oito
+horas. O alerta destina-se a permitir a correção da falha dentro do prazo de quatorze dias em que a
+plataforma retém os eventos não entregues, findo o qual eles são descartados em definitivo e os
+pagamentos correspondentes deixam de ser conciliáveis.
+\prioE
+\casos{[Cobranças.RF005], [Cobranças.RF007], [Administração.RF004].}
+
+\req{NF003}{Idempotência no processamento de notificações}
+O processamento de uma notificação já recebida não pode produzir efeito adicional. O sistema deve
+identificar a repetição pelo identificador do evento no Asaas e descartá-la, de modo que nenhuma
+cobrança seja alterada duas vezes e nenhuma movimentação de entrada seja duplicada, ainda que a
+mesma notificação seja entregue diversas vezes pela plataforma.
+\prioE
+\casos{[Cobranças.RF005].}
+
+\req{NF004}{Atomicidade da baixa de cobrança}
+A atualização da situação de uma cobrança e a criação da movimentação de entrada correspondente
+devem ocorrer de forma atômica, isto é, ambas as operações se completam ou nenhuma delas produz
+efeito. Não é admissível que o sistema registre uma cobrança como paga sem a movimentação
+correspondente, nem o contrário, situação que faria o painel financeiro divergir do histórico de
+cobranças.
+\prioE
+\casos{[Cobranças.RF005], [Cobranças.RF006], [Cobranças.RF007].}
+
+\req{NF005}{Correspondência entre o sistema e a plataforma}
+Nenhuma cobrança pode existir apenas no IntegraCASD. Toda cobrança registrada no sistema corresponde
+a uma cobrança criada no Asaas, e a falha na criação junto à plataforma impede o registro local,
+conforme os fluxos de exceção especificados no Capítulo~2.
+\prioE
+\casos{[Cobranças.RF001], [Cobranças.RF002].}
+
+\req{NF006}{Cópia de segurança e recuperação}
+O sistema deve dispor de cópia de segurança diária da base de dados, retida por no mínimo trinta
+dias. O procedimento de recuperação deve ser executado e documentado ao menos uma vez antes da
+entrega do sistema, de modo que a sua eficácia não seja apenas presumida.
+\prioE
+
+\req{NF007}{Registro das execuções automáticas}
+Cada execução das rotinas que operam sem intervenção humana deve gravar data e hora de início e de
+término, o total de registros processados e a relação dos que falharam, de modo que a área
+administrativa possa verificar se a rotina foi executada e o que dela resultou.
+\prioI
+\casos{[Cobranças.RF001], [Cobranças.RF007], [Administração.RF003].}
+
+% ===========================================================================
+\section{Desempenho}
+
+Esta seção descreve os requisitos não funcionais associados à eficiência, uso de recursos e tempo
+de resposta do sistema.
+
+\req{NF001}{Tempo de resposta ao Asaas}
+O sistema deve responder a toda notificação recebida em até cinco segundos, confirmando o
+recebimento antes de processar o seu conteúdo. O processamento deve ocorrer em seguida, de forma
+desacoplada da resposta, de modo que o tempo de tratamento interno não influencie o tempo de
+resposta à plataforma. Este requisito decorre diretamente de [Confiabilidade.NF001]: resposta lenta
+é contabilizada como falha de entrega pelo Asaas. A solução adotada (gravar o evento, enfileirá-lo
+e responder) está descrita no ADR-0002.
+\prioE
+\casos{[Cobranças.RF005].}
+
+\req{NF002}{Tempo de resposta das operações interativas}
+Em condições normais de operação, 95\% das operações interativas devem ser respondidas em até três
+segundos, e nenhuma deve ultrapassar dez segundos. A apuração de indicadores está dispensada deste
+limite, sujeitando-se ao requisito próprio abaixo, assim como as operações que dependem de resposta
+do Asaas.
+\prioI
+
+\req{NF003}{Tempo de apuração dos indicadores}
+O painel de indicadores deve ser apresentado em até cinco segundos para um período de referência de
+até doze meses, considerado o volume de movimentações decorrente de 800 alunos cobrados
+mensalmente.
+\prioI
+\casos{[Indicadores.RF001], [Indicadores.RF002], [Indicadores.RF003].}
+
+\req{NF004}{Janela de execução da geração recorrente}
+A geração das cobranças recorrentes deve concluir em até trinta minutos para uma base de até mil
+alunos ativos, consumindo no máximo dez por cento da cota de vinte e cinco mil requisições a cada
+doze horas atribuída à conta do CASD. O sistema deve espaçar as requisições à plataforma de modo a
+não exceder os limites de frequência e de concorrência da interface de programação.
+\prioI
+\casos{[Cobranças.RF001].}
+
+\req{NF005}{Tratamento de excesso de requisições}
+Ao receber da plataforma resposta com código 429, indicativa de excesso de requisições, o sistema
+deve aguardar o intervalo informado pela própria resposta e repetir a requisição, sem perder a
+operação em curso nem interromper a rotina que a originou.
+\prioI
+\casos{[Cobranças.RF001], [Cobranças.RF007].}
+
+% ===========================================================================
+\section{Segurança}
+
+Esta seção descreve os requisitos não funcionais associados à integridade, privacidade e
+autenticidade dos dados do sistema.
+
+\req{NF001}{Autenticação e perfis concêntricos}
+Todo acesso ao sistema deve ser autenticado. As permissões são concedidas por perfil, sendo que o
+perfil de diretoria possui todas as permissões do perfil administrativo, acrescidas das funções
+reunidas na subseção Administração do Capítulo~2. Nenhuma função é exclusiva do perfil
+administrativo.
+\prioE
+\casos{[Administração.RF001].}
+
+\req{NF002}{Autenticação das notificações recebidas}
+Toda notificação recebida da plataforma deve ter o cabeçalho \texttt{asaas-access-token}
+verificado antes de qualquer processamento. Notificação sem token válido é rejeitada, não produz
+efeito algum sobre os dados e é registrada como tentativa de acesso indevido. O token utilizado
+nessa verificação deve ser distinto da chave de acesso à interface de programação, conforme orienta
+a documentação da plataforma.
+
+Este é o único ponto do sistema exposto na Internet capaz de alterar dados financeiros sem usuário
+autenticado, o que confere ao requisito importância superior à que o seu enunciado sugere.
+\prioE
+\casos{[Cobranças.RF005].}
+
+\req{NF003}{Guarda da chave de acesso à plataforma}
+A chave de acesso à interface de programação do Asaas deve ser armazenada de forma cifrada, não
+pode ser exibida em tela, exportada, transmitida por qualquer meio ao usuário nem gravada em
+registro de execução, em log ou na trilha de auditoria. A sua substituição é a única operação
+admitida sobre ela. Os demais segredos do sistema ficam apenas na configuração do ambiente, nunca no
+código-fonte.
+\prioE
+\casos{[Administração.RF004].}
+
+\req{NF004}{Proteção da comunicação}
+Toda comunicação com o sistema deve ocorrer sobre HTTPS, com TLS na versão 1.2 ou superior,
+inclusive no endereço que recebe as notificações da plataforma.
+\prioE
+
+\req{NF005}{Proteção das credenciais dos usuários}
+As senhas dos usuários devem ser armazenadas exclusivamente na forma de resumo criptográfico com
+sal, calculado por algoritmo próprio para esse fim, sendo vedado o armazenamento em texto claro ou
+por meio reversível.
+\prioE
+
+\req{NF006}{Trilha de auditoria inalterável}
+Toda operação que altere cadastro, cobrança, movimentação ou configuração deve ser registrada com a
+identificação do usuário (ou da rotina automática), data, hora, operação realizada e registro
+afetado. Não deve existir, para nenhum perfil de usuário, função de alteração ou de exclusão dos
+registros da trilha.
+\prioI
+\casos{[Administração.RF005], [Cobranças.RF006], [Movimentações.RF002].}
+
+\req{NF007}{Bloqueio após tentativas de acesso malsucedidas}
+Cinco tentativas consecutivas de autenticação malsucedidas devem bloquear temporariamente o acesso
+àquela identificação de usuário, registrando-se a ocorrência.
+\prioI
+
+% ===========================================================================
+\section{Distribuição}
+
+Esta seção descreve os requisitos não funcionais associados à distribuição da versão executável do
+sistema.
+
+\req{NF001}{Distribuição exclusivamente web}
+O sistema deve ser distribuído como aplicação web, sem exigir instalação de qualquer componente nas
+estações de trabalho do CASD ou nos dispositivos dos usuários. As atualizações devem ser aplicadas
+no ambiente servidor e refletidas para todos os usuários sem ação da parte deles.
+\prioE
+
+\req{NF002}{Carga inicial a partir das planilhas}
+O sistema deve ser implantado com a base de dados já carregada a partir das planilhas hoje
+utilizadas pelo CASD. A carga é procedimento de implantação, executado uma única vez por script
+próprio, e não funcionalidade do sistema, razão pela qual não há tela destinada a ela. Como as
+planilhas trazem dados fora do padrão (CPF sem zeros à esquerda, valores em texto, situações em
+texto livre), a carga deve normalizá-los e relacionar à parte os registros que não puder
+interpretar. A área administrativa deve conferir e aprovar formalmente a carga antes da entrada em
+operação, uma vez que os dados eventualmente omitidos terão de ser digitados manualmente.
+\prioE
+
+\req{NF003}{Retorno à versão anterior}
+O procedimento de implantação deve permitir o retorno à versão imediatamente anterior em até
+trinta minutos, preservando os dados registrados até o momento da falha.
+\prioD
+
+% ===========================================================================
+\section{Padrões}
+
+Esta seção descreve os requisitos não funcionais associados a padrões ou normas que devem ser
+seguidos pelo sistema ou pelo seu processo de desenvolvimento.
+
+\req{NF001}{Conformidade com a Lei Geral de Proteção de Dados}
+O tratamento dos dados pessoais mantidos pelo sistema deve observar a Lei nº 13.709/2018, figurando
+o Centro Acadêmico Santos Dumont como controlador dos dados e o Asaas como operador, na parte que
+lhe cabe. Aplicam-se, em particular, as seguintes regras:
+\begin{itemize}
+  \item a coleta limita-se ao necessário para identificar o aluno e para emitir e conciliar as
+        cobranças; por essa razão, a data de nascimento não é coletada;
+  \item dados reais de alunos nunca entram no repositório do projeto, nos testes ou nos exemplos,
+        que usam apenas dados fictícios, e o ambiente de homologação usa dados anonimizados
+        ([Hardware e software.NF004]);
+  \item o sistema deve permitir atender à solicitação de acesso formulada pelo titular e, quanto à
+        solicitação de eliminação, deve conciliá-la com a regra de que nada é excluído fisicamente:
+        os dados pessoais do aluno inativo são anonimizados, enquanto os registros financeiros são
+        conservados, nas hipóteses de guarda previstas no art.~16 da Lei.
+\end{itemize}
+\prioE
+\casos{[Cadastros.RF001].}
+
+\req{NF002}{Aderência à documentação da plataforma}
+A integração com o Asaas deve seguir a documentação oficial da plataforma quanto à autenticação, ao
+tratamento de erros e aos eventos de cobrança, sendo vedado depender de comportamento não
+documentado ou observado apenas empiricamente.
+\prioI
+
+\req{NF003}{Padrão de codificação e integração}
+A equipe deve adotar um padrão de codificação único, registrado no repositório do projeto, e só
+integrar uma alteração ao ramo principal com a verificação estática, os testes e a compilação
+passando. O padrão está registrado em \texttt{CONTRIBUTING.md}: ramos a partir do principal,
+mensagens de \textit{commit} no formato Conventional Commits e integração por \textit{merge} no ramo
+principal.
+\prioD
+
+% ===========================================================================
+\section{Hardware e software}
+
+Esta seção descreve os requisitos não funcionais associados ao hardware e software usados para
+desenvolver ou para executar o sistema.
+
+\req{NF001}{Endereço público e estável para a conciliação}
+O ambiente de produção deve dispor de endereço público, estável e alcançável pela Internet,
+protegido por HTTPS, destinado a receber as notificações da plataforma. A hospedagem dar-se-á em
+serviço de nuvem contratado ou em infraestrutura fornecida pelo ITA, conforme decisão a ser
+registrada no ADR-0003.
+
+Trata-se de pré-requisito de infraestrutura sem o qual a conciliação automática não opera, e cuja
+indisponibilidade não é contornável por programação.
+\prioE
+\casos{[Cobranças.RF005].}
+
+\req{NF002}{Empacotamento em contêineres}
+O sistema deve ser empacotado em contêineres, tanto no ambiente de desenvolvimento quanto nos de
+homologação e produção, de modo a manter a equivalência entre eles e a reduzir a dependência da
+configuração das máquinas dos integrantes da equipe.
+\prioI
+
+\req{NF003}{Uso do ambiente de testes da plataforma}
+Todo o desenvolvimento e toda a homologação devem utilizar o ambiente de testes do Asaas, jamais o
+ambiente de produção. Quando o sistema estiver apontado para o ambiente de testes, deve exibir
+sinalização visível e permanente de que as cobranças emitidas não são reais. O ambiente de
+desenvolvimento deve, ainda, ser alcançável pelas notificações da plataforma, o que exige endereço
+público temporário ou equivalente, já que contêineres executados em máquina local não são
+acessíveis pela Internet.
+\prioE
+\casos{[Cobranças.RF005], [Administração.RF004].}
+
+\req{NF004}{Ambiente de homologação}
+Deve ser mantido ambiente de homologação equivalente ao de produção, com dados anonimizados,
+destinado à validação das entregas pela diretoria do CASD antes de cada implantação.
+\prioI
+
+\req{NF005}{Propriedades exigidas do armazenamento}
+O mecanismo de armazenamento adotado deve suportar transações que abranjam mais de um registro, de
+modo a viabilizar o disposto em [Confiabilidade.NF004], e permitir a realização de cópias de
+segurança consistentes sem interrupção do serviço. O ADR-0002 adota o PostgreSQL, que atende a
+essas propriedades.
+\prioE
+\casos{[Cobranças.RF005].}
+
+% ---------------------------------------------------------------------------
+% Capítulo 4
+% ---------------------------------------------------------------------------
+
+\chapter{Descrição da interface com o usuário}
+
+Este capítulo descreve a organização das telas do IntegraCASD e as decisões de interface que valem
+para todas elas. As telas foram desenhadas em um protótipo navegável, com dados fictícios e sem
+comunicação com o servidor, disponível em \texttt{docs/telas/}. As imagens de cada tela estão no
+Capítulo~2, junto aos casos de uso que ilustram.
+
+\section{Organização das telas}
+
+Todas as telas compartilham a mesma estrutura, visível na Figura~\ref{fig:cobranca}:
+\begin{itemize}
+  \item \textbf{Menu lateral}, com uma entrada para cada subseção do Capítulo~2: Indicadores,
+        Cadastros, Cobranças, Movimentações e Administração. A entrada de Administração traz a
+        indicação ``Diretoria'' e só aparece para esse perfil. No rodapé do menu ficam o nome e o
+        cargo do usuário autenticado.
+  \item \textbf{Barra superior}, com a busca de aluno por nome ou CPF e os botões ``Nova
+        movimentação'' e ``Nova cobrança'', que abrem o formulário em uma janela sobre a tela atual,
+        sem perder o contexto ([Usabilidade.NF001]).
+  \item \textbf{Faixa de ambiente de testes}, no topo de todas as telas, enquanto a integração
+        estiver apontada para o ambiente de testes do Asaas ([Hardware e software.NF003]).
+\end{itemize}
+
+A página inicial é o painel de indicadores. Cada tela corresponde a uma pasta de funcionalidade no
+código do frontend, e as telas com mais de um tipo de registro (Cadastros e Administração) usam
+abas.
+
+\section{Decisões de interface}
+
+\begin{itemize}
+  \item \textbf{Confirmação com resumo do efeito} no cancelamento de cobrança, no registro manual
+        de pagamento, no estorno de movimentação e na inativação de aluno com débito
+        ([Usabilidade.NF003]).
+  \item \textbf{Selos sempre com texto} e, quando ajuda, ícone; nunca apenas cor
+        ([Usabilidade.NF004]).
+  \item \textbf{Amarelo do CASD apenas} no botão principal de cada tela, no item ativo do menu e em
+        alertas, para que chame a atenção onde ela é necessária.
+  \item \textbf{Gráficos} com paleta validada para daltonismo (azul para entradas, laranja para
+        saídas), valor ao passar o mouse e os mesmos dados também em tabela.
+  \item \textbf{Valores sempre originais} nas cobranças, com aviso de que multa e juros são
+        aplicados pelo Asaas.
+  \item \textbf{O detalhe da cobrança é o centro das ações}; a lista de cobranças apenas mostra e
+        leva ao detalhe.
+  \item \textbf{O estorno é feito direto da lista} de movimentações, sem tela de detalhe; nas
+        movimentações originadas de cobrança, o botão fica desabilitado e uma dica explica onde
+        corrigi-las.
+  \item \textbf{A lista de cobranças abre com as abertas e vencidas}, ordenadas por vencimento; as
+        demais situações são acessadas pelos cartões de resumo.
+\end{itemize}
+
+A tela de autenticação não foi desenhada no protótipo, por seguir o padrão usual de identificação
+e senha; os requisitos que a regem são [Segurança.NF001], [Segurança.NF005] e [Segurança.NF007].
+
+\section{Correspondência entre telas e casos de uso}
+
+\begin{longtable}{@{}p{0.2\linewidth} p{0.46\linewidth} p{0.26\linewidth}@{}}
+  \toprule
+  \textbf{Tela} & \textbf{O que mostra} & \textbf{Requisitos e figuras} \\
+  \midrule
+  \endhead
+  Indicadores & Página inicial: entradas, saídas, resultado e valor aguardando liberação; evolução
+                de seis meses; inadimplência com reenvio de boleto; gastos por categoria &
+                Indicadores.RF001 a RF003; Fig.~\ref{fig:indicadores} \\
+  Cadastros & Abas de alunos, funcionários, contratos e projetos; formulário de novo aluno &
+              Cadastros.RF001, RF002, RF004 e RF005; Figs.~\ref{fig:cadastros-alunos}
+              a~\ref{fig:cadastros-novo-aluno}, \ref{fig:cadastros-funcionarios},
+              \ref{fig:cadastros-contratos} e~\ref{fig:cadastros-projetos} \\
+  Aluno & Dados editáveis, cobranças, movimentações, nova cobrança com o aluno preenchido e
+          inativação com aviso de débito & Cadastros.RF001; Figs.~\ref{fig:aluno-dados}
+          a~\ref{fig:aluno-inativar} \\
+  Cobranças & Estado da conciliação, resumo por situação, filtros, lista de abertas e vencidas e
+              sincronização geral & Cobranças.RF007 e RF008; Figs.~\ref{fig:cobrancas}
+              e~\ref{fig:cobrancas-sincronizar} \\
+  Cobrança & Detalhe: boleto, reenvio, sincronização, pagamento manual, cancelamento e
+             renegociação, histórico de eventos do Asaas & Cobranças.RF003 a RF007;
+             Figs.~\ref{fig:cobranca}, \ref{fig:cobranca-cancelar},
+             \ref{fig:cobranca-pagamento-manual} e~\ref{fig:cobranca-sincronizar} \\
+  Movimentações & Totais do recorte, filtros, estorno e movimentação estornada com o seu espelho &
+                  Movimentações.RF002 e RF003; Figs.~\ref{fig:movimentacoes-estornar}
+                  e~\ref{fig:movimentacoes} \\
+  Barra superior & Busca de aluno, nova cobrança avulsa e nova movimentação & Cobranças.RF002,
+                   Movimentações.RF001; Figs.~\ref{fig:nova-cobranca}
+                   e~\ref{fig:nova-movimentacao} \\
+  Administração & Usuários, categorias, parâmetros com conferência e execuções, integração com o
+                  Asaas e trilha de auditoria & Administração.RF001 a RF005;
+                  Figs.~\ref{fig:adm-usuarios} a~\ref{fig:adm-trilha} \\
+  \bottomrule
+\end{longtable}
+
+% ---------------------------------------------------------------------------
+% Apêndice
+% ---------------------------------------------------------------------------
+
+\appendix
+\chapter{Pontos em aberto}
+
+As questões abaixo ainda dependem de decisão da equipe ou do CASD e serão resolvidas nas próximas
+versões deste documento.
+
+\begin{enumerate}
+  \item \textbf{Confirmação do recebimento no Asaas.} No registro manual de pagamento
+        ([Cobranças.RF006]), avaliar se o sistema deve também informar o recebimento ao Asaas, para
+        que o boleto perca a validade e as duas bases não divirjam. Na especificação atual, a
+        divergência é aceita e fica sinalizada pela situação ``Paga com registro manual''.
+  \item \textbf{Apresentação das pendências de conciliação.} Definir se as notificações sem
+        cobrança correspondente, as divergências da sincronização e as falhas da geração recorrente
+        serão reunidas em uma tela própria de pendências ou se continuam apresentadas apenas no
+        resultado da sincronização e no histórico de execuções.
+  \item \textbf{Alunos bolsistas ou isentos.} Definir como são tratados na geração recorrente.
+  \item \textbf{Situações acadêmicas da planilha.} Definir quais situações (por exemplo, trancado
+        ou em intercâmbio) correspondem a aluno ativo, isto é, cobrado na geração recorrente.
+  \item \textbf{Histórico de boletos anteriores.} Definir se as cobranças emitidas antes da
+        implantação entram na carga inicial.
+  \item \textbf{Resultado da busca na barra superior.} Definir se a busca abre uma lista de
+        resultados ou vai direto ao cadastro do aluno quando houver um único resultado.
+\end{enumerate}
+
+\end{document}

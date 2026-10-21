@@ -69,6 +69,6 @@ Monólito modular. Detalhes e justificativas em `docs/adr/`.
 
 - Branches a partir de `main`: `feat/...`, `fix/...`, `docs/...`.
 - Commits no formato Conventional Commits, em português: `feat(cobrancas): emite cobrança avulsa`.
-- Toda mudança entra por PR revisado por outra pessoa.
+- Não há pull request nem revisão obrigatória: a branch é integrada à `main` por merge local, depois de lint e testes passarem.
 - Regras de domínio novas vêm com teste.
 - Ao terminar uma tarefa, rode lint e testes da aplicação alterada antes de dizer que está pronto.

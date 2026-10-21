@@ -14,8 +14,8 @@ Não precisa de ADR: escolha de nome de variável, biblioteca pequena e fácil d
 ## Como escrever
 
 1. Copie o [`0000-template.md`](0000-template.md) com o próximo número livre: `0005-titulo-em-minusculas.md`.
-2. Preencha com status **Proposta** e abra um pull request.
-3. A discussão acontece no PR. Quando aprovado, mude o status para **Aceita** antes do merge.
+2. Preencha com status **Proposta** e avise a equipe no grupo.
+3. A discussão acontece com a equipe. Quando aprovado, mude o status para **Aceita** antes do merge na `main`.
 
 ## Regras
 

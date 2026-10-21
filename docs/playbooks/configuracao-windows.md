@@ -1,6 +1,6 @@
 # IntegraCASD — Playbook de configuração (Windows)
 
-> Última atualização: 09/10/2026. Se algo aqui estiver desatualizado, corrija no mesmo pull request em que você descobriu.
+> Última atualização: 09/10/2026. Se algo aqui estiver desatualizado, corrija no mesmo commit em que você descobriu.
 
 Este guia leva uma máquina Windows do zero até o IntegraCASD rodando. Siga as etapas na ordem: cada uma termina com uma verificação, e só vale passar para a próxima quando ela der certo.
 
@@ -174,9 +174,9 @@ Sua máquina está pronta quando todos os itens estiverem marcados:
 - [ ] `http://localhost:3000` responde com a mensagem da API
 - [ ] `http://localhost:5173` abre o frontend
 - [ ] `pnpm lint`, `pnpm test` e `pnpm build` passam na raiz
-- [ ] Você criou uma branch de teste, fez um commit e abriu um pull request de rascunho no GitHub
+- [ ] Você criou uma branch de teste, fez um commit e enviou a branch ao GitHub (`git push -u origin <nome-da-branch>`)
 
-O último item confirma que seu acesso ao repositório e sua configuração do Git estão certos. Feche o PR de teste sem fazer merge.
+O último item confirma que seu acesso ao repositório e sua configuração do Git estão certos. Depois, apague a branch de teste sem fazer merge.
 
 Se algo deu errado e não está na próxima seção, anote o erro completo e a solução quando encontrar, e acrescente aqui. O próximo a configurar agradece.
 
@@ -211,7 +211,7 @@ Todos na raiz do projeto.
 | Rodar a API                       | `pnpm dev:api`                          |
 | Rodar o frontend                  | `pnpm dev:web`                          |
 | Começar uma tarefa                | `git switch -c feat/descricao-curta`    |
-| Antes de abrir um PR              | `pnpm lint`, `pnpm test` e `pnpm build` |
+| Antes do merge na `main`          | `pnpm lint`, `pnpm test` e `pnpm build` |
 | Desligar o banco no fim do dia    | `docker compose stop`                   |
 
-O fluxo completo de branches, commits e pull requests está no [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
+O fluxo completo de branches, commits e merge na `main` está no [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
