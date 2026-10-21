@@ -53,6 +53,7 @@ Vamos construir o backend como um **monólito modular**: uma única aplicação 
 **Negativas e riscos:**
 
 - As fronteiras dependem de disciplina e revisão de código, não de uma barreira física.
+  - _Nota (2026-10-21):_ as fronteiras passaram a ser conferidas por funções de aptidão automáticas, que substituem a revisão de código. Veja o [ADR-0003](0003-funcoes-de-aptidao.md).
 - Uma falha grave no processo afeta o sistema inteiro (mitigado ao separar API e worker em processos distintos).
 - Não é possível escalar partes do sistema de forma independente.
 
