@@ -41,6 +41,7 @@ pnpm install                 # instala tudo
 docker compose up -d         # sobe o PostgreSQL
 pnpm dev:api                 # API em http://localhost:3000
 pnpm dev:web                 # frontend em http://localhost:5173
+pnpm dev:worker              # worker (fila do pg-boss), sem porta HTTP
 pnpm --filter api test       # testes do backend
 pnpm --filter web lint       # lint do frontend
 ```

@@ -56,6 +56,7 @@ Em dois terminais separados:
 ```powershell
 pnpm dev:api     # http://localhost:3000
 pnpm dev:web     # http://localhost:5173
+pnpm dev:worker  # processamento em segundo plano (sem porta)
 ```
 
 ## Estrutura
