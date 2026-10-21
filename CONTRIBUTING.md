@@ -13,7 +13,7 @@ issue → branch → commits → verificação → merge na main
 1. **Toda mudança começa numa issue.** Se não existe, crie uma descrevendo o que será feito. Atribua a issue a você antes de começar, para ninguém trabalhar na mesma coisa.
 2. **Crie uma branch a partir da `main` atualizada.**
 3. **Faça commits pequenos** enquanto trabalha.
-4. **Verifique** quando a tarefa estiver pronta: lint, testes e build passando na raiz.
+4. **Verifique** quando a tarefa estiver pronta: lint, testes, build e funções de aptidão passando na raiz.
 5. **Faça o merge na `main`** e envie ao GitHub. Neste projeto não há pull request nem revisão obrigatória.
 6. **Feche a issue**, citando o commit.
 
@@ -67,7 +67,10 @@ Prefira vários commits pequenos e com sentido a um commit gigante chamado "ajus
   pnpm lint
   pnpm test
   pnpm build
+  pnpm verificar:arquitetura
   ```
+
+  O gancho `.githooks/pre-merge-commit` roda `pnpm lint`, `pnpm test` e `pnpm verificar:arquitetura` sozinho quando você faz o merge (ele é ativado pelo `pnpm install`). Se alguma verificação falhar, o merge é bloqueado.
 
 - Para integrar:
 
@@ -82,7 +85,22 @@ Prefira vários commits pequenos e com sentido a um commit gigante chamado "ajus
 
 ## Revisão de código
 
-A revisão não é obrigatória neste projeto. Quando quiser uma segunda opinião sobre uma mudança, peça no grupo antes do merge.
+A revisão não é obrigatória neste projeto. Quem guarda a arquitetura são as **funções de aptidão**: verificações automáticas descritas no [ADR-0003](docs/adr/0003-funcoes-de-aptidao.md) e em [docs/governanca](docs/governanca/README.md). Quando quiser uma segunda opinião sobre uma mudança, peça no grupo antes do merge.
+
+Se uma regra for violada por um motivo legítimo, não a enfraqueça: registre uma exceção justificada em `docs/governanca/excecoes.json`.
+
+## Checklist antes do merge
+
+Antes de integrar a branch na `main`, confira (o gancho e o CI cuidam dos itens automáticos, mas leia a lista):
+
+- [ ] Rodei `pnpm lint`, `pnpm test` e `pnpm build` na raiz.
+- [ ] Rodei `pnpm verificar:arquitetura` (o gancho `.githooks/pre-merge-commit` também roda, ao fazer o merge).
+- [ ] Se mexi na API (controllers, DTOs), rodei `pnpm gerar:cliente-api` e fiz commit do cliente gerado (`pnpm verificar:contrato` confere).
+- [ ] Regras de negócio novas têm teste.
+- [ ] Conferi a [definição de pronto](#definição-de-pronto) para dinheiro, banco de dados e Asaas, se aplicável.
+- [ ] Nenhum dado real ou segredo no commit.
+- [ ] Atualizei a documentação e o `CLAUDE.md`, se mudei alguma convenção.
+- [ ] Se mudei uma tela, conferi o resultado no navegador (prints de antes e depois ajudam a equipe).
 
 ## Definição de pronto
 
