@@ -1,0 +1,47 @@
+{
+  "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md e ADRs. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex.",
+  "requisitos": [
+    {
+      "id": "Confiabilidade.NF003",
+      "titulo": "Idempotência no processamento de notificações",
+      "situacao": "pendente",
+      "motivo": "Webhook e worker ainda não existem. O teste vem junto com o módulo de Cobranças (B10 no ADR-0003)."
+    },
+    {
+      "id": "Confiabilidade.NF004",
+      "titulo": "Atomicidade da baixa de cobrança",
+      "situacao": "pendente",
+      "motivo": "A baixa depende do módulo de Cobranças, ainda não implementado (B10 no ADR-0003)."
+    },
+    {
+      "id": "Desempenho.NF001",
+      "titulo": "Tempo de resposta ao Asaas",
+      "situacao": "pendente",
+      "motivo": "O controller do webhook não existe ainda; o teste de que ele só valida, grava e enfileira é o B9 do ADR-0003."
+    },
+    {
+      "id": "Usabilidade.NF002",
+      "titulo": "Mensagens de erro orientadas à ação",
+      "situacao": "pendente",
+      "motivo": "A tradução dos erros do Asaas depende do Cliente Asaas, ainda não implementado."
+    },
+    {
+      "id": "Usabilidade.NF003",
+      "titulo": "Confirmação explícita em operação irreversível",
+      "situacao": "pendente",
+      "motivo": "As telas usam dados fictícios e o diálogo de confirmação não tem teste automatizado (o web não tem Vitest)."
+    },
+    {
+      "id": "Hardware e software.NF005",
+      "titulo": "Propriedades exigidas do armazenamento",
+      "situacao": "pendente",
+      "motivo": "Garantida pela escolha do PostgreSQL (ADR-0002); não há teste automatizado."
+    },
+    {
+      "id": "Segurança.NF001",
+      "titulo": "Autenticação e perfis concêntricos",
+      "situacao": "pendente",
+      "motivo": "A função B8 já confere que toda rota declara segurança, mas a autenticação ainda não existe (rotas atuais estão em docs/governanca/excecoes.json)."
+    }
+  ]
+}

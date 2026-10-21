@@ -1,0 +1,26 @@
+[
+  {
+    "regra": "B8",
+    "alvo": "GET /api",
+    "justificativa": "Rota de exemplo do modelo do NestJS (Hello World). Autenticação ainda não implementada; remover quando existir (ou apagar a rota).",
+    "referencia": "ADR-0003; [Segurança.NF001]"
+  },
+  {
+    "regra": "B8",
+    "alvo": "GET /api/alunos",
+    "justificativa": "Autenticação ainda não implementada; remover quando existir.",
+    "referencia": "ADR-0003; [Segurança.NF001]"
+  },
+  {
+    "regra": "B3",
+    "alvo": "apps/api/src/modulos/cadastros/api/lista-de-alunos.dto.ts",
+    "justificativa": "O DTO importa o enum SituacaoAluno gerado pelo Prisma só para descrever os valores no OpenAPI (@ApiProperty enum). Não acessa o banco. Remover quando houver um enum próprio fora do Prisma.",
+    "referencia": "ADR-0003; apps/api/CLAUDE.md (camadas do módulo)"
+  },
+  {
+    "regra": "F5",
+    "alvo": "apps/web/src/compartilhado/estilo-telas.css",
+    "justificativa": "Folha de estilo das telas do protótipo, importada em main.tsx, ainda com cores em hex (selos, séries do gráfico, tons de apoio). Migrar as cores para variáveis do tema em src/index.css e então remover esta exceção.",
+    "referencia": "ADR-0003; apps/web/CLAUDE.md (Identidade visual)"
+  }
+]
