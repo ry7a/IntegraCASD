@@ -93,3 +93,25 @@ model Aluno {
   @@index([turmaId])
   @@map("alunos")
 }
+
+// ---------------------------------------------------------------------------
+// Cobranças (integração com o Asaas)
+// ---------------------------------------------------------------------------
+
+// Um registro por evento recebido no webhook do Asaas. O webhook só grava aqui e enfileira;
+// quem processa é o worker.
+model EventoWebhook {
+  id            String    @id @default(uuid()) @db.Uuid
+  // Id do evento no Asaas (ex.: "evt_..."). UNIQUE é o que garante a idempotência:
+  // um evento repetido não consegue ser gravado duas vezes. [Confiabilidade.NF003]
+  idAsaas       String    @unique @map("id_asaas")
+  tipo          String // ex.: "PAYMENT_RECEIVED"
+  // Corpo original da requisição, guardado como veio, para reprocessar ou investigar depois.
+  payload       Json
+  // Preenchido pelo worker, na mesma transação da baixa. Nulo = ainda não processado.
+  processadoEm  DateTime? @map("processado_em")
+  dataCriacao   DateTime  @default(now()) @map("data_criacao")
+  dataAlteracao DateTime  @updatedAt @map("data_alteracao")
+
+  @@map("eventos_webhook")
+}
