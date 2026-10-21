@@ -18,7 +18,7 @@ Vamos transformar cada regra de arquitetura importante numa **função de aptid�
 - **Backend:** testes Vitest em `apps/api/test/arquitetura/`, que leem os arquivos `.ts` e conferem imports e texto. Rodam com `pnpm test`.
 - **Frontend:** regras nativas do ESLint (`no-restricted-imports`, `no-restricted-syntax`, `no-restricted-globals`) em `apps/web/eslint.config.js`. Rodam com `pnpm lint`.
 - **Repositório, git e build:** scripts Node em `scripts/arquitetura/`, chamados por `pnpm verificar:arquitetura`, `pnpm verificar:build` e `pnpm verificar:contrato`.
-- **Onde rodam:** no gancho local `.githooks/pre-merge-commit` (antes de concluir um merge) e no CI.
+- **Onde rodam:** nos ganchos locais `.githooks/pre-merge-commit` (antes de concluir um merge) e `.githooks/pre-push` (antes de cada push, o que cobre também o merge fast-forward) e no CI.
 - **Governança:** listas em `docs/governanca/` (dependências aprovadas, exceções, requisitos verificáveis), explicadas no `docs/governanca/README.md`.
 
 Regras de funcionamento:

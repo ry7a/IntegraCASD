@@ -16,7 +16,7 @@ pnpm verificar:contrato      # contrato da API em dia com o cliente gerado (F3);
 pnpm relatorio:arquitetura   # relatório para a revisão da sprint (G6)
 ```
 
-O gancho `.githooks/pre-merge-commit` roda `pnpm lint`, `pnpm test` e `pnpm verificar:arquitetura` antes de concluir um merge. Ele é ativado sozinho pelo `pnpm install` (script `prepare`). O CI roda tudo isso e mais o que depende de build.
+Os ganchos `.githooks/pre-merge-commit` e `.githooks/pre-push` rodam `pnpm lint`, `pnpm test` e `pnpm verificar:arquitetura` antes de concluir um merge e antes de cada push (o segundo cobre o merge fast-forward, que não passa pelo primeiro). Eles são ativados sozinho pelo `pnpm install` (script `prepare`). O CI roda tudo isso e mais o que depende de build.
 
 ## As funções de aptidão
 

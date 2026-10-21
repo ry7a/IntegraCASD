@@ -70,7 +70,7 @@ Prefira vários commits pequenos e com sentido a um commit gigante chamado "ajus
   pnpm verificar:arquitetura
   ```
 
-  O gancho `.githooks/pre-merge-commit` roda `pnpm lint`, `pnpm test` e `pnpm verificar:arquitetura` sozinho quando você faz o merge (ele é ativado pelo `pnpm install`). Se alguma verificação falhar, o merge é bloqueado.
+  O gancho `.githooks/pre-merge-commit` roda `pnpm lint`, `pnpm test` e `pnpm verificar:arquitetura` sozinho quando você faz o merge, e o `.githooks/pre-push` roda as mesmas verificações antes de cada push (os dois são ativados pelo `pnpm install`). Se alguma verificação falhar, o merge ou o push é bloqueado.
 
 - Para integrar:
 
@@ -81,7 +81,7 @@ Prefira vários commits pequenos e com sentido a um commit gigante chamado "ajus
   git push
   ```
 
-  Use sempre `--no-ff`. Num merge fast-forward o git não cria commit de merge e, por isso, **não roda o gancho**: a mudança chega à `main` sem as verificações locais (o CI só confere depois do push).
+  Use sempre `--no-ff`. Num merge fast-forward o git não cria commit de merge e, por isso, **não roda o gancho de merge**; o erro só aparece no `git push`, barrado pelo gancho `pre-push`, com a `main` local já alterada.
 
 - A mensagem do merge também segue o padrão de commits, por exemplo `merge: integra emissão de cobrança avulsa`.
 
