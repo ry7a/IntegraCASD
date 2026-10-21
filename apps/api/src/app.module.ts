@@ -3,7 +3,7 @@ import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './compartilhado/prisma/prisma.module.js';
-import { CadastrosModule } from './modulos/cadastros/cadastros.module.js';
+import { CadastrosModule } from './modulos/cadastros/index.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
