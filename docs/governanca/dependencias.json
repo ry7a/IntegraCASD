@@ -1,0 +1,84 @@
+{
+  "integracasd": {
+    "dependencies": [],
+    "devDependencies": []
+  },
+  "api": {
+    "dependencies": [
+      "@nestjs/common",
+      "@nestjs/core",
+      "@nestjs/observe",
+      "@nestjs/platform-express",
+      "@nestjs/swagger",
+      "@prisma/adapter-pg",
+      "@prisma/client",
+      "pg-boss",
+      "reflect-metadata",
+      "rxjs"
+    ],
+    "devDependencies": [
+      "@nestjs/cli",
+      "@nestjs/mau",
+      "@nestjs/schematics",
+      "@nestjs/testing",
+      "@types/express",
+      "@types/node",
+      "@types/supertest",
+      "@vitest/coverage-v8",
+      "oxlint",
+      "oxlint-tsgolint",
+      "prettier",
+      "prisma",
+      "source-map-support",
+      "supertest",
+      "typescript",
+      "vite-tsconfig-paths",
+      "vitest"
+    ]
+  },
+  "web": {
+    "dependencies": [
+      "@fontsource-variable/archivo",
+      "@fontsource/ibm-plex-sans",
+      "@hookform/resolvers",
+      "@integracasd/api-client",
+      "@tailwindcss/vite",
+      "@tanstack/react-query",
+      "class-variance-authority",
+      "clsx",
+      "lucide-react",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "react-router",
+      "tailwind-merge",
+      "tailwindcss",
+      "tw-animate-css",
+      "zod"
+    ],
+    "devDependencies": [
+      "@eslint/js",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "@vitejs/plugin-react",
+      "eslint",
+      "eslint-plugin-react-hooks",
+      "eslint-plugin-react-refresh",
+      "globals",
+      "typescript",
+      "typescript-eslint",
+      "vite"
+    ]
+  },
+  "@integracasd/api-client": {
+    "dependencies": [],
+    "devDependencies": [
+      "@tanstack/react-query",
+      "orval"
+    ],
+    "peerDependencies": [
+      "@tanstack/react-query"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { NestFactory } from '@nestjs/core';
-import { ConsumidorDeEventosWebhook } from './modulos/cobrancas/infra/consumidor-de-eventos-webhook.js';
+import { ConsumidorDeEventosWebhook } from './modulos/cobrancas/index.js';
 import { WorkerModule } from './worker.module.js';
 
 // Mesmo padrão do main.ts: em desenvolvimento carrega o .env da raiz do monorepo.

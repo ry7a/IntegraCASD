@@ -1,6 +1,7 @@
 // Dados FICTÍCIOS de Cobranças, iguais aos do mockup (docs/telas/cobrancas.html e cobranca.html).
 // A "data de hoje" do mockup é 19/10/2026. Nada aqui é real (LGPD).
 // Os ids dos alunos e as cobranças do Lucas batem com features/cadastro/dados-ficticios.ts.
+import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { SituacaoCobranca } from '@/compartilhado/dominio'
 import type {
   CobrancaDetalheDto,
@@ -9,6 +10,9 @@ import type {
   OrigemCobranca,
   ResumoCobrancasDto,
 } from './contrato'
+
+// Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
+marcarDadosFicticios('dados-ficticios-integracasd:cobrancas')
 
 const HOJE = '2026-10-19'
 const MENSALIDADE = 8500

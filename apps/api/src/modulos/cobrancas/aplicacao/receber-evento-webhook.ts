@@ -3,6 +3,9 @@ import { FilaDeEventos } from '../../../compartilhado/fila/fila-de-eventos.js';
 import { EventosWebhookRepositorio } from '../infra/eventos-webhook.repositorio.js';
 import type { EventoRecebido } from '../infra/eventos-webhook.repositorio.js';
 
+// O tipo da entrada faz parte do caso de uso: o controller importa daqui, sem conhecer a infra (B2).
+export type { EventoRecebido };
+
 // Caso de uso [Desempenho.NF001]: recebe um evento do webhook do Asaas. Não processa nada:
 // só grava o evento e pede o processamento à fila. Quem processa é o worker.
 @Injectable()

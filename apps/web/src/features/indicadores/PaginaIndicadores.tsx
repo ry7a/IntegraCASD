@@ -4,8 +4,7 @@ import Icone from '@/compartilhado/componentes/Icone'
 import { formatarMes, formatarMoeda, formatarPercentual, nomeDoMes, somarMeses } from '@/compartilhado/formatacao'
 import BlocoDeGastosPorCategoria from './BlocoDeGastosPorCategoria'
 import BlocoDeInadimplencia from './BlocoDeInadimplencia'
-import { useEvolucaoDeEntradasESaidas, useResumoDosIndicadores } from './consultas'
-import { MES_DOS_DADOS as mes } from './dados-ficticios'
+import { MES_DOS_DADOS as mes, useEvolucaoDeEntradasESaidas, useResumoDosIndicadores } from './consultas'
 import GraficoDeEntradasESaidas from './GraficoDeEntradasESaidas'
 
 // "+4,0% em relação a setembro", "−2,1% em relação a setembro" ou aviso de que não há base de comparação.

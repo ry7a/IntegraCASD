@@ -8,6 +8,7 @@ import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
 import {
   formatarData,
   formatarDataHora,
+  formatarInteiro,
   formatarMoeda,
   haQuantoTempo,
   paraCentavos,
@@ -117,7 +118,7 @@ function PaginaCobrancas() {
             onClick={() => alternarSituacao(item.situacao)}
           >
             <SeloDaCobranca situacao={item.situacao} />
-            <strong>{item.quantidade.toLocaleString('pt-BR')}</strong>
+            <strong>{formatarInteiro(item.quantidade)}</strong>
             <span>{legendaDoResumo(item)}</span>
           </button>
         ))}

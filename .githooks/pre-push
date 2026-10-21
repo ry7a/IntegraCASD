@@ -1,0 +1,31 @@
+#!/bin/sh
+# Gancho do git: roda antes de cada push.
+# Complementa o pre-merge-commit: um merge fast-forward não cria commit de merge e, por isso,
+# não passa por aquele gancho. Todo push passa por este, então nada chega ao GitHub sem
+# lint, testes e funções de aptidão da arquitetura (ADR-0003).
+# Atenção: as verificações rodam sobre a árvore de trabalho, não só sobre os commits enviados.
+# Para pular em caso de emergência: git push --no-verify (e avise a equipe).
+
+ZERO=0000000000000000000000000000000000000000
+
+# O git manda, uma por linha: <ref local> <sha local> <ref remota> <sha remoto>.
+# A base da verificação de migrações (B7) é o que o remoto já tem.
+BASE=""
+while read ref_local sha_local ref_remota sha_remota; do
+  # Apagar uma branch no remoto não envia código: nada a verificar.
+  if [ "$sha_local" = "$ZERO" ]; then continue; fi
+  BASE="$sha_remota"
+done
+
+if [ -z "$BASE" ]; then exit 0; fi
+# Branch nova no remoto: compara com a main remota.
+if [ "$BASE" = "$ZERO" ]; then BASE=origin/main; fi
+
+echo "pre-push: conferindo lint, testes e arquitetura..."
+
+pnpm lint && pnpm test && BASE_GIT="$BASE" pnpm verificar:arquitetura
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Push bloqueado: corrija o que falhou acima e tente de novo."
+  exit 1
+fi

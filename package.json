@@ -6,12 +6,17 @@
         "node": ">=24.20.0"
     },
     "scripts": {
+        "prepare": "git config core.hooksPath .githooks",
         "dev:api": "pnpm --filter api start:dev",
         "dev:web": "pnpm --filter web dev",
         "dev:worker": "pnpm --filter api start:worker:dev",
         "gerar:cliente-api": "pnpm --filter api gerar:openapi && pnpm --filter @integracasd/api-client gerar",
         "lint": "pnpm -r lint",
         "test": "pnpm -r test",
-        "build": "pnpm -r build"
+        "build": "pnpm -r build",
+        "verificar:arquitetura": "node scripts/arquitetura/verificar-migracoes.mjs && node scripts/arquitetura/verificar-cores.mjs",
+        "verificar:build": "node scripts/arquitetura/verificar-bundle.mjs && node scripts/arquitetura/verificar-dados-ficticios.mjs",
+        "verificar:contrato": "node scripts/arquitetura/verificar-contrato.mjs",
+        "relatorio:arquitetura": "node scripts/arquitetura/relatorio.mjs"
     }
 }

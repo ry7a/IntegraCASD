@@ -19,7 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # fetch-depth: 0 baixa o historico inteiro. A verificacao de migracoes (B7)
+      # compara com a base (commit anterior ao push, ou a branch de destino do PR)
+      # e precisa desse historico. O padrao do checkout baixa so o ultimo commit.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # Precisa vir antes do setup-node: o cache do pnpm so funciona
       # se o pnpm ja estiver instalado. Sem o campo "version", a action
@@ -38,6 +43,26 @@ jobs:
 
       - run: pnpm lint
 
+      # Inclui os testes de arquitetura do backend (apps/api/test/arquitetura).
       - run: pnpm test
 
+      # Funcoes de aptidao que nao dependem de build: migracoes (B7) e cores em CSS (F5).
+      # Base do B7: no push, o commit anterior (zeros no primeiro push; o script trata);
+      # no pull request, a branch de destino.
+      - run: pnpm verificar:arquitetura
+        env:
+          BASE_GIT: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+
       - run: pnpm build
+
+      # Funcoes de aptidao que olham o resultado do build: orcamento de bundle (F8) e
+      # dados ficticios (F6, por enquanto so em modo aviso; veja o ADR-0003).
+      - run: pnpm verificar:build
+
+      # F3: regenera o cliente da API e falha se algo mudou (contrato fora de sincronia).
+      # Nao precisa de banco: a geracao do openapi.json nao conecta no PostgreSQL.
+      # O PgBossService exige DATABASE_URL no construtor, mas so conecta no onModuleInit,
+      # que o gerador nao chama. Por isso basta uma URL ficticia.
+      - run: pnpm verificar:contrato
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci

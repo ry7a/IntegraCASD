@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ReceberEventoWebhook } from '../aplicacao/receber-evento-webhook.js';
-import type { EventoRecebido } from '../infra/eventos-webhook.repositorio.js';
+import type { EventoRecebido } from '../aplicacao/receber-evento-webhook.js';
 import { TokenDoWebhookGuard } from './token-do-webhook.guard.js';
 
 // Webhook do Asaas: valida o token (guard), grava o evento, enfileira e responde 200.

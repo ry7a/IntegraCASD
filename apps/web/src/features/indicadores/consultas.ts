@@ -5,6 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 import type { EvolucaoDto, GastosPorCategoriaDto, InadimplenciaDto, ResumoIndicadoresDto } from './contrato'
 import { evolucao, gastosPorCategoria, inadimplencia, resumo } from './dados-ficticios'
 
+// Só consultas.ts importa dados-ficticios (ESLint, F6). As telas pegam o mês dos dados por aqui.
+export { MES_DOS_DADOS } from './dados-ficticios'
+
 // Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
 const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
 
