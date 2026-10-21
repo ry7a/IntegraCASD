@@ -1,0 +1,16 @@
+#!/bin/sh
+# Gancho do git: roda antes de concluir um merge (git merge --no-ff ...).
+# Como o projeto não usa pull request nem revisão obrigatória, este é o último portão
+# antes da main: lint, testes e funções de aptidão da arquitetura (ADR-0003).
+# Ativado sozinho pelo "pnpm install" (script "prepare" do package.json da raiz).
+# Para pular em caso de emergência: git merge --no-verify ... (e avise a equipe).
+
+echo "pre-merge-commit: conferindo lint, testes e arquitetura..."
+
+pnpm lint && pnpm test && pnpm verificar:arquitetura
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Merge bloqueado: corrija o que falhou acima e tente de novo."
+  echo "Depois de corrigir, conclua o merge com: git commit"
+  exit 1
+fi
