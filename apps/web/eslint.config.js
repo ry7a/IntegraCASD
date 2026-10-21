@@ -74,6 +74,11 @@ const SINTAXE_DE_FETCH = [
     selector: 'CallExpression[callee.object.name=/^(window|globalThis|self)$/][callee.property.name="fetch"]',
     message: 'Nunca use fetch direto. Use os hooks do cliente gerado (@integracasd/api-client).',
   },
+  {
+    // Mesma regra com colchetes: globalThis['fetch'](...).
+    selector: 'CallExpression[callee.object.name=/^(window|globalThis|self)$/][callee.property.value="fetch"]',
+    message: 'Nunca use fetch direto. Use os hooks do cliente gerado (@integracasd/api-client).',
+  },
 ]
 
 // F4: formatação de números e datas fica toda em src/compartilhado/formatacao.ts.

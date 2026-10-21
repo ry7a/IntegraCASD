@@ -89,7 +89,9 @@ for (const [caminho, status] of mudancas) {
 
 // Migrações novas: confere as operações que quebram a versão anterior do código.
 const OPERACAO_PERIGOSA = /\bDROP\s+COLUMN\b|\bRENAME\b/i
-const EXCECAO_APROVADA = /^\s*--\s*excecao-aprovada:\s*\S+/m
+// [ \t] em vez de \s: o motivo precisa estar na MESMA linha (\s aceitaria a quebra de linha
+// e contaria o SQL da linha seguinte como motivo).
+const EXCECAO_APROVADA = /^[ \t]*--[ \t]*excecao-aprovada:[ \t]*\S+/m
 
 for (const [caminho, status] of mudancas) {
   if (status !== 'A' || !caminho.endsWith('.sql')) continue
