@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cobranças · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="cobrancas">
+    <main class="pagina">
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Cobranças</h1>
+          <p>
+            <i data-icone="check"></i> Conciliação automática ativa · última notificação do Asaas há 12 minutos · última sincronização em
+            19/10/2026 às 06:00
+          </p>
+        </div>
+        <div class="acoes">
+          <button class="botao" type="button" data-abrir="dialogo-sincronizar"><i data-icone="sincronizar"></i>Sincronizar com o Asaas</button>
+          <button class="botao botao-principal" type="button" data-abrir="dialogo-nova-cobranca"><i data-icone="mais"></i>Nova cobrança</button>
+        </div>
+      </div>
+
+      <div class="resumo-situacoes" aria-label="Filtrar por situação">
+        <button class="resumo-situacao" type="button" aria-pressed="true">
+          <span class="selo selo-aberta">Aberta</span><strong>412</strong><span>R$ 35.020,00</span>
+        </button>
+        <button class="resumo-situacao" type="button" aria-pressed="true">
+          <span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span><strong>54</strong><span>R$ 4.810,00</span>
+        </button>
+        <button class="resumo-situacao" type="button" aria-pressed="false">
+          <span class="selo selo-paga"><i data-icone="check"></i>Paga</span><strong>318</strong><span>R$ 27.030,00 em outubro</span>
+        </button>
+        <button class="resumo-situacao" type="button" aria-pressed="false">
+          <span class="selo selo-manual"><i data-icone="editar"></i>Paga com registro manual</span><strong>2</strong><span>R$ 170,00 em outubro</span>
+        </button>
+        <button class="resumo-situacao" type="button" aria-pressed="false">
+          <span class="selo">Cancelada</span><strong>6</strong><span>em outubro</span>
+        </button>
+        <button class="resumo-situacao" type="button" aria-pressed="false">
+          <span class="selo"><i data-icone="estornar"></i>Estornada</span><strong>1</strong><span>em outubro</span>
+        </button>
+      </div>
+
+      <div class="filtros">
+        <div class="campo" style="flex: 1; max-width: 300px">
+          <label for="cb-aluno">Aluno</label>
+          <input id="cb-aluno" type="search" placeholder="Nome ou CPF" />
+        </div>
+        <div class="campo">
+          <label for="cb-venc-de">Vencimento de</label>
+          <input id="cb-venc-de" type="date" value="2026-08-01" />
+        </div>
+        <div class="campo">
+          <label for="cb-venc-ate">até</label>
+          <input id="cb-venc-ate" type="date" value="2026-11-30" />
+        </div>
+        <div class="campo" style="width: 120px">
+          <label for="cb-valor-min">Valor mínimo</label>
+          <input id="cb-valor-min" placeholder="R$ 0,00" />
+        </div>
+        <div class="campo" style="width: 120px">
+          <label for="cb-valor-max">Valor máximo</label>
+          <input id="cb-valor-max" placeholder="R$ 0,00" />
+        </div>
+        <button class="botao botao-fantasma" type="button">Limpar filtros</button>
+      </div>
+
+      <div class="tabela-envoltorio">
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Descrição</th>
+              <th class="numero">Valor</th>
+              <th>Vencimento</th>
+              <th>Situação</th>
+              <th class="numero">Atraso</th>
+              <th><span hidden>Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Lucas Andrade Ferreira</a></td>
+              <td>Mensalidade 08/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/08/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span><span class="secundario" data-dica="A última consulta desta cobrança no Asaas foi há 9 dias. Sincronize antes de cobrar o aluno."><i data-icone="alerta"></i> Sem sincronizar há 9 dias</span></td>
+              <td class="numero">70 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Lucas Andrade Ferreira</a></td>
+              <td>Mensalidade 09/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/09/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+              <td class="numero">39 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Beatriz Moura Lima</a></td>
+              <td>Mensalidade 09/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/09/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+              <td class="numero">39 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Júlia Nogueira Prado</a></td>
+              <td>Inscrição no Baile do ITA<span class="secundario">Cobrança avulsa</span></td>
+              <td class="numero">R$ 150,00</td>
+              <td>27/09/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+              <td class="numero">22 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Lucas Andrade Ferreira</a></td>
+              <td>Mensalidade 10/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/10/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+              <td class="numero">9 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Pedro Henrique Saldanha</a></td>
+              <td>Mensalidade 10/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/10/2026</td>
+              <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+              <td class="numero">9 dias</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+            <tr>
+              <td><a class="nome-principal" href="cobranca.html">Carlos Eduardo Vasconcelos</a></td>
+              <td>Mensalidade 11/2026</td>
+              <td class="numero">R$ 85,00</td>
+              <td>10/11/2026</td>
+              <td><span class="selo selo-aberta">Aberta</span></td>
+              <td class="numero">—</td>
+              <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="rodape-tabela">
+          <span>Mostrando 7 de 466 cobranças abertas e vencidas</span>
+          <span><button class="botao botao-pequeno" disabled>Anterior</button> <button class="botao botao-pequeno">Próxima</button></span>
+        </div>
+      </div>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nenhuma cobrança aqui existe no Asaas.</p>
+
+      <!-- Sincronizar cobranças com o Asaas [Cobranças.RF007] -->
+      <dialog id="dialogo-sincronizar" aria-labelledby="titulo-sincronizar">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-sincronizar">Sincronizar com o Asaas</h2>
+              <p>Consulta o Asaas e atualiza as cobranças cujas notificações não chegaram.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="formulario">
+              <div class="campo">
+                <label for="si-de">Vencimento de</label>
+                <input id="si-de" type="date" value="2026-08-01" />
+              </div>
+              <div class="campo">
+                <label for="si-ate">até</label>
+                <input id="si-ate" type="date" value="2026-10-31" />
+              </div>
+            </div>
+            <div class="resumo-efeito">
+              <p><strong>Resultado da última sincronização (19/10/2026, 06:00)</strong></p>
+              <ul class="lista-linhas">
+                <li><span>Cobranças conferidas</span><span class="numero">466</span></li>
+                <li><span>Situação atualizada (pagas no Asaas)</span><span class="numero">3</span></li>
+                <li><span>Encontradas só no Asaas e registradas aqui</span><span class="numero">0</span></li>
+                <li><span>Pagas com registro manual, para conferir</span><span class="numero">1</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="cancelar">Fechar</button>
+            <button class="botao botao-principal" value="sincronizar">Sincronizar agora</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

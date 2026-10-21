@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cadastros · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="cadastros">
+    <main class="pagina">
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Cadastros</h1>
+          <p>Alunos, funcionários, contratos e projetos que originam cobranças e despesas. Nada é excluído: cadastros são inativados.</p>
+        </div>
+      </div>
+
+      <div class="abas" role="tablist" aria-label="Tipos de cadastro">
+        <button class="aba" role="tab" aria-selected="true" aria-controls="painel-alunos">Alunos</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-funcionarios">Funcionários</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-contratos">Contratos</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-projetos">Projetos</button>
+      </div>
+
+      <!-- Alunos [Cadastros.RF001] -->
+      <section class="painel-aba" id="painel-alunos" role="tabpanel">
+        <div class="filtros">
+          <div class="campo" style="flex: 1; max-width: 360px">
+            <label for="al-busca">Nome ou CPF</label>
+            <input id="al-busca" type="search" placeholder="Ex.: Lucas ou 123.456" />
+          </div>
+          <div class="campo">
+            <label for="al-situacao">Situação</label>
+            <select id="al-situacao">
+              <option>Ativos</option>
+              <option>Inativos</option>
+              <option>Todos</option>
+            </select>
+          </div>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button" data-abrir="dialogo-aluno"><i data-icone="mais"></i>Novo aluno</button>
+          </div>
+        </div>
+
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>E-mail</th>
+                <th>Situação</th>
+                <th class="numero">Em aberto</th>
+                <th><span hidden>Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Ana Clara Ribeiro</a><span class="secundario">Turma 2028</span></td>
+                <td>111.222.333-44</td>
+                <td>ana.ribeiro@exemplo.com</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="numero">R$ 0,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Beatriz Moura Lima</a><span class="secundario">Turma 2027</span></td>
+                <td>222.333.444-55</td>
+                <td>beatriz.lima@exemplo.com</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="numero">R$ 170,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Carlos Eduardo Vasconcelos</a><span class="secundario">Turma 2029</span></td>
+                <td>333.444.555-66</td>
+                <td><span class="selo selo-alerta"><i data-icone="alerta"></i>Falta e-mail</span></td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="numero">R$ 0,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Júlia Nogueira Prado</a><span class="secundario">Turma 2027</span></td>
+                <td>444.555.666-77</td>
+                <td>julia.prado@exemplo.com</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="numero">R$ 150,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Lucas Andrade Ferreira</a><span class="secundario">Turma 2026</span></td>
+                <td>555.666.777-88</td>
+                <td>lucas.ferreira@exemplo.com</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="numero">R$ 255,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="aluno.html">Mariana Costa Albuquerque</a><span class="secundario">Turma 2025 · formada</span></td>
+                <td>666.777.888-99</td>
+                <td>mariana.albuquerque@exemplo.com</td>
+                <td><span class="selo">Inativo</span></td>
+                <td class="numero">R$ 0,00</td>
+                <td class="acoes">
+                  <a class="botao botao-pequeno botao-fantasma" href="aluno.html"><i data-icone="editar"></i>Editar</a>
+                  <a class="botao botao-pequeno" href="aluno.html#painel-aluno-cobrancas">Cobranças</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="rodape-tabela">
+            <span>Mostrando 1 a 6 de 742 alunos ativos</span>
+            <span><button class="botao botao-pequeno" disabled>Anterior</button> <button class="botao botao-pequeno">Próxima</button></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Funcionários [Cadastros.RF002] -->
+      <section class="painel-aba" id="painel-funcionarios" role="tabpanel" hidden>
+        <div class="filtros">
+          <div class="campo" style="flex: 1; max-width: 360px">
+            <label for="fu-busca">Nome ou CPF</label>
+            <input id="fu-busca" type="search" />
+          </div>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button"><i data-icone="mais"></i>Novo funcionário</button>
+          </div>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>Cargo</th><th>Admissão</th><th>Desligamento</th><th>Situação</th><th><span hidden>Ações</span></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nome-principal">Sônia Aparecida Martins</td><td>Responsável administrativa</td><td>03/02/2019</td><td>—</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Roberto Lins Moreira</td><td>Atendente da lavanderia</td><td>15/08/2022</td><td>—</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Cláudia Ferraz Neves</td><td>Auxiliar de limpeza</td><td>10/03/2021</td><td>30/06/2026</td>
+                <td><span class="selo">Inativo</span></td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Contratos [Cadastros.RF004] -->
+      <section class="painel-aba" id="painel-contratos" role="tabpanel" hidden>
+        <div class="alerta" role="status">
+          <i data-icone="alerta"></i>
+          <p><strong>1 contrato vence nos próximos 60 dias.</strong> Renove ou encerre antes do término.</p>
+        </div>
+        <div class="filtros">
+          <div class="campo">
+            <label for="co-situacao">Situação</label>
+            <select id="co-situacao"><option>Vigentes</option><option>Encerrados</option><option>Todos</option></select>
+          </div>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button"><i data-icone="mais"></i>Novo contrato</button>
+          </div>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr><th>Contraparte</th><th>Objeto</th><th class="numero">Valor</th><th>Periodicidade</th><th>Vigência</th><th class="numero">Pago em 2026</th><th>Situação</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nome-principal">Lavanderia Bem Lavado</td><td>Manutenção das máquinas</td><td class="numero">R$ 1.200,00</td><td>Mensal</td>
+                <td>01/01/2026 a 31/12/2026<span class="secundario">Vence em 73 dias</span></td>
+                <td class="numero">R$ 10.800,00</td><td><span class="selo selo-paga">Vigente</span></td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Gráfica Pontual</td><td>Impressões e banners</td><td class="numero">R$ 450,00</td><td>Por demanda</td>
+                <td>15/03/2026 a 15/12/2026<span class="secundario"><strong>Vence em 57 dias</strong></span></td>
+                <td class="numero">R$ 2.700,00</td><td><span class="selo selo-alerta"><i data-icone="alerta"></i>Vence em breve</span></td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Som &amp; Luz Eventos</td><td>Sonorização da Semana de Integração</td><td class="numero">R$ 6.000,00</td><td>Única</td>
+                <td>01/03/2026 a 31/03/2026</td>
+                <td class="numero">R$ 6.000,00</td><td><span class="selo">Encerrado</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Projetos [Cadastros.RF005] -->
+      <section class="painel-aba" id="painel-projetos" role="tabpanel" hidden>
+        <div class="filtros">
+          <div class="campo">
+            <label for="pr-situacao">Situação</label>
+            <select id="pr-situacao"><option>Em andamento</option><option>Encerrados</option><option>Todos</option></select>
+          </div>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button"><i data-icone="mais"></i>Novo projeto</button>
+          </div>
+        </div>
+        <div class="grade grade-3">
+          <div class="cartao">
+            <h3>Semana de Integração 2026</h3>
+            <p class="texto-apoio" style="margin: 4px 0 12px">Resp.: Gabriela Sato · 01/02/2026 a 31/03/2026</p>
+            <div class="texto-apoio">Movimentado <strong style="color: var(--foreground)">R$ 18.400,00</strong> de R$ 20.000,00 previstos</div>
+            <div class="progresso" data-dica="92% do orçamento previsto"><div style="width: 92%"></div></div>
+            <p style="margin: 12px 0 0"><span class="selo">Encerrado</span></p>
+          </div>
+          <div class="cartao">
+            <h3>Reforma da sala de estudos</h3>
+            <p class="texto-apoio" style="margin: 4px 0 12px">Resp.: Thiago Rezende · 01/08/2026 a 30/11/2026</p>
+            <div class="texto-apoio">Movimentado <strong style="color: var(--foreground)">R$ 7.150,00</strong> de R$ 12.000,00 previstos</div>
+            <div class="progresso" data-dica="60% do orçamento previsto"><div style="width: 60%"></div></div>
+            <p style="margin: 12px 0 0"><span class="selo selo-aberta">Em andamento</span></p>
+          </div>
+          <div class="cartao">
+            <h3>Olimpíada interna do ITA</h3>
+            <p class="texto-apoio" style="margin: 4px 0 12px">Resp.: Larissa Okada · 01/10/2026 a 15/11/2026</p>
+            <div class="texto-apoio">Movimentado <strong style="color: var(--foreground)">R$ 1.920,00</strong> · sem orçamento previsto</div>
+            <p style="margin: 12px 0 0"><span class="selo selo-aberta">Em andamento</span></p>
+          </div>
+        </div>
+      </section>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nomes, CPFs e e-mails são inventados.</p>
+
+      <dialog id="dialogo-aluno" aria-labelledby="titulo-aluno">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-aluno">Novo aluno</h2>
+              <p>E-mail e CPF são obrigatórios: o Asaas exige os dois para emitir a cobrança.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="formulario">
+              <div class="campo inteiro">
+                <label for="al-nome">Nome completo</label>
+                <input id="al-nome" />
+              </div>
+              <div class="campo">
+                <label for="al-cpf">CPF</label>
+                <input id="al-cpf" inputmode="numeric" placeholder="000.000.000-00" />
+              </div>
+              <div class="campo">
+                <label for="al-nascimento">Data de nascimento</label>
+                <input id="al-nascimento" type="date" />
+              </div>
+              <div class="campo">
+                <label for="al-email">E-mail</label>
+                <input id="al-email" type="email" />
+              </div>
+              <div class="campo">
+                <label for="al-telefone">Telefone</label>
+                <input id="al-telefone" inputmode="tel" placeholder="(12) 90000-0000" />
+              </div>
+              <div class="campo">
+                <label for="al-situacao-form">Situação</label>
+                <select id="al-situacao-form"><option>Ativo</option><option>Inativo</option></select>
+                <span class="dica">Só alunos ativos recebem a mensalidade automática.</span>
+              </div>
+            </div>
+            <div class="aviso aviso-perigo">
+              <i data-icone="alerta"></i>
+              <span>Já existe um cadastro ativo com o CPF 555.666.777-88 (Lucas Andrade Ferreira). Abra esse cadastro para atualizá-lo em vez de criar outro.</span>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="cancelar">Cancelar</button>
+            <button class="botao botao-principal" value="salvar">Salvar aluno</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

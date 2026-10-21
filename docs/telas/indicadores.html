@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indicadores · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="indicadores">
+    <main class="pagina">
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Indicadores</h1>
+          <p>Posição financeira do CASD no período. [Indicadores.RF001]</p>
+        </div>
+        <div class="acoes">
+          <div class="campo">
+            <label for="periodo">Período de referência</label>
+            <select id="periodo">
+              <option>Outubro de 2026</option>
+              <option>Setembro de 2026</option>
+              <option>Agosto de 2026</option>
+              <option>Últimos 12 meses</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="alerta" role="status">
+        <i data-icone="alerta"></i>
+        <p>
+          <strong>4 cobranças vencidas estão há mais de 7 dias sem sincronizar com o Asaas.</strong>
+          O aluno pode ter pago e a notificação não ter chegado. Sincronize antes de cobrar.
+        </p>
+        <a class="botao botao-pequeno" href="cobrancas.html"><i data-icone="sincronizar"></i>Sincronizar agora</a>
+      </div>
+
+      <section class="grade grade-4" aria-label="Resumo do período">
+        <div class="cartao indicador">
+          <div class="rotulo">Entradas</div>
+          <div class="valor">R$ 64.380,00</div>
+          <div class="detalhe">+4,0% em relação a setembro</div>
+        </div>
+        <div class="cartao indicador">
+          <div class="rotulo">Saídas</div>
+          <div class="valor">R$ 41.215,30</div>
+          <div class="detalhe">+6,4% em relação a setembro</div>
+        </div>
+        <div class="cartao indicador indicador-destaque">
+          <div class="rotulo">Resultado do período</div>
+          <div class="valor">R$ 23.164,70</div>
+          <div class="detalhe">Entradas menos saídas de outubro</div>
+        </div>
+        <div class="cartao indicador">
+          <div class="rotulo">Aguardando liberação do Asaas</div>
+          <div class="valor">R$ 4.250,00</div>
+          <div class="detalhe">Já pago pelos alunos, ainda não disponível em conta</div>
+        </div>
+      </section>
+
+      <section class="grade grade-2-1">
+        <div class="cartao">
+          <div class="cartao-cabecalho">
+            <div>
+              <h2>Entradas e saídas</h2>
+              <p>Últimos 6 meses</p>
+            </div>
+            <div class="legenda" aria-hidden="true">
+              <span><i style="background: var(--serie-entradas)"></i>Entradas</span>
+              <span><i style="background: var(--serie-saidas)"></i>Saídas</span>
+            </div>
+          </div>
+          <div class="grafico" id="grafico-evolucao"></div>
+          <details class="ver-tabela">
+            <summary>Ver os dados em tabela</summary>
+            <table id="tabela-evolucao">
+              <thead>
+                <tr>
+                  <th>Mês</th>
+                  <th class="numero">Entradas</th>
+                  <th class="numero">Saídas</th>
+                  <th class="numero">Resultado</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </details>
+        </div>
+
+        <div class="cartao">
+          <div class="cartao-cabecalho">
+            <div>
+              <h2>Inadimplência</h2>
+              <p>Valores originais, sem multa e juros. [Indicadores.RF002]</p>
+            </div>
+          </div>
+          <div class="grade grade-1-1" style="margin-bottom: 8px">
+            <div class="indicador">
+              <div class="rotulo">Alunos inadimplentes</div>
+              <div class="valor">37</div>
+            </div>
+            <div class="indicador">
+              <div class="rotulo">Valor em aberto</div>
+              <div class="valor">R$ 4.810,00</div>
+            </div>
+          </div>
+          <p class="texto-apoio" style="margin: 0 0 4px">Por tempo de atraso: até 30 dias, 24 alunos · 31 a 60 dias, 9 · mais de 60 dias, 4</p>
+          <h3 style="margin-top: 14px">Maiores devedores</h3>
+          <ul class="lista-linhas">
+            <li>
+              <span><a class="nome-principal" href="aluno.html">Lucas Andrade Ferreira</a><span class="secundario">3 cobranças · a mais antiga com 70 dias de atraso</span></span>
+              <span class="numero">R$ 255,00</span>
+              <button class="botao botao-pequeno botao-fantasma" type="button" aria-label="Reenviar boleto da cobrança vencida por e-mail" data-dica="Reenviar boleto da cobrança vencida por e-mail"><i data-icone="email"></i></button>
+            </li>
+            <li>
+              <span><a class="nome-principal" href="aluno.html">Beatriz Moura Lima</a><span class="secundario">2 cobranças · 39 dias de atraso</span></span>
+              <span class="numero">R$ 170,00</span>
+              <button class="botao botao-pequeno botao-fantasma" type="button" aria-label="Reenviar boleto da cobrança vencida por e-mail" data-dica="Reenviar boleto da cobrança vencida por e-mail"><i data-icone="email"></i></button>
+            </li>
+            <li>
+              <span><a class="nome-principal" href="aluno.html">Rafael Tavares Costa</a><span class="secundario">2 cobranças · 39 dias de atraso</span></span>
+              <span class="numero">R$ 170,00</span>
+              <button class="botao botao-pequeno botao-fantasma" type="button" aria-label="Reenviar boleto da cobrança vencida por e-mail" data-dica="Reenviar boleto da cobrança vencida por e-mail"><i data-icone="email"></i></button>
+            </li>
+            <li>
+              <span><a class="nome-principal" href="aluno.html">Júlia Nogueira Prado</a><span class="secundario">1 cobrança avulsa · 22 dias de atraso</span></span>
+              <span class="numero">R$ 150,00</span>
+              <button class="botao botao-pequeno botao-fantasma" type="button" aria-label="Reenviar boleto da cobrança vencida por e-mail" data-dica="Reenviar boleto da cobrança vencida por e-mail"><i data-icone="email"></i></button>
+            </li>
+            <li>
+              <span><a class="nome-principal" href="aluno.html">Pedro Henrique Saldanha</a><span class="secundario">1 cobrança · 9 dias de atraso</span></span>
+              <span class="numero">R$ 85,00</span>
+              <button class="botao botao-pequeno botao-fantasma" type="button" aria-label="Reenviar boleto da cobrança vencida por e-mail" data-dica="Reenviar boleto da cobrança vencida por e-mail"><i data-icone="email"></i></button>
+            </li>
+          </ul>
+          <a class="botao botao-pequeno" href="cobrancas.html" style="margin-top: 10px">Ver todas as cobranças vencidas</a>
+        </div>
+      </section>
+
+      <section class="cartao">
+        <div class="cartao-cabecalho">
+          <div>
+            <h2>Gastos por categoria</h2>
+            <p>Saídas de outubro de 2026, ordenadas por valor. Clique em uma categoria para ver as movimentações. [Indicadores.RF003]</p>
+          </div>
+          <label class="campo-check"><input type="checkbox" />Comparar com setembro</label>
+        </div>
+        <ul class="lista-barras">
+          <li>
+            <span>Eventos</span>
+            <div class="trilho" data-dica="Eventos: R$ 13.200,00 (32,0% das saídas)"><div class="preenchimento" style="width: 100%"></div></div>
+            <span class="valor-barra">R$ 13.200,00<span>32,0%</span></span>
+          </li>
+          <li>
+            <span>Pessoal</span>
+            <div class="trilho" data-dica="Pessoal: R$ 9.850,00 (23,9% das saídas)"><div class="preenchimento" style="width: 74.6%"></div></div>
+            <span class="valor-barra">R$ 9.850,00<span>23,9%</span></span>
+          </li>
+          <li>
+            <span>Lavanderia</span>
+            <div class="trilho" data-dica="Lavanderia: R$ 7.420,00 (18,0% das saídas)"><div class="preenchimento" style="width: 56.2%"></div></div>
+            <span class="valor-barra">R$ 7.420,00<span>18,0%</span></span>
+          </li>
+          <li>
+            <span>Manutenção</span>
+            <div class="trilho" data-dica="Manutenção: R$ 4.980,30 (12,1% das saídas)"><div class="preenchimento" style="width: 37.7%"></div></div>
+            <span class="valor-barra">R$ 4.980,30<span>12,1%</span></span>
+          </li>
+          <li>
+            <span>Projetos acadêmicos</span>
+            <div class="trilho" data-dica="Projetos acadêmicos: R$ 3.215,00 (7,8% das saídas)"><div class="preenchimento" style="width: 24.4%"></div></div>
+            <span class="valor-barra">R$ 3.215,00<span>7,8%</span></span>
+          </li>
+          <li>
+            <span>Material de escritório</span>
+            <div class="trilho" data-dica="Material de escritório: R$ 1.830,00 (4,4% das saídas)"><div class="preenchimento" style="width: 13.9%"></div></div>
+            <span class="valor-barra">R$ 1.830,00<span>4,4%</span></span>
+          </li>
+          <li>
+            <span><span class="selo selo-alerta"><i data-icone="alerta"></i>Não classificadas</span></span>
+            <div class="trilho" data-dica="Não classificadas: R$ 720,00 (1,7% das saídas). Classifique essas movimentações."><div class="preenchimento" style="width: 5.5%"></div></div>
+            <span class="valor-barra">R$ 720,00<span>1,7%</span></span>
+          </li>
+        </ul>
+      </section>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nenhum valor aqui é real.</p>
+    </main>
+
+    <script>
+      // Gráfico de barras agrupadas desenhado em SVG puro, só para o protótipo.
+      // No app real os valores chegam da API em centavos.
+      const meses = ['mai', 'jun', 'jul', 'ago', 'set', 'out'];
+      const nomesDosMeses = ['Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro'];
+      const entradas = [58240, 61030, 39510, 52800, 61920, 64380];
+      const saidas = [44120, 47900, 30260, 49610, 38740, 41215.3];
+
+      const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      const largura = 640;
+      const altura = 360;
+      const esquerda = 64;
+      const direita = 624;
+      const topo = 16;
+      const base = 324;
+      const maximo = 70000;
+      const larguraBarra = 26;
+      const espaco = 2;
+
+      function y(valor) {
+        return base - (valor / maximo) * (base - topo);
+      }
+
+      // Barra com cantos arredondados só no topo, presa à linha de base.
+      function caminhoDaBarra(x, topoDaBarra) {
+        const raio = 4;
+        return `M${x},${base} V${topoDaBarra + raio} Q${x},${topoDaBarra} ${x + raio},${topoDaBarra} H${x + larguraBarra - raio} Q${x + larguraBarra},${topoDaBarra} ${x + larguraBarra},${topoDaBarra + raio} V${base} Z`;
+      }
+
+      function barra(x, valor, cor, dica) {
+        return `<g class="barra" data-dica="${dica}">
+          <rect x="${x - 2}" y="${topo}" width="${larguraBarra + 4}" height="${base - topo}" fill="transparent" />
+          <path d="${caminhoDaBarra(x, y(valor))}" fill="${cor}" />
+        </g>`;
+      }
+
+      let conteudo = '';
+      for (const marca of [0, 20000, 40000, 60000]) {
+        conteudo += `<line class="grade-linha" x1="${esquerda}" x2="${direita}" y1="${y(marca)}" y2="${y(marca)}" />`;
+        conteudo += `<text x="${esquerda - 8}" y="${y(marca) + 4}" text-anchor="end">${marca === 0 ? 'R$ 0' : `R$ ${marca / 1000} mil`}</text>`;
+      }
+
+      const larguraGrupo = (direita - esquerda) / meses.length;
+      meses.forEach((mes, i) => {
+        const centro = esquerda + larguraGrupo * (i + 0.5);
+        const nome = `${nomesDosMeses[i]} de 2026`;
+        conteudo += barra(centro - larguraBarra - espaco / 2, entradas[i], 'var(--serie-entradas)', `${nome} · Entradas: ${reais.format(entradas[i])}`);
+        conteudo += barra(centro + espaco / 2, saidas[i], 'var(--serie-saidas)', `${nome} · Saídas: ${reais.format(saidas[i])}`);
+        conteudo += `<text x="${centro}" y="${base + 20}" text-anchor="middle">${mes}</text>`;
+      });
+
+      document.getElementById('grafico-evolucao').innerHTML = `
+        <svg viewBox="0 0 ${largura} ${altura}" role="img" aria-label="Entradas e saídas dos últimos 6 meses. Os valores estão na tabela abaixo do gráfico.">
+          ${conteudo}
+        </svg>`;
+
+      document.querySelector('#tabela-evolucao tbody').innerHTML = meses
+        .map(
+          (_, i) => `<tr>
+            <td>${nomesDosMeses[i]}</td>
+            <td class="numero">${reais.format(entradas[i])}</td>
+            <td class="numero">${reais.format(saidas[i])}</td>
+            <td class="numero">${reais.format(entradas[i] - saidas[i])}</td>
+          </tr>`,
+        )
+        .join('');
+    </script>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

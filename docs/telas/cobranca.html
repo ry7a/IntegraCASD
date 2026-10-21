@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cobrança · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="cobrancas">
+    <main class="pagina">
+      <nav class="trilha-navegacao" aria-label="Você está em">
+        <a href="cobrancas.html">Cobranças</a>
+        <span aria-hidden="true">›</span>
+        <span>Mensalidade 08/2026 · Lucas Andrade Ferreira</span>
+      </nav>
+
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Mensalidade 08/2026</h1>
+          <p>Detalhe da cobrança: daqui saem todas as ações sobre ela.</p>
+        </div>
+        <div class="acoes">
+          <a class="botao" href="cobrancas.html"><i data-icone="voltar"></i>Voltar para a lista</a>
+        </div>
+      </div>
+
+      <!-- Ações da cobrança [Cobranças.RF003 a RF007] -->
+      <section class="cartao" style="margin-bottom: 16px" aria-labelledby="titulo-acoes">
+        <div class="cartao-cabecalho">
+          <div>
+            <h2 id="titulo-acoes">Ações</h2>
+            <p>Sincronize antes de cobrar o aluno ou registrar pagamento: o pagamento pode já estar no Asaas.</p>
+          </div>
+        </div>
+        <div class="bloco-acoes">
+          <button class="botao botao-principal" type="button" data-abrir="dialogo-sincronizar-cobranca"><i data-icone="sincronizar"></i>Sincronizar esta cobrança</button>
+          <button class="botao" type="button"><i data-icone="baixar"></i>Baixar boleto</button>
+          <button class="botao" type="button"><i data-icone="email"></i>Reenviar boleto por e-mail</button>
+          <button class="botao" type="button" data-abrir="dialogo-pagamento-manual"><i data-icone="editar"></i>Registrar pagamento manualmente</button>
+          <button class="botao separador" type="button" data-abrir="dialogo-cancelar"><i data-icone="fechar"></i>Cancelar / renegociar</button>
+        </div>
+      </section>
+
+      <div class="grade grade-2-1">
+        <section class="cartao" aria-labelledby="titulo-dados">
+          <div class="cartao-cabecalho">
+            <h2 id="titulo-dados">Dados da cobrança</h2>
+            <span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span>
+          </div>
+          <dl class="dados-lista">
+            <dt>Aluno</dt>
+            <dd><a href="aluno.html">Lucas Andrade Ferreira</a></dd>
+            <dt>Descrição</dt>
+            <dd>Mensalidade 08/2026</dd>
+            <dt>Valor original</dt>
+            <dd>R$ 85,00</dd>
+            <dt>Vencimento</dt>
+            <dd>10/08/2026</dd>
+            <dt>Atraso</dt>
+            <dd>70 dias</dd>
+            <dt>Identificação no Asaas</dt>
+            <dd>pay_ficticio_000812</dd>
+          </dl>
+          <div class="aviso" style="margin-top: 16px">
+            <i data-icone="relogio"></i>
+            <span>Multa de 2% e juros de 1% ao mês são aplicados pelo Asaas no boleto. O IntegraCASD mostra sempre o <strong>valor original</strong>, sem multa e juros.</span>
+          </div>
+        </section>
+
+        <section class="cartao" aria-labelledby="titulo-sincronizacao">
+          <div class="cartao-cabecalho">
+            <h2 id="titulo-sincronizacao">Sincronização com o Asaas</h2>
+          </div>
+          <p style="margin: 0 0 12px">Última sincronização desta cobrança: <strong>10/10/2026, há 9 dias</strong>.</p>
+          <div class="alerta" role="status" style="margin-bottom: 0">
+            <i data-icone="alerta"></i>
+            <p>Sincronização antiga. O aluno pode ter pago e a notificação não ter chegado. Sincronize antes de cobrar.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Histórico de eventos do Asaas, do mais recente para o mais antigo -->
+      <section class="cartao" aria-labelledby="titulo-historico">
+        <div class="cartao-cabecalho">
+          <div>
+            <h2 id="titulo-historico">Histórico de eventos do Asaas</h2>
+            <p>Do mais recente para o mais antigo.</p>
+          </div>
+        </div>
+        <ol class="linha-tempo">
+          <li>
+            <time>15/09/2026 10:40</time>
+            <span>Boleto reenviado por e-mail ao aluno, por Sônia Aparecida Martins.</span>
+            <span class="selo">Usuário</span>
+          </li>
+          <li>
+            <time>11/08/2026 00:10</time>
+            <span>Vencimento sem pagamento: a situação da cobrança passou a Vencida.</span>
+            <span class="selo">Asaas</span>
+          </li>
+          <li>
+            <time>01/08/2026 06:03</time>
+            <span>Boleto enviado por e-mail ao aluno.</span>
+            <span class="selo">Asaas</span>
+          </li>
+          <li>
+            <time>01/08/2026 06:03</time>
+            <span>Cobrança criada no Asaas.</span>
+            <span class="selo">Asaas</span>
+          </li>
+        </ol>
+      </section>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nenhuma cobrança aqui existe no Asaas.</p>
+
+      <!-- Sincronizar só esta cobrança [Cobranças.RF007] -->
+      <dialog id="dialogo-sincronizar-cobranca" aria-labelledby="titulo-sincronizar-cobranca">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-sincronizar-cobranca">Sincronizar esta cobrança</h2>
+              <p>Consulta o Asaas e atualiza a situação de Mensalidade 08/2026.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="resumo-efeito">
+              <dl>
+                <dt>Aluno</dt><dd>Lucas Andrade Ferreira</dd>
+                <dt>Última sincronização</dt><dd>10/10/2026 (há 9 dias)</dd>
+              </dl>
+              <p>Se o Asaas indicar que o boleto foi pago, a cobrança passa a Paga e a entrada é criada em Movimentações.</p>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="cancelar">Fechar</button>
+            <button class="botao botao-principal" value="sincronizar">Sincronizar agora</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- Cancelar cobrança [Cobranças.RF004] — operação irreversível, com resumo do efeito -->
+      <dialog id="dialogo-cancelar" aria-labelledby="titulo-cancelar">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-cancelar">Cancelar cobrança?</h2>
+              <p>Esta operação não pode ser desfeita.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="resumo-efeito">
+              <dl>
+                <dt>Aluno</dt><dd>Lucas Andrade Ferreira</dd>
+                <dt>Cobrança</dt><dd>Mensalidade 08/2026 · R$ 85,00</dd>
+                <dt>Vencimento</dt><dd>10/08/2026 (vencida há 70 dias)</dd>
+              </dl>
+              <p>A cobrança será cancelada <strong>no Asaas e no IntegraCASD</strong>. O boleto perde a validade e a cobrança deixa de contar na inadimplência.</p>
+            </div>
+            <div class="campo">
+              <label for="ca-motivo">Motivo do cancelamento</label>
+              <textarea id="ca-motivo" placeholder="Ex.: renegociação em 3 parcelas, acordada com o aluno em 19/10/2026"></textarea>
+            </div>
+            <label class="campo-check"><input type="checkbox" checked />Emitir nova cobrança para o aluno em seguida (renegociação)</label>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="voltar">Voltar</button>
+            <button class="botao botao-destrutivo" value="confirmar">Cancelar cobrança</button>
+          </div>
+        </form>
+      </dialog>
+
+      <!-- Registrar pagamento não conciliado [Cobranças.RF006] -->
+      <dialog id="dialogo-pagamento-manual" aria-labelledby="titulo-pagamento-manual">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-pagamento-manual">Registrar pagamento manualmente</h2>
+              <p>Use só quando o valor comprovadamente entrou e a conciliação não refletiu.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="aviso">
+              <i data-icone="relogio"></i>
+              <span>Última sincronização desta cobrança com o Asaas: <strong>10/10/2026, há 9 dias</strong>. <a href="#" data-abrir="dialogo-sincronizar-cobranca">Sincronize primeiro</a>: o pagamento pode já estar lá.</span>
+            </div>
+            <div class="resumo-efeito">
+              <dl>
+                <dt>Aluno</dt><dd>Lucas Andrade Ferreira</dd>
+                <dt>Cobrança</dt><dd>Mensalidade 08/2026 · R$ 85,00</dd>
+              </dl>
+            </div>
+            <div class="formulario">
+              <div class="campo">
+                <label for="pm-data">Data do pagamento</label>
+                <input id="pm-data" type="date" />
+              </div>
+              <div class="campo">
+                <label for="pm-valor">Valor pago</label>
+                <input id="pm-valor" value="R$ 85,00" />
+              </div>
+              <div class="campo inteiro">
+                <label for="pm-justificativa">Justificativa (obrigatória)</label>
+                <textarea id="pm-justificativa" placeholder="Ex.: Pix recebido na conta do CASD em 12/08, comprovante enviado pelo aluno"></textarea>
+              </div>
+            </div>
+            <div class="aviso aviso-perigo">
+              <i data-icone="alerta"></i>
+              <span>A cobrança ficará como <strong>Paga com registro manual</strong> e o IntegraCASD passará a divergir do Asaas. Uma entrada de R$ 85,00 será criada em Movimentações.</span>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="voltar">Voltar</button>
+            <button class="botao botao-destrutivo" value="confirmar">Registrar pagamento</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

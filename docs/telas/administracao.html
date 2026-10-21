@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Administração · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="administracao">
+    <main class="pagina">
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Administração</h1>
+          <p>Configurações que mudam o comportamento do sistema. Visível só para o perfil de diretoria.</p>
+        </div>
+      </div>
+
+      <div class="abas" role="tablist" aria-label="Seções da administração">
+        <button class="aba" role="tab" aria-selected="true" aria-controls="painel-usuarios">Usuários</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-categorias">Categorias</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-parametros">Parâmetros de cobrança</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-integracao">Integração com o Asaas</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-trilha">Trilha de auditoria</button>
+      </div>
+
+      <!-- Usuários e permissões [Administração.RF001] -->
+      <section class="painel-aba" id="painel-usuarios" role="tabpanel">
+        <div class="filtros">
+          <p class="texto-apoio" style="margin: 0">
+            A diretoria tem todas as permissões do administrativo, mais esta área. Ao trocar de gestão, deixe ao menos um usuário de
+            diretoria ativo.
+          </p>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button"><i data-icone="mais"></i>Novo usuário</button>
+          </div>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th>Último acesso</th><th><span hidden>Ações</span></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="nome-principal">Marina Teixeira</span><span class="secundario">Você</span></td>
+                <td>marina.teixeira@exemplo.com</td>
+                <td>Diretoria</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td>19/10/2026 08:02</td>
+                <td class="acoes">
+                  <span data-dica="Você não pode inativar o próprio acesso."><button class="botao botao-pequeno" disabled>Inativar</button></span>
+                </td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Sônia Aparecida Martins</td>
+                <td>sonia.martins@exemplo.com</td>
+                <td>Administrativo</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td>19/10/2026 07:45</td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+              <tr>
+                <td class="nome-principal">Thiago Rezende</td>
+                <td>thiago.rezende@exemplo.com</td>
+                <td>Diretoria</td>
+                <td><span class="selo selo-paga">Ativo</span></td>
+                <td>14/10/2026 21:10</td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+              <tr>
+                <td><span class="nome-principal">Gabriela Sato</span><span class="secundario">Gestão 2025</span></td>
+                <td>gabriela.sato@exemplo.com</td>
+                <td>Diretoria</td>
+                <td><span class="selo">Inativo</span></td>
+                <td>20/12/2025 18:30</td>
+                <td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Categorias de movimentação [Administração.RF002] -->
+      <section class="painel-aba" id="painel-categorias" role="tabpanel" hidden>
+        <div class="filtros">
+          <p class="texto-apoio" style="margin: 0">Categoria em uso pode ser inativada, mas não excluída: os relatórios antigos continuam iguais.</p>
+          <div class="campo" style="margin-left: auto">
+            <button class="botao botao-principal" type="button"><i data-icone="mais"></i>Nova categoria</button>
+          </div>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr><th>Categoria</th><th>Aplica-se a</th><th class="numero">Movimentações</th><th>Situação</th><th><span hidden>Ações</span></th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="nome-principal">Mensalidades</td><td>Entradas</td><td class="numero">2.341</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Lavanderia</td><td>Entradas e saídas</td><td class="numero">418</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Eventos</td><td>Entradas e saídas</td><td class="numero">96</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Pessoal</td><td>Saídas</td><td class="numero">54</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Manutenção</td><td>Saídas</td><td class="numero">61</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Projetos acadêmicos</td><td>Saídas</td><td class="numero">27</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Material de escritório</td><td>Saídas</td><td class="numero">33</td><td><span class="selo selo-paga">Ativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+              <tr><td class="nome-principal">Cantina</td><td>Entradas e saídas</td><td class="numero">120</td><td><span class="selo">Inativa</span></td><td class="acoes"><button class="botao botao-pequeno botao-fantasma"><i data-icone="editar"></i>Editar</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Parâmetros das cobranças recorrentes [Administração.RF003] -->
+      <section class="painel-aba" id="painel-parametros" role="tabpanel" hidden>
+        <div class="grade grade-2-1">
+          <div class="cartao">
+            <div class="cartao-cabecalho">
+              <div>
+                <h2>Mensalidade</h2>
+                <p>Última alteração em 02/03/2026 por Marina Teixeira</p>
+              </div>
+            </div>
+            <div class="formulario">
+              <div class="campo">
+                <label for="pa-valor">Valor da mensalidade</label>
+                <input id="pa-valor" value="R$ 85,00" />
+              </div>
+              <div class="campo">
+                <label for="pa-vencimento">Dia de vencimento</label>
+                <input id="pa-vencimento" type="number" min="1" max="28" value="10" />
+              </div>
+              <div class="campo">
+                <label for="pa-geracao">Dia de geração</label>
+                <input id="pa-geracao" type="number" min="1" max="28" value="1" />
+                <span class="dica">Precisa ser antes do dia de vencimento.</span>
+              </div>
+              <div class="campo"></div>
+              <div class="campo">
+                <label for="pa-multa">Multa por atraso</label>
+                <input id="pa-multa" value="2%" />
+              </div>
+              <div class="campo">
+                <label for="pa-juros">Juros ao mês</label>
+                <input id="pa-juros" value="1%" />
+                <span class="dica">Multa e juros são calculados pelo Asaas no pagamento.</span>
+              </div>
+            </div>
+            <div class="aviso" style="margin-top: 16px">
+              <i data-icone="alerta"></i>
+              <span>Um novo valor vale só para as próximas cobranças. As já emitidas, inclusive as vencidas, mantêm o valor anterior.</span>
+            </div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 16px">
+              <button class="botao botao-principal" type="button">Salvar parâmetros</button>
+            </div>
+          </div>
+
+          <div class="cartao">
+            <h2>Conferência</h2>
+            <ul class="lista-linhas" style="margin-top: 8px">
+              <li><span>Próxima geração</span><span class="numero">01/11/2026</span></li>
+              <li><span>Vencimento</span><span class="numero">10/11/2026</span></li>
+              <li><span>Alunos que serão cobrados</span><span class="numero">742</span></li>
+              <li><span>Total previsto</span><span class="numero">R$ 63.070,00</span></li>
+            </ul>
+            <h3 style="margin-top: 18px">Últimas execuções</h3>
+            <ul class="lista-linhas">
+              <li>
+                <span>01/10/2026 · 06:00 a 06:14<span class="secundario">739 criadas · 3 falharam por cadastro incompleto</span></span>
+                <a class="botao botao-pequeno" href="cadastros.html">Ver falhas</a>
+              </li>
+              <li>
+                <span>01/09/2026 · 06:00 a 06:13<span class="secundario">741 criadas · nenhuma falha</span></span>
+                <span class="selo selo-paga"><i data-icone="check"></i>Concluída</span>
+              </li>
+              <li>
+                <span>01/08/2026 · 06:00 a 06:15<span class="secundario">736 criadas · 2 falharam por cadastro incompleto</span></span>
+                <span class="selo selo-paga"><i data-icone="check"></i>Concluída</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Integração com o Asaas [Administração.RF004] -->
+      <section class="painel-aba" id="painel-integracao" role="tabpanel" hidden>
+        <div class="grade grade-1-1">
+          <div class="cartao">
+            <div class="cartao-cabecalho">
+              <div>
+                <h2>Situação da integração</h2>
+                <p>Testada pela última vez em 19/10/2026 às 06:00</p>
+              </div>
+              <span class="selo selo-paga"><i data-icone="check"></i>Conectada</span>
+            </div>
+            <ul class="lista-linhas">
+              <li><span>Ambiente</span><span class="selo selo-alerta"><i data-icone="alerta"></i>Testes (sandbox)</span></li>
+              <li><span>Última notificação recebida</span><span class="numero">há 12 minutos</span></li>
+              <li><span>Falhas de entrega seguidas</span><span class="numero">0 de 15</span></li>
+              <li>
+                <span>Chave de acesso<span class="secundario">Cadastrada em 02/10/2026. Por segurança, nunca é exibida.</span></span>
+                <button class="botao botao-pequeno" type="button" data-abrir="dialogo-chave"><i data-icone="cadeado"></i>Substituir chave</button>
+              </li>
+            </ul>
+          </div>
+          <div class="cartao">
+            <h2>Endereço de notificação</h2>
+            <p class="texto-apoio" style="margin: 4px 0 12px">Cadastre este endereço no painel do Asaas, em Integrações › Webhooks.</p>
+            <div style="display: flex; gap: 8px">
+              <input readonly value="https://integracasd.exemplo.org/webhooks/asaas" aria-label="Endereço de notificação" />
+              <button class="botao" type="button" aria-label="Copiar endereço" data-dica="Copiar endereço"><i data-icone="copiar"></i></button>
+            </div>
+            <div class="campo" style="margin-top: 18px">
+              <label for="in-alerta">Alertar a diretoria se ficar sem notificações por</label>
+              <select id="in-alerta">
+                <option>12 horas</option>
+                <option selected>24 horas</option>
+                <option>48 horas</option>
+              </select>
+              <span class="dica">No máximo 48 horas. Depois de 14 dias o Asaas descarta os eventos não entregues.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Trilha de auditoria [Administração.RF005] -->
+      <section class="painel-aba" id="painel-trilha" role="tabpanel" hidden>
+        <div class="filtros">
+          <div class="campo">
+            <label for="tr-de">De</label>
+            <input id="tr-de" type="date" value="2026-10-01" />
+          </div>
+          <div class="campo">
+            <label for="tr-ate">até</label>
+            <input id="tr-ate" type="date" value="2026-10-19" />
+          </div>
+          <div class="campo">
+            <label for="tr-usuario">Usuário</label>
+            <select id="tr-usuario"><option>Todos</option><option>Marina Teixeira</option><option>Sônia Aparecida Martins</option><option>Rotinas automáticas</option></select>
+          </div>
+          <div class="campo">
+            <label for="tr-operacao">Operação</label>
+            <select id="tr-operacao"><option>Todas</option><option>Inclusão</option><option>Alteração</option><option>Inativação</option><option>Estorno</option><option>Cancelamento</option></select>
+          </div>
+          <div class="campo">
+            <label for="tr-entidade">Registro</label>
+            <select id="tr-entidade"><option>Todos</option><option>Aluno</option><option>Cobrança</option><option>Movimentação</option><option>Configuração</option></select>
+          </div>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr><th>Data e hora</th><th>Usuário</th><th>Operação</th><th>Registro afetado</th><th>Detalhe</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>18/10/2026 10:21</td><td>Sônia Aparecida Martins</td><td>Inclusão</td><td>Movimentação</td><td>Manutenção das máquinas, outubro/2026 · − R$ 1.200,00</td></tr>
+              <tr><td>16/10/2026 14:05</td><td>Marina Teixeira</td><td>Inclusão</td><td>Movimentação</td><td>Tinta e materiais para a reforma · − R$ 2.380,00</td></tr>
+              <tr><td>15/10/2026 11:30</td><td>Sônia Aparecida Martins</td><td>Registro manual de pagamento</td><td>Cobrança</td><td>Mensalidade 10/2026 de Rafael Tavares Costa · justificativa: Pix na conta do CASD</td></tr>
+              <tr><td>14/10/2026 09:12</td><td>Marina Teixeira</td><td>Estorno</td><td>Movimentação</td><td>Impressão de banners · motivo: lançada em duplicidade</td></tr>
+              <tr><td>02/10/2026 16:40</td><td>Marina Teixeira</td><td>Alteração</td><td>Configuração</td><td>Chave de acesso do Asaas substituída (o valor não é registrado)</td></tr>
+              <tr><td>01/10/2026 06:14</td><td>Rotina automática</td><td>Geração recorrente</td><td>Cobrança</td><td>739 mensalidades criadas · 3 falhas</td></tr>
+            </tbody>
+          </table>
+          <div class="rodape-tabela">
+            <span>A trilha não pode ser alterada nem excluída, por nenhum perfil.</span>
+          </div>
+        </div>
+      </section>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. O endereço e os usuários são inventados.</p>
+
+      <dialog id="dialogo-chave" aria-labelledby="titulo-chave">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-chave">Substituir chave do Asaas</h2>
+              <p>O sistema testa a nova chave antes de salvar. Se o teste falhar, a chave atual continua valendo.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="campo">
+              <label for="ch-chave">Nova chave de acesso</label>
+              <input id="ch-chave" type="password" autocomplete="off" />
+            </div>
+            <div class="campo">
+              <label for="ch-ambiente">Ambiente</label>
+              <select id="ch-ambiente"><option>Testes (sandbox)</option><option>Produção</option></select>
+              <span class="dica">Em testes, uma faixa no topo avisa que as cobranças não são reais.</span>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="cancelar">Cancelar</button>
+            <button class="botao botao-principal" value="salvar">Testar e salvar</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

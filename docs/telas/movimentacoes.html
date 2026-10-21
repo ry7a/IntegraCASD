@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Movimentações · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="movimentacoes">
+    <main class="pagina">
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Movimentações</h1>
+          <p>Entradas e saídas do CASD. Movimentação registrada não é editada nem excluída: correções são feitas por estorno.</p>
+        </div>
+        <div class="acoes">
+          <button class="botao botao-principal" type="button" data-abrir="dialogo-nova-movimentacao"><i data-icone="mais"></i>Nova movimentação</button>
+        </div>
+      </div>
+
+      <section class="grade grade-3" aria-label="Totais do recorte">
+        <div class="cartao indicador">
+          <div class="rotulo">Entradas</div>
+          <div class="valor">R$ 64.380,00</div>
+          <div class="detalhe">812 movimentações</div>
+        </div>
+        <div class="cartao indicador">
+          <div class="rotulo">Saídas</div>
+          <div class="valor">R$ 41.215,30</div>
+          <div class="detalhe">212 movimentações</div>
+        </div>
+        <div class="cartao indicador indicador-destaque">
+          <div class="rotulo">Saldo do recorte</div>
+          <div class="valor">R$ 23.164,70</div>
+          <div class="detalhe">Outubro de 2026, todos os filtros abaixo</div>
+        </div>
+      </section>
+
+      <div class="filtros">
+        <div class="campo">
+          <label for="mv-periodo">Período</label>
+          <select id="mv-periodo">
+            <option>Outubro de 2026</option>
+            <option>Setembro de 2026</option>
+            <option>Personalizado…</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="mv-tipo">Tipo</label>
+          <select id="mv-tipo"><option>Entradas e saídas</option><option>Só entradas</option><option>Só saídas</option></select>
+        </div>
+        <div class="campo">
+          <label for="mv-categoria">Categoria</label>
+          <select id="mv-categoria">
+            <option>Todas</option>
+            <option>Mensalidades</option>
+            <option>Lavanderia</option>
+            <option>Eventos</option>
+            <option>Pessoal</option>
+            <option>Manutenção</option>
+            <option>Material de escritório</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="mv-forma">Forma de pagamento</label>
+          <select id="mv-forma"><option>Todas</option><option>Asaas</option><option>Pix</option><option>Transferência</option><option>Dinheiro</option><option>Cartão</option></select>
+        </div>
+        <div class="campo" style="flex: 1; max-width: 260px">
+          <label for="mv-vinculo">Projeto ou contrato</label>
+          <input id="mv-vinculo" type="search" placeholder="Ex.: Reforma da sala" />
+        </div>
+        <label class="campo-check"><input type="checkbox" />Ocultar estornos</label>
+      </div>
+
+      <div class="tabela-envoltorio">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Forma</th>
+              <th>Origem</th>
+              <th class="numero">Valor</th>
+              <th><span hidden>Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>18/10/2026</td>
+              <td><span class="nome-principal">Manutenção das máquinas, outubro/2026</span><span class="secundario">Contrato · Lavanderia Bem Lavado</span></td>
+              <td>Lavanderia</td>
+              <td>Pix</td>
+              <td>Manual<span class="secundario">Sônia Martins</span></td>
+              <td class="numero">− R$ 1.200,00</td>
+              <td class="acoes">
+                <button class="botao botao-pequeno" data-abrir="dialogo-estornar"><i data-icone="estornar"></i>Estornar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>17/10/2026</td>
+              <td class="nome-principal">Recebimentos da lavanderia na semana</td>
+              <td>Lavanderia</td>
+              <td>Dinheiro</td>
+              <td>Manual<span class="secundario">Sônia Martins</span></td>
+              <td class="numero">+ R$ 1.340,00</td>
+              <td class="acoes">
+                <button class="botao botao-pequeno" data-abrir="dialogo-estornar"><i data-icone="estornar"></i>Estornar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>16/10/2026</td>
+              <td><span class="nome-principal">Tinta e materiais para a reforma</span><span class="secundario">Projeto · Reforma da sala de estudos</span></td>
+              <td>Manutenção</td>
+              <td>Cartão</td>
+              <td>Manual<span class="secundario">Marina Teixeira</span></td>
+              <td class="numero">− R$ 2.380,00</td>
+              <td class="acoes">
+                <button class="botao botao-pequeno" data-abrir="dialogo-estornar"><i data-icone="estornar"></i>Estornar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>15/10/2026</td>
+              <td><span class="nome-principal">Mensalidade 10/2026 · Rafael Tavares Costa</span><span class="secundario">Cobrança</span></td>
+              <td>Mensalidades</td>
+              <td>Asaas</td>
+              <td><span class="selo selo-manual"><i data-icone="editar"></i>Registro manual de cobrança</span></td>
+              <td class="numero">+ R$ 85,00</td>
+              <td class="acoes">
+                <span data-dica="Movimentações de cobrança são corrigidas pela própria cobrança, em Cobranças."><button class="botao botao-pequeno" disabled><i data-icone="estornar"></i>Estornar</button></span>
+              </td>
+            </tr>
+            <tr>
+              <td>14/10/2026</td>
+              <td><span class="nome-principal">Estorno: impressão de banners</span><span class="secundario">Contrato · Gráfica Pontual · motivo: lançada em duplicidade</span></td>
+              <td>Material de escritório</td>
+              <td>Pix</td>
+              <td>Estorno<span class="secundario">Marina Teixeira</span></td>
+              <td class="numero">+ R$ 450,00</td>
+              <td class="acoes"></td>
+            </tr>
+            <tr class="linha-estornada">
+              <td>12/10/2026</td>
+              <td><span class="riscado">Impressão de banners</span><span class="secundario">Contrato · Gráfica Pontual</span><span class="selo"><i data-icone="estornar"></i>Estornada em 14/10/2026</span></td>
+              <td>Material de escritório</td>
+              <td>Pix</td>
+              <td>Manual<span class="secundario">Sônia Martins</span></td>
+              <td class="numero"><span class="riscado">− R$ 450,00</span></td>
+              <td class="acoes">
+              </td>
+            </tr>
+            <tr>
+              <td>10/10/2026</td>
+              <td><span class="nome-principal">Salário de outubro · Sônia Aparecida Martins</span><span class="secundario">Funcionário</span></td>
+              <td>Pessoal</td>
+              <td>Transferência</td>
+              <td>Manual<span class="secundario">Marina Teixeira</span></td>
+              <td class="numero">− R$ 4.200,00</td>
+              <td class="acoes">
+                <button class="botao botao-pequeno" data-abrir="dialogo-estornar"><i data-icone="estornar"></i>Estornar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>08/10/2026</td>
+              <td><span class="nome-principal">Mensalidade 10/2026 · Ana Clara Ribeiro</span><span class="secundario">Cobrança</span></td>
+              <td>Mensalidades</td>
+              <td>Asaas</td>
+              <td>Conciliação automática</td>
+              <td class="numero">+ R$ 85,00</td>
+              <td class="acoes">
+                <span data-dica="Entradas da conciliação espelham o Asaas. Para corrigir, trate a cobrança em Cobranças."><button class="botao botao-pequeno" disabled><i data-icone="estornar"></i>Estornar</button></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="rodape-tabela">
+          <span>Mostrando 8 de 1.024 movimentações de outubro de 2026</span>
+          <span><button class="botao botao-pequeno" disabled>Anterior</button> <button class="botao botao-pequeno">Próxima</button></span>
+        </div>
+      </div>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nenhum valor aqui é real.</p>
+
+      <!-- Estornar movimentação [Movimentações.RF002] — operação irreversível -->
+      <dialog id="dialogo-estornar" aria-labelledby="titulo-estornar">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-estornar">Estornar movimentação?</h2>
+              <p>Esta operação não pode ser desfeita.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="resumo-efeito">
+              <dl>
+                <dt>Movimentação</dt><dd>Manutenção das máquinas, outubro/2026</dd>
+                <dt>Valor</dt><dd>− R$ 1.200,00 · Pix · 18/10/2026</dd>
+                <dt>Vínculo</dt><dd>Contrato · Lavanderia Bem Lavado</dd>
+              </dl>
+              <p>A movimentação original continua visível, marcada como estornada. Será criada uma entrada de <strong>+ R$ 1.200,00</strong> que anula o efeito dela no saldo.</p>
+            </div>
+            <div class="campo">
+              <label for="es-motivo">Motivo do estorno</label>
+              <textarea id="es-motivo" placeholder="Ex.: valor lançado errado, o correto é R$ 1.020,00"></textarea>
+            </div>
+            <label class="campo-check"><input type="checkbox" checked />Lançar a movimentação correta em seguida</label>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="voltar">Voltar</button>
+            <button class="botao botao-destrutivo" value="confirmar">Estornar</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>

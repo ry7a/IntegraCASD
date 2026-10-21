@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aluno · IntegraCASD (protótipo)</title>
+    <link rel="stylesheet" href="estilo.css" />
+  </head>
+  <body data-pagina="cadastros">
+    <main class="pagina">
+      <nav class="trilha-navegacao" aria-label="Você está em">
+        <a href="cadastros.html">Cadastros</a>
+        <span aria-hidden="true">›</span>
+        <a href="cadastros.html">Alunos</a>
+        <span aria-hidden="true">›</span>
+        <span>Lucas Andrade Ferreira</span>
+      </nav>
+
+      <!-- Cabeçalho do aluno [Cadastros.RF001] -->
+      <div class="cabecalho-pagina">
+        <div>
+          <h1>Lucas Andrade Ferreira <span class="selo selo-paga" style="vertical-align: middle">Ativo</span></h1>
+          <p>CPF 555.666.777-88 · lucas.ferreira@exemplo.com · Turma 2026</p>
+        </div>
+        <div class="acoes">
+          <button class="botao" type="button" data-abrir="dialogo-inativar"><i data-icone="fechar"></i>Inativar aluno</button>
+          <button class="botao botao-principal" type="button" data-abrir="dialogo-nova-cobranca" data-aluno="Lucas Andrade Ferreira"><i data-icone="mais"></i>Nova cobrança</button>
+        </div>
+      </div>
+
+      <div class="abas" role="tablist" aria-label="Informações do aluno">
+        <button class="aba" role="tab" aria-selected="true" aria-controls="painel-aluno-dados">Dados</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-aluno-cobrancas">Cobranças</button>
+        <button class="aba" role="tab" aria-selected="false" aria-controls="painel-aluno-movimentacoes">Movimentações</button>
+      </div>
+
+      <!-- Dados cadastrais -->
+      <section class="painel-aba" id="painel-aluno-dados" role="tabpanel">
+        <div class="cartao" style="max-width: 720px">
+          <div class="cartao-cabecalho">
+            <div>
+              <h2>Dados cadastrais</h2>
+              <p>E-mail e CPF são obrigatórios: o Asaas exige os dois para emitir a cobrança.</p>
+            </div>
+          </div>
+          <form class="formulario" method="dialog">
+            <div class="campo inteiro">
+              <label for="ad-nome">Nome completo</label>
+              <input id="ad-nome" value="Lucas Andrade Ferreira" />
+            </div>
+            <div class="campo">
+              <label for="ad-cpf">CPF</label>
+              <input id="ad-cpf" inputmode="numeric" value="555.666.777-88" />
+            </div>
+            <div class="campo">
+              <label for="ad-nascimento">Data de nascimento</label>
+              <input id="ad-nascimento" type="date" value="2005-03-14" />
+            </div>
+            <div class="campo">
+              <label for="ad-email">E-mail</label>
+              <input id="ad-email" type="email" value="lucas.ferreira@exemplo.com" />
+            </div>
+            <div class="campo">
+              <label for="ad-telefone">Telefone</label>
+              <input id="ad-telefone" inputmode="tel" value="(12) 90000-0000" />
+            </div>
+            <div class="campo">
+              <label for="ad-situacao">Situação</label>
+              <select id="ad-situacao"><option>Ativo</option><option>Inativo</option></select>
+              <span class="dica">Só alunos ativos recebem a mensalidade automática.</span>
+            </div>
+            <div class="inteiro">
+              <button class="botao botao-principal" value="salvar">Salvar alterações</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Cobranças do aluno -->
+      <section class="painel-aba" id="painel-aluno-cobrancas" role="tabpanel" hidden>
+        <div class="alerta" role="status">
+          <i data-icone="alerta"></i>
+          <p><strong>Total em aberto: R$ 255,00.</strong> São 3 cobranças vencidas. Abra uma cobrança para sincronizar, reenviar o boleto ou registrar pagamento.</p>
+        </div>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th class="numero">Valor</th>
+                <th>Vencimento</th>
+                <th>Situação</th>
+                <th class="numero">Atraso</th>
+                <th><span hidden>Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><a class="nome-principal" href="cobranca.html">Mensalidade 08/2026</a></td>
+                <td class="numero">R$ 85,00</td>
+                <td>10/08/2026</td>
+                <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+                <td class="numero">70 dias</td>
+                <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="cobranca.html">Mensalidade 09/2026</a></td>
+                <td class="numero">R$ 85,00</td>
+                <td>10/09/2026</td>
+                <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+                <td class="numero">39 dias</td>
+                <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="cobranca.html">Mensalidade 10/2026</a></td>
+                <td class="numero">R$ 85,00</td>
+                <td>10/10/2026</td>
+                <td><span class="selo selo-vencida"><i data-icone="relogio"></i>Vencida</span></td>
+                <td class="numero">9 dias</td>
+                <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+              </tr>
+              <tr>
+                <td><a class="nome-principal" href="cobranca.html">Mensalidade 07/2026</a></td>
+                <td class="numero">R$ 85,00</td>
+                <td>10/07/2026</td>
+                <td>
+                  <span class="selo selo-paga"><i data-icone="check"></i>Paga</span>
+                  <span class="secundario">Conciliada em 08/07/2026</span>
+                </td>
+                <td class="numero">—</td>
+                <td class="acoes"><a class="botao botao-pequeno" href="cobranca.html"><i data-icone="trilha"></i>Ver detalhes</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="rodape-tabela">
+            <span>4 cobranças</span>
+            <span>Total em aberto: <strong style="color: var(--foreground)">R$ 255,00</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Movimentações ligadas ao aluno -->
+      <section class="painel-aba" id="painel-aluno-movimentacoes" role="tabpanel" hidden>
+        <p class="texto-apoio" style="margin: 0 0 12px">Entradas geradas pelas cobranças pagas deste aluno. Para corrigir uma delas, trate a cobrança em Cobranças.</p>
+        <div class="tabela-envoltorio">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Forma</th>
+                <th>Origem</th>
+                <th class="numero">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>08/07/2026</td>
+                <td><span class="nome-principal">Mensalidade 07/2026 · Lucas Andrade Ferreira</span><span class="secundario">Cobrança</span></td>
+                <td>Asaas</td>
+                <td>Conciliação automática</td>
+                <td class="numero">+ R$ 85,00</td>
+              </tr>
+              <tr>
+                <td>09/06/2026</td>
+                <td><span class="nome-principal">Mensalidade 06/2026 · Lucas Andrade Ferreira</span><span class="secundario">Cobrança</span></td>
+                <td>Asaas</td>
+                <td>Conciliação automática</td>
+                <td class="numero">+ R$ 85,00</td>
+              </tr>
+              <tr>
+                <td>11/05/2026</td>
+                <td><span class="nome-principal">Mensalidade 05/2026 · Lucas Andrade Ferreira</span><span class="secundario">Cobrança</span></td>
+                <td>Asaas</td>
+                <td>Conciliação automática</td>
+                <td class="numero">+ R$ 85,00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="nota-prototipo">Protótipo de tela com dados fictícios. Nomes, CPFs e e-mails são inventados.</p>
+
+      <!-- Inativar aluno [Cadastros.RF001] — operação com efeitos, pede confirmação -->
+      <dialog id="dialogo-inativar" aria-labelledby="titulo-inativar">
+        <form method="dialog">
+          <div class="dialogo-cabecalho">
+            <div>
+              <h2 id="titulo-inativar">Inativar aluno?</h2>
+              <p>O cadastro não é excluído: ele fica inativo.</p>
+            </div>
+          </div>
+          <div class="dialogo-corpo">
+            <div class="aviso aviso-perigo">
+              <i data-icone="alerta"></i>
+              <span><strong>Este aluno tem débito:</strong> 3 cobranças vencidas, somando R$ 255,00.</span>
+            </div>
+            <div class="resumo-efeito">
+              <dl>
+                <dt>Aluno</dt><dd>Lucas Andrade Ferreira</dd>
+                <dt>Cobranças vencidas</dt><dd>3 · R$ 255,00</dd>
+              </dl>
+              <ul style="margin: 0; padding-left: 18px">
+                <li>As cobranças vencidas <strong>não são canceladas</strong> e continuam contando na inadimplência.</li>
+                <li>Ele <strong>deixa de receber a mensalidade automática</strong>.</li>
+                <li>O cadastro e o histórico continuam consultáveis.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="dialogo-rodape">
+            <button class="botao" value="voltar">Voltar</button>
+            <button class="botao botao-destrutivo" value="confirmar">Inativar aluno</button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+    <script src="prototipo.js"></script>
+  </body>
+</html>
