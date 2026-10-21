@@ -1,0 +1,21 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { NestFactory } from '@nestjs/core';
+import { ConsumidorDeEventosWebhook } from './modulos/cobrancas/infra/consumidor-de-eventos-webhook.js';
+import { WorkerModule } from './worker.module.js';
+
+// Mesmo padrão do main.ts: em desenvolvimento carrega o .env da raiz do monorepo.
+// Este arquivo roda compilado em apps/api/dist/, por isso sobe três níveis até a raiz.
+const arquivoEnv = path.resolve(import.meta.dirname, '../../../.env');
+if (existsSync(arquivoEnv)) {
+  process.loadEnvFile(arquivoEnv);
+}
+
+async function bootstrap() {
+  // "Application context" = a aplicação Nest sem servidor HTTP: só o container de injeção.
+  const app = await NestFactory.createApplicationContext(WorkerModule);
+  // Ao receber Ctrl+C (ou o sinal de parada), o Nest fecha a fila e o banco com calma.
+  app.enableShutdownHooks();
+  await app.get(ConsumidorDeEventosWebhook).iniciar();
+}
+await bootstrap();
