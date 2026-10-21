@@ -81,6 +81,8 @@ Prefira vários commits pequenos e com sentido a um commit gigante chamado "ajus
   git push
   ```
 
+  Use sempre `--no-ff`. Num merge fast-forward o git não cria commit de merge e, por isso, **não roda o gancho**: a mudança chega à `main` sem as verificações locais (o CI só confere depois do push).
+
 - A mensagem do merge também segue o padrão de commits, por exemplo `merge: integra emissão de cobrança avulsa`.
 
 ## Revisão de código
