@@ -14,7 +14,8 @@ async function gerar() {
 
   const destino = path.resolve(import.meta.dirname, '../../../packages/api-client/openapi.json');
   writeFileSync(destino, JSON.stringify(documento, null, 2) + '\n');
-  console.log(`OpenAPI gravado em ${destino}`);
+  // process.stdout.write em vez de console.log: a regra no-console (B11) vale para todo o src/.
+  process.stdout.write(`OpenAPI gravado em ${destino}\n`);
 
   await app.close();
 }
