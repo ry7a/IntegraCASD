@@ -1,0 +1,40 @@
+// Contrato do Cliente Asaas: tudo o que o sistema precisa pedir ao Asaas.
+// Só a implementação deste contrato fala com o Asaas; o resto do código depende dele.
+//
+// É uma classe abstrata (e não uma interface) porque o NestJS injeta dependências pelo
+// nome da classe em tempo de execução, e interfaces do TypeScript somem depois da compilação.
+// Uma classe abstrata serve como tipo e como "etiqueta" de injeção ao mesmo tempo.
+
+export interface NovoClienteAsaas {
+  nome: string;
+  cpf: string; // só dígitos, sem pontuação
+  email: string;
+}
+
+export interface NovaCobrancaAsaas {
+  clienteIdAsaas: string;
+  // Em centavos, como em todo o sistema. A conversão para reais (que o Asaas espera)
+  // é responsabilidade da implementação real, nunca de quem chama.
+  valorEmCentavos: number;
+  vencimento: string; // AAAA-MM-DD
+  descricao: string;
+}
+
+export interface CobrancaAsaas {
+  idAsaas: string;
+  urlBoleto: string | null;
+}
+
+// Erro lançado quando o Asaas falha. A mensagem já vem traduzida e orientada à ação
+// ([Usabilidade.NF002]); a resposta crua do Asaas nunca deve chegar ao usuário.
+export class ErroAsaas extends Error {
+  constructor(mensagem: string) {
+    super(mensagem);
+    this.name = 'ErroAsaas';
+  }
+}
+
+export abstract class ClienteAsaas {
+  abstract criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }>;
+  abstract criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas>;
+}
