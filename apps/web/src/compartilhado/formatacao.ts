@@ -58,6 +58,13 @@ export function formatarHora(instanteIso: string): string {
   return formatadorDeHora.format(new Date(instanteIso))
 }
 
+const formatadorDeInteiro = new Intl.NumberFormat('pt-BR')
+
+// 1234 -> "1.234" (contagens, como quantidade de alunos)
+export function formatarInteiro(valor: number): string {
+  return formatadorDeInteiro.format(valor)
+}
+
 // 4 -> "4,0%"; 6.4 -> "6,4%"
 export function formatarPercentual(valor: number): string {
   return `${valor.toFixed(1).replace('.', ',')}%`

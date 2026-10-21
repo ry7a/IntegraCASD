@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
-import { formatarData, formatarDataHora, formatarHora, formatarMoeda } from '@/compartilhado/formatacao'
+import { formatarData, formatarDataHora, formatarHora, formatarInteiro, formatarMoeda } from '@/compartilhado/formatacao'
 import { useBuscarParametrosDeCobranca } from './consultas'
 import type { ParametrosCobrancaDto } from './contrato'
 
@@ -92,7 +92,7 @@ function ConferenciaDosParametros({ parametros }: { parametros: ParametrosCobran
         </li>
         <li>
           <span>Alunos que serão cobrados</span>
-          <span className="numero">{conferencia.alunosCobrados.toLocaleString('pt-BR')}</span>
+          <span className="numero">{formatarInteiro(conferencia.alunosCobrados)}</span>
         </li>
         <li>
           <span>Total previsto</span>

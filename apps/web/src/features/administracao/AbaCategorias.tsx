@@ -1,5 +1,6 @@
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
+import { formatarInteiro } from '@/compartilhado/formatacao'
 import { useListarCategoriasDaAdministracao } from './consultas'
 import type { AplicacaoCategoria } from './contrato'
 
@@ -53,7 +54,7 @@ function AbaCategorias() {
                 <tr key={categoria.id}>
                   <td className="nome-principal">{categoria.nome}</td>
                   <td>{ROTULO_DA_APLICACAO[categoria.aplicaA]}</td>
-                  <td className="numero">{categoria.quantidadeMovimentacoes.toLocaleString('pt-BR')}</td>
+                  <td className="numero">{formatarInteiro(categoria.quantidadeMovimentacoes)}</td>
                   <td>
                     <span className={categoria.ativa ? 'selo selo-paga' : 'selo'}>{categoria.ativa ? 'Ativa' : 'Inativa'}</span>
                   </td>
