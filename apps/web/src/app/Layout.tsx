@@ -1,40 +1,52 @@
-import { NavLink, Outlet } from 'react-router'
-import { cn } from '@/compartilhado/utils'
+import { useMemo, useState } from 'react'
+import { Outlet } from 'react-router'
+import { AcoesGlobaisContexto, type AcoesGlobais } from '@/compartilhado/acoes-globais'
+import DicaFlutuante from '@/compartilhado/componentes/DicaFlutuante'
+import DialogoNovaCobranca from '@/features/cobrancas/DialogoNovaCobranca'
+import DialogoNovaMovimentacao from '@/features/movimentacoes/DialogoNovaMovimentacao'
+import BarraDoTopo from './BarraDoTopo'
+import FaixaDeAmbiente from './FaixaDeAmbiente'
+import MenuLateral from './MenuLateral'
 
-// Itens do menu lateral. Cada área entra aqui quando a tela dela existir.
-const itensDoMenu = [{ para: '/cadastros/alunos', rotulo: 'Cadastros' }]
-
+// Estrutura comum a todas as telas: faixa de ambiente, menu lateral, barra do topo e o conteúdo da rota.
+// Também guarda os dois diálogos da barra do topo, que podem ser abertos de qualquer tela.
 function Layout() {
-  return (
-    <div className="flex min-h-screen">
-      <nav aria-label="Menu principal" className="w-56 shrink-0 bg-sidebar p-4 text-sidebar-foreground">
-        <p className="mb-6 font-heading text-lg font-bold">IntegraCASD</p>
-        <ul className="space-y-1 text-sm">
-          {itensDoMenu.map((item) => (
-            <li key={item.para}>
-              {/* O NavLink marca o item da página atual com aria-current="page" e isActive. */}
-              <NavLink
-                to={item.para}
-                className={({ isActive }) =>
-                  cn(
-                    'block rounded-md px-3 py-2 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none',
-                    isActive
-                      ? 'bg-sidebar-primary font-medium text-sidebar-primary-foreground'
-                      : 'hover:bg-sidebar-accent',
-                  )
-                }
-              >
-                {item.rotulo}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+  const [cobrancaAberta, definirCobrancaAberta] = useState(false)
+  const [alunoDaCobranca, definirAlunoDaCobranca] = useState('')
+  const [movimentacaoAberta, definirMovimentacaoAberta] = useState(false)
 
-      <main className="min-w-0 flex-1 p-8">
-        <Outlet />
-      </main>
-    </div>
+  const acoes = useMemo<AcoesGlobais>(
+    () => ({
+      abrirNovaCobranca: (nomeDoAluno = '') => {
+        definirAlunoDaCobranca(nomeDoAluno)
+        definirCobrancaAberta(true)
+      },
+      abrirNovaMovimentacao: () => definirMovimentacaoAberta(true),
+    }),
+    [],
+  )
+
+  return (
+    <AcoesGlobaisContexto.Provider value={acoes}>
+      <FaixaDeAmbiente />
+      <div className="app">
+        <MenuLateral />
+        <div className="conteudo">
+          <BarraDoTopo />
+          <main className="pagina">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+
+      <DialogoNovaCobranca
+        aberto={cobrancaAberta}
+        alunoInicial={alunoDaCobranca}
+        aoFechar={() => definirCobrancaAberta(false)}
+      />
+      <DialogoNovaMovimentacao aberto={movimentacaoAberta} aoFechar={() => definirMovimentacaoAberta(false)} />
+      <DicaFlutuante />
+    </AcoesGlobaisContexto.Provider>
   )
 }
 

@@ -1,0 +1,81 @@
+// Mesmo padrão de features/indicadores/consultas.ts: hooks do TanStack Query que devolvem dados fictícios.
+// Quando o endpoint existir no NestJS, troca-se cada hook pelo gerado pelo orval, com o mesmo formato.
+import { useQuery } from '@tanstack/react-query'
+import type {
+  FiltrosDaTrilha,
+  IntegracaoAsaasDto,
+  ListaDaTrilhaDto,
+  ListaDeCategoriasComUsoDto,
+  ListaDeUsuariosDto,
+  ParametrosCobrancaDto,
+} from './contrato'
+import { categorias, integracao, parametros, trilha, usuarios } from './dados-ficticios'
+
+// Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
+const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
+
+// TODO [Administração.RF001]: trocar por GET /api/administracao/usuarios.
+export function useListarUsuarios() {
+  return useQuery<ListaDeUsuariosDto>({
+    queryKey: ['administracao', 'usuarios'],
+    queryFn: async () => {
+      await esperar()
+      return usuarios
+    },
+  })
+}
+
+// TODO [Administração.RF002]: trocar por GET /api/administracao/categorias.
+export function useListarCategoriasDaAdministracao() {
+  return useQuery<ListaDeCategoriasComUsoDto>({
+    queryKey: ['administracao', 'categorias'],
+    queryFn: async () => {
+      await esperar()
+      return categorias
+    },
+  })
+}
+
+// TODO [Administração.RF003]: trocar por GET /api/administracao/parametros-cobranca.
+export function useBuscarParametrosDeCobranca() {
+  return useQuery<ParametrosCobrancaDto>({
+    queryKey: ['administracao', 'parametros-cobranca'],
+    queryFn: async () => {
+      await esperar()
+      return parametros
+    },
+  })
+}
+
+// TODO [Administração.RF004]: trocar por GET /api/administracao/integracao-asaas.
+// A faixa "ambiente de testes" (app/FaixaDeAmbiente.tsx) lê o ambiente deste mesmo hook.
+export function useBuscarIntegracaoComOAsaas() {
+  return useQuery<IntegracaoAsaasDto>({
+    queryKey: ['administracao', 'integracao-asaas'],
+    queryFn: async () => {
+      await esperar()
+      return integracao
+    },
+  })
+}
+
+// TODO [Administração.RF005]: trocar por GET /api/administracao/trilha-auditoria com os mesmos filtros.
+export function useListarTrilhaDeAuditoria(filtros: FiltrosDaTrilha) {
+  return useQuery<ListaDaTrilhaDto>({
+    queryKey: ['administracao', 'trilha-auditoria', filtros],
+    queryFn: async () => {
+      await esperar()
+      const itens = trilha
+        .filter((r) => !filtros.de || r.ocorridoEm.slice(0, 10) >= filtros.de)
+        .filter((r) => !filtros.ate || r.ocorridoEm.slice(0, 10) <= filtros.ate)
+        .filter((r) => {
+          if (!filtros.usuario) return true
+          if (filtros.usuario === 'ROTINA_AUTOMATICA') return r.usuarioNome === null
+          return r.usuarioNome === filtros.usuario
+        })
+        .filter((r) => !filtros.operacao || r.operacao === filtros.operacao)
+        .filter((r) => !filtros.entidade || r.entidade === filtros.entidade)
+      return { itens, total: itens.length }
+    },
+  })
+}

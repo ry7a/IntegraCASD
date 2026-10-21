@@ -1,5 +1,11 @@
+import { useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
 import { useListarAlunos, type SituacaoAluno } from '@integracasd/api-client'
+import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
+import Icone from '@/compartilhado/componentes/Icone'
+import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
 import { formatarCpf } from '@/compartilhado/formatacao'
+import DialogoNovoAluno from './DialogoNovoAluno'
 
 // O banco guarda o enum sem acento; o texto exibido fica aqui.
 const rotuloDaSituacao: Record<SituacaoAluno, string> = {
@@ -10,69 +16,117 @@ const rotuloDaSituacao: Record<SituacaoAluno, string> = {
   INTERCAMBIO: 'Intercâmbio',
 }
 
-// Lista de alunos ativos [Cadastros.RF001].
+// Lista de alunos ativos [Cadastros.RF001]. É a aba "Alunos" da tela de Cadastros.
 function ListaDeAlunos() {
   // Hook gerado pelo orval: busca GET /api/alunos e guarda no cache do TanStack Query.
-  const { data, error, isPending, refetch, isFetching } = useListarAlunos()
+  const { data, error, isPending, refetch } = useListarAlunos()
+  // O texto da busca fica na URL: a busca da barra do topo chega aqui por ?busca=...
+  const [parametros, definirParametros] = useSearchParams()
+  const busca = parametros.get('busca') ?? ''
+  const [novoAlunoAberto, definirNovoAlunoAberto] = useState(false)
+
+  function mudarBusca(texto: string) {
+    const novos = new URLSearchParams(parametros)
+    if (texto) novos.set('busca', texto)
+    else novos.delete('busca')
+    definirParametros(novos, { replace: true })
+  }
+
+  // A API ainda não filtra: a busca por nome ou CPF é feita aqui, só na lista que já veio.
+  // TODO [Cadastros.RF001]: filtro de situação (ativos/inativos/todos), coluna "Em aberto" e paginação
+  // dependem de a API aceitar esses parâmetros e devolver esses campos.
+  const texto = busca.trim().toLowerCase()
+  const textoSoDigitos = texto.replace(/\D/g, '')
+  const itens = (data?.itens ?? []).filter(
+    (aluno) => aluno.nome.toLowerCase().includes(texto) || (textoSoDigitos !== '' && aluno.cpf.includes(textoSoDigitos)),
+  )
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Alunos</h1>
-        <p className="text-muted-foreground">Alunos ativos, em ordem alfabética.</p>
-      </div>
-
-      {isPending && <p role="status">Carregando alunos…</p>}
-
-      {error && (
-        <div role="alert" className="space-y-3 rounded-lg border border-destructive bg-card p-4">
-          <p>{error.message}</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="rounded-md bg-secondary px-4 py-2 font-medium text-secondary-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50"
-          >
-            {isFetching ? 'Tentando…' : 'Tentar de novo'}
+    <>
+      <div className="filtros">
+        <div className="campo" style={{ flex: 1, maxWidth: 360 }}>
+          <label htmlFor="al-busca">Nome ou CPF</label>
+          <input
+            id="al-busca"
+            type="search"
+            placeholder="Ex.: Lucas ou 123.456"
+            value={busca}
+            onChange={(evento) => mudarBusca(evento.target.value)}
+          />
+        </div>
+        <div className="campo" style={{ marginLeft: 'auto' }}>
+          <button type="button" className="botao botao-principal" onClick={() => definirNovoAlunoAberto(true)}>
+            <Icone nome="mais" />
+            Novo aluno
           </button>
         </div>
-      )}
+      </div>
 
-      {data && data.itens.length === 0 && (
-        <p className="rounded-lg border bg-card p-6 text-muted-foreground">Nenhum aluno ativo cadastrado.</p>
-      )}
-
-      {data && data.itens.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border bg-card">
-          <table className="w-full text-left text-sm">
+      <EstadoDaConsulta
+        carregando={isPending}
+        erro={error}
+        aoTentarDeNovo={() => void refetch()}
+        vazio={itens.length === 0}
+        mensagemVazia="Nenhum aluno encontrado. Confira a busca."
+      >
+        <div className="tabela-envoltorio">
+          <table>
             <caption className="sr-only">Alunos ativos</caption>
-            <thead className="border-b text-muted-foreground">
+            <thead>
               <tr>
-                <th scope="col" className="px-4 py-3 font-medium">Nome</th>
-                <th scope="col" className="px-4 py-3 font-medium">CPF</th>
-                <th scope="col" className="px-4 py-3 font-medium">E-mail</th>
-                <th scope="col" className="px-4 py-3 font-medium">Turma</th>
-                <th scope="col" className="px-4 py-3 font-medium">Situação</th>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>E-mail</th>
+                <th>Situação</th>
+                <th>
+                  <span hidden>Ações</span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {data.itens.map((aluno) => (
-                <tr key={aluno.id} className="border-b last:border-0">
-                  <td className="px-4 py-3 font-medium">{aluno.nome}</td>
-                  <td className="px-4 py-3 tabular-nums">{formatarCpf(aluno.cpf)}</td>
-                  <td className="px-4 py-3">{aluno.email}</td>
-                  <td className="px-4 py-3">{aluno.turma ?? '—'}</td>
-                  <td className="px-4 py-3">{aluno.situacao ? rotuloDaSituacao[aluno.situacao] : '—'}</td>
+              {itens.map((aluno) => (
+                <tr key={aluno.id}>
+                  <td>
+                    <Link className="nome-principal" to={`/cadastros/alunos/${aluno.id}`}>
+                      {aluno.nome}
+                    </Link>
+                    <span className="secundario">{aluno.turma ? `Turma ${aluno.turma}` : 'Sem turma'}</span>
+                  </td>
+                  <td>{formatarCpf(aluno.cpf)}</td>
+                  <td>
+                    {aluno.email ? (
+                      aluno.email
+                    ) : (
+                      <span className="selo selo-alerta">
+                        <Icone nome="alerta" />
+                        Falta e-mail
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={aluno.situacao === 'MATRICULADO' ? 'selo selo-paga' : 'selo'}>
+                      {aluno.situacao ? rotuloDaSituacao[aluno.situacao] : '—'}
+                    </span>
+                  </td>
+                  <td className="acoes">
+                    <Link className="botao botao-pequeno botao-fantasma" to={`/cadastros/alunos/${aluno.id}`}>
+                      <Icone nome="editar" />
+                      Editar
+                    </Link>{' '}
+                    <Link className="botao botao-pequeno" to={`/cadastros/alunos/${aluno.id}?aba=cobrancas`}>
+                      Cobranças
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="border-t px-4 py-3 text-sm text-muted-foreground">
-            {data.itens.length} {data.itens.length === 1 ? 'aluno ativo' : 'alunos ativos'}
-          </p>
+          <RodapeDaTabela texto={`${itens.length} ${itens.length === 1 ? 'aluno ativo' : 'alunos ativos'}`} />
         </div>
-      )}
-    </div>
+      </EstadoDaConsulta>
+
+      <DialogoNovoAluno aberto={novoAlunoAberto} aoFechar={() => definirNovoAlunoAberto(false)} />
+    </>
   )
 }
 
