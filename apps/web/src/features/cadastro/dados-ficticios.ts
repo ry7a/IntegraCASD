@@ -1,6 +1,7 @@
 // Dados FICTÍCIOS de Cadastros, iguais aos do mockup (docs/telas/cadastros.html e aluno.html).
 // Nomes, CPFs e e-mails são inventados (LGPD). Os ids dos alunos e as cobranças do Lucas batem com
 // features/cobrancas/dados-ficticios.ts; a lista de alunos da aba "Alunos" NÃO usa isto: vem da API real.
+import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type {
   AlunoDetalheDto,
@@ -9,6 +10,9 @@ import type {
   FuncionarioDto,
   ProjetoDto,
 } from './contrato'
+
+// Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
+marcarDadosFicticios('dados-ficticios-integracasd:cadastro')
 
 export const alunos: AlunoDetalheDto[] = [
   { id: 'aluno-ana', nome: 'Ana Clara Ribeiro', cpf: '11122233344', email: 'ana.ribeiro@exemplo.com', turma: '2028', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },

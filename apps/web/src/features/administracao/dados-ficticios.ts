@@ -1,5 +1,6 @@
 // Dados FICTÍCIOS de Administração, iguais aos do mockup (docs/telas/administracao.html).
 // Usuários e endereço são inventados (LGPD). Não há chave do Asaas aqui, nem poderia haver.
+import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   IntegracaoAsaasDto,
   ListaDeCategoriasComUsoDto,
@@ -7,6 +8,9 @@ import type {
   ParametrosCobrancaDto,
   RegistroAuditoriaDto,
 } from './contrato'
+
+// Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
+marcarDadosFicticios('dados-ficticios-integracasd:administracao')
 
 export const usuarios: ListaDeUsuariosDto = {
   itens: [

@@ -1,11 +1,15 @@
 // Dados FICTÍCIOS de Indicadores, iguais aos do mockup (docs/telas/indicadores.html). A "data de hoje" do
 // mockup é 19/10/2026. Nenhum nome, valor ou id aqui é real (LGPD).
+import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   EvolucaoDto,
   GastosPorCategoriaDto,
   InadimplenciaDto,
   ResumoIndicadoresDto,
 } from './contrato'
+
+// Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
+marcarDadosFicticios('dados-ficticios-integracasd:indicadores')
 
 export const MES_DOS_DADOS = '2026-10'
 

@@ -1,7 +1,11 @@
 // Dados FICTÍCIOS de Movimentações, iguais aos do mockup (docs/telas/movimentacoes.html).
 // Nada aqui é real (LGPD).
+import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type { OpcoesDaMovimentacaoDto, TotaisDto } from './contrato'
+
+// Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
+marcarDadosFicticios('dados-ficticios-integracasd:movimentacoes')
 
 const SEM_ESTORNO = { podeEstornar: false, motivoSemEstorno: null, estornadaEm: null, motivoEstorno: null }
 
