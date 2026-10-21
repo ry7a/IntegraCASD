@@ -89,7 +89,7 @@ docs/
 - **Nunca coloque planilhas ou dados reais de alunos no repositório**. O `.gitignore` bloqueia planilhas; use só dados fictícios em testes.
 - **Segredos ficam no `.env`**, que não é versionado. Use o `.env.example` como referência.
 - **Instale dependências sempre pela raiz** com `pnpm`, nunca com `npm`.
-- Toda mudança entra por pull request revisado por outra pessoa. Veja o [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Cada tarefa é feita numa branch e integrada à `main` por merge, com lint, testes e build passando. Veja o [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Equipe
 
