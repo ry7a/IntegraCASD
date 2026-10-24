@@ -1,17 +1,5 @@
 [
   {
-    "regra": "B8",
-    "alvo": "GET /api",
-    "justificativa": "Rota de exemplo do modelo do NestJS (Hello World). Autenticação ainda não implementada; remover quando existir (ou apagar a rota).",
-    "referencia": "ADR-0003; [Segurança.NF001]"
-  },
-  {
-    "regra": "B8",
-    "alvo": "GET /api/alunos",
-    "justificativa": "Autenticação ainda não implementada; remover quando existir.",
-    "referencia": "ADR-0003; [Segurança.NF001]"
-  },
-  {
     "regra": "B3",
     "alvo": "apps/api/src/modulos/cadastros/api/lista-de-alunos.dto.ts",
     "justificativa": "O DTO importa o enum SituacaoAluno gerado pelo Prisma só para descrever os valores no OpenAPI (@ApiProperty enum). Não acessa o banco. Remover quando houver um enum próprio fora do Prisma.",

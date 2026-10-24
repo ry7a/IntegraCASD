@@ -14,8 +14,7 @@ const ABAS = [
   { id: 'trilha', titulo: 'Trilha de auditoria' },
 ] as const
 
-// [Administração.RF001 a RF005] Só a diretoria usa esta tela.
-// TODO [Segurança]: a guarda de perfil esconde a rota de quem não é da diretoria; a API também recusa.
+// [Administração.RF001 a RF005] So a diretoria usa esta tela.
 function PaginaAdministracao() {
   const [aba, mudarAba] = useAbaDaUrl(ABAS.map((a) => a.id), 'usuarios')
 

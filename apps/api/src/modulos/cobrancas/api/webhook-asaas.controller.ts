@@ -3,11 +3,13 @@ import { ApiExcludeController } from '@nestjs/swagger';
 import { ReceberEventoWebhook } from '../aplicacao/receber-evento-webhook.js';
 import type { EventoRecebido } from '../aplicacao/receber-evento-webhook.js';
 import { TokenDoWebhookGuard } from './token-do-webhook.guard.js';
+import { Publico } from '../../../compartilhado/autenticacao/publico.decorator.js';
 
 // Webhook do Asaas: valida o token (guard), grava o evento, enfileira e responde 200.
 // Nenhuma regra de negócio aqui. Fica fora do OpenAPI: só o Asaas chama esta rota,
 // então o frontend não precisa de cliente gerado para ela.
 @ApiExcludeController()
+@Publico()
 @Controller('webhooks/asaas')
 @UseGuards(TokenDoWebhookGuard)
 export class WebhookAsaasController {

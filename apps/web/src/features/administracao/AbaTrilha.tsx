@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { useListarUsuarios } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
 import { formatarDataHora } from '@/compartilhado/formatacao'
-import { useListarTrilhaDeAuditoria, useListarUsuarios } from './consultas'
+import { useListarTrilhaDeAuditoria } from './consultas'
 import type { EntidadeAuditoria, OperacaoAuditoria } from './contrato'
 
 const ROTULO_DA_OPERACAO: Record<OperacaoAuditoria, string> = {

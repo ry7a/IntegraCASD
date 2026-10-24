@@ -40,8 +40,17 @@
     {
       "id": "Segurança.NF001",
       "titulo": "Autenticação e perfis concêntricos",
-      "situacao": "pendente",
-      "motivo": "A função B8 já confere que toda rota declara segurança, mas a autenticação ainda não existe (rotas atuais estão em docs/governanca/excecoes.json)."
+      "situacao": "coberto"
+    },
+    {
+      "id": "Segurança.NF005",
+      "titulo": "Proteção das credenciais dos usuários",
+      "situacao": "coberto"
+    },
+    {
+      "id": "Segurança.NF007",
+      "titulo": "Bloqueio após tentativas de acesso malsucedidas",
+      "situacao": "coberto"
     }
   ]
 }

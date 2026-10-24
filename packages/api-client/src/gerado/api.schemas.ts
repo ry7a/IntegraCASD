@@ -5,6 +5,83 @@
  * API do sistema de gestão financeira do CASD
  * OpenAPI spec version: 0.0.1
  */
+export interface LoginDto {
+  email: string;
+  /** @minLength 12 */
+  senha: string;
+}
+
+export type UsuarioDaSessaoDtoPerfil = typeof UsuarioDaSessaoDtoPerfil[keyof typeof UsuarioDaSessaoDtoPerfil];
+
+
+export const UsuarioDaSessaoDtoPerfil = {
+  ADMINISTRATIVO: 'ADMINISTRATIVO',
+  DIRETORIA: 'DIRETORIA',
+} as const;
+
+export interface UsuarioDaSessaoDto {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: UsuarioDaSessaoDtoPerfil;
+}
+
+export type UsuarioDtoPerfil = typeof UsuarioDtoPerfil[keyof typeof UsuarioDtoPerfil];
+
+
+export const UsuarioDtoPerfil = {
+  ADMINISTRATIVO: 'ADMINISTRATIVO',
+  DIRETORIA: 'DIRETORIA',
+} as const;
+
+export interface UsuarioDto {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: UsuarioDtoPerfil;
+  ativo: boolean;
+  /** @nullable */
+  ultimoAcessoEm: string | null;
+}
+
+export interface ListaDeUsuariosDto {
+  itens: UsuarioDto[];
+}
+
+export type CriarUsuarioDtoPerfil = typeof CriarUsuarioDtoPerfil[keyof typeof CriarUsuarioDtoPerfil];
+
+
+export const CriarUsuarioDtoPerfil = {
+  ADMINISTRATIVO: 'ADMINISTRATIVO',
+  DIRETORIA: 'DIRETORIA',
+} as const;
+
+export interface CriarUsuarioDto {
+  nome: string;
+  email: string;
+  perfil: CriarUsuarioDtoPerfil;
+  ativo?: boolean;
+  /** @minLength 12 */
+  senhaInicial: string;
+}
+
+export type AlterarUsuarioDtoPerfil = typeof AlterarUsuarioDtoPerfil[keyof typeof AlterarUsuarioDtoPerfil];
+
+
+export const AlterarUsuarioDtoPerfil = {
+  ADMINISTRATIVO: 'ADMINISTRATIVO',
+  DIRETORIA: 'DIRETORIA',
+} as const;
+
+export interface AlterarUsuarioDto {
+  nome?: string;
+  email?: string;
+  perfil?: AlterarUsuarioDtoPerfil;
+  ativo?: boolean;
+  /** @minLength 12 */
+  novaSenha?: string;
+}
+
 export type SituacaoAluno = typeof SituacaoAluno[keyof typeof SituacaoAluno];
 
 

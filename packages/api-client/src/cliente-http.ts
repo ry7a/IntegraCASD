@@ -35,7 +35,7 @@ function extrairMensagem(corpo: unknown): string | null {
 export async function clienteHttp<T>(url: string, opcoes: RequestInit): Promise<T> {
   let resposta: Response;
   try {
-    resposta = await fetch(url, opcoes);
+    resposta = await fetch(url, { credentials: 'same-origin', ...opcoes });
   } catch {
     // fetch só lança quando não há resposta nenhuma (servidor fora do ar, sem rede).
     throw new ErroDaApi(MENSAGEM_SEM_CONEXAO, 0);

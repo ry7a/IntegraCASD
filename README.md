@@ -49,7 +49,12 @@ cd IntegraCASD
 pnpm install
 Copy-Item .env.example .env      # depois preencha o .env
 docker compose up -d             # sobe o PostgreSQL
+pnpm --filter api exec prisma migrate deploy
+pnpm --filter api admin-inicial  # cria o primeiro acesso de diretoria com os dados do .env
 ```
+
+Depois que o primeiro acesso for criado, remova `ADMIN_INICIAL_SENHA` do `.env`. Os demais
+usuários são mantidos na aba **Administração > Usuários**.
 
 Em dois terminais separados:
 

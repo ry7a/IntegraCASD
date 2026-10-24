@@ -1,9 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListarAlunosAtivos } from '../aplicacao/listar-alunos-ativos.js';
 import { ListaDeAlunosDto } from './lista-de-alunos.dto.js';
 
 @ApiTags('alunos')
+@ApiCookieAuth('cookie')
 @Controller('alunos')
 export class AlunosController {
   constructor(private readonly listarAlunosAtivos: ListarAlunosAtivos) {}

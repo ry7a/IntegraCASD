@@ -14,6 +14,7 @@ export function criarDocumentoOpenApi(app: INestApplication) {
     .setTitle('IntegraCASD')
     .setDescription('API do sistema de gestão financeira do CASD')
     .setVersion('0.0.1')
+    .addCookieAuth('integracasd_sessao', { type: 'apiKey', in: 'cookie' }, 'cookie')
     .build();
   return SwaggerModule.createDocument(app, config);
 }

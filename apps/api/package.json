@@ -19,6 +19,7 @@
     "start:worker:prod": "node dist/main-worker",
     "gerar:openapi": "nest build && node dist/gerar-openapi.js",
     "dados-ficticios": "prisma db execute --file prisma/dados-ficticios.sql",
+    "admin-inicial": "nest build && node dist/criar-admin-inicial.js",
     "lint": "oxlint --type-aware src/ test/",
     "test": "vitest run",
     "test:watch": "vitest",

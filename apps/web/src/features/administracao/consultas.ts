@@ -6,24 +6,12 @@ import type {
   IntegracaoAsaasDto,
   ListaDaTrilhaDto,
   ListaDeCategoriasComUsoDto,
-  ListaDeUsuariosDto,
   ParametrosCobrancaDto,
 } from './contrato'
-import { categorias, integracao, parametros, trilha, usuarios } from './dados-ficticios'
+import { categorias, integracao, parametros, trilha } from './dados-ficticios'
 
 // Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
 const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
-
-// TODO [Administração.RF001]: trocar por GET /api/administracao/usuarios.
-export function useListarUsuarios() {
-  return useQuery<ListaDeUsuariosDto>({
-    queryKey: ['administracao', 'usuarios'],
-    queryFn: async () => {
-      await esperar()
-      return usuarios
-    },
-  })
-}
 
 // TODO [Administração.RF002]: trocar por GET /api/administracao/categorias.
 export function useListarCategoriasDaAdministracao() {
