@@ -1,23 +1,6 @@
-// Contrato planejado da API de Cadastros [Cadastros.RF001 a RF005], além da lista de alunos que já existe
-// (GET /api/alunos, hook real do orval). Dinheiro em centavos; dias em "AAAA-MM-DD".
-import type { SituacaoAluno } from '@integracasd/api-client'
+// Contrato planejado da API de Cadastros [Cadastros.RF002 a RF005] e das abas Cobranças e Movimentações do
+// aluno. O cadastro do aluno (lista, detalhe, inclusão e alteração) já vem da API, pelos hooks do orval. Dinheiro em centavos; dias em "AAAA-MM-DD".
 import type { MovimentacaoDto, SituacaoCobranca } from '@/compartilhado/dominio'
-
-// GET /api/alunos/:id
-export interface AlunoDetalheDto {
-  id: string
-  nome: string
-  // Só dígitos, sem pontuação (11 caracteres).
-  cpf: string
-  // Vazio quando o cadastro está incompleto.
-  email: string
-  turma: string | null
-  // Aluno inativo não recebe a mensalidade automática.
-  ativo: boolean
-  situacao: SituacaoAluno | null
-  dataNascimento: string | null
-  celular: string | null
-}
 
 export interface CobrancaDoAlunoDto {
   id: string

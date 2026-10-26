@@ -1,5 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
+import {
+  getBuscarAlunoQueryKey,
+  getListarAlunosQueryKey,
+  useAlterarAluno,
+  useBuscarAluno,
+} from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import { Abas, PainelDaAba } from '@/compartilhado/componentes/Abas'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
@@ -7,7 +14,6 @@ import Icone from '@/compartilhado/componentes/Icone'
 import { formatarCpf } from '@/compartilhado/formatacao'
 import { useAbaDaUrl } from '@/compartilhado/hooks'
 import CobrancasDoAluno from './CobrancasDoAluno'
-import { useBuscarAluno } from './consultas'
 import DadosDoAluno from './DadosDoAluno'
 import DialogoInativarAluno from './DialogoInativarAluno'
 import MovimentacoesDoAluno from './MovimentacoesDoAluno'
@@ -21,12 +27,26 @@ const ABAS = [
 // Detalhe do aluno. [Cadastros.RF001]
 function PaginaAluno() {
   const { id = '' } = useParams()
-  const consulta = useBuscarAluno(id)
+  const consulta = useBuscarAluno(id, { query: { retry: false } })
+  const alterar = useAlterarAluno()
+  const queryClient = useQueryClient()
   const [aba, mudarAba] = useAbaDaUrl(ABAS.map((a) => a.id), 'dados')
   const [inativarAberto, definirInativarAberto] = useState(false)
   const { abrirNovaCobranca } = useAcoesGlobais()
 
   const aluno = consulta.data
+
+  // Reativar não precisa de confirmação: não tem efeito irreversível. A API confere se o CPF ou a vaga
+  // foram para outro aluno ativo nesse meio-tempo e, se foram, a mensagem aparece no cabeçalho.
+  async function reativar() {
+    try {
+      const reativado = await alterar.mutateAsync({ id, data: { ativo: true } })
+      queryClient.setQueryData(getBuscarAlunoQueryKey(id), reativado)
+      await queryClient.invalidateQueries({ queryKey: getListarAlunosQueryKey() })
+    } catch {
+      // Mensagem exibida abaixo do cabeçalho.
+    }
+  }
 
   return (
     <>
@@ -55,16 +75,44 @@ function PaginaAluno() {
                 </p>
               </div>
               <div className="acoes">
-                <button type="button" className="botao" onClick={() => definirInativarAberto(true)}>
-                  <Icone nome="fechar" />
-                  Inativar aluno
-                </button>
-                <button type="button" className="botao botao-principal" onClick={() => abrirNovaCobranca(aluno.nome)}>
+                {aluno.ativo ? (
+                  <button type="button" className="botao" onClick={() => definirInativarAberto(true)}>
+                    <Icone nome="fechar" />
+                    Inativar aluno
+                  </button>
+                ) : (
+                  <button type="button" className="botao" disabled={alterar.isPending} onClick={() => void reativar()}>
+                    <Icone nome="check" />
+                    {alterar.isPending ? 'Reativando…' : 'Reativar aluno'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="botao botao-principal"
+                  disabled={!aluno.ativo || aluno.cadastroIncompleto}
+                  title={aluno.cadastroIncompleto ? 'Complete CPF e e-mail para emitir cobranças.' : undefined}
+                  onClick={() => abrirNovaCobranca(aluno.nome)}
+                >
                   <Icone nome="mais" />
                   Nova cobrança
                 </button>
               </div>
             </div>
+
+            {aluno.cadastroIncompleto && (
+              <div className="aviso aviso-perigo" role="status">
+                <Icone nome="alerta" />
+                <span>
+                  <strong>Cadastro incompleto:</strong> sem e-mail ou com CPF inválido. Este aluno não recebe cobranças até
+                  ser corrigido na aba Dados.
+                </span>
+              </div>
+            )}
+            {alterar.error && (
+              <p className="erro-formulario" role="alert">
+                {alterar.error.message}
+              </p>
+            )}
 
             <Abas abas={ABAS} atual={aba} aoMudar={mudarAba} rotulo="Informações do aluno" />
 
@@ -74,11 +122,7 @@ function PaginaAluno() {
               {aba === 'movimentacoes' && <MovimentacoesDoAluno alunoId={aluno.id} />}
             </PainelDaAba>
 
-            <DialogoInativarAluno
-              aberto={inativarAberto}
-              aoFechar={() => definirInativarAberto(false)}
-              aluno={aluno}
-            />
+            {inativarAberto && <DialogoInativarAluno aoFechar={() => definirInativarAberto(false)} aluno={aluno} />}
           </>
         )}
       </EstadoDaConsulta>

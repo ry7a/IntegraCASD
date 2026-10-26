@@ -6,22 +6,31 @@
  * OpenAPI spec version: 0.0.1
  */
 import {
+  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
-  ListaDeAlunosDto
+  AlterarAlunoDto,
+  AlunoDto,
+  CriarAlunoDto,
+  ListaDeAlunosDto,
+  ListaDeTurmasDto,
+  ListarAlunosParams
 } from '../api.schemas';
 
 import { clienteHttp } from '../../cliente-http';
@@ -51,20 +60,27 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export const getListarAlunosUrl = () => {
+export const getListarAlunosUrl = (params?: ListarAlunosParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/alunos`
+  return stringifiedParams.length > 0 ? `/api/alunos?${stringifiedParams}` : `/api/alunos`
 }
 
 /**
- * @summary Lista os alunos ativos
+ * @summary Lista os alunos (por padrão, só os ativos)
  */
-export const listarAlunos = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeAlunosDto> => {
+export const listarAlunos = async (params?: ListarAlunosParams, options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeAlunosDto> => {
 
-  return clienteHttp<ListaDeAlunosDto>(getListarAlunosUrl(),
+  return clienteHttp<ListaDeAlunosDto>(getListarAlunosUrl(params),
   {
     ...options,
     method: 'GET'
@@ -77,23 +93,23 @@ export const listarAlunos = async ( options?: Parameters<typeof clienteHttp>[1])
 
 
 
-export const getListarAlunosQueryKey = () => {
+export const getListarAlunosQueryKey = (params?: ListarAlunosParams,) => {
     return [
-    `/api/alunos`
+    `/api/alunos`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListarAlunosQueryOptions = <TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+export const getListarAlunosQueryOptions = <TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>(params?: ListarAlunosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListarAlunosQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListarAlunosQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarAlunos>>> = ({ signal }) => listarAlunos({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarAlunos>>> = ({ signal }) => listarAlunos(params, { signal, ...requestOptions });
 
 
 
@@ -107,7 +123,7 @@ export type ListarAlunosQueryError = ErrorType<unknown>
 
 
 export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>> & Pick<
+ params: undefined |  ListarAlunosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listarAlunos>>,
           TError,
@@ -117,7 +133,7 @@ export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>> & Pick<
+ params?: ListarAlunosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listarAlunos>>,
           TError,
@@ -127,19 +143,394 @@ export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ params?: ListarAlunosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lista os alunos ativos
+ * @summary Lista os alunos (por padrão, só os ativos)
  */
 
 export function useListarAlunos<TData = Awaited<ReturnType<typeof listarAlunos>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ params?: ListarAlunosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarAlunos>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getListarAlunosQueryOptions(options)
+  const queryOptions = getListarAlunosQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getCriarAlunoUrl = () => {
+
+
+
+
+  return `/api/alunos`
+}
+
+/**
+ * @summary Inclui um aluno
+ */
+export const criarAluno = async (criarAlunoDto: CriarAlunoDto, options?: Parameters<typeof clienteHttp>[1]): Promise<AlunoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<AlunoDto>(getCriarAlunoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(criarAlunoDto)
+  }
+);}
+
+
+
+
+
+export const getCriarAlunoMutationKey = () => ['criarAluno'] as const;
+
+export const getCriarAlunoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof criarAluno>>, TError,CriarAlunoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof criarAluno>>, TError,CriarAlunoMutationVariables, TContext> => {
+
+const mutationKey = getCriarAlunoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof criarAluno>>, CriarAlunoMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  criarAluno(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CriarAlunoMutationResult = NonNullable<Awaited<ReturnType<typeof criarAluno>>>
+    export type CriarAlunoMutationBody = CriarAlunoDto
+    export type CriarAlunoMutationError = ErrorType<unknown>
+    export type CriarAlunoMutationVariables = {data: CriarAlunoDto}
+
+    /**
+ * @summary Inclui um aluno
+ */
+export const useCriarAluno = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof criarAluno>>, TError,CriarAlunoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof criarAluno>>,
+        TError,
+        CriarAlunoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCriarAlunoMutationOptions(options), queryClient);
+    }
+    export const getBuscarAlunoUrl = (id: string,) => {
+
+
+
+
+  return `/api/alunos/${id}`
+}
+
+/**
+ * @summary Abre o cadastro de um aluno
+ */
+export const buscarAluno = async (id: string, options?: Parameters<typeof clienteHttp>[1]): Promise<AlunoDto> => {
+
+  return clienteHttp<AlunoDto>(getBuscarAlunoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getBuscarAlunoQueryKey = (id: string,) => {
+    return [
+    `/api/alunos/${id}`
+    ] as const;
+    }
+
+
+export const getBuscarAlunoQueryOptions = <TData = Awaited<ReturnType<typeof buscarAluno>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuscarAlunoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof buscarAluno>>> = ({ signal }) => buscarAluno(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuscarAlunoQueryResult = NonNullable<Awaited<ReturnType<typeof buscarAluno>>>
+export type BuscarAlunoQueryError = ErrorType<unknown>
+
+
+export function useBuscarAluno<TData = Awaited<ReturnType<typeof buscarAluno>>, TError = ErrorType<unknown>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarAluno>>,
+          TError,
+          Awaited<ReturnType<typeof buscarAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarAluno<TData = Awaited<ReturnType<typeof buscarAluno>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarAluno>>,
+          TError,
+          Awaited<ReturnType<typeof buscarAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarAluno<TData = Awaited<ReturnType<typeof buscarAluno>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Abre o cadastro de um aluno
+ */
+
+export function useBuscarAluno<TData = Awaited<ReturnType<typeof buscarAluno>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuscarAlunoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getAlterarAlunoUrl = (id: string,) => {
+
+
+
+
+  return `/api/alunos/${id}`
+}
+
+/**
+ * @summary Altera, inativa ou reativa um aluno
+ */
+export const alterarAluno = async (id: string,
+    alterarAlunoDto: AlterarAlunoDto, options?: Parameters<typeof clienteHttp>[1]): Promise<AlunoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<AlunoDto>(getAlterarAlunoUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(alterarAlunoDto)
+  }
+);}
+
+
+
+
+
+export const getAlterarAlunoMutationKey = () => ['alterarAluno'] as const;
+
+export const getAlterarAlunoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarAluno>>, TError,AlterarAlunoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof alterarAluno>>, TError,AlterarAlunoMutationVariables, TContext> => {
+
+const mutationKey = getAlterarAlunoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alterarAluno>>, AlterarAlunoMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  alterarAluno(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AlterarAlunoMutationResult = NonNullable<Awaited<ReturnType<typeof alterarAluno>>>
+    export type AlterarAlunoMutationBody = AlterarAlunoDto
+    export type AlterarAlunoMutationError = ErrorType<unknown>
+    export type AlterarAlunoMutationVariables = {id: string;data: AlterarAlunoDto}
+
+    /**
+ * @summary Altera, inativa ou reativa um aluno
+ */
+export const useAlterarAluno = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarAluno>>, TError,AlterarAlunoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof alterarAluno>>,
+        TError,
+        AlterarAlunoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAlterarAlunoMutationOptions(options), queryClient);
+    }
+    export const getListarTurmasUrl = () => {
+
+
+
+
+  return `/api/turmas`
+}
+
+/**
+ * @summary Lista as turmas já cadastradas
+ */
+export const listarTurmas = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeTurmasDto> => {
+
+  return clienteHttp<ListaDeTurmasDto>(getListarTurmasUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarTurmasQueryKey = () => {
+    return [
+    `/api/turmas`
+    ] as const;
+    }
+
+
+export const getListarTurmasQueryOptions = <TData = Awaited<ReturnType<typeof listarTurmas>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarTurmasQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarTurmas>>> = ({ signal }) => listarTurmas({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarTurmasQueryResult = NonNullable<Awaited<ReturnType<typeof listarTurmas>>>
+export type ListarTurmasQueryError = ErrorType<unknown>
+
+
+export function useListarTurmas<TData = Awaited<ReturnType<typeof listarTurmas>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTurmas>>,
+          TError,
+          Awaited<ReturnType<typeof listarTurmas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTurmas<TData = Awaited<ReturnType<typeof listarTurmas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTurmas>>,
+          TError,
+          Awaited<ReturnType<typeof listarTurmas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTurmas<TData = Awaited<ReturnType<typeof listarTurmas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lista as turmas já cadastradas
+ */
+
+export function useListarTurmas<TData = Awaited<ReturnType<typeof listarTurmas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTurmas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarTurmasQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

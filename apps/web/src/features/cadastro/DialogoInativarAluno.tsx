@@ -1,43 +1,59 @@
+import {
+  getBuscarAlunoQueryKey,
+  getListarAlunosQueryKey,
+  useAlterarAluno,
+  type AlunoDto,
+} from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarMoeda } from '@/compartilhado/formatacao'
 import { useListarCobrancasDoAluno } from './consultas'
-import type { AlunoDetalheDto } from './contrato'
 
 interface Props {
-  aberto: boolean
   aoFechar: () => void
-  aluno: AlunoDetalheDto
+  aluno: AlunoDto
 }
 
 // Operação com efeitos: passa pelo diálogo de confirmação, que mostra o resumo do efeito ([Usabilidade.NF003]).
-function DialogoInativarAluno({ aberto, aoFechar, aluno }: Props) {
-  const cobrancas = useListarCobrancasDoAluno(aluno.id, { enabled: aberto })
+// [Cadastros.RF001] fluxo A1. O cadastro não é excluído: fica inativo e pode ser reativado.
+function DialogoInativarAluno({ aoFechar, aluno }: Props) {
+  // TODO [Cadastros.RF001] fluxo E2: as cobranças ainda são fictícias; o aviso de débito passa a ser real
+  // quando o módulo de Cobranças entregar GET /api/alunos/:id/cobrancas.
+  const cobrancas = useListarCobrancasDoAluno(aluno.id)
   const dados = cobrancas.data
   const temDebito = !!dados && dados.quantidadeVencidas > 0
+  const alterar = useAlterarAluno()
+  const queryClient = useQueryClient()
 
-  function confirmar() {
-    // TODO [Cadastros.RF001]: PUT /api/alunos/:id/inativar (com auditoria). O cadastro não é excluído.
-    aoFechar()
+  async function confirmar() {
+    try {
+      const inativado = await alterar.mutateAsync({ id: aluno.id, data: { ativo: false } })
+      queryClient.setQueryData(getBuscarAlunoQueryKey(aluno.id), inativado)
+      await queryClient.invalidateQueries({ queryKey: getListarAlunosQueryKey() })
+      aoFechar()
+    } catch {
+      // A mensagem da API aparece no próprio diálogo.
+    }
   }
 
   return (
     <Dialogo
-      aberto={aberto}
+      aberto
       aoFechar={aoFechar}
       titulo="Inativar aluno?"
-      descricao="O cadastro não é excluído: ele fica inativo."
+      descricao="O cadastro não é excluído: ele fica inativo e pode ser reativado depois."
       aoEnviar={(evento) => {
         evento.preventDefault()
-        confirmar()
+        void confirmar()
       }}
       rodape={
         <>
           <button type="button" className="botao" onClick={aoFechar}>
             Voltar
           </button>
-          <button type="submit" className="botao botao-destrutivo">
-            Inativar aluno
+          <button type="submit" className="botao botao-destrutivo" disabled={alterar.isPending}>
+            {alterar.isPending ? 'Inativando…' : 'Inativar aluno'}
           </button>
         </>
       }
@@ -73,9 +89,15 @@ function DialogoInativarAluno({ aberto, aoFechar, aluno }: Props) {
           <li>
             Ele <strong>deixa de receber a mensalidade automática</strong>.
           </li>
+          <li>A vaga do alojamento fica livre para outro aluno ativo.</li>
           <li>O cadastro e o histórico continuam consultáveis.</li>
         </ul>
       </div>
+      {alterar.error && (
+        <p className="erro-formulario" role="alert">
+          {alterar.error.message}
+        </p>
+      )}
     </Dialogo>
   )
 }

@@ -355,7 +355,21 @@
     "/api/alunos": {
       "get": {
         "operationId": "listarAlunos",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "situacao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ativos",
+                "inativos",
+                "todos"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -373,7 +387,149 @@
             "cookie": []
           }
         ],
-        "summary": "Lista os alunos ativos",
+        "summary": "Lista os alunos (por padrão, só os ativos)",
+        "tags": [
+          "alunos"
+        ]
+      },
+      "post": {
+        "operationId": "criarAluno",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarAlunoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Inclui um aluno",
+        "tags": [
+          "alunos"
+        ]
+      }
+    },
+    "/api/alunos/{id}": {
+      "get": {
+        "operationId": "buscarAluno",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Abre o cadastro de um aluno",
+        "tags": [
+          "alunos"
+        ]
+      },
+      "patch": {
+        "operationId": "alterarAluno",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarAlunoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera, inativa ou reativa um aluno",
+        "tags": [
+          "alunos"
+        ]
+      }
+    },
+    "/api/turmas": {
+      "get": {
+        "operationId": "listarTurmas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeTurmasDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista as turmas já cadastradas",
         "tags": [
           "alunos"
         ]
@@ -654,17 +810,48 @@
           }
         }
       },
-      "SituacaoAluno": {
+      "CursoAluno": {
         "type": "string",
         "enum": [
-          "MATRICULADO",
-          "TRANCADO",
-          "DESLIGADO",
-          "FORMADO",
-          "INTERCAMBIO"
+          "AER",
+          "ELE",
+          "MEC",
+          "CIV",
+          "COMP",
+          "AESP"
         ]
       },
-      "AlunoResumoDto": {
+      "PostoAluno": {
+        "type": "string",
+        "enum": [
+          "CIVIL",
+          "ALUNO_MILITAR",
+          "ASP_OF"
+        ]
+      },
+      "AlojamentoDto": {
+        "type": "object",
+        "properties": {
+          "bloco": {
+            "type": "string",
+            "example": "A"
+          },
+          "apto": {
+            "type": "string",
+            "example": "101"
+          },
+          "vaga": {
+            "type": "string",
+            "example": "1"
+          }
+        },
+        "required": [
+          "bloco",
+          "apto",
+          "vaga"
+        ]
+      },
+      "AlunoDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -680,20 +867,59 @@
             "example": "12345678901"
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "description": "Vazio quando o cadastro está incompleto"
+          },
+          "celular": {
+            "type": "string",
+            "nullable": true,
+            "description": "Só dígitos, com DDD"
+          },
+          "apelido": {
+            "type": "string",
+            "nullable": true
+          },
+          "matricula": {
+            "type": "number",
+            "nullable": true
           },
           "turma": {
             "type": "string",
             "nullable": true,
             "example": "T28"
           },
-          "situacao": {
+          "curso": {
             "nullable": true,
             "allOf": [
               {
-                "$ref": "#/components/schemas/SituacaoAluno"
+                "$ref": "#/components/schemas/CursoAluno"
               }
             ]
+          },
+          "posto": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PostoAluno"
+              }
+            ]
+          },
+          "alojamento": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlojamentoDto"
+              }
+            ]
+          },
+          "ativo": {
+            "type": "boolean",
+            "description": "Situação do cadastro: só alunos ativos recebem a mensalidade automática"
+          },
+          "cadastroIncompleto": {
+            "type": "boolean",
+            "description": "Sem e-mail ou com CPF inválido: não recebe cobrança até ser corrigido"
           }
         },
         "required": [
@@ -701,8 +927,15 @@
           "nome",
           "cpf",
           "email",
+          "celular",
+          "apelido",
+          "matricula",
           "turma",
-          "situacao"
+          "curso",
+          "posto",
+          "alojamento",
+          "ativo",
+          "cadastroIncompleto"
         ]
       },
       "ListaDeAlunosDto": {
@@ -711,7 +944,147 @@
           "itens": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AlunoResumoDto"
+              "$ref": "#/components/schemas/AlunoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "CriarAlunoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "000.000.000-00",
+            "description": "Com ou sem pontuação"
+          },
+          "email": {
+            "type": "string"
+          },
+          "celular": {
+            "type": "string",
+            "nullable": true
+          },
+          "apelido": {
+            "type": "string",
+            "nullable": true
+          },
+          "matricula": {
+            "type": "number",
+            "nullable": true
+          },
+          "turma": {
+            "type": "string",
+            "nullable": true,
+            "example": "T28"
+          },
+          "curso": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CursoAluno"
+              }
+            ]
+          },
+          "posto": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PostoAluno"
+              }
+            ]
+          },
+          "alojamento": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlojamentoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "cpf",
+          "email"
+        ]
+      },
+      "AlterarAlunoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "celular": {
+            "type": "string",
+            "nullable": true
+          },
+          "apelido": {
+            "type": "string",
+            "nullable": true
+          },
+          "matricula": {
+            "type": "number",
+            "nullable": true
+          },
+          "turma": {
+            "type": "string",
+            "nullable": true
+          },
+          "curso": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CursoAluno"
+              }
+            ]
+          },
+          "posto": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PostoAluno"
+              }
+            ]
+          },
+          "alojamento": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlojamentoDto"
+              }
+            ]
+          },
+          "ativo": {
+            "type": "boolean",
+            "description": "false inativa; true reativa"
+          }
+        }
+      },
+      "ListaDeTurmasDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "example": [
+              "T28",
+              "T27"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },
