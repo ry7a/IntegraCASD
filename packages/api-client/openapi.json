@@ -213,6 +213,117 @@
         "x-perfil": "DIRETORIA"
       }
     },
+    "/api/admin/categorias": {
+      "get": {
+        "operationId": "listarCategoriasComUso",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeCategoriasComUsoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista as categorias com o uso de cada uma",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      },
+      "post": {
+        "operationId": "criarCategoria",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarCategoriaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriaComUsoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Inclui uma categoria de movimentação",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/admin/categorias/{id}": {
+      "patch": {
+        "operationId": "alterarCategoria",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarCategoriaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoriaComUsoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera, inativa ou reativa uma categoria",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
     "/api/alunos": {
       "get": {
         "operationId": "listarAlunos",
@@ -413,6 +524,105 @@
             "type": "string",
             "minLength": 12,
             "writeOnly": true
+          }
+        }
+      },
+      "TipoCategoria": {
+        "type": "string",
+        "enum": [
+          "ENTRADA",
+          "SAIDA",
+          "AMBOS"
+        ]
+      },
+      "CategoriaComUsoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoCategoria"
+              }
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "quantidadeMovimentacoes": {
+            "type": "number",
+            "description": "Quantas movimentações usam esta categoria."
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo",
+          "ativo",
+          "quantidadeMovimentacoes"
+        ]
+      },
+      "ListaDeCategoriasComUsoDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Ativas primeiro, depois as inativas.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoriaComUsoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "CriarCategoriaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60,
+            "example": "Material de limpeza"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoCategoria"
+              }
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "tipo"
+        ]
+      },
+      "AlterarCategoriaDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoCategoria"
+              }
+            ]
+          },
+          "ativo": {
+            "type": "boolean",
+            "description": "false inativa; true reativa."
           }
         }
       },

@@ -1,0 +1,101 @@
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import type { CategoriaComUso, CategoriasRepositorio } from '../infra/categorias.repositorio.js';
+import { AlterarCategoria } from './alterar-categoria.js';
+import { CriarCategoria } from './criar-categoria.js';
+
+const AUTOR = 'usuario-1';
+
+const zeladoria: CategoriaComUso = {
+  id: 'cat-1',
+  nome: 'Zeladoria',
+  tipo: 'SAIDA',
+  ativo: true,
+  quantidadeMovimentacoes: 4,
+};
+
+// Dublê do repositório: guarda as chamadas de escrita para o teste conferir.
+function criarRepositorioFalso(opcoes: {
+  existente?: CategoriaComUso | null;
+  nomeEmUso?: boolean;
+  uso?: { entradas: number; saidas: number };
+}) {
+  const chamadas = { criar: [] as unknown[], alterar: [] as unknown[] };
+  const repositorio = {
+    buscarPorId: async () => opcoes.existente ?? null,
+    existeAtivaComNome: async () => opcoes.nomeEmUso ?? false,
+    contarUsoPorTipo: async () => opcoes.uso ?? { entradas: 0, saidas: 0 },
+    criar: async (dados: { nome: string; tipo: string }) => {
+      chamadas.criar.push(dados);
+      return { ...zeladoria, ...dados };
+    },
+    alterar: async (id: string, dados: object, operacao: string) => {
+      chamadas.alterar.push({ id, dados, operacao });
+      return { ...zeladoria, ...dados };
+    },
+  } as unknown as CategoriasRepositorio;
+  return { repositorio, chamadas };
+}
+
+describe('CriarCategoria [Administração.RF002]', () => {
+  it('grava o nome normalizado e o tipo', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({});
+    await new CriarCategoria(repositorio).executar({ nome: '  Material  de limpeza ', tipo: 'SAIDA' }, AUTOR);
+    expect(chamadas.criar).toEqual([{ nome: 'Material de limpeza', tipo: 'SAIDA' }]);
+  });
+
+  it('recusa nome igual ao de outra categoria ativa (fluxo E1) com 409', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({ nomeEmUso: true });
+    await expect(
+      new CriarCategoria(repositorio).executar({ nome: 'Zeladoria', tipo: 'SAIDA' }, AUTOR),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(chamadas.criar).toEqual([]);
+  });
+
+  it('recusa dados inválidos com 400', async () => {
+    const { repositorio } = criarRepositorioFalso({});
+    await expect(
+      new CriarCategoria(repositorio).executar({ nome: 'Zeladoria', tipo: 'QUALQUER' }, AUTOR),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+describe('AlterarCategoria [Administração.RF002]', () => {
+  it('inativar categoria em uso é permitido e fica registrado como INATIVACAO (fluxo A1)', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({ existente: zeladoria });
+    await new AlterarCategoria(repositorio).executar('cat-1', { ativo: false }, AUTOR);
+    expect(chamadas.alterar).toEqual([{ id: 'cat-1', dados: { ativo: false }, operacao: 'INATIVACAO' }]);
+  });
+
+  it('reativar confere se outra categoria ativa já usa o nome', async () => {
+    const inativa = { ...zeladoria, ativo: false };
+    const { repositorio, chamadas } = criarRepositorioFalso({ existente: inativa, nomeEmUso: true });
+    await expect(
+      new AlterarCategoria(repositorio).executar('cat-1', { ativo: true }, AUTOR),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(chamadas.alterar).toEqual([]);
+  });
+
+  it('não troca para "só entradas" uma categoria que já classifica saídas', async () => {
+    const { repositorio } = criarRepositorioFalso({ existente: zeladoria, uso: { entradas: 0, saidas: 4 } });
+    await expect(
+      new AlterarCategoria(repositorio).executar('cat-1', { tipo: 'ENTRADA' }, AUTOR),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('manter o mesmo nome não acusa duplicidade', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({ existente: zeladoria, nomeEmUso: true });
+    await new AlterarCategoria(repositorio).executar('cat-1', { nome: 'Zeladoria', tipo: 'AMBOS' }, AUTOR);
+    expect(chamadas.alterar).toHaveLength(1);
+  });
+
+  it('categoria inexistente responde 404; corpo sem campos responde 400', async () => {
+    const vazio = criarRepositorioFalso({ existente: null });
+    await expect(new AlterarCategoria(vazio.repositorio).executar('x', { ativo: false }, AUTOR)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    const { repositorio } = criarRepositorioFalso({ existente: zeladoria });
+    await expect(new AlterarCategoria(repositorio).executar('cat-1', {}, AUTOR)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+});

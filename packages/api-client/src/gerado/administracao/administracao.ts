@@ -25,8 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AlterarCategoriaDto,
   AlterarUsuarioDto,
+  CategoriaComUsoDto,
+  CriarCategoriaDto,
   CriarUsuarioDto,
+  ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
   UsuarioDto
 } from '../api.schemas';
@@ -332,4 +336,279 @@ export const useAlterarUsuario = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getAlterarUsuarioMutationOptions(options), queryClient);
+    }
+    export const getListarCategoriasComUsoUrl = () => {
+
+
+
+
+  return `/api/admin/categorias`
+}
+
+/**
+ * @summary Lista as categorias com o uso de cada uma
+ */
+export const listarCategoriasComUso = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeCategoriasComUsoDto> => {
+
+  return clienteHttp<ListaDeCategoriasComUsoDto>(getListarCategoriasComUsoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarCategoriasComUsoQueryKey = () => {
+    return [
+    `/api/admin/categorias`
+    ] as const;
+    }
+
+
+export const getListarCategoriasComUsoQueryOptions = <TData = Awaited<ReturnType<typeof listarCategoriasComUso>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarCategoriasComUsoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarCategoriasComUso>>> = ({ signal }) => listarCategoriasComUso({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarCategoriasComUsoQueryResult = NonNullable<Awaited<ReturnType<typeof listarCategoriasComUso>>>
+export type ListarCategoriasComUsoQueryError = ErrorType<unknown>
+
+
+export function useListarCategoriasComUso<TData = Awaited<ReturnType<typeof listarCategoriasComUso>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCategoriasComUso>>,
+          TError,
+          Awaited<ReturnType<typeof listarCategoriasComUso>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCategoriasComUso<TData = Awaited<ReturnType<typeof listarCategoriasComUso>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCategoriasComUso>>,
+          TError,
+          Awaited<ReturnType<typeof listarCategoriasComUso>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCategoriasComUso<TData = Awaited<ReturnType<typeof listarCategoriasComUso>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lista as categorias com o uso de cada uma
+ */
+
+export function useListarCategoriasComUso<TData = Awaited<ReturnType<typeof listarCategoriasComUso>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCategoriasComUso>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarCategoriasComUsoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getCriarCategoriaUrl = () => {
+
+
+
+
+  return `/api/admin/categorias`
+}
+
+/**
+ * @summary Inclui uma categoria de movimentação
+ */
+export const criarCategoria = async (criarCategoriaDto: CriarCategoriaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<CategoriaComUsoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<CategoriaComUsoDto>(getCriarCategoriaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(criarCategoriaDto)
+  }
+);}
+
+
+
+
+
+export const getCriarCategoriaMutationKey = () => ['criarCategoria'] as const;
+
+export const getCriarCategoriaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof criarCategoria>>, TError,CriarCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof criarCategoria>>, TError,CriarCategoriaMutationVariables, TContext> => {
+
+const mutationKey = getCriarCategoriaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof criarCategoria>>, CriarCategoriaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  criarCategoria(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CriarCategoriaMutationResult = NonNullable<Awaited<ReturnType<typeof criarCategoria>>>
+    export type CriarCategoriaMutationBody = CriarCategoriaDto
+    export type CriarCategoriaMutationError = ErrorType<unknown>
+    export type CriarCategoriaMutationVariables = {data: CriarCategoriaDto}
+
+    /**
+ * @summary Inclui uma categoria de movimentação
+ */
+export const useCriarCategoria = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof criarCategoria>>, TError,CriarCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof criarCategoria>>,
+        TError,
+        CriarCategoriaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCriarCategoriaMutationOptions(options), queryClient);
+    }
+    export const getAlterarCategoriaUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/categorias/${id}`
+}
+
+/**
+ * @summary Altera, inativa ou reativa uma categoria
+ */
+export const alterarCategoria = async (id: string,
+    alterarCategoriaDto: AlterarCategoriaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<CategoriaComUsoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<CategoriaComUsoDto>(getAlterarCategoriaUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(alterarCategoriaDto)
+  }
+);}
+
+
+
+
+
+export const getAlterarCategoriaMutationKey = () => ['alterarCategoria'] as const;
+
+export const getAlterarCategoriaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarCategoria>>, TError,AlterarCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof alterarCategoria>>, TError,AlterarCategoriaMutationVariables, TContext> => {
+
+const mutationKey = getAlterarCategoriaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alterarCategoria>>, AlterarCategoriaMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  alterarCategoria(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AlterarCategoriaMutationResult = NonNullable<Awaited<ReturnType<typeof alterarCategoria>>>
+    export type AlterarCategoriaMutationBody = AlterarCategoriaDto
+    export type AlterarCategoriaMutationError = ErrorType<unknown>
+    export type AlterarCategoriaMutationVariables = {id: string;data: AlterarCategoriaDto}
+
+    /**
+ * @summary Altera, inativa ou reativa uma categoria
+ */
+export const useAlterarCategoria = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarCategoria>>, TError,AlterarCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof alterarCategoria>>,
+        TError,
+        AlterarCategoriaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAlterarCategoriaMutationOptions(options), queryClient);
     }
