@@ -21,6 +21,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ConsultarGastosPorCategoriaParams,
+  GastosPorCategoriaDto,
   InadimplenciaDto
 } from '../api.schemas';
 
@@ -50,6 +52,113 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getConsultarGastosPorCategoriaUrl = (params?: ConsultarGastosPorCategoriaParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/indicadores/gastos-por-categoria?${stringifiedParams}` : `/api/indicadores/gastos-por-categoria`
+}
+
+/**
+ * @summary Saídas do mês por categoria, com o mês anterior
+ */
+export const consultarGastosPorCategoria = async (params?: ConsultarGastosPorCategoriaParams, options?: Parameters<typeof clienteHttp>[1]): Promise<GastosPorCategoriaDto> => {
+
+  return clienteHttp<GastosPorCategoriaDto>(getConsultarGastosPorCategoriaUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConsultarGastosPorCategoriaQueryKey = (params?: ConsultarGastosPorCategoriaParams,) => {
+    return [
+    `/api/indicadores/gastos-por-categoria`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getConsultarGastosPorCategoriaQueryOptions = <TData = Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError = ErrorType<unknown>>(params?: ConsultarGastosPorCategoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConsultarGastosPorCategoriaQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof consultarGastosPorCategoria>>> = ({ signal }) => consultarGastosPorCategoria(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConsultarGastosPorCategoriaQueryResult = NonNullable<Awaited<ReturnType<typeof consultarGastosPorCategoria>>>
+export type ConsultarGastosPorCategoriaQueryError = ErrorType<unknown>
+
+
+export function useConsultarGastosPorCategoria<TData = Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError = ErrorType<unknown>>(
+ params: undefined |  ConsultarGastosPorCategoriaParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarGastosPorCategoria>>,
+          TError,
+          Awaited<ReturnType<typeof consultarGastosPorCategoria>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarGastosPorCategoria<TData = Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError = ErrorType<unknown>>(
+ params?: ConsultarGastosPorCategoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarGastosPorCategoria>>,
+          TError,
+          Awaited<ReturnType<typeof consultarGastosPorCategoria>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarGastosPorCategoria<TData = Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError = ErrorType<unknown>>(
+ params?: ConsultarGastosPorCategoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Saídas do mês por categoria, com o mês anterior
+ */
+
+export function useConsultarGastosPorCategoria<TData = Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError = ErrorType<unknown>>(
+ params?: ConsultarGastosPorCategoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarGastosPorCategoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConsultarGastosPorCategoriaQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getConsultarInadimplenciaUrl = () => {
 

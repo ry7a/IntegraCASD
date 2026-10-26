@@ -29,20 +29,3 @@ export interface EvolucaoDto {
   // Do mês mais antigo para o mais recente.
   meses: PontoDeEvolucaoDto[]
 }
-
-export interface GastoPorCategoriaDto {
-  // Nulo = movimentações não classificadas.
-  categoriaId: string | null
-  categoriaNome: string | null
-  valorCentavos: number
-  // Parte do total de saídas do mês, com uma casa decimal (32.0 = 32,0%).
-  percentual: number
-}
-
-// GET /api/indicadores/gastos-por-categoria?mes=AAAA-MM
-export interface GastosPorCategoriaDto {
-  mes: string
-  totalSaidasCentavos: number
-  // Da maior para a menor.
-  itens: GastoPorCategoriaDto[]
-}
