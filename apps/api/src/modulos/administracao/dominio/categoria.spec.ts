@@ -1,5 +1,7 @@
 import {
+  CategoriaEmUso,
   RegraDaCategoriaViolada,
+  conferirExclusao,
   conferirTrocaDeTipo,
   lerSituacao,
   lerTipo,
@@ -50,5 +52,16 @@ describe('conferirTrocaDeTipo', () => {
 
   it('categoria sem uso pode trocar de tipo à vontade', () => {
     expect(() => conferirTrocaDeTipo('ENTRADA', { entradas: 0, saidas: 0 })).not.toThrow();
+  });
+});
+
+describe('conferirExclusao', () => {
+  it('categoria nunca usada pode ser excluída', () => {
+    expect(() => conferirExclusao(0)).not.toThrow();
+  });
+
+  it('categoria com movimentações não pode ser excluída; o caminho é inativar', () => {
+    expect(() => conferirExclusao(2)).toThrow(CategoriaEmUso);
+    expect(() => conferirExclusao(2)).toThrow(/Inative-a/);
   });
 });

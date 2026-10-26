@@ -81,6 +81,8 @@ Monólito modular. Detalhes e justificativas em `docs/adr/`.
   Mudou o modelo? Atualize o MER no mesmo commit.
 - **Dinheiro em centavos, como inteiro.** Nunca use `float` para valores monetários.
 - **Nada é excluído fisicamente.** Cadastros são inativados; movimentações são corrigidas por estorno.
+  Única exceção: categoria de movimentação que nunca foi usada pode ser excluída (decisão de 26/10/2026,
+  registrada em `docs/governanca/excecoes.json`). Qualquer outra exceção é decisão da equipe.
 - **Toda alteração de dados é auditada** (usuário, data, operação, registro afetado).
 - **Nenhuma cobrança existe só localmente.** Se o Asaas falhar, nada é gravado.
 - **Segredos só no `.env`**, nunca no código, nos logs ou na trilha de auditoria. A chave do Asaas nunca aparece em tela nem em log.

@@ -18,6 +18,17 @@ export class NomeDeCategoriaDuplicado extends Error {
   }
 }
 
+export class CategoriaEmUso extends Error {
+  // Sem a quantidade (quem detectou foi o banco), a mensagem só diz que há movimentações.
+  constructor(quantidadeMovimentacoes?: number) {
+    const quantas = quantidadeMovimentacoes === undefined ? '' : `${quantidadeMovimentacoes} `;
+    super(
+      `Esta categoria já classifica ${quantas}movimentação(ões) e não pode ser excluída. ` +
+        'Inative-a: ela deixa de aparecer em novos lançamentos e os relatórios antigos continuam iguais.',
+    );
+  }
+}
+
 // Tira espaços das pontas e espaços repetidos no meio: "  Material   de limpeza " vira
 // "Material de limpeza". Assim dois nomes que só diferem em espaços contam como iguais.
 export function normalizarNome(valor: unknown): string {
@@ -69,5 +80,14 @@ export function conferirTrocaDeTipo(novoTipo: TipoDeCategoria, uso: UsoDaCategor
     throw new RegraDaCategoriaViolada(
       `Esta categoria já classifica ${uso.entradas} entrada(s). Para usá-la também em saídas, escolha "Entradas e saídas".`,
     );
+  }
+}
+
+// Exceção combinada com a equipe à regra "nada é excluído fisicamente": uma categoria que
+// nunca foi usada (por exemplo, criada por engano) pode ser excluída. Com movimentações, o
+// caminho é inativar, para que os relatórios de períodos passados não mudem.
+export function conferirExclusao(quantidadeMovimentacoes: number): void {
+  if (quantidadeMovimentacoes > 0) {
+    throw new CategoriaEmUso(quantidadeMovimentacoes);
   }
 }

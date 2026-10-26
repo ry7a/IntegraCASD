@@ -4,10 +4,15 @@ import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarInteiro } from '@/compartilhado/formatacao'
 import DialogoCategoria from './DialogoCategoria'
+import DialogoExcluirCategoria from './DialogoExcluirCategoria'
 import { ROTULO_DO_TIPO_DA_CATEGORIA } from './rotulos'
 
-// Diálogo fechado = `null`. Aberto, guarda a categoria em edição (`categoria: null` = inclusão).
-type EstadoDoDialogo = null | { categoria: CategoriaComUsoDto | null }
+// Diálogo fechado = `null`. Aberto, diz qual é e com qual categoria
+// (no de edição, `categoria: null` = inclusão).
+type EstadoDoDialogo =
+  | null
+  | { tipo: 'editar'; categoria: CategoriaComUsoDto | null }
+  | { tipo: 'excluir'; categoria: CategoriaComUsoDto }
 
 // Categorias de movimentação. [Administração.RF002]
 function AbaCategorias() {
@@ -19,10 +24,11 @@ function AbaCategorias() {
     <>
       <div className="filtros">
         <p className="texto-apoio" style={{ margin: 0 }}>
-          Categoria em uso pode ser inativada, mas não excluída: os relatórios antigos continuam iguais.
+          Só categoria nunca usada pode ser excluída. A que já tem movimentações se inativa em “Editar”: os
+          relatórios antigos continuam iguais.
         </p>
         <div className="campo" style={{ marginLeft: 'auto' }}>
-          <button type="button" className="botao botao-principal" onClick={() => definirDialogo({ categoria: null })}>
+          <button type="button" className="botao botao-principal" onClick={() => definirDialogo({ tipo: 'editar', categoria: null })}>
             <Icone nome="mais" />
             Nova categoria
           </button>
@@ -62,11 +68,23 @@ function AbaCategorias() {
                       type="button"
                       className="botao botao-pequeno botao-fantasma"
                       aria-label={`Editar a categoria ${categoria.nome}`}
-                      onClick={() => definirDialogo({ categoria })}
+                      onClick={() => definirDialogo({ tipo: 'editar', categoria })}
                     >
                       <Icone nome="editar" />
                       Editar
                     </button>
+                    {/* Só categoria sem movimentações pode ser excluída; a usada se inativa em "Editar". */}
+                    {categoria.quantidadeMovimentacoes === 0 && (
+                      <button
+                        type="button"
+                        className="botao botao-pequeno botao-fantasma"
+                        aria-label={`Excluir a categoria ${categoria.nome}`}
+                        onClick={() => definirDialogo({ tipo: 'excluir', categoria })}
+                      >
+                        <Icone nome="excluir" />
+                        Excluir
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -74,7 +92,12 @@ function AbaCategorias() {
           </table>
         </div>
       </EstadoDaConsulta>
-      {dialogo && <DialogoCategoria categoria={dialogo.categoria} aoFechar={() => definirDialogo(null)} />}
+      {dialogo?.tipo === 'editar' && (
+        <DialogoCategoria categoria={dialogo.categoria} aoFechar={() => definirDialogo(null)} />
+      )}
+      {dialogo?.tipo === 'excluir' && (
+        <DialogoExcluirCategoria categoria={dialogo.categoria} aoFechar={() => definirDialogo(null)} />
+      )}
     </>
   )
 }

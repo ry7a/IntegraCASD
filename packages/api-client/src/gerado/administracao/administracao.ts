@@ -612,3 +612,76 @@ export const useAlterarCategoria = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getAlterarCategoriaMutationOptions(options), queryClient);
     }
+    export const getExcluirCategoriaUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/categorias/${id}`
+}
+
+/**
+ * @summary Exclui uma categoria que nunca foi usada
+ */
+export const excluirCategoria = async (id: string, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+  return clienteHttp<void>(getExcluirCategoriaUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getExcluirCategoriaMutationKey = () => ['excluirCategoria'] as const;
+
+export const getExcluirCategoriaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof excluirCategoria>>, TError,ExcluirCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof excluirCategoria>>, TError,ExcluirCategoriaMutationVariables, TContext> => {
+
+const mutationKey = getExcluirCategoriaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof excluirCategoria>>, ExcluirCategoriaMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  excluirCategoria(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExcluirCategoriaMutationResult = NonNullable<Awaited<ReturnType<typeof excluirCategoria>>>
+
+    export type ExcluirCategoriaMutationError = ErrorType<unknown>
+    export type ExcluirCategoriaMutationVariables = {id: string}
+
+    /**
+ * @summary Exclui uma categoria que nunca foi usada
+ */
+export const useExcluirCategoria = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof excluirCategoria>>, TError,ExcluirCategoriaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof excluirCategoria>>,
+        TError,
+        ExcluirCategoriaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getExcluirCategoriaMutationOptions(options), queryClient);
+    }

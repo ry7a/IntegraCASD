@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import { NomeDeCategoriaDuplicado } from '../dominio/categoria.js';
+import { CategoriaEmUso, NomeDeCategoriaDuplicado } from '../dominio/categoria.js';
 import type { TipoDeCategoria, UsoDaCategoria } from '../dominio/categoria.js';
 
 export type CategoriaComUso = {
@@ -12,7 +12,7 @@ export type CategoriaComUso = {
   quantidadeMovimentacoes: number;
 };
 
-export type OperacaoNaCategoria = 'INCLUSAO' | 'ALTERACAO' | 'INATIVACAO' | 'REATIVACAO';
+export type OperacaoNaCategoria = 'INCLUSAO' | 'ALTERACAO' | 'INATIVACAO' | 'REATIVACAO' | 'EXCLUSAO';
 
 // Campos lidos em toda consulta: a categoria e quantas movimentações a usam.
 const SELECAO = {
@@ -39,6 +39,12 @@ function paraCategoriaComUso({ _count, ...categoria }: RegistroDoBanco): Categor
 // cobre o caso raro de duas pessoas criarem o mesmo nome ao mesmo tempo.
 function ehNomeDuplicado(erro: unknown): boolean {
   return erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002';
+}
+
+// A chave estrangeira das movimentações é "Restrict": o banco recusa apagar uma categoria em
+// uso (P2003). Cobre o caso raro de uma movimentação ser lançada durante a exclusão.
+function ehCategoriaReferenciada(erro: unknown): boolean {
+  return erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2003';
 }
 
 // Acesso ao banco para categorias. A auditoria é gravada aqui, na mesma transação da
@@ -126,6 +132,28 @@ export class CategoriasRepositorio {
       });
     } catch (erro) {
       if (ehNomeDuplicado(erro)) throw new NomeDeCategoriaDuplicado(dados.nome);
+      throw erro;
+    }
+  }
+
+  // Exclusão física, permitida só para categoria nunca usada (exceção registrada em
+  // docs/governanca/excecoes.json, regra B6). A trilha guarda o nome, já que o registro some.
+  async excluir(categoria: { id: string; nome: string }, autorId: string): Promise<void> {
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.categoria.delete({ where: { id: categoria.id } });
+        await tx.registroAuditoria.create({
+          data: {
+            usuarioId: autorId,
+            operacao: 'EXCLUSAO',
+            entidade: 'CATEGORIA',
+            registroId: categoria.id,
+            detalhe: `Categoria "${categoria.nome}" excluída (nunca foi usada).`,
+          },
+        });
+      });
+    } catch (erro) {
+      if (ehCategoriaReferenciada(erro)) throw new CategoriaEmUso();
       throw erro;
     }
   }

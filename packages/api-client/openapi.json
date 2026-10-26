@@ -322,6 +322,34 @@
           "administracao"
         ],
         "x-perfil": "DIRETORIA"
+      },
+      "delete": {
+        "operationId": "excluirCategoria",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Exclui uma categoria que nunca foi usada",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
       }
     },
     "/api/alunos": {

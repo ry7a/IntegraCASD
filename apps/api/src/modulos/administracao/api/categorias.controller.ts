@@ -1,8 +1,20 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import {
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiExtension,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -15,6 +27,7 @@ import {
 } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import { AlterarCategoria } from '../aplicacao/alterar-categoria.js';
 import { CriarCategoria } from '../aplicacao/criar-categoria.js';
+import { ExcluirCategoria } from '../aplicacao/excluir-categoria.js';
 import { ListarCategorias } from '../aplicacao/listar-categorias.js';
 import {
   AlterarCategoriaDto,
@@ -39,6 +52,7 @@ export class CategoriasController {
     private readonly listarCategorias: ListarCategorias,
     private readonly criarCategoria: CriarCategoria,
     private readonly alterarCategoria: AlterarCategoria,
+    private readonly excluirCategoria: ExcluirCategoria,
   ) {}
 
   @Get()
@@ -64,5 +78,14 @@ export class CategoriasController {
     @UsuarioAutenticado() autor: IdentidadeDoUsuario,
   ): Promise<CategoriaComUsoDto> {
     return this.alterarCategoria.executar(id, dto ?? {}, autor.id);
+  }
+
+  // Só categoria nunca usada; com movimentações responde 409 e orienta a inativar.
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ operationId: 'excluirCategoria', summary: 'Exclui uma categoria que nunca foi usada' })
+  @ApiNoContentResponse()
+  excluir(@Param('id', ID_DA_CATEGORIA) id: string, @UsuarioAutenticado() autor: IdentidadeDoUsuario): Promise<void> {
+    return this.excluirCategoria.executar(id, autor.id);
   }
 }

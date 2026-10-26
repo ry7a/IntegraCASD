@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import type { CategoriaComUso, CategoriasRepositorio } from '../infra/categorias.repositorio.js';
 import { AlterarCategoria } from './alterar-categoria.js';
 import { CriarCategoria } from './criar-categoria.js';
+import { ExcluirCategoria } from './excluir-categoria.js';
 
 const AUTOR = 'usuario-1';
 
@@ -19,7 +20,7 @@ function criarRepositorioFalso(opcoes: {
   nomeEmUso?: boolean;
   uso?: { entradas: number; saidas: number };
 }) {
-  const chamadas = { criar: [] as unknown[], alterar: [] as unknown[] };
+  const chamadas = { criar: [] as unknown[], alterar: [] as unknown[], excluir: [] as unknown[] };
   const repositorio = {
     buscarPorId: async () => opcoes.existente ?? null,
     existeAtivaComNome: async () => opcoes.nomeEmUso ?? false,
@@ -31,6 +32,9 @@ function criarRepositorioFalso(opcoes: {
     alterar: async (id: string, dados: object, operacao: string) => {
       chamadas.alterar.push({ id, dados, operacao });
       return { ...zeladoria, ...dados };
+    },
+    excluir: async (categoria: { id: string }) => {
+      chamadas.excluir.push(categoria.id);
     },
   } as unknown as CategoriasRepositorio;
   return { repositorio, chamadas };
@@ -97,5 +101,25 @@ describe('AlterarCategoria [Administração.RF002]', () => {
     await expect(new AlterarCategoria(repositorio).executar('cat-1', {}, AUTOR)).rejects.toBeInstanceOf(
       BadRequestException,
     );
+  });
+});
+
+describe('ExcluirCategoria', () => {
+  it('exclui categoria que nunca foi usada', async () => {
+    const semUso = { ...zeladoria, quantidadeMovimentacoes: 0 };
+    const { repositorio, chamadas } = criarRepositorioFalso({ existente: semUso });
+    await new ExcluirCategoria(repositorio).executar('cat-1', AUTOR);
+    expect(chamadas.excluir).toEqual(['cat-1']);
+  });
+
+  it('recusa com 409 a exclusão de categoria em uso', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({ existente: zeladoria });
+    await expect(new ExcluirCategoria(repositorio).executar('cat-1', AUTOR)).rejects.toBeInstanceOf(ConflictException);
+    expect(chamadas.excluir).toEqual([]);
+  });
+
+  it('categoria inexistente responde 404', async () => {
+    const { repositorio } = criarRepositorioFalso({ existente: null });
+    await expect(new ExcluirCategoria(repositorio).executar('x', AUTOR)).rejects.toBeInstanceOf(NotFoundException);
   });
 });
