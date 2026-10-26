@@ -1494,6 +1494,52 @@
         ]
       }
     },
+    "/api/movimentacoes/{id}/estornar": {
+      "post": {
+        "operationId": "estornarMovimentacao",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstornoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstornoRegistradoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Anula uma movimentação manual com um lançamento espelho",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
     "/api/movimentacoes": {
       "post": {
         "operationId": "registrarMovimentacao",
@@ -3700,6 +3746,31 @@
         },
         "required": [
           "resolucao"
+        ]
+      },
+      "EstornoDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Valor lançado errado; o correto é R$ 1.020,00"
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "EstornoRegistradoDto": {
+        "type": "object",
+        "properties": {
+          "espelhoId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A movimentação espelho, de sinal contrário"
+          }
+        },
+        "required": [
+          "espelhoId"
         ]
       },
       "TipoMovimentacao": {

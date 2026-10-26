@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '../../../generated/prisma/client.js';
+import { Prisma } from '../../../generated/prisma/client.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
@@ -179,6 +179,65 @@ export class MovimentacoesRepositorio {
       });
       return criada.id;
     });
+  }
+
+  // O que o estorno precisa saber da original. Nulo se não existe.
+  async paraEstornar(id: string): Promise<{
+    origem: OrigemMovimentacao;
+    descricao: string;
+    // Data do espelho, se já foi estornada (fluxo E2).
+    estornadaEm: string | null;
+  } | null> {
+    const registro = await this.prisma.movimentacao.findUnique({
+      where: { id },
+      select: { origem: true, descricao: true, estorno: { select: { data: true } } },
+    });
+    if (registro === null) return null;
+    return {
+      origem: registro.origem,
+      descricao: registro.descricao,
+      estornadaEm: registro.estorno ? paraDia(registro.estorno.data) : null,
+    };
+  }
+
+  // [Movimentações.RF002] Cria o espelho (tipo oposto, mesmo valor, conta, categoria e vínculo) e a
+  // trilha, na mesma transação. A original não muda: "estornada" é ter um espelho apontando para ela.
+  // Nulo se outro estorno da mesma movimentação ganhou a corrida (estorno_de_id é único).
+  async estornar(id: string, motivo: string, data: string, autorId: string): Promise<string | null> {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const original = await tx.movimentacao.findUniqueOrThrow({ where: { id } });
+        const espelho = await tx.movimentacao.create({
+          data: {
+            contaId: original.contaId,
+            tipo: original.tipo === 'ENTRADA' ? 'SAIDA' : 'ENTRADA',
+            valorCentavos: original.valorCentavos,
+            data: deDia(data),
+            categoriaId: original.categoriaId,
+            formaPagamento: original.formaPagamento,
+            origem: 'ESTORNO',
+            descricao: `Estorno: ${original.descricao}`,
+            contratoId: original.contratoId,
+            projetoId: original.projetoId,
+            funcionarioId: original.funcionarioId,
+            estornoDeId: original.id,
+            motivoEstorno: motivo,
+            registradaPorId: autorId,
+          },
+        });
+        await registrarNaTrilha(tx, {
+          usuarioId: autorId,
+          operacao: 'ESTORNO',
+          entidade: 'MOVIMENTACAO',
+          registroId: original.id,
+          detalhe: `Movimentação "${original.descricao}" estornada. Motivo: ${motivo}`,
+        });
+        return espelho.id;
+      });
+    } catch (erro) {
+      if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') return null;
+      throw erro;
+    }
   }
 
   // O que o filtro e o diálogo "Nova movimentação" oferecem.

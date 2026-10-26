@@ -25,6 +25,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  EstornoDto,
+  EstornoRegistradoDto,
   ListaDeMovimentacoesDto,
   ListarMovimentacoesParams,
   MovimentacaoRegistradaDto,
@@ -59,7 +61,95 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
-export const getRegistrarMovimentacaoUrl = () => {
+export const getEstornarMovimentacaoUrl = (id: string,) => {
+
+
+
+
+  return `/api/movimentacoes/${id}/estornar`
+}
+
+/**
+ * @summary Anula uma movimentação manual com um lançamento espelho
+ */
+export const estornarMovimentacao = async (id: string,
+    estornoDto: EstornoDto, options?: Parameters<typeof clienteHttp>[1]): Promise<EstornoRegistradoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<EstornoRegistradoDto>(getEstornarMovimentacaoUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(estornoDto)
+  }
+);}
+
+
+
+
+
+export const getEstornarMovimentacaoMutationKey = () => ['estornarMovimentacao'] as const;
+
+export const getEstornarMovimentacaoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof estornarMovimentacao>>, TError,EstornarMovimentacaoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof estornarMovimentacao>>, TError,EstornarMovimentacaoMutationVariables, TContext> => {
+
+const mutationKey = getEstornarMovimentacaoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof estornarMovimentacao>>, EstornarMovimentacaoMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  estornarMovimentacao(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EstornarMovimentacaoMutationResult = NonNullable<Awaited<ReturnType<typeof estornarMovimentacao>>>
+    export type EstornarMovimentacaoMutationBody = EstornoDto
+    export type EstornarMovimentacaoMutationError = ErrorType<unknown>
+    export type EstornarMovimentacaoMutationVariables = {id: string;data: EstornoDto}
+
+    /**
+ * @summary Anula uma movimentação manual com um lançamento espelho
+ */
+export const useEstornarMovimentacao = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof estornarMovimentacao>>, TError,EstornarMovimentacaoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof estornarMovimentacao>>,
+        TError,
+        EstornarMovimentacaoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEstornarMovimentacaoMutationOptions(options), queryClient);
+    }
+    export const getRegistrarMovimentacaoUrl = () => {
 
 
 

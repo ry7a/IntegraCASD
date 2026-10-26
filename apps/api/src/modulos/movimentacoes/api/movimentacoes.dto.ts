@@ -66,6 +66,14 @@ export class MovimentacaoRegistradaDto {
   @ApiProperty({ type: String, nullable: true, description: 'Ex.: lançamento em projeto já executado' }) aviso!: string | null;
 }
 
+export class EstornoDto {
+  @ApiProperty({ example: 'Valor lançado errado; o correto é R$ 1.020,00' }) motivo!: string;
+}
+
+export class EstornoRegistradoDto {
+  @ApiProperty({ format: 'uuid', description: 'A movimentação espelho, de sinal contrário' }) espelhoId!: string;
+}
+
 export class ContaDaOpcaoDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() nome!: string;
