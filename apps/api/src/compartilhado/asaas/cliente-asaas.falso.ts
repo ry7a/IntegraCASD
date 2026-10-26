@@ -14,6 +14,8 @@ export class ClienteAsaasFalso extends ClienteAsaas {
 
   // Ligue para simular o Asaas fora do ar.
   indisponivel = false;
+  // CPFs que o Asaas recusa (simula "dados recusados" para um aluno só).
+  readonly cpfsRecusados = new Set<string>();
 
   // Ligue para simular a integração sem chave configurada.
   semConfiguracao = false;
@@ -24,6 +26,9 @@ export class ClienteAsaasFalso extends ClienteAsaas {
 
   criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
     this.verificarDisponibilidade();
+    if (this.cpfsRecusados.has(dados.cpf)) {
+      throw new ErroAsaas('O Asaas recusou os dados enviados. Confira CPF, e-mail e valor e tente novamente.', 'DADOS_RECUSADOS');
+    }
     this.clientesCriados.push(dados);
     return Promise.resolve({ idAsaas: `cus_falso_${this.clientesCriados.length}` });
   }

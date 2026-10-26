@@ -528,6 +528,48 @@ export interface CobrancaDto {
   urlFatura: string | null;
 }
 
+export interface FalhaDaGeracaoDto {
+  /** Vazio quando a falha é da rotina inteira (ex.: Asaas fora do ar) */
+  alunoId: string;
+  alunoNome: string;
+  motivo: string;
+}
+
+export type ExecucaoGeracaoDtoOrigem = typeof ExecucaoGeracaoDtoOrigem[keyof typeof ExecucaoGeracaoDtoOrigem];
+
+
+export const ExecucaoGeracaoDtoOrigem = {
+  AGENDADA: 'AGENDADA',
+  MANUAL: 'MANUAL',
+} as const;
+
+export interface ExecucaoGeracaoDto {
+  id: string;
+  /** Mês das mensalidades */
+  referencia: string;
+  origem: ExecucaoGeracaoDtoOrigem;
+  iniciadaEm: string;
+  /** @nullable */
+  finalizadaEm: string | null;
+  /** Cobranças criadas */
+  totalProcessado: number;
+  /** Alunos que já tinham a mensalidade do mês */
+  totalJaExistentes: number;
+  totalFalhas: number;
+  falhas: FalhaDaGeracaoDto[];
+  /** O Asaas parou no meio; nova tentativa agendada */
+  interrompida: boolean;
+}
+
+export interface ListaDeExecucoesDto {
+  /** Da mais recente para a mais antiga */
+  itens: ExecucaoGeracaoDto[];
+}
+
+export interface PedidoDeGeracaoDto {
+  referencia: string;
+}
+
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };

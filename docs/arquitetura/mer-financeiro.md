@@ -24,6 +24,7 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 | `registros_auditoria` | trilha de auditoria ([Segurança.NF006]) | só de inclusão; o banco recusa `UPDATE` e `DELETE` (ADR-0004) |
 | `parametros_cobranca` | parâmetros da mensalidade ([Administração.RF003]) | uma linha por alteração, nunca alterada; a vigente é a mais recente |
 | `eventos_webhook` | eventos recebidos do Asaas ([Desempenho.NF001]) | id do Asaas único, para a idempotência |
+| `execucoes_geracao` | cada execução da geração recorrente ([Confiabilidade.NF007]) | início, fim, criadas, já existentes, falhas (aluno e motivo) e se foi interrompida |
 | `clientes_asaas` | o cliente do Asaas de cada aluno | criado na primeira cobrança; fica em Cobranças para o Cadastros não depender do Asaas |
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem

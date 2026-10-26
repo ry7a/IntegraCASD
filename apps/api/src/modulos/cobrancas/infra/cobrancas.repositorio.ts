@@ -86,6 +86,12 @@ function paraCobranca(registro: RegistroDoBanco): CobrancaRegistrada {
 export class CobrancasRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Fluxo A1 da geração: já existe mensalidade deste aluno para o mês?
+  async existeMensalidade(alunoId: string, referencia: string): Promise<boolean> {
+    const quantidade = await this.prisma.cobranca.count({ where: { alunoId, referencia } });
+    return quantidade > 0;
+  }
+
   async idClienteAsaasDoAluno(alunoId: string): Promise<string | null> {
     const vinculo = await this.prisma.clienteAsaas.findUnique({ where: { alunoId } });
     return vinculo?.idAsaas ?? null;
