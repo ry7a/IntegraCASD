@@ -1495,6 +1495,41 @@
       }
     },
     "/api/movimentacoes": {
+      "post": {
+        "operationId": "registrarMovimentacao",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaMovimentacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimentacaoRegistradaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lança uma entrada ou saída manual",
+        "tags": [
+          "movimentacoes"
+        ]
+      },
       "get": {
         "operationId": "listarMovimentacoes",
         "parameters": [
@@ -3672,6 +3707,99 @@
         "enum": [
           "ENTRADA",
           "SAIDA"
+        ]
+      },
+      "FormaPagamentoManual": {
+        "type": "string",
+        "enum": [
+          "PIX",
+          "TRANSFERENCIA",
+          "DINHEIRO",
+          "CARTAO"
+        ]
+      },
+      "NovaMovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "contaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoMovimentacao"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "example": 120000,
+            "description": "Maior que zero, em centavos"
+          },
+          "data": {
+            "type": "string",
+            "format": "date",
+            "description": "Não pode ser no futuro"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Ativa e compatível com o tipo"
+          },
+          "forma": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormaPagamentoManual"
+              }
+            ]
+          },
+          "descricao": {
+            "type": "string",
+            "example": "NF 685, limpeza de outubro"
+          },
+          "contratoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "projetoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "funcionarioId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "contaId",
+          "tipo",
+          "valorCentavos",
+          "data",
+          "categoriaId",
+          "forma",
+          "descricao"
+        ]
+      },
+      "MovimentacaoRegistradaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "aviso": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ex.: lançamento em projeto já executado"
+          }
+        },
+        "required": [
+          "id",
+          "aviso"
         ]
       },
       "FormaPagamento": {

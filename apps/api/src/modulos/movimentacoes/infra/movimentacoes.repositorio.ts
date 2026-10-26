@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../generated/prisma/client.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
+import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import {
   limitesDoMes,
   type FiltrosDeMovimentacoes,
+  type NovaMovimentacao,
   type FormaPagamento,
   type OrigemMovimentacao,
   type TipoMovimentacao,
@@ -126,6 +128,57 @@ export class MovimentacoesRepositorio {
         saldoCentavos: entradasCentavos - saidasCentavos,
       },
     };
+  }
+
+  // O que o registro precisa conferir: a categoria (ativa e compatível), a conta e o vínculo existem.
+  async referenciasDoRegistro(nova: NovaMovimentacao): Promise<{
+    categoria: { ativo: boolean; tipo: 'ENTRADA' | 'SAIDA' | 'AMBOS' } | null;
+    contaAtiva: boolean;
+    vinculoEncontrado: boolean;
+    projetoExecutado: boolean;
+  }> {
+    const [categoria, conta, contrato, projeto, funcionario] = await Promise.all([
+      this.prisma.categoria.findUnique({ where: { id: nova.categoriaId }, select: { ativo: true, tipo: true } }),
+      this.prisma.conta.findUnique({ where: { id: nova.contaId }, select: { ativo: true } }),
+      nova.contratoId ? this.prisma.contrato.findUnique({ where: { id: nova.contratoId }, select: { id: true } }) : null,
+      nova.projetoId ? this.prisma.projeto.findUnique({ where: { id: nova.projetoId }, select: { situacao: true } }) : null,
+      nova.funcionarioId ? this.prisma.funcionario.findUnique({ where: { id: nova.funcionarioId }, select: { id: true } }) : null,
+    ]);
+    const vinculoEncontrado =
+      (nova.contratoId === null || contrato !== null) &&
+      (nova.projetoId === null || projeto !== null) &&
+      (nova.funcionarioId === null || funcionario !== null);
+    return { categoria, contaAtiva: conta?.ativo === true, vinculoEncontrado, projetoExecutado: projeto?.situacao === 'EXECUTADO' };
+  }
+
+  // [Movimentações.RF001] Grava a movimentação com o autor e a trilha, na mesma transação.
+  async registrar(nova: NovaMovimentacao, autorId: string): Promise<string> {
+    return this.prisma.$transaction(async (tx) => {
+      const criada = await tx.movimentacao.create({
+        data: {
+          contaId: nova.contaId,
+          tipo: nova.tipo,
+          valorCentavos: nova.valorCentavos,
+          data: deDia(nova.data),
+          categoriaId: nova.categoriaId,
+          formaPagamento: nova.forma,
+          origem: 'MANUAL',
+          descricao: nova.descricao,
+          contratoId: nova.contratoId,
+          projetoId: nova.projetoId,
+          funcionarioId: nova.funcionarioId,
+          registradaPorId: autorId,
+        },
+      });
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'INCLUSAO',
+        entidade: 'MOVIMENTACAO',
+        registroId: criada.id,
+        detalhe: `${nova.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'} de ${nova.valorCentavos} centavos em ${nova.data}: ${nova.descricao}.`,
+      });
+      return criada.id;
+    });
   }
 
   // O que o filtro e o diálogo "Nova movimentação" oferecem.

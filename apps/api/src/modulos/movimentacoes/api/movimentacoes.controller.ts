@@ -1,8 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiCookieAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiCookieAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  UsuarioAutenticado,
+  type IdentidadeDoUsuario,
+} from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import { ConsultarMovimentacoes } from '../aplicacao/consultar-movimentacoes.js';
 import { ListarOpcoesDaMovimentacao } from '../aplicacao/listar-opcoes.js';
-import { ListaDeMovimentacoesDto, OpcoesDaMovimentacaoDto } from './movimentacoes.dto.js';
+import { RegistrarMovimentacao } from '../aplicacao/registrar-movimentacao.js';
+import {
+  ListaDeMovimentacoesDto,
+  MovimentacaoRegistradaDto,
+  NovaMovimentacaoDto,
+  OpcoesDaMovimentacaoDto,
+} from './movimentacoes.dto.js';
 
 // Entradas e saídas do CASD. Qualquer usuário autenticado (área administrativa e diretoria).
 @ApiTags('movimentacoes')
@@ -12,7 +22,16 @@ export class MovimentacoesController {
   constructor(
     private readonly consultar: ConsultarMovimentacoes,
     private readonly listarOpcoes: ListarOpcoesDaMovimentacao,
+    private readonly registrarMovimentacao: RegistrarMovimentacao,
   ) {}
+
+  // [Movimentações.RF001] Lançamento manual de entrada ou saída.
+  @Post()
+  @ApiOperation({ operationId: 'registrarMovimentacao', summary: 'Lança uma entrada ou saída manual' })
+  @ApiCreatedResponse({ type: MovimentacaoRegistradaDto })
+  registrar(@Body() dto: NovaMovimentacaoDto, @UsuarioAutenticado() autor: IdentidadeDoUsuario): Promise<MovimentacaoRegistradaDto> {
+    return this.registrarMovimentacao.executar(dto ?? {}, autor.id);
+  }
 
   // [Movimentações.RF003] Filtros na URL. Sem mês, o corrente.
   @Get()

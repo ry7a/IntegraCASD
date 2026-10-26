@@ -43,7 +43,7 @@ function Layout() {
       {cobrancaAberta && (
         <DialogoNovaCobranca preenchida={cobrancaPreenchida} aoFechar={() => definirCobrancaAberta(false)} />
       )}
-      <DialogoNovaMovimentacao aberto={movimentacaoAberta} aoFechar={() => definirMovimentacaoAberta(false)} />
+      {movimentacaoAberta && <DialogoNovaMovimentacao aoFechar={() => definirMovimentacaoAberta(false)} />}
       <DicaFlutuante />
     </AcoesGlobaisContexto.Provider>
   )

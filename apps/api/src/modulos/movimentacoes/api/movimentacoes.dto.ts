@@ -47,6 +47,25 @@ export class ListaDeMovimentacoesDto {
   @ApiProperty({ type: TotaisDto, description: 'Do mesmo recorte da lista' }) totais!: TotaisDto;
 }
 
+export class NovaMovimentacaoDto {
+  @ApiProperty({ format: 'uuid' }) contaId!: string;
+  @ApiProperty({ enum: TIPOS, enumName: 'TipoMovimentacao' }) tipo!: (typeof TIPOS)[number];
+  @ApiProperty({ example: 120000, description: 'Maior que zero, em centavos' }) valorCentavos!: number;
+  @ApiProperty({ format: 'date', description: 'Não pode ser no futuro' }) data!: string;
+  @ApiProperty({ format: 'uuid', description: 'Ativa e compatível com o tipo' }) categoriaId!: string;
+  @ApiProperty({ enum: ['PIX', 'TRANSFERENCIA', 'DINHEIRO', 'CARTAO'], enumName: 'FormaPagamentoManual' })
+  forma!: 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
+  @ApiProperty({ example: 'NF 685, limpeza de outubro' }) descricao!: string;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, required: false }) contratoId?: string | null;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, required: false }) projetoId?: string | null;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, required: false }) funcionarioId?: string | null;
+}
+
+export class MovimentacaoRegistradaDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty({ type: String, nullable: true, description: 'Ex.: lançamento em projeto já executado' }) aviso!: string | null;
+}
+
 export class ContaDaOpcaoDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() nome!: string;
