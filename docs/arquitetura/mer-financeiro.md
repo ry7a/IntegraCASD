@@ -20,9 +20,11 @@ Fonte editável: [`mer-financeiro.drawio`](mer-financeiro.drawio). Ao alterar, e
    de custo. No banco isso vira um `CHECK`; no backend, uma validação com mensagem.
 2. **Uma movimentação só aceita uma categoria compatível com o seu tipo:** uma `ENTRADA` não
    recebe categoria `SAIDA`, e vice-versa.
-3. **O estorno é uma movimentação nova**, de tipo oposto e mesmo valor, que aponta para a
-   original em `estornoDeId`. Como o campo é `UNIQUE`, uma movimentação só pode ser estornada uma
-   vez. Nada é apagado.
+3. **O estorno é uma movimentação nova**, de tipo oposto e mesmo valor, com origem `ESTORNO`,
+   `motivoEstorno` preenchido e `estornoDeId` apontando para a original. Como o campo é `UNIQUE`,
+   uma movimentação só pode ser estornada uma vez. Nada é apagado. Só movimentações de origem
+   `MANUAL` podem ser estornadas: as que vêm de cobrança são corrigidas pela cobrança
+   ([Movimentações.RF002], fluxo E1).
 4. **A transferência entre contas (aplicar ou resgatar) é um par de movimentações** com o mesmo
    valor e tipos opostos, em contas diferentes, ligadas por `transferenciaParId`. Ela muda o saldo
    de cada conta, mas fica de fora do resultado do CASD (não é receita nem despesa). É isso que a
@@ -43,7 +45,9 @@ Estes são os campos combinados em 21/10 ([Cadastros.RF001]). Comparado ao `sche
 - **Entram:** `apelido`, além de `alojamentoId` (FK para a vaga) no lugar do texto livre.
 - **Saem:** `situacao` (o enum `MATRICULADO | TRANCADO | …`), que é substituído por `ativo`,
   e as colunas de texto `alojamento`, `apto` e `vaga`. A remoção fica para um passo posterior,
-  depois que a carga inicial preencher os campos novos (expandir e depois contrair).
+  depois que a carga inicial preencher os campos novos (expandir e depois contrair). Até lá, no
+  Prisma, a coluna de texto `alojamento` se chama `alojamentoTexto`, para liberar o nome
+  `alojamento` para a relação com a vaga.
 - **Continuam iguais:** `nome`, `cpf`, `email`, `celular`, `matricula`, `turmaId`, `curso`,
   `posto` e `ativo`.
 
@@ -81,26 +85,26 @@ enum.
 
 ## Decisões
 
-Cada item traz a recomendação que foi aplicada. Os itens 1, 2 e 3 vão **além do documento de
-requisitos v1.1** e precisam de uma nota no documento, assim como o responsável opcional do projeto
-(o [Cadastros.RF005] ainda o trata como obrigatório).
+Tomadas em 26/10/2026. Os itens 1, 2 e 3 vão **além do documento de requisitos v1.1** e precisam
+de uma nota no documento. O mesmo vale para o responsável opcional do projeto (o [Cadastros.RF005]
+ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos requisitos.
 
-1. **`CONTA` (corrente e aplicação).** Sem ela, o saldo do fundo e os investimentos não fecham com
-   a planilha. *Recomendo incluir.*
-2. **`CENTRO_CUSTO` e `VERBA_MENSAL` (controle da zeladoria).** Hoje esse controle é uma aba inteira
-   da planilha, mas não aparece nos requisitos. *Recomendo incluir `CENTRO_CUSTO` agora.
-   `VERBA_MENSAL` é uma tabela pequena, mas exige uma tela a mais; incluir só se couber no MVP.*
-3. **Transferência como par de movimentações** (regra 4). *Recomendo.* A alternativa, uma
-   categoria marcada como "não entra no resultado", é mais simples, mas não liga as duas pernas.
+1. **`CONTA` (corrente e aplicação):** incluída. Sem ela, o saldo do fundo e os investimentos não
+   fecham com a planilha.
+2. **`CENTRO_CUSTO` e `VERBA_MENSAL`:** incluídas. Reproduzem o controle de verbas da zeladoria.
+3. **Transferência como par de movimentações** (regra 4). A alternativa, uma categoria marcada como
+   "não entra no resultado", não liga as duas pernas.
 4. **Centros administrativos (`A - …`) viram categorias**, e "Funcionárias" vira vínculo com
-   funcionário. *Recomendo.*
-5. **Situação do projeto:** usei os status da planilha, incluindo `EM_EXECUCAO`, que aparece no
-   resumo dela mas não na lista permitida. Confirmar a lista.
-6. **Código `24C002` / `25P013`:** manter para não perder a referência da planilha e das notas
-   antigas. *Recomendo manter.*
-7. **Histórico de boletos na carga inicial:** na planilha, as entradas são totais por dia, sem
-   aluno. *Recomendo importar como movimentações sem cobrança vinculada.*
-8. **Contas a pagar** (aba A Pagar, hoje com 1 linha): *recomendo deixar fora do MVP.*
-9. **Uma vaga com vários alunos?** No diagrama, uma vaga pode aparecer em vários cadastros,
-   porque alunos inativos guardam a vaga que ocupavam. *Recomendo um índice parcial: no máximo um
-   aluno ativo por vaga.* Isso não estava no que combinamos.
+   funcionário.
+5. **Situação do projeto:** os 5 status da planilha (`A_LIBERAR`, `LIBERADO`, `EM_EXECUCAO`,
+   `EXECUTADO`, `CANCELADO`). A tela agrupa os três primeiros como "em andamento" e os dois últimos
+   como "encerrados".
+6. **Periodicidade do contrato:** `MENSAL | ANUAL | POR_DEMANDA | UNICA`, a união da planilha
+   (contrato anual) com a tela (por demanda).
+7. **Origem da movimentação e motivo do estorno:** incluídos, porque o [Movimentações.RF002] e a
+   tela de Movimentações precisam deles.
+8. **Código `24C002` / `25P013`:** mantido, para não perder a referência da planilha.
+9. **Histórico de boletos na carga inicial:** importado como movimentações sem cobrança
+   vinculada, porque na planilha as entradas são totais por dia, sem aluno.
+10. **Contas a pagar** (aba A Pagar): fora do MVP.
+11. **Vaga:** no máximo um aluno ativo por vaga (índice parcial). Os inativos guardam a vaga antiga.
