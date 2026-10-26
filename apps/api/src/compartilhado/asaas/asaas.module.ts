@@ -4,6 +4,7 @@ import {
   ErroAsaas,
   type AmbienteAsaas,
   type CobrancaAsaas,
+  type CobrancaNoAsaas,
   type NovaCobrancaAsaas,
   type NovoClienteAsaas,
 } from './cliente-asaas.js';
@@ -61,6 +62,14 @@ export class ClienteAsaasSobDemanda extends ClienteAsaas {
 
   async cancelarCobranca(idAsaas: string): Promise<void> {
     return (await this.cliente()).cancelarCobranca(idAsaas);
+  }
+
+  async buscarCobranca(idAsaas: string): Promise<CobrancaNoAsaas | null> {
+    return (await this.cliente()).buscarCobranca(idAsaas);
+  }
+
+  async listarCobrancas(periodo: { vencimentoDe: string; vencimentoAte: string }): Promise<CobrancaNoAsaas[]> {
+    return (await this.cliente()).listarCobrancas(periodo);
   }
 }
 

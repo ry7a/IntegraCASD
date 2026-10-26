@@ -25,6 +25,8 @@ export type CobrancaRegistrada = {
   urlFatura: string | null;
   pagaEm: string | null;
   justificativaManual: string | null;
+  // [Cobranças.RF007] Última conferência com o Asaas. Nulo = nunca.
+  sincronizadaEm: Date | null;
   canceladaEm: Date | null;
   motivoCancelamento: string | null;
   // Renegociação: a cancelada que esta substitui, e a que substituiu esta.
@@ -66,6 +68,7 @@ type RegistroDoBanco = {
   urlFatura: string | null;
   pagaEm: Date | null;
   justificativaManual: string | null;
+  sincronizadaEm: Date | null;
   canceladaEm: Date | null;
   motivoCancelamento: string | null;
   renegociacaoDeId: string | null;
@@ -91,6 +94,7 @@ function paraCobranca(registro: RegistroDoBanco): CobrancaRegistrada {
     urlFatura: registro.urlFatura,
     pagaEm: registro.pagaEm === null ? null : paraDia(registro.pagaEm),
     justificativaManual: registro.justificativaManual,
+    sincronizadaEm: registro.sincronizadaEm,
     canceladaEm: registro.canceladaEm,
     motivoCancelamento: registro.motivoCancelamento,
     renegociacaoDeId: registro.renegociacaoDeId,

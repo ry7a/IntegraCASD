@@ -8,6 +8,7 @@ import {
   getBuscarCobrancaQueryKey,
   useCancelarCobranca,
   useRegistrarPagamentoManual,
+  useSincronizarCobranca,
   type CobrancaDetalheDto,
   type FormaDePagamentoManual,
 } from '@integracasd/api-client'
@@ -24,50 +25,20 @@ interface Props {
 }
 
 // Os três diálogos da tela de detalhe. Os que mudam dados passam por confirmação com o resumo do
-// efeito ([Usabilidade.NF003]). Cancelamento e pagamento manual já têm efeito; sincronizar ainda só
-// fecha (entra com a sua issue).
+// efeito ([Usabilidade.NF003]).
 export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Props) {
   const resumoDaCobranca = `${cobranca.descricao} · ${formatarMoeda(cobranca.valorCentavos)}`
+  const dias = cobranca.diasDesdeUltimaSincronizacao
   const textoDaUltimaSincronizacao = cobranca.ultimaSincronizacaoEm
-    ? `${formatarData(cobranca.ultimaSincronizacaoEm)} (há ${cobranca.diasDesdeUltimaSincronizacao} dias)`
+    ? `${formatarData(cobranca.ultimaSincronizacaoEm)} (${dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : `há ${dias} dias`})`
     : 'nunca sincronizada'
-
-  function confirmarSemEfeito(evento: { preventDefault: () => void }) {
-    evento.preventDefault()
-    aoFechar()
-  }
 
   return (
     <>
-      {/* Sincronizar só esta cobrança [Cobranças.RF007] */}
-      <Dialogo
-        aberto={aberto === 'sincronizar'}
-        aoFechar={aoFechar}
-        titulo="Sincronizar esta cobrança"
-        descricao={`Consulta o Asaas e atualiza a situação de ${cobranca.descricao}.`}
-        // TODO [Cobranças.RF007]: POST /api/cobrancas/:id/sincronizar.
-        aoEnviar={confirmarSemEfeito}
-        rodape={
-          <>
-            <button type="button" className="botao" onClick={aoFechar}>
-              Fechar
-            </button>
-            <button type="submit" className="botao botao-principal">
-              Sincronizar agora
-            </button>
-          </>
-        }
-      >
-        <div className="resumo-efeito">
-          <dl>
-            <dt>Aluno</dt>
-            <dd>{cobranca.alunoNome}</dd>
-            <dt>Última sincronização</dt>
-            <dd>{textoDaUltimaSincronizacao}</dd>
-          </dl>
-          <p>Se o Asaas indicar que o boleto foi pago, a cobrança passa a Paga e a entrada é criada em Movimentações.</p>
-        </div>
-      </Dialogo>
+      {/* Sincronizar só esta cobrança [Cobranças.RF007] fluxo A1 */}
+      {aberto === 'sincronizar' && (
+        <DialogoDeSincronizacao cobranca={cobranca} aoFechar={aoFechar} textoDaUltimaSincronizacao={textoDaUltimaSincronizacao} />
+      )}
 
       {/* Cancelar cobrança [Cobranças.RF004]: operação irreversível */}
       {aberto === 'cancelar' && (
@@ -84,6 +55,83 @@ export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Pro
         />
       )}
     </>
+  )
+}
+
+interface PropsDaSincronizacao {
+  cobranca: CobrancaDetalheDto
+  aoFechar: () => void
+  textoDaUltimaSincronizacao: string
+}
+
+// Consulta o Asaas só para esta cobrança: é o passo recomendado antes de cobrar o aluno ou de registrar
+// pagamento manual ([Cobranças.RF006] fluxo A1).
+function DialogoDeSincronizacao({ cobranca, aoFechar, textoDaUltimaSincronizacao }: PropsDaSincronizacao) {
+  const sincronizar = useSincronizarCobranca()
+  const queryClient = useQueryClient()
+  const resultado = sincronizar.data
+
+  async function confirmar() {
+    try {
+      await sincronizar.mutateAsync({ id: cobranca.id })
+      await queryClient.invalidateQueries({ queryKey: getBuscarCobrancaQueryKey(cobranca.id) })
+    } catch {
+      // A mensagem da API (ex.: Asaas fora do ar) aparece no diálogo.
+    }
+  }
+
+  function descreverResultado(): string {
+    if (!resultado) return ''
+    if (resultado.falha) return resultado.falha
+    if (resultado.atualizadas > 0) return 'A situação foi atualizada conforme o Asaas. Confira o histórico abaixo.'
+    if (resultado.paraConferir > 0) return 'Há divergência com o Asaas que precisa de conferência (veja o histórico e o Asaas).'
+    return 'Nada mudou: a cobrança já estava igual ao Asaas.'
+  }
+
+  return (
+    <Dialogo
+      aberto
+      aoFechar={aoFechar}
+      titulo="Sincronizar esta cobrança"
+      descricao={`Consulta o Asaas e atualiza a situação de ${cobranca.descricao}.`}
+      aoEnviar={(evento) => {
+        evento.preventDefault()
+        if (resultado) aoFechar()
+        else void confirmar()
+      }}
+      rodape={
+        <>
+          <button type="button" className="botao" onClick={aoFechar}>
+            Fechar
+          </button>
+          {!resultado && (
+            <button type="submit" className="botao botao-principal" disabled={sincronizar.isPending}>
+              {sincronizar.isPending ? 'Consultando o Asaas…' : 'Sincronizar agora'}
+            </button>
+          )}
+        </>
+      }
+    >
+      <div className="resumo-efeito">
+        <dl>
+          <dt>Aluno</dt>
+          <dd>{cobranca.alunoNome}</dd>
+          <dt>Última sincronização</dt>
+          <dd>{textoDaUltimaSincronizacao}</dd>
+        </dl>
+        <p>Se o Asaas indicar que o boleto foi pago, a cobrança passa a Paga e a entrada é criada em Movimentações.</p>
+      </div>
+      {resultado && (
+        <p className="texto-apoio" role="status">
+          {descreverResultado()}
+        </p>
+      )}
+      {sincronizar.error && (
+        <p className="erro-formulario" role="alert">
+          {sincronizar.error.message}
+        </p>
+      )}
+    </Dialogo>
   )
 }
 

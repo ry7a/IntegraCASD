@@ -57,21 +57,34 @@ export class ConciliacaoRepositorio {
     return { ...registro, disponivelEm: registro.disponivelEm === null ? null : paraDia(registro.disponivelEm) };
   }
 
-  // Devolve 'ja-processado' se outro processamento marcou o evento primeiro: aí nada é alterado.
+  async buscarCobrancaPorId(id: string): Promise<CobrancaParaConciliar | null> {
+    const registro = await this.prisma.cobranca.findUnique({ where: { id }, select: { idAsaas: true } });
+    return registro === null ? null : this.buscarCobranca(registro.idAsaas);
+  }
+
+  // `evento`: o aviso do webhook que originou a ação; nulo quando quem pede é a sincronização
+  // [Cobranças.RF007]. Devolve 'ja-processado' se outro processamento marcou o evento primeiro:
+  // aí nada é alterado.
   async aplicar(
-    evento: { id: string; idAsaas: string },
+    evento: { id: string; idAsaas: string } | null,
     cobranca: CobrancaParaConciliar | null,
     acao: AcaoDaConciliacao,
     destino: DestinoDaBaixa | null,
+    // Quem pediu (sincronização manual); nulo = rotina automática ou aviso do Asaas.
+    autorId: string | null = null,
   ): Promise<'aplicado' | 'ja-processado'> {
     return this.prisma.$transaction(async (tx) => {
-      // Idempotência [Confiabilidade.NF003]: só um processamento consegue marcar o evento.
-      const marcado = await tx.eventoWebhook.updateMany({
-        where: { id: evento.id, processadoEm: null },
-        data: { processadoEm: new Date(), pendencia: acao.tipo === 'PENDENCIA' ? acao.motivo : null },
-      });
-      if (marcado.count === 0) return 'ja-processado';
+      if (evento !== null) {
+        // Idempotência [Confiabilidade.NF003]: só um processamento consegue marcar o evento.
+        const marcado = await tx.eventoWebhook.updateMany({
+          where: { id: evento.id, processadoEm: null },
+          data: { processadoEm: new Date(), pendencia: acao.tipo === 'PENDENCIA' ? acao.motivo : null },
+        });
+        if (marcado.count === 0) return 'ja-processado';
+      }
       if (cobranca === null || acao.tipo === 'NADA' || acao.tipo === 'PENDENCIA') return 'aplicado';
+      // De onde veio a informação, para a trilha.
+      const fonte = evento === null ? 'pela sincronização com o Asaas' : `pelo aviso ${evento.idAsaas}`;
 
       const rotulo = `"${cobranca.descricao}" (${cobranca.idAsaas})`;
 
@@ -100,14 +113,14 @@ export class ConciliacaoRepositorio {
         });
         if (baixada.count === 0) throw new ConciliacaoConcorrente();
         await registrarNaTrilha(tx, {
-          usuarioId: null,
+          usuarioId: autorId,
           operacao: 'ALTERACAO',
           entidade: 'COBRANCA',
           registroId: cobranca.id,
-          detalhe: `Paga pelo Asaas em ${acao.pagoEm} (${formatarReais(acao.valorPagoCentavos)}), aviso ${evento.idAsaas}.`,
+          detalhe: `Paga pelo Asaas em ${acao.pagoEm} (${formatarReais(acao.valorPagoCentavos)}), informada ${fonte}.`,
         });
         await registrarNaTrilha(tx, {
-          usuarioId: null,
+          usuarioId: autorId,
           operacao: 'INCLUSAO',
           entidade: 'MOVIMENTACAO',
           registroId: entrada.id,
@@ -122,11 +135,11 @@ export class ConciliacaoRepositorio {
           data: { disponivelEm: deDia(acao.disponivelEm) },
         });
         await registrarNaTrilha(tx, {
-          usuarioId: null,
+          usuarioId: autorId,
           operacao: 'ALTERACAO',
           entidade: 'COBRANCA',
           registroId: cobranca.id,
-          detalhe: `Valor disponível na conta do Asaas em ${acao.disponivelEm}, aviso ${evento.idAsaas}.`,
+          detalhe: `Valor disponível na conta do Asaas em ${acao.disponivelEm}, informado ${fonte}.`,
         });
         return 'aplicado';
       }
@@ -150,19 +163,19 @@ export class ConciliacaoRepositorio {
             formaPagamento: 'ASAAS',
             origem: 'ESTORNO',
             estornoDeId: original.id,
-            motivoEstorno: `Pagamento estornado no Asaas (aviso ${evento.idAsaas}).`,
+            motivoEstorno: `Pagamento estornado no Asaas, informado ${fonte}.`,
             descricao: `Estorno da cobrança ${rotulo}`,
           },
         });
         await registrarNaTrilha(tx, {
-          usuarioId: null,
+          usuarioId: autorId,
           operacao: 'ESTORNO',
           entidade: 'COBRANCA',
           registroId: cobranca.id,
-          detalhe: `Pagamento estornado no Asaas, aviso ${evento.idAsaas}.`,
+          detalhe: `Pagamento estornado no Asaas, informado ${fonte}.`,
         });
         await registrarNaTrilha(tx, {
-          usuarioId: null,
+          usuarioId: autorId,
           operacao: 'ESTORNO',
           entidade: 'MOVIMENTACAO',
           registroId: espelho.id,
@@ -178,11 +191,11 @@ export class ConciliacaoRepositorio {
       });
       if (cancelada.count === 0) throw new ConciliacaoConcorrente();
       await registrarNaTrilha(tx, {
-        usuarioId: null,
+        usuarioId: autorId,
         operacao: 'CANCELAMENTO',
         entidade: 'COBRANCA',
         registroId: cobranca.id,
-        detalhe: `Cobrança removida no painel do Asaas, aviso ${evento.idAsaas}.`,
+        detalhe: `Cobrança removida no painel do Asaas, informada ${fonte}.`,
       });
       return 'aplicado';
     });

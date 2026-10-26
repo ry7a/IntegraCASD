@@ -6,6 +6,7 @@ import {
   ErroAsaas,
   NovaCobrancaAsaas,
   NovoClienteAsaas,
+  type CobrancaNoAsaas,
 } from './cliente-asaas.js';
 
 const URLS_BASE = {
@@ -119,6 +120,30 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     await this.enviar<{ deleted: boolean }>('DELETE', `/payments/${encodeURIComponent(idAsaas)}`);
   }
 
+  async buscarCobranca(idAsaas: string): Promise<CobrancaNoAsaas | null> {
+    try {
+      return paraCobrancaNoAsaas(await this.enviar<PagamentoDoAsaas>('GET', `/payments/${encodeURIComponent(idAsaas)}`));
+    } catch (erro) {
+      if (erro instanceof CobrancaDesconhecida) return null;
+      throw erro;
+    }
+  }
+
+  async listarCobrancas(periodo: { vencimentoDe: string; vencimentoAte: string }): Promise<CobrancaNoAsaas[]> {
+    const cobrancas: CobrancaNoAsaas[] = [];
+    for (let deslocamento = 0; ; deslocamento += ITENS_POR_PAGINA) {
+      const filtro = new URLSearchParams({
+        'dueDate[ge]': periodo.vencimentoDe,
+        'dueDate[le]': periodo.vencimentoAte,
+        limit: String(ITENS_POR_PAGINA),
+        offset: String(deslocamento),
+      });
+      const pagina = await this.enviar<{ data: PagamentoDoAsaas[]; hasMore: boolean }>('GET', `/payments?${filtro.toString()}`);
+      cobrancas.push(...pagina.data.map(paraCobrancaNoAsaas));
+      if (!pagina.hasMore) return cobrancas;
+    }
+  }
+
   // Envia a requisição. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
   // informou e tenta de novo, até o limite de tentativas.
   private async enviar<T>(metodo: 'GET' | 'POST' | 'PUT' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
@@ -155,7 +180,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
   // Transforma a resposta de erro do Asaas numa mensagem orientada à ação.
   // No log vão só o status e os códigos de erro; a mensagem crua do Asaas nunca chega ao
   // usuário e a chave nunca é registrada.
-  private async traduzirErro(resposta: Response): Promise<ErroAsaas> {
+  private async traduzirErro(resposta: Response): Promise<ErroAsaas | CobrancaDesconhecida> {
     const detalhe = (await resposta.json().catch(() => null)) as {
       errors?: { code?: string }[];
     } | null;
@@ -174,6 +199,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
         'CHAVE_RECUSADA',
       );
     }
+    if (resposta.status === 404) return new CobrancaDesconhecida();
     if (resposta.status === 429) {
       return new ErroAsaas(
         'O Asaas pediu para reduzir o ritmo das requisições. Aguarde alguns minutos e tente novamente.',
@@ -182,6 +208,55 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     }
     return new ErroAsaas('O Asaas está com problemas no momento. Tente novamente em alguns minutos.');
   }
+}
+
+// 404: o recurso pedido não existe no Asaas. Só a consulta de cobrança trata; nas demais, vira erro comum.
+class CobrancaDesconhecida extends ErroAsaas {
+  constructor() {
+    super('O Asaas não encontrou o registro pedido. Sincronize as cobranças e tente de novo.', 'DADOS_RECUSADOS');
+  }
+}
+
+const ITENS_POR_PAGINA = 100;
+
+// O pagamento como o Asaas devolve (só os campos usados).
+type PagamentoDoAsaas = {
+  id: string;
+  customer: string;
+  status: string;
+  deleted?: boolean;
+  value: number;
+  dueDate: string;
+  description?: string | null;
+  externalReference?: string | null;
+  paymentDate?: string | null;
+  clientPaymentDate?: string | null;
+  confirmedDate?: string | null;
+  creditDate?: string | null;
+  fine?: { value?: number } | null;
+  interest?: { value?: number } | null;
+  bankSlipUrl?: string | null;
+  invoiceUrl?: string | null;
+};
+
+function paraCobrancaNoAsaas(pagamento: PagamentoDoAsaas): CobrancaNoAsaas {
+  return {
+    idAsaas: pagamento.id,
+    idCliente: pagamento.customer,
+    situacao: pagamento.status,
+    removida: pagamento.deleted === true,
+    // O Asaas manda reais com casas decimais; aqui vira centavos inteiros.
+    valorCentavos: Math.round(pagamento.value * 100),
+    vencimento: pagamento.dueDate,
+    descricao: pagamento.description ?? null,
+    referenciaExterna: pagamento.externalReference ?? null,
+    pagoEm: pagamento.paymentDate ?? pagamento.clientPaymentDate ?? pagamento.confirmedDate ?? null,
+    disponivelEm: pagamento.creditDate ?? null,
+    multaPercentual: pagamento.fine?.value ?? 0,
+    jurosMensalPercentual: pagamento.interest?.value ?? 0,
+    urlBoleto: pagamento.bankSlipUrl ?? null,
+    urlFatura: pagamento.invoiceUrl ?? null,
+  };
 }
 
 // Lê, em segundos, quanto esperar (cabeçalho RateLimit-Reset). Limita a 60 s para

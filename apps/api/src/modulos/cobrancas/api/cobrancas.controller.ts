@@ -20,6 +20,7 @@ import { DetalharCobranca } from '../aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from '../aplicacao/emitir-cobranca-avulsa.js';
 import { ObterBoleto } from '../aplicacao/obter-boleto.js';
 import { ResumirCobrancas } from '../aplicacao/resumir-cobrancas.js';
+import { SincronizarCobrancas, type ExecucaoDaSincronizacao } from '../aplicacao/sincronizar-cobrancas.js';
 import { SugerirNovaCobranca } from '../aplicacao/sugerir-nova-cobranca.js';
 import { situacaoExibida } from '../dominio/cobranca.js';
 import {
@@ -31,7 +32,9 @@ import {
   PagamentoManualDto,
   EmitirCobrancaAvulsaDto,
   ListaDeCobrancasDto,
+  PeriodoDeSincronizacaoDto,
   ResumoCobrancasDto,
+  SincronizacaoDto,
   SugestaoDeNovaCobrancaDto,
 } from './cobrancas.dto.js';
 
@@ -58,6 +61,19 @@ function paraItemDto(item: ItemDaLista): ItemDto {
   };
 }
 
+function paraSincronizacaoDto(execucao: ExecucaoDaSincronizacao): SincronizacaoDto {
+  return {
+    iniciadaEm: execucao.iniciadaEm.toISOString(),
+    finalizadaEm: execucao.finalizadaEm?.toISOString() ?? null,
+    conferidas: execucao.conferidas,
+    atualizadas: execucao.atualizadas,
+    somenteNoAsaas: execucao.somenteNoAsaas,
+    naoIdentificadas: execucao.naoIdentificadas,
+    paraConferir: execucao.paraConferir,
+    falha: execucao.falha,
+  };
+}
+
 // Cobranças do aluno. Qualquer usuário autenticado (área administrativa e diretoria).
 @ApiTags('cobrancas')
 @ApiCookieAuth('cookie')
@@ -72,6 +88,7 @@ export class CobrancasController {
     private readonly obterBoleto: ObterBoleto,
     private readonly cancelarCobranca: CancelarCobranca,
     private readonly registrarPagamentoManual: RegistrarPagamentoManual,
+    private readonly sincronizarCobrancas: SincronizarCobrancas,
   ) {}
 
   // [Cobranças.RF008] Os filtros vêm na URL; situações separadas por vírgula (ex.: ABERTA,VENCIDA).
@@ -102,8 +119,8 @@ export class CobrancasController {
       conciliacao: {
         ativa: resumo.conciliacao.ativa,
         ultimaNotificacaoEm: resumo.conciliacao.ultimaNotificacaoEm?.toISOString() ?? null,
-        // Preenchida quando a sincronização com o Asaas existir (Cobranças.RF007).
-        ultimaSincronizacao: null,
+        ultimaSincronizacao:
+          resumo.conciliacao.ultimaSincronizacao === null ? null : paraSincronizacaoDto(resumo.conciliacao.ultimaSincronizacao),
       },
     };
   }
@@ -129,14 +146,13 @@ export class CobrancasController {
       urlFatura: cobranca.urlFatura,
       pagaEm: cobranca.pagaEm,
       justificativaManual: cobranca.justificativaManual,
-      // Preenchidos pela sincronização (Cobranças.RF007).
       canceladaEm: cobranca.canceladaEm?.toISOString() ?? null,
       motivoCancelamento: cobranca.motivoCancelamento,
       renegociacaoDeId: cobranca.renegociacaoDeId,
       renegociadaPorId: cobranca.renegociadaPorId,
-      ultimaSincronizacaoEm: null,
-      diasDesdeUltimaSincronizacao: null,
-      sincronizacaoAntiga: false,
+      ultimaSincronizacaoEm: cobranca.sincronizadaEm?.toISOString() ?? null,
+      diasDesdeUltimaSincronizacao: cobranca.diasDesdeUltimaSincronizacao,
+      sincronizacaoAntiga: cobranca.sincronizacaoAntiga,
       podeCancelar: cobranca.podeCancelar,
       podeRegistrarPagamentoManual: cobranca.podeRegistrarPagamentoManual,
       eventos: cobranca.eventos.map((evento) => ({ ...evento, ocorridoEm: evento.ocorridoEm.toISOString() })),
@@ -164,6 +180,30 @@ export class CobrancasController {
     @UsuarioAutenticado() autor: IdentidadeDoUsuario,
   ): Promise<void> {
     await this.cancelarCobranca.executar(id, dto ?? {}, autor.id);
+  }
+
+  // [Cobranças.RF007] Sincroniza as cobranças de um período de vencimento com o Asaas.
+  @Post('sincronizar')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'sincronizarCobrancas', summary: 'Consulta o Asaas e atualiza as cobranças do período' })
+  @ApiOkResponse({ type: SincronizacaoDto })
+  async sincronizar(
+    @Body() dto: PeriodoDeSincronizacaoDto,
+    @UsuarioAutenticado() autor: IdentidadeDoUsuario,
+  ): Promise<SincronizacaoDto> {
+    return paraSincronizacaoDto(await this.sincronizarCobrancas.periodo(dto ?? {}, 'MANUAL', autor.id));
+  }
+
+  // [Cobranças.RF007] fluxo A1: só esta cobrança.
+  @Post(':id/sincronizar')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'sincronizarCobranca', summary: 'Consulta o Asaas e atualiza só esta cobrança' })
+  @ApiOkResponse({ type: SincronizacaoDto })
+  async sincronizarUma(
+    @Param('id', ID_DA_COBRANCA) id: string,
+    @UsuarioAutenticado() autor: IdentidadeDoUsuario,
+  ): Promise<SincronizacaoDto> {
+    return paraSincronizacaoDto(await this.sincronizarCobrancas.cobranca(id, autor.id));
   }
 
   // [Cobranças.RF006] Pagamento fora do Asaas, com justificativa obrigatória.

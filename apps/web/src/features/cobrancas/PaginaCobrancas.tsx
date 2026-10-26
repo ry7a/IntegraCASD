@@ -220,11 +220,12 @@ function PaginaCobrancas() {
         </div>
       </EstadoDaConsulta>
 
-      <DialogoSincronizarCobrancas
-        aberto={sincronizarAberto}
-        aoFechar={() => definirSincronizarAberto(false)}
-        ultimaSincronizacao={conciliacao?.ultimaSincronizacao ?? null}
-      />
+      {sincronizarAberto && (
+        <DialogoSincronizarCobrancas
+          aoFechar={() => definirSincronizarAberto(false)}
+          ultimaSincronizacao={conciliacao?.ultimaSincronizacao ?? null}
+        />
+      )}
     </>
   )
 }

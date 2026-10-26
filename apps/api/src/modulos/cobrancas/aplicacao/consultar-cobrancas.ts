@@ -6,20 +6,27 @@ import {
   situacaoExibida,
   type SituacaoExibida,
 } from '../dominio/cobranca.js';
+import { semSincronizarHaDias } from '../dominio/sincronizacao.js';
 import { CobrancasRepositorio, type CobrancaRegistrada } from '../infra/cobrancas.repositorio.js';
 import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
 
 export type ItemDaLista = Omit<CobrancaRegistrada, 'situacao'> & {
   situacao: SituacaoExibida;
   diasDeAtraso: number | null;
-  // Sinalização da sincronização antiga (fluxo A2): preenchida quando a sincronização existir (#35).
+  // Fluxo A2: vencida sem sincronizar há mais de sete dias (nulo nos demais casos).
   semSincronizarHaDias: number | null;
 };
 
 // Converte uma cobrança gravada no que a tela mostra: situação exibida (com VENCIDA) e atraso.
 export function paraItemDaLista(cobranca: CobrancaRegistrada, hoje: string): ItemDaLista {
   const situacao = situacaoExibida(cobranca.situacao, cobranca.vencimento, hoje);
-  return { ...cobranca, situacao, diasDeAtraso: diasDeAtraso(situacao, cobranca.vencimento, hoje), semSincronizarHaDias: null };
+  const sincronizadaEm = cobranca.sincronizadaEm === null ? null : hojeEmSaoPaulo(cobranca.sincronizadaEm);
+  return {
+    ...cobranca,
+    situacao,
+    diasDeAtraso: diasDeAtraso(situacao, cobranca.vencimento, hoje),
+    semSincronizarHaDias: semSincronizarHaDias(situacao, cobranca.vencimento, sincronizadaEm, hoje),
+  };
 }
 
 // Caso de uso [Cobranças.RF008]: localiza cobranças por aluno, situação, vencimento e valor.

@@ -17,6 +17,11 @@
       "situacao": "coberto"
     },
     {
+      "id": "Confiabilidade.NF007",
+      "titulo": "Registro das execuções automáticas",
+      "situacao": "coberto"
+    },
+    {
       "id": "Desempenho.NF001",
       "titulo": "Tempo de resposta ao Asaas",
       "situacao": "pendente",
