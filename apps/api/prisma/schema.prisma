@@ -534,7 +534,7 @@ enum SituacaoCobranca {
 // [Cobranças.RF001 a RF008]. Nenhuma cobrança existe só aqui: ela é gravada depois que o Asaas a
 // criou, com o id dele. Multa e juros são os dos parâmetros no momento da emissão (o Asaas calcula).
 // Regras garantidas por CHECK na migração: valor positivo, percentuais nos limites legais e cobrança
-// paga sempre com data do pagamento e movimentação de entrada.
+// paga sempre com data do pagamento e movimentação de entrada; paga à mão sempre com justificativa.
 model Cobranca {
   id                    String           @id @default(uuid()) @db.Uuid
   idAsaas               String           @unique @map("id_asaas") // ex.: "pay_..."
@@ -556,6 +556,8 @@ model Cobranca {
   emitidaPor            Usuario?         @relation(fields: [emitidaPorId], references: [id], onDelete: Restrict)
   // Preenchidos na baixa (mesma transação da movimentação de entrada) [Confiabilidade.NF004].
   pagaEm                DateTime?        @map("paga_em") @db.Date
+  // [Cobranças.RF006]: por que a cobrança foi dada como paga à mão. Obrigatória nessa situação (CHECK).
+  justificativaManual   String?          @map("justificativa_manual")
   // [Cobranças.RF005] fluxo A1: quando o valor ficou disponível na conta do Asaas (pode vir depois do pagamento).
   disponivelEm          DateTime?        @map("disponivel_em") @db.Date
   movimentacaoId        String?          @unique @map("movimentacao_id") @db.Uuid

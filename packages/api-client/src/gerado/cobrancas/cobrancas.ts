@@ -33,6 +33,7 @@ import type {
   ListaDeCobrancasDto,
   ListaDeExecucoesDto,
   ListarCobrancasParams,
+  PagamentoManualDto,
   PedidoDeGeracaoDto,
   ResumoCobrancasDto,
   SugestaoDeNovaCobrancaDto
@@ -719,6 +720,94 @@ export const useCancelarCobranca = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCancelarCobrancaMutationOptions(options), queryClient);
+    }
+    export const getRegistrarPagamentoManualUrl = (id: string,) => {
+
+
+
+
+  return `/api/cobrancas/${id}/pagamento-manual`
+}
+
+/**
+ * @summary Registra o pagamento de uma cobrança feito fora do Asaas
+ */
+export const registrarPagamentoManual = async (id: string,
+    pagamentoManualDto: PagamentoManualDto, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<void>(getRegistrarPagamentoManualUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(pagamentoManualDto)
+  }
+);}
+
+
+
+
+
+export const getRegistrarPagamentoManualMutationKey = () => ['registrarPagamentoManual'] as const;
+
+export const getRegistrarPagamentoManualMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registrarPagamentoManual>>, TError,RegistrarPagamentoManualMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof registrarPagamentoManual>>, TError,RegistrarPagamentoManualMutationVariables, TContext> => {
+
+const mutationKey = getRegistrarPagamentoManualMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registrarPagamentoManual>>, RegistrarPagamentoManualMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  registrarPagamentoManual(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RegistrarPagamentoManualMutationResult = NonNullable<Awaited<ReturnType<typeof registrarPagamentoManual>>>
+    export type RegistrarPagamentoManualMutationBody = PagamentoManualDto
+    export type RegistrarPagamentoManualMutationError = ErrorType<unknown>
+    export type RegistrarPagamentoManualMutationVariables = {id: string;data: PagamentoManualDto}
+
+    /**
+ * @summary Registra o pagamento de uma cobrança feito fora do Asaas
+ */
+export const useRegistrarPagamentoManual = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registrarPagamentoManual>>, TError,RegistrarPagamentoManualMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof registrarPagamentoManual>>,
+        TError,
+        RegistrarPagamentoManualMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRegistrarPagamentoManualMutationOptions(options), queryClient);
     }
     export const getListarExecucoesDaGeracaoUrl = () => {
 

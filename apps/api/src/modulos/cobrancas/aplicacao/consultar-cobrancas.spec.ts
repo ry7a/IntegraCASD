@@ -20,6 +20,7 @@ const cobranca: CobrancaRegistrada = {
   urlBoleto: null,
   urlFatura: null,
   pagaEm: null,
+  justificativaManual: null,
   canceladaEm: null,
   motivoCancelamento: null,
   renegociacaoDeId: null,

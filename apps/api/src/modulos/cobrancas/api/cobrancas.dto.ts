@@ -125,6 +125,14 @@ export class BoletoDto {
   @ApiProperty({ description: 'Arquivo do boleto no Asaas' }) url!: string;
 }
 
+export class PagamentoManualDto {
+  @ApiProperty({ format: 'date', example: '2026-10-20' }) pagoEm!: string;
+  @ApiProperty({ example: 8500 }) valorCentavos!: number;
+  @ApiProperty({ enum: ['PIX', 'TRANSFERENCIA', 'DINHEIRO', 'CARTAO'], enumName: 'FormaDePagamentoManual' })
+  formaPagamento!: 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
+  @ApiProperty({ example: 'Pix recebido na conta do CASD em 20/10, comprovante enviado pelo aluno' }) justificativa!: string;
+}
+
 export class CancelarCobrancaDto {
   @ApiProperty({ example: 'Renegociação em 3 parcelas, acordada com o aluno' }) motivo!: string;
 }

@@ -1,11 +1,16 @@
-import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarData, formatarMoeda, formatarValorParaCampo, hojeIso, paraCentavos } from '@/compartilhado/formatacao'
-import { getBuscarCobrancaQueryKey, useCancelarCobranca, type CobrancaDetalheDto } from '@integracasd/api-client'
+import {
+  getBuscarCobrancaQueryKey,
+  useCancelarCobranca,
+  useRegistrarPagamentoManual,
+  type CobrancaDetalheDto,
+  type FormaDePagamentoManual,
+} from '@integracasd/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 
@@ -19,8 +24,8 @@ interface Props {
 }
 
 // Os três diálogos da tela de detalhe. Os que mudam dados passam por confirmação com o resumo do
-// efeito ([Usabilidade.NF003]). O cancelamento já tem efeito; sincronizar e pagamento manual ainda só
-// fecham (entram com as suas issues).
+// efeito ([Usabilidade.NF003]). Cancelamento e pagamento manual já têm efeito; sincronizar ainda só
+// fecha (entra com a sua issue).
 export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Props) {
   const resumoDaCobranca = `${cobranca.descricao} · ${formatarMoeda(cobranca.valorCentavos)}`
   const textoDaUltimaSincronizacao = cobranca.ultimaSincronizacaoEm
@@ -69,14 +74,15 @@ export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Pro
         <DialogoDeCancelamento cobranca={cobranca} aoFechar={aoFechar} resumoDaCobranca={resumoDaCobranca} />
       )}
 
-      <DialogoDePagamentoManual
-        cobranca={cobranca}
-        aberto={aberto === 'pagamento-manual'}
-        aoFechar={aoFechar}
-        aoSincronizarPrimeiro={() => aoTrocar('sincronizar')}
-        resumoDaCobranca={resumoDaCobranca}
-        textoDaUltimaSincronizacao={textoDaUltimaSincronizacao}
-      />
+      {aberto === 'pagamento-manual' && (
+        <DialogoDePagamentoManual
+          cobranca={cobranca}
+          aoFechar={aoFechar}
+          aoSincronizarPrimeiro={() => aoTrocar('sincronizar')}
+          resumoDaCobranca={resumoDaCobranca}
+          textoDaUltimaSincronizacao={textoDaUltimaSincronizacao}
+        />
+      )}
     </>
   )
 }
@@ -84,13 +90,13 @@ export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Pro
 const esquemaDoPagamento = z.object({
   data: z.string().min(1, 'Informe a data do pagamento.'),
   valor: z.string().refine((texto) => paraCentavos(texto) > 0, 'Informe o valor pago, por exemplo R$ 85,00.'),
-  justificativa: z.string().min(1, 'A justificativa é obrigatória: explique como o pagamento foi comprovado.'),
+  justificativa: z.string().trim().min(10, 'A justificativa é obrigatória: explique como o pagamento foi comprovado.'),
+  formaPagamento: z.enum(['PIX', 'TRANSFERENCIA', 'DINHEIRO', 'CARTAO']),
 })
 type FormularioDoPagamento = z.infer<typeof esquemaDoPagamento>
 
 interface PropsDoPagamento {
   cobranca: CobrancaDetalheDto
-  aberto: boolean
   aoFechar: () => void
   aoSincronizarPrimeiro: () => void
   resumoDaCobranca: string
@@ -98,32 +104,38 @@ interface PropsDoPagamento {
 }
 
 // Registrar pagamento fora do Asaas [Cobranças.RF006]: operação com efeito, justificativa obrigatória.
+// Montado só enquanto aberto: cada abertura começa com hoje, o valor da cobrança e a justificativa vazia.
 function DialogoDePagamentoManual({
   cobranca,
-  aberto,
   aoFechar,
   aoSincronizarPrimeiro,
   resumoDaCobranca,
   textoDaUltimaSincronizacao,
 }: PropsDoPagamento) {
-  const { register, handleSubmit, reset, formState } = useForm<FormularioDoPagamento>({
+  const { register, handleSubmit, formState } = useForm<FormularioDoPagamento>({
     resolver: zodResolver(esquemaDoPagamento),
-    defaultValues: { data: '', valor: '', justificativa: '' },
+    defaultValues: { data: hojeIso(), valor: formatarMoeda(cobranca.valorCentavos), justificativa: '', formaPagamento: 'PIX' },
   })
+  const registrarPagamento = useRegistrarPagamentoManual()
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    if (aberto) reset({ data: hojeIso(), valor: formatarMoeda(cobranca.valorCentavos), justificativa: '' })
-  }, [aberto, cobranca.valorCentavos, reset])
-
-  function registrar() {
-    // TODO [Cobranças.RF006]: POST /api/cobrancas/:id/pagamento-manual. Marca como "Paga com registro manual"
-    // e cria a entrada em Movimentações na mesma transação ([Confiabilidade.NF004]).
-    aoFechar()
+  async function registrar(dados: FormularioDoPagamento) {
+    const formaPagamento: FormaDePagamentoManual = dados.formaPagamento
+    try {
+      await registrarPagamento.mutateAsync({
+        id: cobranca.id,
+        data: { pagoEm: dados.data, valorCentavos: paraCentavos(dados.valor), formaPagamento, justificativa: dados.justificativa },
+      })
+      await queryClient.invalidateQueries({ queryKey: getBuscarCobrancaQueryKey(cobranca.id) })
+      aoFechar()
+    } catch {
+      // A mensagem da API (ex.: parâmetros sem conta de recebimento) aparece no diálogo; nada foi gravado.
+    }
   }
 
   return (
     <Dialogo
-      aberto={aberto}
+      aberto
       aoFechar={aoFechar}
       titulo="Registrar pagamento manualmente"
       descricao="Use só quando o valor comprovadamente entrou e a conciliação não refletiu."
@@ -133,8 +145,8 @@ function DialogoDePagamentoManual({
           <button type="button" className="botao" onClick={aoFechar}>
             Voltar
           </button>
-          <button type="submit" className="botao botao-destrutivo">
-            Registrar pagamento
+          <button type="submit" className="botao botao-destrutivo" disabled={registrarPagamento.isPending}>
+            {registrarPagamento.isPending ? 'Registrando…' : 'Registrar pagamento'}
           </button>
         </>
       }
@@ -173,6 +185,15 @@ function DialogoDePagamentoManual({
           <input id="pm-valor" aria-invalid={!!formState.errors.valor} {...register('valor')} />
           {formState.errors.valor && <span className="dica" role="alert">{formState.errors.valor.message}</span>}
         </div>
+        <div className="campo">
+          <label htmlFor="pm-forma">Forma do pagamento</label>
+          <select id="pm-forma" {...register('formaPagamento')}>
+            <option value="PIX">Pix</option>
+            <option value="TRANSFERENCIA">Transferência</option>
+            <option value="DINHEIRO">Dinheiro</option>
+            <option value="CARTAO">Cartão</option>
+          </select>
+        </div>
         <div className="campo inteiro">
           <label htmlFor="pm-justificativa">Justificativa (obrigatória)</label>
           <textarea
@@ -190,9 +211,14 @@ function DialogoDePagamentoManual({
         <Icone nome="alerta" />
         <span>
           A cobrança ficará como <strong>Paga com registro manual</strong> e o IntegraCASD passará a divergir do Asaas.
-          Uma entrada de {formatarMoeda(cobranca.valorCentavos)} será criada em Movimentações.
+          A entrada do valor pago será criada em Movimentações.
         </span>
       </div>
+      {registrarPagamento.error && (
+        <p className="erro-formulario" role="alert">
+          {registrarPagamento.error.message}
+        </p>
+      )}
     </Dialogo>
   )
 }
