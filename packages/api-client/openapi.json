@@ -1980,6 +1980,43 @@
         ]
       }
     },
+    "/api/indicadores/gastos-por-categoria": {
+      "get": {
+        "operationId": "consultarGastosPorCategoria",
+        "parameters": [
+          {
+            "name": "mes",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM; padrão: o mês corrente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GastosPorCategoriaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Saídas do mês por categoria, com o mês anterior",
+        "tags": [
+          "indicadores"
+        ]
+      }
+    },
     "/api/indicadores/inadimplencia": {
       "get": {
         "operationId": "consultarInadimplencia",
@@ -4924,6 +4961,69 @@
         },
         "required": [
           "resolucao"
+        ]
+      },
+      "GastoPorCategoriaDto": {
+        "type": "object",
+        "properties": {
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "categoriaNome": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "percentual": {
+            "type": "number",
+            "description": "Parte das saídas do mês, com uma casa decimal (32.0 = 32,0%)"
+          },
+          "valorMesAnteriorCentavos": {
+            "type": "number"
+          },
+          "variacaoPercentual": {
+            "type": "number",
+            "nullable": true,
+            "description": "Variação % sobre o mês anterior; nulo sem gasto lá"
+          }
+        },
+        "required": [
+          "categoriaId",
+          "categoriaNome",
+          "valorCentavos",
+          "percentual",
+          "valorMesAnteriorCentavos",
+          "variacaoPercentual"
+        ]
+      },
+      "GastosPorCategoriaDto": {
+        "type": "object",
+        "properties": {
+          "mes": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "totalSaidasCentavos": {
+            "type": "number"
+          },
+          "totalMesAnteriorCentavos": {
+            "type": "number"
+          },
+          "itens": {
+            "description": "Do maior para o menor gasto do mês",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GastoPorCategoriaDto"
+            }
+          }
+        },
+        "required": [
+          "mes",
+          "totalSaidasCentavos",
+          "totalMesAnteriorCentavos",
+          "itens"
         ]
       },
       "FaixasDeAtrasoDto": {

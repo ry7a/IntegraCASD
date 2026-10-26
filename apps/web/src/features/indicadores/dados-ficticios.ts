@@ -3,7 +3,6 @@
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   EvolucaoDto,
-  GastosPorCategoriaDto,
   ResumoIndicadoresDto,
 } from './contrato'
 
@@ -35,16 +34,3 @@ export const evolucao: EvolucaoDto = {
 }
 
 // Os ids dos alunos são os mesmos de features/cadastro/dados-ficticios.ts.
-export const gastosPorCategoria: GastosPorCategoriaDto = {
-  mes: MES_DOS_DADOS,
-  totalSaidasCentavos: 4121530,
-  itens: [
-    { categoriaId: 'cat-eventos', categoriaNome: 'Eventos', valorCentavos: 1320000, percentual: 32.0 },
-    { categoriaId: 'cat-pessoal', categoriaNome: 'Pessoal', valorCentavos: 985000, percentual: 23.9 },
-    { categoriaId: 'cat-lavanderia', categoriaNome: 'Lavanderia', valorCentavos: 742000, percentual: 18.0 },
-    { categoriaId: 'cat-manutencao', categoriaNome: 'Manutenção', valorCentavos: 498030, percentual: 12.1 },
-    { categoriaId: 'cat-projetos', categoriaNome: 'Projetos acadêmicos', valorCentavos: 321500, percentual: 7.8 },
-    { categoriaId: 'cat-escritorio', categoriaNome: 'Material de escritório', valorCentavos: 183000, percentual: 4.4 },
-    { categoriaId: null, categoriaNome: null, valorCentavos: 72000, percentual: 1.7 },
-  ],
-}

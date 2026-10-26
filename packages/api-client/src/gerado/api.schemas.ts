@@ -1179,6 +1179,28 @@ export interface ResolucaoDto {
   resolucao: string;
 }
 
+export interface GastoPorCategoriaDto {
+  categoriaId: string;
+  categoriaNome: string;
+  valorCentavos: number;
+  /** Parte das saídas do mês, com uma casa decimal (32.0 = 32,0%) */
+  percentual: number;
+  valorMesAnteriorCentavos: number;
+  /**
+     * Variação % sobre o mês anterior; nulo sem gasto lá
+     * @nullable
+     */
+  variacaoPercentual: number | null;
+}
+
+export interface GastosPorCategoriaDto {
+  mes: string;
+  totalSaidasCentavos: number;
+  totalMesAnteriorCentavos: number;
+  /** Do maior para o menor gasto do mês */
+  itens: GastoPorCategoriaDto[];
+}
+
 export interface FaixasDeAtrasoDto {
   ate30Dias: number;
   de31a60Dias: number;
@@ -1312,5 +1334,12 @@ export type ListarPendenciasDeConciliacaoParams = {
  * true: as já resolvidas
  */
 resolvidas?: boolean;
+};
+
+export type ConsultarGastosPorCategoriaParams = {
+/**
+ * AAAA-MM; padrão: o mês corrente
+ */
+mes?: string;
 };
 

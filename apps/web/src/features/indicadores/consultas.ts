@@ -2,8 +2,8 @@
 // Query que devolve dados fictícios (dados-ficticios.ts). Quando o endpoint existir, troca-se o hook
 // por um com o MESMO nome e formato, gerado pelo orval; as telas não mudam.
 import { useQuery } from '@tanstack/react-query'
-import type { EvolucaoDto, GastosPorCategoriaDto, ResumoIndicadoresDto } from './contrato'
-import { evolucao, gastosPorCategoria, resumo } from './dados-ficticios'
+import type { EvolucaoDto, ResumoIndicadoresDto } from './contrato'
+import { evolucao, resumo } from './dados-ficticios'
 
 // Só consultas.ts importa dados-ficticios (ESLint, F6). As telas pegam o mês dos dados por aqui.
 export { MES_DOS_DADOS } from './dados-ficticios'
@@ -29,17 +29,6 @@ export function useEvolucaoDeEntradasESaidas() {
     queryFn: async () => {
       await esperar()
       return evolucao
-    },
-  })
-}
-
-// TODO [Indicadores.RF003]: trocar por GET /api/indicadores/gastos-por-categoria?mes=AAAA-MM.
-export function useGastosPorCategoria() {
-  return useQuery<GastosPorCategoriaDto>({
-    queryKey: ['indicadores', 'gastos-por-categoria'],
-    queryFn: async () => {
-      await esperar()
-      return gastosPorCategoria
     },
   })
 }

@@ -1,14 +1,23 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
+import { useConsultarGastosPorCategoria } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
-import Icone from '@/compartilhado/componentes/Icone'
-import { formatarMes, formatarMoeda, formatarPercentual, nomeDoMes } from '@/compartilhado/formatacao'
-import { useGastosPorCategoria } from './consultas'
+import { formatarMes, formatarMoeda, formatarPercentual, nomeDoMes, somarMeses } from '@/compartilhado/formatacao'
+
+// "+12,5%", "−3,0%" ou "novo" quando não houve gasto na categoria no mês anterior.
+function textoDaVariacao(variacao: number | null): string {
+  if (variacao === null) return 'novo'
+  return `${variacao >= 0 ? '+' : '−'}${formatarPercentual(Math.abs(variacao))}`
+}
 
 // [Indicadores.RF003] Saídas do mês por categoria, da maior para a menor.
 function BlocoDeGastosPorCategoria({ mes }: { mes: string }) {
-  const consulta = useGastosPorCategoria()
+  const consulta = useConsultarGastosPorCategoria({ mes })
+  const [comparar, definirComparar] = useState(false)
   const dados = consulta.data
-  const maior = dados?.itens[0]?.valorCentavos ?? 1
+  const itens = (dados?.itens ?? []).filter((gasto) => comparar || gasto.valorCentavos > 0)
+  const maior = Math.max(1, ...itens.map((gasto) => Math.max(gasto.valorCentavos, comparar ? gasto.valorMesAnteriorCentavos : 0)))
+  const anterior = nomeDoMes(somarMeses(mes, -1))
 
   return (
     <section className="cartao">
@@ -20,43 +29,43 @@ function BlocoDeGastosPorCategoria({ mes }: { mes: string }) {
             movimentações. [Indicadores.RF003]
           </p>
         </div>
-        {/* TODO [Indicadores.RF003]: comparar com o mês anterior (a API ainda não devolve o comparativo). */}
-        <label className="campo-check" data-dica={`Comparar com ${nomeDoMes(mes)} ainda não está disponível`}>
-          <input type="checkbox" disabled />
-          Comparar com o mês anterior
+        <label className="campo-check">
+          <input type="checkbox" checked={comparar} onChange={(evento) => definirComparar(evento.target.checked)} />
+          Comparar com {anterior}
         </label>
       </div>
       <EstadoDaConsulta
         carregando={consulta.isPending}
         erro={consulta.error}
         aoTentarDeNovo={() => void consulta.refetch()}
-        vazio={dados?.itens.length === 0}
+        vazio={itens.length === 0}
         mensagemVazia="Nenhuma saída registrada neste mês."
       >
+        {comparar && dados && (
+          <p className="texto-apoio" style={{ marginTop: 0 }}>
+            Total de saídas: {formatarMoeda(dados.totalSaidasCentavos)} em {nomeDoMes(mes)} e{' '}
+            {formatarMoeda(dados.totalMesAnteriorCentavos)} em {anterior}.
+          </p>
+        )}
         <ul className="lista-barras">
-          {dados?.itens.map((gasto) => {
-            const nome = gasto.categoriaNome ?? 'Não classificadas'
-            const dica = `${nome}: ${formatarMoeda(gasto.valorCentavos)} (${formatarPercentual(gasto.percentual)} das saídas)${
-              gasto.categoriaId ? '' : '. Classifique essas movimentações.'
+          {itens.map((gasto) => {
+            const dica = `${gasto.categoriaNome}: ${formatarMoeda(gasto.valorCentavos)} (${formatarPercentual(gasto.percentual)} das saídas)${
+              comparar ? `; ${formatarMoeda(gasto.valorMesAnteriorCentavos)} em ${anterior}` : ''
             }`
             return (
-              <li key={gasto.categoriaId ?? 'sem-categoria'}>
+              <li key={gasto.categoriaId}>
                 <span>
-                  {gasto.categoriaId ? (
-                    <Link to={`/movimentacoes?mes=${mes}&categoriaId=${gasto.categoriaId}`}>{nome}</Link>
-                  ) : (
-                    <span className="selo selo-alerta">
-                      <Icone nome="alerta" />
-                      {nome}
-                    </span>
-                  )}
+                  <Link to={`/movimentacoes?mes=${mes}&categoriaId=${gasto.categoriaId}`}>{gasto.categoriaNome}</Link>
                 </span>
                 <div className="trilho" data-dica={dica}>
                   <div className="preenchimento" style={{ width: `${(gasto.valorCentavos / maior) * 100}%` }}></div>
                 </div>
                 <span className="valor-barra">
                   {formatarMoeda(gasto.valorCentavos)}
-                  <span>{formatarPercentual(gasto.percentual)}</span>
+                  <span>
+                    {formatarPercentual(gasto.percentual)}
+                    {comparar && ` · ${textoDaVariacao(gasto.variacaoPercentual)}`}
+                  </span>
                 </span>
               </li>
             )
