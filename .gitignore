@@ -175,3 +175,7 @@ apps/api/src/generated/
 # --- Arquivos temporarios do draw.io ---
 .$*.drawio.bkp
 .$*.drawio.dtmp
+
+# Backups do banco: têm dados pessoais (LGPD), nunca entram no repositório
+backups/
+*.dump
