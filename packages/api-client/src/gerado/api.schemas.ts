@@ -846,6 +846,44 @@ export const TipoMovimentacao = {
   SAIDA: 'SAIDA',
 } as const;
 
+export type FormaPagamentoManual = typeof FormaPagamentoManual[keyof typeof FormaPagamentoManual];
+
+
+export const FormaPagamentoManual = {
+  PIX: 'PIX',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  DINHEIRO: 'DINHEIRO',
+  CARTAO: 'CARTAO',
+} as const;
+
+export interface NovaMovimentacaoDto {
+  contaId: string;
+  tipo: TipoMovimentacao;
+  /** Maior que zero, em centavos */
+  valorCentavos: number;
+  /** Não pode ser no futuro */
+  data: string;
+  /** Ativa e compatível com o tipo */
+  categoriaId: string;
+  forma: FormaPagamentoManual;
+  descricao: string;
+  /** @nullable */
+  contratoId?: string | null;
+  /** @nullable */
+  projetoId?: string | null;
+  /** @nullable */
+  funcionarioId?: string | null;
+}
+
+export interface MovimentacaoRegistradaDto {
+  id: string;
+  /**
+     * Ex.: lançamento em projeto já executado
+     * @nullable
+     */
+  aviso: string | null;
+}
+
 export type FormaPagamento = typeof FormaPagamento[keyof typeof FormaPagamento];
 
 
