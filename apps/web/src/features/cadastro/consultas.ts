@@ -3,7 +3,6 @@
 // A lista de alunos (useListarAlunos) NÃO está aqui: já é o hook real, gerado pelo orval.
 import { useQuery } from '@tanstack/react-query'
 import type {
-  AlunoDetalheDto,
   CobrancasDoAlunoDto,
   ListaDeContratosDto,
   ListaDeFuncionariosDto,
@@ -13,7 +12,6 @@ import type {
   SituacaoDoFiltroDeProjetos,
 } from './contrato'
 import {
-  alunos,
   cobrancasDoLucas,
   contratos,
   funcionarios,
@@ -23,21 +21,6 @@ import {
 
 // Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
 const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
-
-// TODO [Cadastros.RF001]: trocar por GET /api/alunos/:id. Só os alunos fictícios existem aqui; um id da
-// lista real mostra "não encontrado" até este endpoint existir.
-export function useBuscarAluno(id: string) {
-  return useQuery<AlunoDetalheDto>({
-    queryKey: ['alunos', 'detalhe', id],
-    queryFn: async () => {
-      await esperar()
-      const aluno = alunos.find((a) => a.id === id)
-      if (!aluno) throw new Error('Aluno não encontrado. Volte à lista e escolha outro cadastro.')
-      return aluno
-    },
-    retry: false,
-  })
-}
 
 // TODO [Cadastros.RF001]: trocar por GET /api/alunos/:id/cobrancas.
 export function useListarCobrancasDoAluno(alunoId: string, opcoes?: { enabled: boolean }) {

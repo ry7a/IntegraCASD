@@ -1,60 +1,63 @@
-import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router'
+import { getListarAlunosQueryKey, useCriarAluno } from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import CamposDoAluno from './CamposDoAluno'
-import { esquemaDoAluno, type FormularioDoAluno } from './esquema-do-aluno'
-
-const VALORES_INICIAIS: FormularioDoAluno = {
-  nome: '',
-  cpf: '',
-  nascimento: '',
-  email: '',
-  telefone: '',
-  situacao: 'ATIVO',
-}
+import { esquemaDoAluno, FORMULARIO_VAZIO, paraCorpoDaApi, type FormularioDoAluno } from './esquema-do-aluno'
 
 interface Props {
-  aberto: boolean
   aoFechar: () => void
 }
 
-function DialogoNovoAluno({ aberto, aoFechar }: Props) {
-  const { register, handleSubmit, reset, formState } = useForm<FormularioDoAluno>({
+// [Cadastros.RF001] Inclusão de aluno. A lista só monta este diálogo enquanto ele está aberto:
+// cada abertura começa com o formulário limpo. Ao salvar, abre o cadastro criado.
+function DialogoNovoAluno({ aoFechar }: Props) {
+  const { register, handleSubmit, formState } = useForm<FormularioDoAluno>({
     resolver: zodResolver(esquemaDoAluno),
-    defaultValues: VALORES_INICIAIS,
+    defaultValues: FORMULARIO_VAZIO,
   })
+  const criar = useCriarAluno()
+  const queryClient = useQueryClient()
+  const navegar = useNavigate()
 
-  useEffect(() => {
-    if (aberto) reset(VALORES_INICIAIS)
-  }, [aberto, reset])
-
-  function salvar() {
-    // TODO [Cadastros.RF001]: POST /api/alunos. Se o CPF já existir entre os ativos, a API recusa com a
-    // mensagem "Já existe um cadastro ativo com o CPF ... Abra esse cadastro para atualizá-lo": mostrar aqui.
-    aoFechar()
+  async function salvar(formulario: FormularioDoAluno) {
+    try {
+      const criado = await criar.mutateAsync({ data: paraCorpoDaApi(formulario) })
+      await queryClient.invalidateQueries({ queryKey: getListarAlunosQueryKey() })
+      aoFechar()
+      void navegar(`/cadastros/alunos/${criado.id}`)
+    } catch {
+      // A mensagem da API (ex.: CPF já cadastrado, com o nome de quem tem) aparece no diálogo.
+    }
   }
 
   return (
     <Dialogo
-      aberto={aberto}
+      aberto
       aoFechar={aoFechar}
       titulo="Novo aluno"
-      descricao="E-mail e CPF são obrigatórios: o Asaas exige os dois para emitir a cobrança."
+      descricao="Nome, CPF e e-mail são obrigatórios: o Asaas exige CPF e e-mail para emitir a cobrança."
       aoEnviar={(evento) => void handleSubmit(salvar)(evento)}
       rodape={
         <>
           <button type="button" className="botao" onClick={aoFechar}>
             Cancelar
           </button>
-          <button type="submit" className="botao botao-principal">
-            Salvar aluno
+          <button type="submit" className="botao botao-principal" disabled={criar.isPending}>
+            {criar.isPending ? 'Salvando…' : 'Salvar aluno'}
           </button>
         </>
       }
     >
       <div className="formulario">
         <CamposDoAluno prefixo="al" register={register} erros={formState.errors} />
+        {criar.error && (
+          <p className="erro-formulario inteiro" role="alert">
+            {criar.error.message}
+          </p>
+        )}
       </div>
     </Dialogo>
   )

@@ -125,29 +125,118 @@ export interface AlterarCategoriaDto {
   ativo?: boolean;
 }
 
-export type SituacaoAluno = typeof SituacaoAluno[keyof typeof SituacaoAluno];
+export type CursoAluno = typeof CursoAluno[keyof typeof CursoAluno];
 
 
-export const SituacaoAluno = {
-  MATRICULADO: 'MATRICULADO',
-  TRANCADO: 'TRANCADO',
-  DESLIGADO: 'DESLIGADO',
-  FORMADO: 'FORMADO',
-  INTERCAMBIO: 'INTERCAMBIO',
+export const CursoAluno = {
+  AER: 'AER',
+  ELE: 'ELE',
+  MEC: 'MEC',
+  CIV: 'CIV',
+  COMP: 'COMP',
+  AESP: 'AESP',
 } as const;
 
-export interface AlunoResumoDto {
+export type PostoAluno = typeof PostoAluno[keyof typeof PostoAluno];
+
+
+export const PostoAluno = {
+  CIVIL: 'CIVIL',
+  ALUNO_MILITAR: 'ALUNO_MILITAR',
+  ASP_OF: 'ASP_OF',
+} as const;
+
+export interface AlojamentoDto {
+  bloco: string;
+  apto: string;
+  vaga: string;
+}
+
+export interface AlunoDto {
   id: string;
   nome: string;
   /** Só dígitos, sem pontuação */
   cpf: string;
+  /** Vazio quando o cadastro está incompleto */
   email: string;
+  /**
+     * Só dígitos, com DDD
+     * @nullable
+     */
+  celular: string | null;
+  /** @nullable */
+  apelido: string | null;
+  /** @nullable */
+  matricula: number | null;
   /** @nullable */
   turma: string | null;
-  situacao: SituacaoAluno | null;
+  curso: CursoAluno | null;
+  posto: PostoAluno | null;
+  /** @nullable */
+  alojamento: AlojamentoDto | null;
+  /** Situação do cadastro: só alunos ativos recebem a mensalidade automática */
+  ativo: boolean;
+  /** Sem e-mail ou com CPF inválido: não recebe cobrança até ser corrigido */
+  cadastroIncompleto: boolean;
 }
 
 export interface ListaDeAlunosDto {
-  itens: AlunoResumoDto[];
+  itens: AlunoDto[];
 }
+
+export interface CriarAlunoDto {
+  nome: string;
+  /** Com ou sem pontuação */
+  cpf: string;
+  email: string;
+  /** @nullable */
+  celular?: string | null;
+  /** @nullable */
+  apelido?: string | null;
+  /** @nullable */
+  matricula?: number | null;
+  /** @nullable */
+  turma?: string | null;
+  curso?: CursoAluno | null;
+  posto?: PostoAluno | null;
+  /** @nullable */
+  alojamento?: AlojamentoDto | null;
+}
+
+export interface AlterarAlunoDto {
+  nome?: string;
+  cpf?: string;
+  email?: string;
+  /** @nullable */
+  celular?: string | null;
+  /** @nullable */
+  apelido?: string | null;
+  /** @nullable */
+  matricula?: number | null;
+  /** @nullable */
+  turma?: string | null;
+  curso?: CursoAluno | null;
+  posto?: PostoAluno | null;
+  /** @nullable */
+  alojamento?: AlojamentoDto | null;
+  /** false inativa; true reativa */
+  ativo?: boolean;
+}
+
+export interface ListaDeTurmasDto {
+  itens: string[];
+}
+
+export type ListarAlunosParams = {
+situacao?: ListarAlunosSituacao;
+};
+
+export type ListarAlunosSituacao = typeof ListarAlunosSituacao[keyof typeof ListarAlunosSituacao];
+
+
+export const ListarAlunosSituacao = {
+  ativos: 'ativos',
+  inativos: 'inativos',
+  todos: 'todos',
+} as const;
 

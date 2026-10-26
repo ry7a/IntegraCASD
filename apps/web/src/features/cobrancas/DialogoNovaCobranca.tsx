@@ -39,7 +39,7 @@ function DialogoNovaCobranca({ aberto, alunoInicial, aoFechar }: Props) {
 
   // Sugestões de aluno: hook REAL gerado pelo orval (GET /api/alunos), pedido só quando o diálogo abre.
   // TODO [Cobranças.RF003]: buscar por nome ou CPF no backend quando a lista aceitar o parâmetro de busca.
-  const sugestoes = useListarAlunos({ query: { enabled: aberto } })
+  const sugestoes = useListarAlunos(undefined, { query: { enabled: aberto } })
 
   const erros = formState.errors
 

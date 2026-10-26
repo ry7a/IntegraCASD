@@ -1,11 +1,5 @@
 [
   {
-    "regra": "B3",
-    "alvo": "apps/api/src/modulos/cadastros/api/lista-de-alunos.dto.ts",
-    "justificativa": "O DTO importa o enum SituacaoAluno gerado pelo Prisma só para descrever os valores no OpenAPI (@ApiProperty enum). Não acessa o banco. Remover quando houver um enum próprio fora do Prisma.",
-    "referencia": "ADR-0003; apps/api/CLAUDE.md (camadas do módulo)"
-  },
-  {
     "regra": "B6",
     "alvo": "apps/api/src/modulos/administracao/infra/categorias.repositorio.ts",
     "justificativa": "Exclusão física de categoria de movimentação, decidida pela equipe em 26/10/2026: permitida só para categoria que nunca foi usada (ex.: criada por engano). Categoria com movimentações é recusada (domínio e chave estrangeira Restrict) e só pode ser inativada. A exclusão fica registrada na trilha de auditoria.",

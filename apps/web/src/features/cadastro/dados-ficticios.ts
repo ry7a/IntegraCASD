@@ -1,10 +1,9 @@
 // Dados FICTÍCIOS de Cadastros, iguais aos do mockup (docs/telas/cadastros.html e aluno.html).
 // Nomes, CPFs e e-mails são inventados (LGPD). Os ids dos alunos e as cobranças do Lucas batem com
-// features/cobrancas/dados-ficticios.ts; a lista de alunos da aba "Alunos" NÃO usa isto: vem da API real.
+// features/cobrancas/dados-ficticios.ts. O cadastro dos alunos NÃO usa isto: vem da API real.
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type {
-  AlunoDetalheDto,
   CobrancasDoAlunoDto,
   ContratoDto,
   FuncionarioDto,
@@ -13,17 +12,6 @@ import type {
 
 // Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
 marcarDadosFicticios('dados-ficticios-integracasd:cadastro')
-
-export const alunos: AlunoDetalheDto[] = [
-  { id: 'aluno-ana', nome: 'Ana Clara Ribeiro', cpf: '11122233344', email: 'ana.ribeiro@exemplo.com', turma: '2028', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-  { id: 'aluno-beatriz', nome: 'Beatriz Moura Lima', cpf: '22233344455', email: 'beatriz.lima@exemplo.com', turma: '2027', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-  { id: 'aluno-carlos', nome: 'Carlos Eduardo Vasconcelos', cpf: '33344455566', email: '', turma: '2029', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-  { id: 'aluno-julia', nome: 'Júlia Nogueira Prado', cpf: '44455566677', email: 'julia.prado@exemplo.com', turma: '2027', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-  { id: 'aluno-lucas', nome: 'Lucas Andrade Ferreira', cpf: '55566677788', email: 'lucas.ferreira@exemplo.com', turma: '2026', ativo: true, situacao: 'MATRICULADO', dataNascimento: '2005-03-14', celular: '(12) 90000-0000' },
-  { id: 'aluno-mariana', nome: 'Mariana Costa Albuquerque', cpf: '66677788899', email: 'mariana.albuquerque@exemplo.com', turma: '2025', ativo: false, situacao: 'FORMADO', dataNascimento: null, celular: null },
-  { id: 'aluno-pedro', nome: 'Pedro Henrique Saldanha', cpf: '77788899900', email: 'pedro.saldanha@exemplo.com', turma: '2026', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-  { id: 'aluno-rafael', nome: 'Rafael Tavares Costa', cpf: '88899900011', email: 'rafael.costa@exemplo.com', turma: '2027', ativo: true, situacao: 'MATRICULADO', dataNascimento: null, celular: null },
-]
 
 // Só o Lucas tem cobranças e movimentações no mockup; os outros alunos mostram o estado "vazio".
 export const cobrancasDoLucas: CobrancasDoAlunoDto = {

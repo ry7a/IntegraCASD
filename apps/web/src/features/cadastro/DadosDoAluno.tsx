@@ -1,26 +1,34 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { formatarCpf } from '@/compartilhado/formatacao'
+import {
+  getBuscarAlunoQueryKey,
+  getListarAlunosQueryKey,
+  useAlterarAluno,
+  type AlunoDto,
+} from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import CamposDoAluno from './CamposDoAluno'
-import type { AlunoDetalheDto } from './contrato'
-import { esquemaDoAluno, type FormularioDoAluno } from './esquema-do-aluno'
+import { esquemaDoAluno, paraCorpoDaApi, paraFormulario, type FormularioDoAluno } from './esquema-do-aluno'
 
-// Aba "Dados": o formulário já vem preenchido com o cadastro.
-function DadosDoAluno({ aluno }: { aluno: AlunoDetalheDto }) {
-  const { register, handleSubmit, formState } = useForm<FormularioDoAluno>({
+// Aba "Dados": o formulário já vem preenchido com o cadastro. [Cadastros.RF001]
+function DadosDoAluno({ aluno }: { aluno: AlunoDto }) {
+  const { register, handleSubmit, formState, reset } = useForm<FormularioDoAluno>({
     resolver: zodResolver(esquemaDoAluno),
-    defaultValues: {
-      nome: aluno.nome,
-      cpf: formatarCpf(aluno.cpf),
-      nascimento: aluno.dataNascimento ?? '',
-      email: aluno.email,
-      telefone: aluno.celular ?? '',
-      situacao: aluno.ativo ? 'ATIVO' : 'INATIVO',
-    },
+    defaultValues: paraFormulario(aluno),
   })
+  const alterar = useAlterarAluno()
+  const queryClient = useQueryClient()
 
-  function salvar() {
-    // TODO [Cadastros.RF001]: PUT /api/alunos/:id (com auditoria). Por enquanto o formulário só valida.
+  async function salvar(formulario: FormularioDoAluno) {
+    try {
+      const alterado = await alterar.mutateAsync({ id: aluno.id, data: paraCorpoDaApi(formulario) })
+      queryClient.setQueryData(getBuscarAlunoQueryKey(aluno.id), alterado)
+      await queryClient.invalidateQueries({ queryKey: getListarAlunosQueryKey() })
+      // O formulário passa a considerar os dados salvos como o novo ponto de partida.
+      reset(paraFormulario(alterado))
+    } catch {
+      // A mensagem da API aparece abaixo do formulário.
+    }
   }
 
   return (
@@ -33,9 +41,19 @@ function DadosDoAluno({ aluno }: { aluno: AlunoDetalheDto }) {
       </div>
       <form className="formulario" noValidate onSubmit={(evento) => void handleSubmit(salvar)(evento)}>
         <CamposDoAluno prefixo="ad" register={register} erros={formState.errors} />
+        {alterar.error && (
+          <p className="erro-formulario inteiro" role="alert">
+            {alterar.error.message}
+          </p>
+        )}
+        {alterar.isSuccess && !formState.isDirty && (
+          <p className="texto-apoio inteiro" role="status">
+            Alterações salvas.
+          </p>
+        )}
         <div className="inteiro">
-          <button type="submit" className="botao botao-principal">
-            Salvar alterações
+          <button type="submit" className="botao botao-principal" disabled={alterar.isPending || !formState.isDirty}>
+            {alterar.isPending ? 'Salvando…' : 'Salvar alterações'}
           </button>
         </div>
       </form>
