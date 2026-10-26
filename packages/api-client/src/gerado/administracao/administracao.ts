@@ -28,10 +28,13 @@ import type {
   AlterarCategoriaDto,
   AlterarUsuarioDto,
   CategoriaComUsoDto,
+  ConferenciaDto,
+  ConsultaDosParametrosDto,
   CriarCategoriaDto,
   CriarUsuarioDto,
   ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
+  ParametrosDeCobrancaDto,
   UsuarioDto
 } from '../api.schemas';
 
@@ -684,4 +687,278 @@ export const useExcluirCategoria = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getExcluirCategoriaMutationOptions(options), queryClient);
+    }
+    export const getBuscarParametrosDeCobrancaUrl = () => {
+
+
+
+
+  return `/api/admin/parametros-cobranca`
+}
+
+/**
+ * @summary Parâmetros vigentes e conferência da próxima geração
+ */
+export const buscarParametrosDeCobranca = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ConsultaDosParametrosDto> => {
+
+  return clienteHttp<ConsultaDosParametrosDto>(getBuscarParametrosDeCobrancaUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getBuscarParametrosDeCobrancaQueryKey = () => {
+    return [
+    `/api/admin/parametros-cobranca`
+    ] as const;
+    }
+
+
+export const getBuscarParametrosDeCobrancaQueryOptions = <TData = Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuscarParametrosDeCobrancaQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>> = ({ signal }) => buscarParametrosDeCobranca({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuscarParametrosDeCobrancaQueryResult = NonNullable<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>>
+export type BuscarParametrosDeCobrancaQueryError = ErrorType<unknown>
+
+
+export function useBuscarParametrosDeCobranca<TData = Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarParametrosDeCobranca>>,
+          TError,
+          Awaited<ReturnType<typeof buscarParametrosDeCobranca>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarParametrosDeCobranca<TData = Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarParametrosDeCobranca>>,
+          TError,
+          Awaited<ReturnType<typeof buscarParametrosDeCobranca>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarParametrosDeCobranca<TData = Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Parâmetros vigentes e conferência da próxima geração
+ */
+
+export function useBuscarParametrosDeCobranca<TData = Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarParametrosDeCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuscarParametrosDeCobrancaQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getAlterarParametrosDeCobrancaUrl = () => {
+
+
+
+
+  return `/api/admin/parametros-cobranca`
+}
+
+/**
+ * @summary Grava novos parâmetros (valem para as próximas cobranças)
+ */
+export const alterarParametrosDeCobranca = async (parametrosDeCobrancaDto: ParametrosDeCobrancaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<void>(getAlterarParametrosDeCobrancaUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(parametrosDeCobrancaDto)
+  }
+);}
+
+
+
+
+
+export const getAlterarParametrosDeCobrancaMutationKey = () => ['alterarParametrosDeCobranca'] as const;
+
+export const getAlterarParametrosDeCobrancaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarParametrosDeCobranca>>, TError,AlterarParametrosDeCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof alterarParametrosDeCobranca>>, TError,AlterarParametrosDeCobrancaMutationVariables, TContext> => {
+
+const mutationKey = getAlterarParametrosDeCobrancaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alterarParametrosDeCobranca>>, AlterarParametrosDeCobrancaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  alterarParametrosDeCobranca(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AlterarParametrosDeCobrancaMutationResult = NonNullable<Awaited<ReturnType<typeof alterarParametrosDeCobranca>>>
+    export type AlterarParametrosDeCobrancaMutationBody = ParametrosDeCobrancaDto
+    export type AlterarParametrosDeCobrancaMutationError = ErrorType<unknown>
+    export type AlterarParametrosDeCobrancaMutationVariables = {data: ParametrosDeCobrancaDto}
+
+    /**
+ * @summary Grava novos parâmetros (valem para as próximas cobranças)
+ */
+export const useAlterarParametrosDeCobranca = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarParametrosDeCobranca>>, TError,AlterarParametrosDeCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof alterarParametrosDeCobranca>>,
+        TError,
+        AlterarParametrosDeCobrancaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAlterarParametrosDeCobrancaMutationOptions(options), queryClient);
+    }
+    export const getConferirParametrosDeCobrancaUrl = () => {
+
+
+
+
+  return `/api/admin/parametros-cobranca/conferencia`
+}
+
+/**
+ * @summary Mostra o efeito dos valores antes de salvar
+ */
+export const conferirParametrosDeCobranca = async (parametrosDeCobrancaDto: ParametrosDeCobrancaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<ConferenciaDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<ConferenciaDto>(getConferirParametrosDeCobrancaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(parametrosDeCobrancaDto)
+  }
+);}
+
+
+
+
+
+export const getConferirParametrosDeCobrancaMutationKey = () => ['conferirParametrosDeCobranca'] as const;
+
+export const getConferirParametrosDeCobrancaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conferirParametrosDeCobranca>>, TError,ConferirParametrosDeCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof conferirParametrosDeCobranca>>, TError,ConferirParametrosDeCobrancaMutationVariables, TContext> => {
+
+const mutationKey = getConferirParametrosDeCobrancaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof conferirParametrosDeCobranca>>, ConferirParametrosDeCobrancaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  conferirParametrosDeCobranca(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConferirParametrosDeCobrancaMutationResult = NonNullable<Awaited<ReturnType<typeof conferirParametrosDeCobranca>>>
+    export type ConferirParametrosDeCobrancaMutationBody = ParametrosDeCobrancaDto
+    export type ConferirParametrosDeCobrancaMutationError = ErrorType<unknown>
+    export type ConferirParametrosDeCobrancaMutationVariables = {data: ParametrosDeCobrancaDto}
+
+    /**
+ * @summary Mostra o efeito dos valores antes de salvar
+ */
+export const useConferirParametrosDeCobranca = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof conferirParametrosDeCobranca>>, TError,ConferirParametrosDeCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof conferirParametrosDeCobranca>>,
+        TError,
+        ConferirParametrosDeCobrancaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getConferirParametrosDeCobrancaMutationOptions(options), queryClient);
     }

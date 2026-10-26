@@ -352,6 +352,101 @@
         "x-perfil": "DIRETORIA"
       }
     },
+    "/api/admin/parametros-cobranca": {
+      "get": {
+        "operationId": "buscarParametrosDeCobranca",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsultaDosParametrosDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Parâmetros vigentes e conferência da próxima geração",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      },
+      "put": {
+        "operationId": "alterarParametrosDeCobranca",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametrosDeCobrancaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Grava novos parâmetros (valem para as próximas cobranças)",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/admin/parametros-cobranca/conferencia": {
+      "post": {
+        "operationId": "conferirParametrosDeCobranca",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParametrosDeCobrancaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConferenciaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Mostra o efeito dos valores antes de salvar",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
     "/api/alunos": {
       "get": {
         "operationId": "listarAlunos",
@@ -931,6 +1026,153 @@
             "description": "false inativa; true reativa."
           }
         }
+      },
+      "ParametrosVigentesDto": {
+        "type": "object",
+        "properties": {
+          "valorMensalidadeCentavos": {
+            "type": "number",
+            "example": 8500
+          },
+          "diaVencimento": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28,
+            "example": 10
+          },
+          "diaGeracao": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28,
+            "example": 1,
+            "description": "Precisa ser antes do dia de vencimento"
+          },
+          "multaPercentual": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Percentual inteiro (2 = 2%)"
+          },
+          "jurosMensalPercentual": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Percentual inteiro ao mês (1 = 1%)"
+          },
+          "alteradoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "alteradoPor": {
+            "type": "string",
+            "description": "Nome de quem fez a última alteração"
+          }
+        },
+        "required": [
+          "valorMensalidadeCentavos",
+          "diaVencimento",
+          "diaGeracao",
+          "multaPercentual",
+          "jurosMensalPercentual",
+          "alteradoEm",
+          "alteradoPor"
+        ]
+      },
+      "ConferenciaDto": {
+        "type": "object",
+        "properties": {
+          "proximaGeracao": {
+            "type": "string",
+            "format": "date"
+          },
+          "proximoVencimento": {
+            "type": "string",
+            "format": "date"
+          },
+          "alunosCobrados": {
+            "type": "number",
+            "description": "Alunos ativos com cadastro completo, que receberão a mensalidade"
+          },
+          "totalPrevistoCentavos": {
+            "type": "number",
+            "description": "Alunos cobrados x valor da mensalidade"
+          }
+        },
+        "required": [
+          "proximaGeracao",
+          "proximoVencimento",
+          "alunosCobrados",
+          "totalPrevistoCentavos"
+        ]
+      },
+      "ConsultaDosParametrosDto": {
+        "type": "object",
+        "properties": {
+          "vigentes": {
+            "nullable": true,
+            "description": "Nulo até o primeiro cadastro",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ParametrosVigentesDto"
+              }
+            ]
+          },
+          "conferencia": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConferenciaDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "vigentes",
+          "conferencia"
+        ]
+      },
+      "ParametrosDeCobrancaDto": {
+        "type": "object",
+        "properties": {
+          "valorMensalidadeCentavos": {
+            "type": "number",
+            "example": 8500
+          },
+          "diaVencimento": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28,
+            "example": 10
+          },
+          "diaGeracao": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 28,
+            "example": 1,
+            "description": "Precisa ser antes do dia de vencimento"
+          },
+          "multaPercentual": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Percentual inteiro (2 = 2%)"
+          },
+          "jurosMensalPercentual": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Percentual inteiro ao mês (1 = 1%)"
+          }
+        },
+        "required": [
+          "valorMensalidadeCentavos",
+          "diaVencimento",
+          "diaGeracao",
+          "multaPercentual",
+          "jurosMensalPercentual"
+        ]
       },
       "CursoAluno": {
         "type": "string",

@@ -14,6 +14,17 @@ de Cobranças e aparece só para mostrar onde ela se liga.
 
 Fonte editável: [`mer-financeiro.drawio`](mer-financeiro.drawio). Ao alterar, exporte de novo o `.svg`.
 
+## Tabelas de apoio (fora do diagrama)
+
+Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a referência completa.
+
+| Tabela | Para quê | Detalhe |
+| --- | --- | --- |
+| `usuarios`, `sessoes` | acesso ao sistema ([Administração.RF001]) | perfis administrativo e diretoria |
+| `registros_auditoria` | trilha de auditoria ([Segurança.NF006]) | só de inclusão; o banco recusa `UPDATE` e `DELETE` (ADR-0004) |
+| `parametros_cobranca` | parâmetros da mensalidade ([Administração.RF003]) | uma linha por alteração, nunca alterada; a vigente é a mais recente |
+| `eventos_webhook` | eventos recebidos do Asaas ([Desempenho.NF001]) | id do Asaas único, para a idempotência |
+
 ## Regras que o diagrama não mostra
 
 1. **No máximo um vínculo de origem por movimentação:** contrato, projeto, funcionário ou centro

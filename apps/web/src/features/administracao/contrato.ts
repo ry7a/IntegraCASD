@@ -19,41 +19,6 @@ export interface ListaDeUsuariosDto {
   itens: UsuarioDto[]
 }
 
-export interface ConferenciaDto {
-  proximaGeracao: string
-  proximoVencimento: string
-  // Alunos ativos, que receberão a mensalidade.
-  alunosCobrados: number
-  // Alunos cobrados x valor da mensalidade.
-  totalPrevistoCentavos: number
-}
-
-export interface ExecucaoGeracaoDto {
-  id: string
-  iniciadaEm: string
-  finalizadaEm: string | null
-  // Cobranças criadas.
-  totalProcessado: number
-  totalFalhas: number
-  motivoFalhas: string | null
-}
-
-// GET /api/administracao/parametros-cobranca
-export interface ParametrosCobrancaDto {
-  valorMensalidadeCentavos: number
-  diaVencimento: number
-  diaGeracao: number
-  // Percentual inteiro (2 = 2%). Quem calcula é o Asaas.
-  multaPercentual: number
-  // Percentual inteiro ao mês (1 = 1%).
-  jurosMensalPercentual: number
-  alteradoEm: string
-  alteradoPor: string
-  conferencia: ConferenciaDto
-  // As três últimas, da mais recente.
-  ultimasExecucoes: ExecucaoGeracaoDto[]
-}
-
 // GET /api/administracao/integracao-asaas
 // A chave de acesso NUNCA aparece aqui: a API só informa quando ela foi cadastrada.
 export interface IntegracaoAsaasDto {
