@@ -19,23 +19,6 @@ export interface ListaDeUsuariosDto {
   itens: UsuarioDto[]
 }
 
-export type AplicacaoCategoria = 'ENTRADAS' | 'SAIDAS' | 'ENTRADAS_E_SAIDAS'
-
-export interface CategoriaComUsoDto {
-  id: string
-  nome: string
-  aplicaA: AplicacaoCategoria
-  ativa: boolean
-  // Quantas movimentações usam esta categoria.
-  quantidadeMovimentacoes: number
-}
-
-// GET /api/administracao/categorias
-export interface ListaDeCategoriasComUsoDto {
-  // Ativas primeiro, depois as inativas.
-  itens: CategoriaComUsoDto[]
-}
-
 export interface ConferenciaDto {
   proximaGeracao: string
   proximoVencimento: string
