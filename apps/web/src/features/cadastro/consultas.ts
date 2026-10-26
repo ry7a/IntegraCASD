@@ -1,11 +1,10 @@
 // Mesmo padrão de features/indicadores/consultas.ts: hooks do TanStack Query que devolvem dados fictícios.
 // Quando o endpoint existir no NestJS, troca-se cada hook pelo gerado pelo orval, com o mesmo formato.
-// A lista de alunos (useListarAlunos) NÃO está aqui: já é o hook real, gerado pelo orval.
+// Alunos e funcionários NÃO estão aqui: já usam os hooks reais, gerados pelo orval.
 import { useQuery } from '@tanstack/react-query'
 import type {
   CobrancasDoAlunoDto,
   ListaDeContratosDto,
-  ListaDeFuncionariosDto,
   ListaDeProjetosDto,
   MovimentacoesDoAlunoDto,
   SituacaoDoFiltroDeContratos,
@@ -14,7 +13,6 @@ import type {
 import {
   cobrancasDoLucas,
   contratos,
-  funcionarios,
   movimentacoesDoLucas,
   projetos,
 } from './dados-ficticios'
@@ -42,18 +40,6 @@ export function useListarMovimentacoesDoAluno(alunoId: string) {
     queryFn: async () => {
       await esperar()
       return { itens: alunoId === 'aluno-lucas' ? movimentacoesDoLucas : [] }
-    },
-  })
-}
-
-// TODO [Cadastros.RF002]: trocar por GET /api/funcionarios?busca=.
-export function useListarFuncionarios(busca: string) {
-  return useQuery<ListaDeFuncionariosDto>({
-    queryKey: ['funcionarios', busca],
-    queryFn: async () => {
-      await esperar()
-      const texto = busca.trim().toLowerCase()
-      return { itens: funcionarios.filter((f) => f.nome.toLowerCase().includes(texto)) }
     },
   })
 }

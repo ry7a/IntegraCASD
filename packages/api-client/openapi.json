@@ -534,6 +534,128 @@
           "alunos"
         ]
       }
+    },
+    "/api/funcionarios": {
+      "get": {
+        "operationId": "listarFuncionarios",
+        "parameters": [
+          {
+            "name": "situacao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ativos",
+                "inativos",
+                "todos"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeFuncionariosDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista os funcionários (por padrão, só os ativos)",
+        "tags": [
+          "funcionarios"
+        ]
+      },
+      "post": {
+        "operationId": "criarFuncionario",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarFuncionarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuncionarioDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Inclui um funcionário",
+        "tags": [
+          "funcionarios"
+        ]
+      }
+    },
+    "/api/funcionarios/{id}": {
+      "patch": {
+        "operationId": "alterarFuncionario",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarFuncionarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FuncionarioDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera, desliga ou readmite um funcionário",
+        "tags": [
+          "funcionarios"
+        ]
+      }
     }
   },
   "info": {
@@ -1091,6 +1213,131 @@
         "required": [
           "itens"
         ]
+      },
+      "FuncionarioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Só dígitos, sem pontuação",
+            "example": "12345678901"
+          },
+          "cargo": {
+            "type": "string"
+          },
+          "salarioReferenciaCentavos": {
+            "type": "number",
+            "description": "Informativo; o pagamento efetivo é uma movimentação de saída"
+          },
+          "dataAdmissao": {
+            "type": "string",
+            "format": "date",
+            "example": "2025-03-01"
+          },
+          "dataDesligamento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "ativo": {
+            "type": "boolean",
+            "description": "Calculado pela data de desligamento: inativo a partir dela"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "cpf",
+          "cargo",
+          "salarioReferenciaCentavos",
+          "dataAdmissao",
+          "dataDesligamento",
+          "ativo"
+        ]
+      },
+      "ListaDeFuncionariosDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FuncionarioDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "CriarFuncionarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "000.000.000-00",
+            "description": "Com ou sem pontuação"
+          },
+          "cargo": {
+            "type": "string"
+          },
+          "salarioReferenciaCentavos": {
+            "type": "number",
+            "example": 245000
+          },
+          "dataAdmissao": {
+            "type": "string",
+            "format": "date",
+            "example": "2025-03-01"
+          },
+          "dataDesligamento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "required": [
+          "nome",
+          "cpf",
+          "cargo",
+          "salarioReferenciaCentavos",
+          "dataAdmissao"
+        ]
+      },
+      "AlterarFuncionarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string"
+          },
+          "cargo": {
+            "type": "string"
+          },
+          "salarioReferenciaCentavos": {
+            "type": "number"
+          },
+          "dataAdmissao": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataDesligamento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
       }
     }
   }

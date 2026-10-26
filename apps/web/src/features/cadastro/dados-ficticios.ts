@@ -6,7 +6,6 @@ import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type {
   CobrancasDoAlunoDto,
   ContratoDto,
-  FuncionarioDto,
   ProjetoDto,
 } from './contrato'
 
@@ -50,12 +49,6 @@ export const movimentacoesDoLucas: MovimentacaoDto[] = [
   entradaDeMensalidade('mov-lucas-0726', '2026-07-08', '07'),
   entradaDeMensalidade('mov-lucas-0626', '2026-06-09', '06'),
   entradaDeMensalidade('mov-lucas-0526', '2026-05-11', '05'),
-]
-
-export const funcionarios: FuncionarioDto[] = [
-  { id: 'func-sonia', nome: 'Sônia Aparecida Martins', cargo: 'Responsável administrativa', dataAdmissao: '2019-02-03', dataDesligamento: null, ativo: true },
-  { id: 'func-roberto', nome: 'Roberto Lins Moreira', cargo: 'Atendente da lavanderia', dataAdmissao: '2022-08-15', dataDesligamento: null, ativo: true },
-  { id: 'func-claudia', nome: 'Cláudia Ferraz Neves', cargo: 'Auxiliar de limpeza', dataAdmissao: '2021-03-10', dataDesligamento: '2026-06-30', ativo: false },
 ]
 
 export const contratos: ContratoDto[] = [

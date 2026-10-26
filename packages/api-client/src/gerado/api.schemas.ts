@@ -227,6 +227,46 @@ export interface ListaDeTurmasDto {
   itens: string[];
 }
 
+export interface FuncionarioDto {
+  id: string;
+  nome: string;
+  /** Só dígitos, sem pontuação */
+  cpf: string;
+  cargo: string;
+  /** Informativo; o pagamento efetivo é uma movimentação de saída */
+  salarioReferenciaCentavos: number;
+  dataAdmissao: string;
+  /** @nullable */
+  dataDesligamento: string | null;
+  /** Calculado pela data de desligamento: inativo a partir dela */
+  ativo: boolean;
+}
+
+export interface ListaDeFuncionariosDto {
+  itens: FuncionarioDto[];
+}
+
+export interface CriarFuncionarioDto {
+  nome: string;
+  /** Com ou sem pontuação */
+  cpf: string;
+  cargo: string;
+  salarioReferenciaCentavos: number;
+  dataAdmissao: string;
+  /** @nullable */
+  dataDesligamento?: string | null;
+}
+
+export interface AlterarFuncionarioDto {
+  nome?: string;
+  cpf?: string;
+  cargo?: string;
+  salarioReferenciaCentavos?: number;
+  dataAdmissao?: string;
+  /** @nullable */
+  dataDesligamento?: string | null;
+}
+
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };
@@ -235,6 +275,19 @@ export type ListarAlunosSituacao = typeof ListarAlunosSituacao[keyof typeof List
 
 
 export const ListarAlunosSituacao = {
+  ativos: 'ativos',
+  inativos: 'inativos',
+  todos: 'todos',
+} as const;
+
+export type ListarFuncionariosParams = {
+situacao?: ListarFuncionariosSituacao;
+};
+
+export type ListarFuncionariosSituacao = typeof ListarFuncionariosSituacao[keyof typeof ListarFuncionariosSituacao];
+
+
+export const ListarFuncionariosSituacao = {
   ativos: 'ativos',
   inativos: 'inativos',
   todos: 'todos',

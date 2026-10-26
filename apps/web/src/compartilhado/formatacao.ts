@@ -20,6 +20,14 @@ export function formatarMoedaComSinal(tipo: 'ENTRADA' | 'SAIDA', centavos: numbe
   return `${tipo === 'ENTRADA' ? '+' : '−'} ${formatarMoeda(centavos)}`
 }
 
+const formatadorDeCampoDeValor = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+// 245000 -> "2.450,00": valor já salvo, para preencher um campo de texto de formulário.
+// O paraCentavos (abaixo) lê de volta esse mesmo formato.
+export function formatarValorParaCampo(centavos: number): string {
+  return formatadorDeCampoDeValor.format(centavos / 100)
+}
+
 // Texto digitado pelo usuário ("R$ 1.200,00", "85", "85,5") -> centavos. NaN se não der para entender.
 // É só conveniência do formulário: quem valida o valor de verdade é a API.
 export function paraCentavos(texto: string): number {

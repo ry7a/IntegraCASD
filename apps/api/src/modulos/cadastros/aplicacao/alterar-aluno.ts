@@ -2,13 +2,13 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { OperacaoAuditada } from '../../../compartilhado/auditoria/trilha.js';
 import {
   CadastroDuplicado,
-  DadoDoAlunoInvalido,
+  DadoInvalido,
   lerDadosParaAlteracao,
   type EntradaDoAluno,
 } from '../dominio/aluno.js';
 import { AlunosRepositorio } from '../infra/alunos.repositorio.js';
 import { paraDetalhe, type AlunoDetalhe } from './aluno-detalhe.js';
-import { traduzirErrosDoAluno } from './erros-do-aluno.js';
+import { traduzirErrosDoCadastro } from './erros-do-cadastro.js';
 
 export type EntradaAlterarAluno = EntradaDoAluno & { ativo?: unknown };
 
@@ -19,14 +19,14 @@ export class AlterarAluno {
   constructor(private readonly alunos: AlunosRepositorio) {}
 
   executar(id: string, entrada: EntradaAlterarAluno, autorId: string): Promise<AlunoDetalhe> {
-    return traduzirErrosDoAluno(async () => {
+    return traduzirErrosDoCadastro(async () => {
       const atual = await this.alunos.buscarPorId(id);
       if (atual === null) throw new NotFoundException('Aluno não encontrado. Volte à lista e escolha outro cadastro.');
 
       const { ativo: ativoInformado, ...cadastrais } = entrada;
       const dados = lerDadosParaAlteracao(cadastrais);
       if (ativoInformado !== undefined && typeof ativoInformado !== 'boolean') {
-        throw new DadoDoAlunoInvalido('Informe se o aluno fica ativo ou inativo.');
+        throw new DadoInvalido('Informe se o aluno fica ativo ou inativo.');
       }
       const ativo = ativoInformado;
       if (Object.keys(dados).length === 0 && ativo === undefined) {
