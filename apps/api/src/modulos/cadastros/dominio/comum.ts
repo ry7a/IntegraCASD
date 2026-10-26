@@ -55,3 +55,15 @@ export function lerData(valor: unknown, campo: string): string {
   }
   return valor;
 }
+
+// MER, regra 7: código de contrato e projeto no formato da planilha: ano com 2 dígitos + letra
+// ("C" ou "P") + sequência de 3 dígitos, continuando a maior sequência do ano.
+export function proximoCodigoDoAno(ano: string, letra: 'C' | 'P', codigosDoAno: string[]): string {
+  const prefixo = `${ano.slice(2, 4)}${letra}`;
+  const maior = codigosDoAno
+    .filter((codigo) => codigo.startsWith(prefixo))
+    .map((codigo) => Number(codigo.slice(3)))
+    .filter((numero) => Number.isInteger(numero))
+    .reduce((maximo, numero) => Math.max(maximo, numero), 0);
+  return `${prefixo}${String(maior + 1).padStart(3, '0')}`;
+}

@@ -41,7 +41,9 @@ function PaginaMovimentacoes() {
   const [forma, definirForma] = useState<FormaPagamento | ''>('')
   const [ocultarEstornos, definirOcultarEstornos] = useState(false)
   // "contrato:<id>" ou "projeto:<id>"; vazio = todos.
-  const [vinculoFiltro, definirVinculoFiltro] = useState('')
+  // O projeto pode chegar pela URL (link "Movimentações" do cartão do projeto, em Cadastros).
+  const projetoNaUrl = parametros.get('projetoId')
+  const [vinculoFiltro, definirVinculoFiltro] = useState(projetoNaUrl ? `projeto:${projetoNaUrl}` : '')
   const [tipoDoVinculo, idDoVinculo] = vinculoFiltro.split(':')
   const [paraEstornar, definirParaEstornar] = useState<MovimentacaoDto | null>(null)
 
