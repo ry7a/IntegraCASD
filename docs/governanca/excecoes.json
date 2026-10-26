@@ -6,6 +6,12 @@
     "referencia": "ADR-0003; apps/api/CLAUDE.md (camadas do módulo)"
   },
   {
+    "regra": "B6",
+    "alvo": "apps/api/src/modulos/administracao/infra/categorias.repositorio.ts",
+    "justificativa": "Exclusão física de categoria de movimentação, decidida pela equipe em 26/10/2026: permitida só para categoria que nunca foi usada (ex.: criada por engano). Categoria com movimentações é recusada (domínio e chave estrangeira Restrict) e só pode ser inativada. A exclusão fica registrada na trilha de auditoria.",
+    "referencia": "[Administração.RF002]; docs/arquitetura/mer-financeiro.md (Decisões)"
+  },
+  {
     "regra": "F5",
     "alvo": "apps/web/src/compartilhado/estilo-telas.css",
     "justificativa": "Folha de estilo das telas do protótipo, importada em main.tsx, ainda com cores em hex (selos, séries do gráfico, tons de apoio). Migrar as cores para variáveis do tema em src/index.css e então remover esta exceção.",

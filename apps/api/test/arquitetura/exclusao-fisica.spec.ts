@@ -5,6 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { PASTA_SRC, RAIZ_API, caminhoRelativo, lerCodigo, listarArquivos } from './arquivos.js';
 import { aplicarExcecoes } from './excecoes.js';
 
+// As duas verificações da B6 dividem a lista de exceções. Cada uma só cobra como "obsoleta"
+// a exceção do próprio tipo de arquivo (.ts para o código, .sql para as migrações).
+const doTipo = (extensao: string) => (alvo: string) => alvo.endsWith(extensao);
+
 describe('B6: nada é excluído fisicamente', () => {
   it('o código não chama .delete( nem .deleteMany(', () => {
     const violacoes = listarArquivos(PASTA_SRC, '.ts')
@@ -12,7 +16,7 @@ describe('B6: nada é excluído fisicamente', () => {
       .map(caminhoRelativo);
     const { pendentes, obsoletas } = aplicarExcecoes('B6', violacoes);
     expect(pendentes).toEqual([]);
-    expect(obsoletas).toEqual([]);
+    expect(obsoletas.filter(doTipo('.ts'))).toEqual([]);
   });
 
   it('as migrações não têm DELETE FROM nem DROP TABLE', () => {
@@ -23,6 +27,6 @@ describe('B6: nada é excluído fisicamente', () => {
       .map(caminhoRelativo);
     const { pendentes, obsoletas } = aplicarExcecoes('B6', violacoes);
     expect(pendentes).toEqual([]);
-    expect(obsoletas).toEqual([]);
+    expect(obsoletas.filter(doTipo('.sql'))).toEqual([]);
   });
 });

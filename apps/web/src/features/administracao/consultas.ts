@@ -1,28 +1,11 @@
 // Mesmo padrão de features/indicadores/consultas.ts: hooks do TanStack Query que devolvem dados fictícios.
 // Quando o endpoint existir no NestJS, troca-se cada hook pelo gerado pelo orval, com o mesmo formato.
 import { useQuery } from '@tanstack/react-query'
-import type {
-  FiltrosDaTrilha,
-  IntegracaoAsaasDto,
-  ListaDaTrilhaDto,
-  ListaDeCategoriasComUsoDto,
-  ParametrosCobrancaDto,
-} from './contrato'
-import { categorias, integracao, parametros, trilha } from './dados-ficticios'
+import type { FiltrosDaTrilha, IntegracaoAsaasDto, ListaDaTrilhaDto, ParametrosCobrancaDto } from './contrato'
+import { integracao, parametros, trilha } from './dados-ficticios'
 
 // Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
 const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
-
-// TODO [Administração.RF002]: trocar por GET /api/administracao/categorias.
-export function useListarCategoriasDaAdministracao() {
-  return useQuery<ListaDeCategoriasComUsoDto>({
-    queryKey: ['administracao', 'categorias'],
-    queryFn: async () => {
-      await esperar()
-      return categorias
-    },
-  })
-}
 
 // TODO [Administração.RF003]: trocar por GET /api/administracao/parametros-cobranca.
 export function useBuscarParametrosDeCobranca() {

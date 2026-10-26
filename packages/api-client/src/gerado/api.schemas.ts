@@ -82,6 +82,49 @@ export interface AlterarUsuarioDto {
   novaSenha?: string;
 }
 
+export type TipoCategoria = typeof TipoCategoria[keyof typeof TipoCategoria];
+
+
+export const TipoCategoria = {
+  ENTRADA: 'ENTRADA',
+  SAIDA: 'SAIDA',
+  AMBOS: 'AMBOS',
+} as const;
+
+export interface CategoriaComUsoDto {
+  id: string;
+  nome: string;
+  tipo: TipoCategoria;
+  ativo: boolean;
+  /** Quantas movimentações usam esta categoria. */
+  quantidadeMovimentacoes: number;
+}
+
+export interface ListaDeCategoriasComUsoDto {
+  /** Ativas primeiro, depois as inativas. */
+  itens: CategoriaComUsoDto[];
+}
+
+export interface CriarCategoriaDto {
+  /**
+     * @minLength 2
+     * @maxLength 60
+     */
+  nome: string;
+  tipo: TipoCategoria;
+}
+
+export interface AlterarCategoriaDto {
+  /**
+     * @minLength 2
+     * @maxLength 60
+     */
+  nome?: string;
+  tipo?: TipoCategoria;
+  /** false inativa; true reativa. */
+  ativo?: boolean;
+}
+
 export type SituacaoAluno = typeof SituacaoAluno[keyof typeof SituacaoAluno];
 
 

@@ -3,7 +3,6 @@
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   IntegracaoAsaasDto,
-  ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
   ParametrosCobrancaDto,
   RegistroAuditoriaDto,
@@ -18,19 +17,6 @@ export const usuarios: ListaDeUsuariosDto = {
     { id: 'usuario-sonia', nome: 'Sônia Aparecida Martins', email: 'sonia.martins@exemplo.com', perfil: 'ADMINISTRATIVO', ativo: true, observacao: null, ultimoAcessoEm: '2026-10-19T07:45:00-03:00' },
     { id: 'usuario-thiago', nome: 'Thiago Rezende', email: 'thiago.rezende@exemplo.com', perfil: 'DIRETORIA', ativo: true, observacao: null, ultimoAcessoEm: '2026-10-14T21:10:00-03:00' },
     { id: 'usuario-gabriela', nome: 'Gabriela Sato', email: 'gabriela.sato@exemplo.com', perfil: 'DIRETORIA', ativo: false, observacao: 'Gestão 2025', ultimoAcessoEm: '2025-12-20T18:30:00-03:00' },
-  ],
-}
-
-export const categorias: ListaDeCategoriasComUsoDto = {
-  itens: [
-    { id: 'cat-mensalidades', nome: 'Mensalidades', aplicaA: 'ENTRADAS', ativa: true, quantidadeMovimentacoes: 2341 },
-    { id: 'cat-lavanderia', nome: 'Lavanderia', aplicaA: 'ENTRADAS_E_SAIDAS', ativa: true, quantidadeMovimentacoes: 418 },
-    { id: 'cat-eventos', nome: 'Eventos', aplicaA: 'ENTRADAS_E_SAIDAS', ativa: true, quantidadeMovimentacoes: 96 },
-    { id: 'cat-pessoal', nome: 'Pessoal', aplicaA: 'SAIDAS', ativa: true, quantidadeMovimentacoes: 54 },
-    { id: 'cat-manutencao', nome: 'Manutenção', aplicaA: 'SAIDAS', ativa: true, quantidadeMovimentacoes: 61 },
-    { id: 'cat-projetos', nome: 'Projetos acadêmicos', aplicaA: 'SAIDAS', ativa: true, quantidadeMovimentacoes: 27 },
-    { id: 'cat-escritorio', nome: 'Material de escritório', aplicaA: 'SAIDAS', ativa: true, quantidadeMovimentacoes: 33 },
-    { id: 'cat-cantina', nome: 'Cantina', aplicaA: 'ENTRADAS_E_SAIDAS', ativa: false, quantidadeMovimentacoes: 120 },
   ],
 }
 

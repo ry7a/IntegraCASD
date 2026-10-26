@@ -108,3 +108,6 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
    vinculada, porque na planilha as entradas são totais por dia, sem aluno.
 10. **Contas a pagar** (aba A Pagar): fora do MVP.
 11. **Vaga:** no máximo um aluno ativo por vaga (índice parcial). Os inativos guardam a vaga antiga.
+12. **Exclusão de categoria:** categoria que nunca foi usada pode ser excluída (por exemplo, criada por
+    engano). Com movimentações, só pode ser inativada. É a única exceção à regra "nada é excluído
+    fisicamente" e diverge do [Administração.RF002] (decisão de 26/10/2026).
