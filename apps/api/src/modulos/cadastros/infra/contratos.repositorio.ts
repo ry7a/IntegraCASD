@@ -3,6 +3,7 @@ import { Prisma } from '../../../generated/prisma/client.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
+import { CHAVE_DO_CODIGO_DE_CONTRATO, reservarSequenciaDoCodigo } from './codigo-sequencial.js';
 import { proximoCodigo, type DadosDoContrato } from '../dominio/contrato.js';
 
 // O contrato como a aplicação o enxerga: datas em "AAAA-MM-DD".
@@ -71,40 +72,34 @@ export class ContratosRepositorio {
     return registro === null ? null : paraContrato(registro);
   }
 
-  // O código é gerado aqui (MER, regra 7). Se dois cadastros simultâneos pegarem o mesmo número, o
-  // índice único recusa o segundo, que tenta de novo com o número seguinte.
+  // O código é gerado aqui (MER, regra 7). O lock faz duas criações simultâneas esperarem uma pela outra
+  // (ver codigo-sequencial.ts): sem ele, as duas leriam o mesmo último número e a segunda falharia.
   async criar(dados: DadosDoContrato, ano: string, autorId: string): Promise<ContratoRegistrado> {
-    for (let tentativa = 1; ; tentativa++) {
-      try {
-        return await this.prisma.$transaction(async (tx) => {
-          const doAno = await tx.contrato.findMany({ where: { codigo: { startsWith: `${ano.slice(2, 4)}C` } }, select: { codigo: true } });
-          const codigo = proximoCodigo(ano, doAno.map((contrato) => contrato.codigo));
-          const criado = await tx.contrato.create({
-            data: {
-              codigo,
-              contraparte: dados.contraparte,
-              objeto: dados.objeto,
-              valorCentavos: dados.valorCentavos,
-              periodicidade: dados.periodicidade,
-              dataInicio: deDia(dados.dataInicio),
-              dataFim: dados.dataFim === null ? null : deDia(dados.dataFim),
-            },
-            select: SELECAO,
-          });
-          await registrarNaTrilha(tx, {
-            usuarioId: autorId,
-            operacao: 'INCLUSAO',
-            entidade: 'CONTRATO',
-            registroId: criado.id,
-            detalhe: `Contrato ${codigo} incluído: ${dados.contraparte} (${dados.objeto}).`,
-          });
-          return paraContrato(criado);
-        });
-      } catch (erro) {
-        const duplicado = erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002';
-        if (!duplicado || tentativa >= 3) throw erro;
-      }
-    }
+    return this.prisma.$transaction(async (tx) => {
+      await reservarSequenciaDoCodigo(tx, CHAVE_DO_CODIGO_DE_CONTRATO);
+      const doAno = await tx.contrato.findMany({ where: { codigo: { startsWith: `${ano.slice(2, 4)}C` } }, select: { codigo: true } });
+      const codigo = proximoCodigo(ano, doAno.map((contrato) => contrato.codigo));
+      const criado = await tx.contrato.create({
+        data: {
+          codigo,
+          contraparte: dados.contraparte,
+          objeto: dados.objeto,
+          valorCentavos: dados.valorCentavos,
+          periodicidade: dados.periodicidade,
+          dataInicio: deDia(dados.dataInicio),
+          dataFim: dados.dataFim === null ? null : deDia(dados.dataFim),
+        },
+        select: SELECAO,
+      });
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'INCLUSAO',
+        entidade: 'CONTRATO',
+        registroId: criado.id,
+        detalhe: `Contrato ${codigo} incluído: ${dados.contraparte} (${dados.objeto}).`,
+      });
+      return paraContrato(criado);
+    });
   }
 
   async alterar(id: string, dados: Partial<DadosDoContrato>, autorId: string): Promise<ContratoRegistrado> {
