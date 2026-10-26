@@ -4,6 +4,7 @@ import { ClienteAsaasFalso } from '../../../compartilhado/asaas/cliente-asaas.fa
 import type { BuscarParametrosVigentes } from '../../administracao/index.js';
 import type { AcaoDaConciliacao } from '../dominio/conciliacao.js';
 import type { CobrancaParaConciliar, ConciliacaoRepositorio, DestinoDaBaixa } from '../infra/conciliacao.repositorio.js';
+import type { NovaPendencia, PendenciasRepositorio } from '../infra/pendencias.repositorio.js';
 import type { RitmoDoAsaas } from '../infra/ritmo-do-asaas.js';
 import type { CobrancaTrazidaDoAsaas, ResumoDaSincronizacao, SincronizacaoRepositorio } from '../infra/sincronizacao.repositorio.js';
 import { SincronizarCobrancas } from './sincronizar-cobrancas.js';
@@ -55,6 +56,7 @@ function montar(opcoes: { locais?: Local[]; destino?: boolean; clientes?: Record
   const trazidas: CobrancaTrazidaDoAsaas[] = [];
   const finalizadas: ResumoDaSincronizacao[] = [];
   const marcadas: string[] = [];
+  const pendencias: NovaPendencia[] = [];
 
   const conciliacao = {
     buscarCobranca: async (idAsaas: string) => locais.get(idAsaas) ?? null,
@@ -93,8 +95,10 @@ function montar(opcoes: { locais?: Local[]; destino?: boolean; clientes?: Record
   } as unknown as BuscarParametrosVigentes;
   const ritmo = { aguardar: async () => undefined } as RitmoDoAsaas;
 
-  const casoDeUso = new SincronizarCobrancas(asaas, conciliacao, sincronizacoes, parametros, ritmo);
-  return { casoDeUso, asaas, aplicadas, trazidas, finalizadas, marcadas };
+  const filaDePendencias = { registrar: async (nova: NovaPendencia) => void pendencias.push(nova) } as unknown as PendenciasRepositorio;
+
+  const casoDeUso = new SincronizarCobrancas(asaas, conciliacao, sincronizacoes, parametros, ritmo, filaDePendencias);
+  return { casoDeUso, asaas, aplicadas, trazidas, finalizadas, marcadas, pendencias };
 }
 
 describe('SincronizarCobrancas [Cobranças.RF007]', () => {
@@ -133,7 +137,7 @@ describe('SincronizarCobrancas [Cobranças.RF007]', () => {
   });
 
   it('cobrança avulsa do painel é registrada pelo cliente do Asaas; sem aluno, fica como não identificada', async () => {
-    const { casoDeUso, asaas, trazidas } = montar({ clientes: { cus_do_aluno: ALUNO } });
+    const { casoDeUso, asaas, trazidas, pendencias } = montar({ clientes: { cus_do_aluno: ALUNO } });
     asaas.noAsaas.set('pay_a', noAsaas('pay_a', { idCliente: 'cus_do_aluno', descricao: 'Camiseta', multaPercentual: 10 }));
     asaas.noAsaas.set('pay_b', noAsaas('pay_b', { idCliente: 'cus_desconhecido' }));
 
@@ -141,6 +145,8 @@ describe('SincronizarCobrancas [Cobranças.RF007]', () => {
 
     expect(resultado).toMatchObject({ somenteNoAsaas: 1, naoIdentificadas: 1 });
     expect(trazidas).toEqual([expect.objectContaining({ idAsaas: 'pay_a', origem: 'AVULSA', referencia: null, multaPercentual: 2 })]);
+    // A não identificada vai para a fila de pendências.
+    expect(pendencias).toEqual([expect.objectContaining({ tipo: 'SEM_COBRANCA', idAsaas: 'pay_b', origem: 'SINCRONIZACAO' })]);
   });
 
   it('cobrança aberta aqui e excluída no Asaas é cancelada', async () => {
@@ -151,12 +157,21 @@ describe('SincronizarCobrancas [Cobranças.RF007]', () => {
     expect(aplicadas.map((aplicada) => aplicada.acao.tipo)).toEqual(['CANCELAR']);
   });
 
-  it('paga à mão aqui e paga no Asaas: conta para conferir, sem segunda entrada (RF006 E2)', async () => {
+  it('paga à mão aqui e paga no Asaas: vai para a fila de pendências, sem segunda entrada (RF006 E2)', async () => {
     const { casoDeUso, asaas, aplicadas } = montar({ locais: [local('pay_1', 'PAGA_COM_REGISTRO_MANUAL')] });
     asaas.noAsaas.set('pay_1', noAsaas('pay_1', { situacao: 'RECEIVED', pagoEm: '2026-10-09' }));
 
     expect(await casoDeUso.periodo(PERIODO, 'MANUAL', 'usuario-1', HOJE)).toMatchObject({ paraConferir: 1, atualizadas: 0 });
-    expect(aplicadas).toEqual([]);
+    expect(aplicadas.map((aplicada) => aplicada.acao)).toEqual([
+      expect.objectContaining({ tipo: 'PENDENCIA', tipoDaPendencia: 'APOS_REGISTRO_MANUAL', idCobrancaAsaas: 'pay_1' }),
+    ]);
+  });
+
+  it('aberta aqui e desconhecida no Asaas: vai para a fila como divergência', async () => {
+    const { casoDeUso, pendencias } = montar({ locais: [local('pay_sumida')] });
+
+    expect(await casoDeUso.periodo(PERIODO, 'MANUAL', 'usuario-1', HOJE)).toMatchObject({ conferidas: 1, paraConferir: 1 });
+    expect(pendencias).toEqual([expect.objectContaining({ tipo: 'DIVERGENCIA', idAsaas: 'pay_sumida', cobrancaId: 'id-pay_sumida' })]);
   });
 
   it('sem conta e categoria de recebimento, não baixa e explica na execução', async () => {

@@ -26,6 +26,12 @@ function prismaFalso(opcoes: { eventoJaMarcado?: boolean; cobrancaMudou?: boolea
         return { count: opcoes.cobrancaMudou ? 0 : 1 };
       },
     },
+    pendenciaConciliacao: {
+      createMany: async ({ data }: { data: Array<{ tipo: string; idAsaas: string; origem: string }> }) => {
+        operacoes.push(`pendência ${data[0].tipo} de ${data[0].idAsaas} (${data[0].origem})`);
+        return { count: 1 };
+      },
+    },
     registroAuditoria: {
       create: async ({ data }: { data: { entidade: string; usuarioId: string | null } }) => {
         operacoes.push(`trilha ${data.entidade} por ${data.usuarioId ?? 'rotina'}`);
@@ -88,9 +94,14 @@ describe('ConciliacaoRepositorio [Confiabilidade.NF004]', () => {
     ]);
   });
 
-  it('pendência só marca o evento (com o motivo), sem tocar na cobrança', async () => {
+  it('pendência marca o evento e entra na fila, sem tocar na cobrança [Cobranças.RF005]', async () => {
     const { prisma, operacoes } = prismaFalso();
-    await new ConciliacaoRepositorio(prisma).aplicar(evento, null, { tipo: 'PENDENCIA', motivo: 'conferir' }, null);
-    expect(operacoes).toEqual(['marca evento']);
+    await new ConciliacaoRepositorio(prisma).aplicar(
+      evento,
+      null,
+      { tipo: 'PENDENCIA', tipoDaPendencia: 'SEM_COBRANCA', motivo: 'conferir', idCobrancaAsaas: 'pay_x' },
+      null,
+    );
+    expect(operacoes).toEqual(['marca evento', 'pendência SEM_COBRANCA de pay_x (WEBHOOK)']);
   });
 });

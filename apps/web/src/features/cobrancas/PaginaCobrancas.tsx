@@ -99,6 +99,10 @@ function PaginaCobrancas() {
           )}
         </div>
         <div className="acoes">
+          <Link className="botao" to="/cobrancas/pendencias">
+            <Icone nome="alerta" />
+            Pendências{conciliacao && conciliacao.pendenciasAbertas > 0 ? ` (${conciliacao.pendenciasAbertas})` : ''}
+          </Link>
           <button type="button" className="botao" onClick={() => definirSincronizarAberto(true)}>
             <Icone nome="sincronizar" />
             Sincronizar com o Asaas

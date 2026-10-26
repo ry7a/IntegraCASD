@@ -10,6 +10,7 @@ import {
   lerReferenciaDeMensalidade,
 } from '../dominio/sincronizacao.js';
 import { ConciliacaoConcorrente, ConciliacaoRepositorio, type CobrancaParaConciliar } from '../infra/conciliacao.repositorio.js';
+import { PendenciasRepositorio } from '../infra/pendencias.repositorio.js';
 import { RitmoDoAsaas } from '../infra/ritmo-do-asaas.js';
 import {
   SincronizacaoRepositorio,
@@ -39,6 +40,7 @@ export class SincronizarCobrancas {
     private readonly sincronizacoes: SincronizacaoRepositorio,
     private readonly parametros: BuscarParametrosVigentes,
     private readonly ritmo: RitmoDoAsaas,
+    private readonly pendencias: PendenciasRepositorio,
   ) {}
 
   // Fluxo principal: todas as cobranças com vencimento no período.
@@ -140,15 +142,22 @@ export class SincronizarCobrancas {
     andamento.conferidas += 1;
     andamento.conferidasIds.push(local.id);
     if (noAsaas === null) {
-      if (local.situacao === 'ABERTA') andamento.paraConferir += 1;
+      if (local.situacao === 'ABERTA') {
+        andamento.paraConferir += 1;
+        await this.pendencias.registrar({
+          tipo: 'DIVERGENCIA',
+          origem: 'SINCRONIZACAO',
+          idAsaas: local.idAsaas,
+          cobrancaId: local.id,
+          eventoWebhookId: null,
+          descricao: `A cobrança "${local.descricao}" está aberta aqui, mas o Asaas não a encontrou (${local.idAsaas}). Confira no painel do Asaas.`,
+        });
+      }
       return;
     }
     const acao = decidirConciliacao(avisoDaSituacaoNoAsaas(noAsaas), local, andamento.hoje);
-    if (acao.tipo === 'PENDENCIA') {
-      andamento.paraConferir += 1;
-      return;
-    }
     if (acao.tipo === 'NADA') return;
+    if (acao.tipo === 'PENDENCIA') andamento.paraConferir += 1;
     const destino = acao.tipo === 'BAIXAR' ? await buscarDestinoDaBaixa(this.parametros, local.origem) : null;
     if (acao.tipo === 'BAIXAR' && destino === null) {
       andamento.falha =
@@ -157,7 +166,7 @@ export class SincronizarCobrancas {
     }
     try {
       await this.conciliacao.aplicar(null, local, acao, destino, andamento.autorId);
-      if (acao.tipo !== 'MARCAR_DISPONIVEL') andamento.atualizadas += 1;
+      if (acao.tipo !== 'MARCAR_DISPONIVEL' && acao.tipo !== 'PENDENCIA') andamento.atualizadas += 1;
     } catch (erro) {
       // O webhook mudou a cobrança ao mesmo tempo: a situação já está sendo corrigida por ele.
       if (!(erro instanceof ConciliacaoConcorrente)) throw erro;
@@ -175,6 +184,14 @@ export class SincronizarCobrancas {
       if (alunoId !== null && (await this.sincronizacoes.existeMensalidade(alunoId, mensalidade.referencia))) {
         // Duas mensalidades do mesmo mês no Asaas: uma delas precisa ser cancelada lá.
         andamento.paraConferir += 1;
+        await this.pendencias.registrar({
+          tipo: 'DIVERGENCIA',
+          origem: 'SINCRONIZACAO',
+          idAsaas: noAsaas.idAsaas,
+          cobrancaId: null,
+          eventoWebhookId: null,
+          descricao: `O Asaas tem outra mensalidade de ${mensalidade.referencia} para o mesmo aluno (${noAsaas.idAsaas}). Cancele a duplicada no painel do Asaas.`,
+        });
         return;
       }
     } else {
@@ -182,6 +199,14 @@ export class SincronizarCobrancas {
     }
     if (alunoId === null) {
       andamento.naoIdentificadas += 1;
+      await this.pendencias.registrar({
+        tipo: 'SEM_COBRANCA',
+        origem: 'SINCRONIZACAO',
+        idAsaas: noAsaas.idAsaas,
+        cobrancaId: null,
+        eventoWebhookId: null,
+        descricao: `O Asaas tem uma cobrança (${noAsaas.idAsaas}) de um cliente que não corresponde a nenhum aluno daqui. Confira no painel do Asaas.`,
+      });
       return;
     }
     const registrada = await this.sincronizacoes.registrarTrazidaDoAsaas(

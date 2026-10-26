@@ -50,6 +50,7 @@ model Usuario {
   cobrancasEmitidas    Cobranca[]
   configuracoesAsaas   ConfiguracaoAsaas[]
   sincronizacoes       ExecucaoSincronizacao[]
+  pendencias           PendenciaConciliacao[]
 
   @@map("usuarios")
 }
@@ -310,20 +311,21 @@ model VerbaMensal {
 // Um registro por evento recebido no webhook do Asaas. O webhook só grava aqui e enfileira;
 // quem processa é o worker.
 model EventoWebhook {
-  id            String    @id @default(uuid()) @db.Uuid
+  id            String                 @id @default(uuid()) @db.Uuid
   // Id do evento no Asaas (ex.: "evt_..."). UNIQUE é o que garante a idempotência:
   // um evento repetido não consegue ser gravado duas vezes. [Confiabilidade.NF003]
-  idAsaas       String    @unique @map("id_asaas")
+  idAsaas       String                 @unique @map("id_asaas")
   tipo          String // ex.: "PAYMENT_RECEIVED"
   // Corpo original da requisição, guardado como veio, para reprocessar ou investigar depois.
   payload       Json
   // Preenchido pelo worker, na mesma transação da baixa. Nulo = ainda não processado.
-  processadoEm  DateTime? @map("processado_em")
+  processadoEm  DateTime?              @map("processado_em")
   // [Cobranças.RF005] fluxo E1 e [Cobranças.RF006] fluxo E2: o evento foi processado, mas precisa de
   // conferência humana (cobrança não encontrada, pagamento de cobrança já baixada à mão). Nulo = nada a conferir.
   pendencia     String?
-  dataCriacao   DateTime  @default(now()) @map("data_criacao")
-  dataAlteracao DateTime  @updatedAt @map("data_alteracao")
+  pendencias    PendenciaConciliacao[]
+  dataCriacao   DateTime               @default(now()) @map("data_criacao")
+  dataAlteracao DateTime               @updatedAt @map("data_alteracao")
 
   @@map("eventos_webhook")
 }
@@ -572,6 +574,7 @@ model Cobranca {
   renegociacaoDe        Cobranca?               @relation("Renegociacao", fields: [renegociacaoDeId], references: [id], onDelete: Restrict)
   renegociadaPor        Cobranca?               @relation("Renegociacao")
   sincronizacoes        ExecucaoSincronizacao[]
+  pendencias            PendenciaConciliacao[]
   dataCriacao           DateTime                @default(now()) @map("data_criacao")
   dataAlteracao         DateTime                @updatedAt @map("data_alteracao")
 
@@ -632,6 +635,51 @@ model ExecucaoSincronizacao {
 
   @@index([iniciadaEm])
   @@map("execucoes_sincronizacao")
+}
+
+enum TipoPendencia {
+  // O Asaas avisou pagamento (ou estorno) de cobrança que não existe aqui, ou sem aluno identificável.
+  SEM_COBRANCA
+  // O Asaas confirmou o pagamento de cobrança já paga com registro manual ([Cobranças.RF006] fluxo E2).
+  APOS_REGISTRO_MANUAL
+  // Demais diferenças entre o Asaas e o sistema (pago em cobrança cancelada, duas mensalidades do mês...).
+  DIVERGENCIA
+
+  @@map("tipo_pendencia")
+}
+
+enum OrigemPendencia {
+  WEBHOOK
+  SINCRONIZACAO
+
+  @@map("origem_pendencia")
+}
+
+// Fila de pendências de conciliação [Cobranças.RF005] fluxo E1: o que precisa de conferência humana.
+// Nada é apagado: a pendência é resolvida com um texto de quem a conferiu.
+// CHECK na migração: resolvida_em, resolvida_por_id e resolucao são preenchidos juntos.
+// Índice único parcial: no máximo uma pendência aberta do mesmo tipo para a mesma cobrança do Asaas
+// (a sincronização diária não repete a mesma pendência).
+model PendenciaConciliacao {
+  id              String          @id @default(uuid()) @db.Uuid
+  tipo            TipoPendencia
+  origem          OrigemPendencia
+  // Id da cobrança no Asaas ("pay_...").
+  idAsaas         String          @map("id_asaas")
+  cobrancaId      String?         @map("cobranca_id") @db.Uuid
+  cobranca        Cobranca?       @relation(fields: [cobrancaId], references: [id], onDelete: Restrict)
+  eventoWebhookId String?         @map("evento_webhook_id") @db.Uuid
+  eventoWebhook   EventoWebhook?  @relation(fields: [eventoWebhookId], references: [id], onDelete: Restrict)
+  descricao       String
+  criadaEm        DateTime        @default(now()) @map("criada_em")
+  resolvidaEm     DateTime?       @map("resolvida_em")
+  resolvidaPorId  String?         @map("resolvida_por_id") @db.Uuid
+  resolvidaPor    Usuario?        @relation(fields: [resolvidaPorId], references: [id], onDelete: Restrict)
+  resolucao       String?
+
+  @@unique([idAsaas, tipo], map: "pendencias_conciliacao_aberta_key", where: { resolvidaEm: null })
+  @@index([resolvidaEm, criadaEm])
+  @@map("pendencias_conciliacao")
 }
 
 enum AmbienteAsaas {

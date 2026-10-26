@@ -1354,6 +1354,82 @@
           "cobrancas"
         ]
       }
+    },
+    "/api/cobrancas/conciliacao/pendencias": {
+      "get": {
+        "operationId": "listarPendenciasDeConciliacao",
+        "parameters": [
+          {
+            "name": "resolvidas",
+            "required": false,
+            "in": "query",
+            "description": "true: as já resolvidas",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilaDePendenciasDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Fila de pendências de conciliação",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/conciliacao/pendencias/{id}/resolver": {
+      "post": {
+        "operationId": "resolverPendenciaDeConciliacao",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolucaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Marca a pendência como resolvida, com o que foi feito",
+        "tags": [
+          "cobrancas"
+        ]
+      }
     }
   },
   "info": {
@@ -2596,12 +2672,17 @@
                 "$ref": "#/components/schemas/SincronizacaoDto"
               }
             ]
+          },
+          "pendenciasAbertas": {
+            "type": "number",
+            "description": "Itens abertos na fila de pendências de conciliação"
           }
         },
         "required": [
           "ativa",
           "ultimaNotificacaoEm",
-          "ultimaSincronizacao"
+          "ultimaSincronizacao",
+          "pendenciasAbertas"
         ]
       },
       "ResumoCobrancasDto": {
@@ -3138,6 +3219,155 @@
         },
         "required": [
           "referencia"
+        ]
+      },
+      "TipoPendencia": {
+        "type": "string",
+        "enum": [
+          "SEM_COBRANCA",
+          "APOS_REGISTRO_MANUAL",
+          "DIVERGENCIA"
+        ]
+      },
+      "OrigemPendencia": {
+        "type": "string",
+        "enum": [
+          "WEBHOOK",
+          "SINCRONIZACAO"
+        ]
+      },
+      "PendenciaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoPendencia"
+              }
+            ]
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemPendencia"
+              }
+            ]
+          },
+          "idAsaas": {
+            "type": "string",
+            "description": "Id da cobrança no Asaas"
+          },
+          "cobrancaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "A cobrança daqui, quando existe"
+          },
+          "alunoNome": {
+            "type": "string",
+            "nullable": true
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "criadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resolvidaEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resolvidaPor": {
+            "type": "string",
+            "nullable": true
+          },
+          "resolucao": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "tipo",
+          "origem",
+          "idAsaas",
+          "cobrancaId",
+          "alunoNome",
+          "descricao",
+          "criadaEm",
+          "resolvidaEm",
+          "resolvidaPor",
+          "resolucao"
+        ]
+      },
+      "FalhaDaGeracaoNaFilaDto": {
+        "type": "object",
+        "properties": {
+          "referencia": {
+            "type": "string",
+            "example": "2026-11"
+          },
+          "alunoId": {
+            "type": "string",
+            "description": "Vazio quando a falha é da rotina inteira (ex.: Asaas fora do ar)"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "ocorridaEm": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "referencia",
+          "alunoId",
+          "alunoNome",
+          "motivo",
+          "ocorridaEm"
+        ]
+      },
+      "FilaDePendenciasDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendenciaDto"
+            }
+          },
+          "falhasDaGeracao": {
+            "description": "Só na lista de abertas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FalhaDaGeracaoNaFilaDto"
+            }
+          }
+        },
+        "required": [
+          "itens",
+          "falhasDaGeracao"
+        ]
+      },
+      "ResolucaoDto": {
+        "type": "object",
+        "properties": {
+          "resolucao": {
+            "type": "string",
+            "example": "Pagamento em duplicidade devolvido ao aluno pelo Asaas"
+          }
+        },
+        "required": [
+          "resolucao"
         ]
       }
     }

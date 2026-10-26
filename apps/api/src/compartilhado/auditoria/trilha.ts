@@ -30,7 +30,8 @@ export type EntidadeAuditada =
   | 'PROJETO'
   | 'COBRANCA'
   | 'MOVIMENTACAO'
-  | 'CONFIGURACAO';
+  | 'CONFIGURACAO'
+  | 'PENDENCIA';
 
 export type RegistroNaTrilha = {
   // Nulo = rotina automática (geração recorrente, conciliação, sincronização).

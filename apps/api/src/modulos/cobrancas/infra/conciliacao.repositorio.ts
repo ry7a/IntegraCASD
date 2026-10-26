@@ -4,6 +4,7 @@ import { deDia, hojeEmSaoPaulo, paraDia } from '../../../compartilhado/datas.js'
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { AcaoDaConciliacao } from '../dominio/conciliacao.js';
 import type { SituacaoGuardada } from '../dominio/cobranca.js';
+import { registrarPendenciaNa } from './pendencias.repositorio.js';
 
 export type CobrancaParaConciliar = {
   id: string;
@@ -82,7 +83,19 @@ export class ConciliacaoRepositorio {
         });
         if (marcado.count === 0) return 'ja-processado';
       }
-      if (cobranca === null || acao.tipo === 'NADA' || acao.tipo === 'PENDENCIA') return 'aplicado';
+      if (acao.tipo === 'PENDENCIA') {
+        // Fluxo E1: vai para a fila de pendências, na mesma transação que marca o evento.
+        await registrarPendenciaNa(tx, {
+          tipo: acao.tipoDaPendencia,
+          origem: evento === null ? 'SINCRONIZACAO' : 'WEBHOOK',
+          idAsaas: acao.idCobrancaAsaas,
+          cobrancaId: cobranca?.id ?? null,
+          eventoWebhookId: evento?.id ?? null,
+          descricao: acao.motivo,
+        });
+        return 'aplicado';
+      }
+      if (cobranca === null || acao.tipo === 'NADA') return 'aplicado';
       // De onde veio a informação, para a trilha.
       const fonte = evento === null ? 'pela sincronização com o Asaas' : `pelo aviso ${evento.idAsaas}`;
 

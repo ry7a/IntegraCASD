@@ -89,6 +89,7 @@ export class ConciliacaoDto {
   @ApiProperty({ description: 'A integração com o Asaas está configurada' }) ativa!: boolean;
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) ultimaNotificacaoEm!: string | null;
   @ApiProperty({ type: SincronizacaoDto, nullable: true }) ultimaSincronizacao!: SincronizacaoDto | null;
+  @ApiProperty({ description: 'Itens abertos na fila de pendências de conciliação' }) pendenciasAbertas!: number;
 }
 
 export class ResumoCobrancasDto {
