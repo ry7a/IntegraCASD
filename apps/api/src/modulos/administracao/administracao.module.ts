@@ -16,6 +16,7 @@ import { CriarCategoria } from './aplicacao/criar-categoria.js';
 import { ExcluirCategoria } from './aplicacao/excluir-categoria.js';
 import { AlterarPrazoDoAlerta, ConsultarIntegracaoAsaas, SubstituirChaveAsaas } from './aplicacao/integracao-asaas.js';
 import { ListarCategorias } from './aplicacao/listar-categorias.js';
+import { ListarEmailsDaDiretoria } from './aplicacao/listar-emails-da-diretoria.js';
 import { ListarOpcoesDeDestino } from './aplicacao/listar-opcoes-de-destino.js';
 import { UsuariosService } from './aplicacao/usuarios.service.js';
 import { CategoriasRepositorio } from './infra/categorias.repositorio.js';
@@ -47,11 +48,12 @@ import { TrilhaRepositorio } from './infra/trilha.repositorio.js';
     ListarOpcoesDeDestino,
     ParametrosRepositorio,
     ConsultarIntegracaoAsaas,
+    ListarEmailsDaDiretoria,
     SubstituirChaveAsaas,
     AlterarPrazoDoAlerta,
     ConsultarTrilha,
     TrilhaRepositorio,
   ],
-  exports: [BuscarParametrosVigentes],
+  exports: [BuscarParametrosVigentes, ConsultarIntegracaoAsaas, ListarEmailsDaDiretoria],
 })
 export class AdministracaoModule {}

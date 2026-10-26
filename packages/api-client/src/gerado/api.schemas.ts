@@ -328,6 +328,7 @@ export const EntidadeAuditoria = {
   MOVIMENTACAO: 'MOVIMENTACAO',
   CONFIGURACAO: 'CONFIGURACAO',
   PENDENCIA: 'PENDENCIA',
+  ALERTA_DE_CONCILIACAO: 'ALERTA_DE_CONCILIACAO',
 } as const;
 
 export type OperacaoAuditoria = typeof OperacaoAuditoria[keyof typeof OperacaoAuditoria];

@@ -11,3 +11,5 @@ export { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
 export { ConsumidorDoReprocessamento } from './infra/consumidor-do-reprocessamento.js';
 // E a sincronização diária com o Asaas [Cobranças.RF007].
 export { ConsumidorDaSincronizacao } from './infra/consumidor-da-sincronizacao.js';
+// E a vigilância do webhook parado, que avisa a diretoria por e-mail [Confiabilidade.NF002].
+export { ConsumidorDaVigilancia } from './infra/consumidor-da-vigilancia.js';

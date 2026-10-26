@@ -712,3 +712,31 @@ model ConfiguracaoAsaas {
   @@index([dataCriacao])
   @@map("configuracoes_asaas")
 }
+
+// ---------------------------------------------------------------------------
+// Alerta de interrupção da conciliação [Confiabilidade.NF002]
+// ---------------------------------------------------------------------------
+
+// Um registro por interrupção: abre quando o Asaas fica sem enviar notificações por mais que o prazo
+// configurado e fecha quando elas voltam. É o que impede o e-mail de sair a cada verificação da rotina
+// (a rotina só avisa de novo depois de 24 horas, como lembrete). No máximo um aberto por vez: quem
+// garante é a fila "singleton" da rotina, que roda uma execução de cada vez.
+model AlertaDeConciliacao {
+  id                  String    @id @default(uuid()) @db.Uuid
+  abertoEm            DateTime  @map("aberto_em")
+  // Última notificação do Asaas quando o alerta abriu. Nulo = nunca chegou nenhuma.
+  ultimaNotificacaoEm DateTime? @map("ultima_notificacao_em")
+  horasSemNotificacao Int       @map("horas_sem_notificacao")
+  prazoHoras          Int       @map("prazo_horas")
+  // Quantos e-mails saíram (o primeiro aviso e os lembretes) e quando saiu o último. Zero = ainda
+  // não conseguimos avisar ninguém (provedor sem configuração ou fora do ar).
+  envios              Int       @default(0)
+  ultimoEnvioEm       DateTime? @map("ultimo_envio_em")
+  // Preenchido quando as notificações voltam. Nulo = alerta ainda aberto.
+  resolvidoEm         DateTime? @map("resolvido_em")
+  dataCriacao         DateTime  @default(now()) @map("data_criacao")
+  dataAlteracao       DateTime  @updatedAt @map("data_alteracao")
+
+  @@index([resolvidoEm])
+  @@map("alertas_conciliacao")
+}
