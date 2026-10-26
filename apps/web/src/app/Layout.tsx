@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Outlet } from 'react-router'
-import { AcoesGlobaisContexto, type AcoesGlobais } from '@/compartilhado/acoes-globais'
+import { AcoesGlobaisContexto, type AcoesGlobais, type NovaCobrancaPreenchida } from '@/compartilhado/acoes-globais'
 import DicaFlutuante from '@/compartilhado/componentes/DicaFlutuante'
 import DialogoNovaCobranca from '@/features/cobrancas/DialogoNovaCobranca'
 import DialogoNovaMovimentacao from '@/features/movimentacoes/DialogoNovaMovimentacao'
@@ -12,13 +12,13 @@ import MenuLateral from './MenuLateral'
 // Também guarda os dois diálogos da barra do topo, que podem ser abertos de qualquer tela.
 function Layout() {
   const [cobrancaAberta, definirCobrancaAberta] = useState(false)
-  const [alunoDaCobranca, definirAlunoDaCobranca] = useState('')
+  const [cobrancaPreenchida, definirCobrancaPreenchida] = useState<NovaCobrancaPreenchida>({})
   const [movimentacaoAberta, definirMovimentacaoAberta] = useState(false)
 
   const acoes = useMemo<AcoesGlobais>(
     () => ({
-      abrirNovaCobranca: (nomeDoAluno = '') => {
-        definirAlunoDaCobranca(nomeDoAluno)
+      abrirNovaCobranca: (preenchida = {}) => {
+        definirCobrancaPreenchida(preenchida)
         definirCobrancaAberta(true)
       },
       abrirNovaMovimentacao: () => definirMovimentacaoAberta(true),
@@ -41,7 +41,7 @@ function Layout() {
 
       {/* Montado só enquanto aberto: cada abertura começa com o formulário limpo. */}
       {cobrancaAberta && (
-        <DialogoNovaCobranca alunoInicial={alunoDaCobranca} aoFechar={() => definirCobrancaAberta(false)} />
+        <DialogoNovaCobranca preenchida={cobrancaPreenchida} aoFechar={() => definirCobrancaAberta(false)} />
       )}
       <DialogoNovaMovimentacao aberto={movimentacaoAberta} aoFechar={() => definirMovimentacaoAberta(false)} />
       <DicaFlutuante />

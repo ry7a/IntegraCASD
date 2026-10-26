@@ -20,6 +20,10 @@ const cobranca: CobrancaRegistrada = {
   urlBoleto: null,
   urlFatura: null,
   pagaEm: null,
+  canceladaEm: null,
+  motivoCancelamento: null,
+  renegociacaoDeId: null,
+  renegociadaPorId: null,
 };
 
 describe('ConsultarCobrancas [Cobranças.RF008]', () => {

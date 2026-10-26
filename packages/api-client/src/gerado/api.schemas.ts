@@ -485,6 +485,20 @@ export interface CobrancaDetalheDto {
   /** @nullable */
   justificativaManual: string | null;
   /** @nullable */
+  canceladaEm: string | null;
+  /** @nullable */
+  motivoCancelamento: string | null;
+  /**
+     * A cancelada que esta renegocia
+     * @nullable
+     */
+  renegociacaoDeId: string | null;
+  /**
+     * A cobrança nova que renegociou esta
+     * @nullable
+     */
+  renegociadaPorId: string | null;
+  /** @nullable */
   ultimaSincronizacaoEm: string | null;
   /** @nullable */
   diasDesdeUltimaSincronizacao: number | null;
@@ -502,11 +516,17 @@ export interface BoletoDto {
   url: string;
 }
 
+export interface CancelarCobrancaDto {
+  motivo: string;
+}
+
 export interface EmitirCobrancaAvulsaDto {
   alunoId: string;
   valorCentavos: number;
   vencimento: string;
   descricao: string;
+  /** Renegociação: a cobrança cancelada que esta substitui */
+  renegociacaoDeId?: string;
 }
 
 export interface CobrancaDto {

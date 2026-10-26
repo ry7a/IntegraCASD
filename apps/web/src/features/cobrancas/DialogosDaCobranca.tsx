@@ -4,8 +4,10 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
-import { formatarData, formatarMoeda, hojeIso, paraCentavos } from '@/compartilhado/formatacao'
-import type { CobrancaDetalheDto } from '@integracasd/api-client'
+import { formatarData, formatarMoeda, formatarValorParaCampo, hojeIso, paraCentavos } from '@/compartilhado/formatacao'
+import { getBuscarCobrancaQueryKey, useCancelarCobranca, type CobrancaDetalheDto } from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
+import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 
 export type DialogoDaCobranca = 'sincronizar' | 'cancelar' | 'pagamento-manual'
 
@@ -17,7 +19,8 @@ interface Props {
 }
 
 // Os três diálogos da tela de detalhe. Os que mudam dados passam por confirmação com o resumo do
-// efeito ([Usabilidade.NF003]). Nenhum tem efeito ainda: ao confirmar, só fecham.
+// efeito ([Usabilidade.NF003]). O cancelamento já tem efeito; sincronizar e pagamento manual ainda só
+// fecham (entram com as suas issues).
 export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Props) {
   const resumoDaCobranca = `${cobranca.descricao} · ${formatarMoeda(cobranca.valorCentavos)}`
   const textoDaUltimaSincronizacao = cobranca.ultimaSincronizacaoEm
@@ -62,50 +65,9 @@ export function DialogosDaCobranca({ cobranca, aberto, aoFechar, aoTrocar }: Pro
       </Dialogo>
 
       {/* Cancelar cobrança [Cobranças.RF004]: operação irreversível */}
-      <Dialogo
-        aberto={aberto === 'cancelar'}
-        aoFechar={aoFechar}
-        titulo="Cancelar cobrança?"
-        descricao="Esta operação não pode ser desfeita."
-        // TODO [Cobranças.RF004]: POST /api/cobrancas/:id/cancelar (no Asaas e aqui), com motivo e auditoria.
-        aoEnviar={confirmarSemEfeito}
-        rodape={
-          <>
-            <button type="button" className="botao" onClick={aoFechar}>
-              Voltar
-            </button>
-            <button type="submit" className="botao botao-destrutivo">
-              Cancelar cobrança
-            </button>
-          </>
-        }
-      >
-        <div className="resumo-efeito">
-          <dl>
-            <dt>Aluno</dt>
-            <dd>{cobranca.alunoNome}</dd>
-            <dt>Cobrança</dt>
-            <dd>{resumoDaCobranca}</dd>
-            <dt>Vencimento</dt>
-            <dd>
-              {formatarData(cobranca.vencimento)}
-              {cobranca.diasDeAtraso !== null && ` (vencida há ${cobranca.diasDeAtraso} dias)`}
-            </dd>
-          </dl>
-          <p>
-            A cobrança será cancelada <strong>no Asaas e no IntegraCASD</strong>. O boleto perde a validade e a cobrança
-            deixa de contar na inadimplência.
-          </p>
-        </div>
-        <div className="campo">
-          <label htmlFor="ca-motivo">Motivo do cancelamento</label>
-          <textarea id="ca-motivo" placeholder="Ex.: renegociação em 3 parcelas, acordada com o aluno em 19/10/2026" />
-        </div>
-        <label className="campo-check">
-          <input type="checkbox" defaultChecked />
-          Emitir nova cobrança para o aluno em seguida (renegociação)
-        </label>
-      </Dialogo>
+      {aberto === 'cancelar' && (
+        <DialogoDeCancelamento cobranca={cobranca} aoFechar={aoFechar} resumoDaCobranca={resumoDaCobranca} />
+      )}
 
       <DialogoDePagamentoManual
         cobranca={cobranca}
@@ -231,6 +193,109 @@ function DialogoDePagamentoManual({
           Uma entrada de {formatarMoeda(cobranca.valorCentavos)} será criada em Movimentações.
         </span>
       </div>
+    </Dialogo>
+  )
+}
+
+const esquemaDoCancelamento = z.object({
+  motivo: z.string().trim().min(5, 'Informe o motivo do cancelamento, por exemplo: renegociação em 3 parcelas.'),
+  renegociar: z.boolean(),
+})
+type FormularioDoCancelamento = z.infer<typeof esquemaDoCancelamento>
+
+interface PropsDoCancelamento {
+  cobranca: CobrancaDetalheDto
+  aoFechar: () => void
+  resumoDaCobranca: string
+}
+
+// [Cobranças.RF004] Cancela no Asaas e aqui. Com "renegociar" marcado, abre em seguida a nova cobrança
+// para o mesmo aluno, já preenchida e vinculada a esta (fluxo A1).
+function DialogoDeCancelamento({ cobranca, aoFechar, resumoDaCobranca }: PropsDoCancelamento) {
+  const { register, handleSubmit, formState } = useForm<FormularioDoCancelamento>({
+    resolver: zodResolver(esquemaDoCancelamento),
+    defaultValues: { motivo: '', renegociar: true },
+  })
+  const cancelar = useCancelarCobranca()
+  const queryClient = useQueryClient()
+  const { abrirNovaCobranca } = useAcoesGlobais()
+
+  async function confirmar(dados: FormularioDoCancelamento) {
+    try {
+      await cancelar.mutateAsync({ id: cobranca.id, data: { motivo: dados.motivo } })
+      await queryClient.invalidateQueries({ queryKey: getBuscarCobrancaQueryKey(cobranca.id) })
+      aoFechar()
+      if (dados.renegociar) {
+        abrirNovaCobranca({
+          aluno: cobranca.alunoNome,
+          valor: formatarValorParaCampo(cobranca.valorCentavos),
+          descricao: `${cobranca.descricao} (renegociação)`,
+          renegociacaoDeId: cobranca.id,
+        })
+      }
+    } catch {
+      // A mensagem da API (ex.: Asaas indisponível) aparece no diálogo; nada foi cancelado.
+    }
+  }
+
+  return (
+    <Dialogo
+      aberto
+      aoFechar={aoFechar}
+      titulo="Cancelar cobrança?"
+      descricao="Esta operação não pode ser desfeita."
+      aoEnviar={(evento) => void handleSubmit(confirmar)(evento)}
+      rodape={
+        <>
+          <button type="button" className="botao" onClick={aoFechar}>
+            Voltar
+          </button>
+          <button type="submit" className="botao botao-destrutivo" disabled={cancelar.isPending}>
+            {cancelar.isPending ? 'Cancelando no Asaas…' : 'Cancelar cobrança'}
+          </button>
+        </>
+      }
+    >
+      <div className="resumo-efeito">
+        <dl>
+          <dt>Aluno</dt>
+          <dd>{cobranca.alunoNome}</dd>
+          <dt>Cobrança</dt>
+          <dd>{resumoDaCobranca}</dd>
+          <dt>Vencimento</dt>
+          <dd>
+            {formatarData(cobranca.vencimento)}
+            {cobranca.diasDeAtraso !== null && ` (vencida há ${cobranca.diasDeAtraso} dias)`}
+          </dd>
+        </dl>
+        <p>
+          A cobrança será cancelada <strong>no Asaas e no IntegraCASD</strong>. O boleto perde a validade e a cobrança
+          deixa de contar na inadimplência.
+        </p>
+      </div>
+      <div className="campo">
+        <label htmlFor="ca-motivo">Motivo do cancelamento</label>
+        <textarea
+          id="ca-motivo"
+          placeholder="Ex.: renegociação em 3 parcelas, acordada com o aluno"
+          aria-invalid={!!formState.errors.motivo}
+          {...register('motivo')}
+        />
+        {formState.errors.motivo && (
+          <span className="dica" role="alert">
+            {formState.errors.motivo.message}
+          </span>
+        )}
+      </div>
+      <label className="campo-check">
+        <input type="checkbox" {...register('renegociar')} />
+        Emitir nova cobrança para o aluno em seguida (renegociação)
+      </label>
+      {cancelar.error && (
+        <p className="erro-formulario" role="alert">
+          {cancelar.error.message}
+        </p>
+      )}
     </Dialogo>
   )
 }

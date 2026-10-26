@@ -24,6 +24,11 @@ export type CobrancaRegistrada = {
   urlBoleto: string | null;
   urlFatura: string | null;
   pagaEm: string | null;
+  canceladaEm: Date | null;
+  motivoCancelamento: string | null;
+  // Renegociação: a cancelada que esta substitui, e a que substituiu esta.
+  renegociacaoDeId: string | null;
+  renegociadaPorId: string | null;
 };
 
 export type DadosDaNovaCobranca = {
@@ -38,9 +43,10 @@ export type DadosDaNovaCobranca = {
   jurosMensalPercentual: number;
   urlBoleto: string | null;
   urlFatura: string | null;
+  renegociacaoDeId?: string | null;
 };
 
-const INCLUSAO = { aluno: { select: { nome: true } } } as const;
+const INCLUSAO = { aluno: { select: { nome: true } }, renegociadaPor: { select: { id: true } } } as const;
 
 type RegistroDoBanco = {
   id: string;
@@ -58,6 +64,10 @@ type RegistroDoBanco = {
   urlBoleto: string | null;
   urlFatura: string | null;
   pagaEm: Date | null;
+  canceladaEm: Date | null;
+  motivoCancelamento: string | null;
+  renegociacaoDeId: string | null;
+  renegociadaPor: { id: string } | null;
 };
 
 // Campo a campo (e não espalhando o registro): o banco tem colunas internas que não saem daqui.
@@ -78,6 +88,10 @@ function paraCobranca(registro: RegistroDoBanco): CobrancaRegistrada {
     urlBoleto: registro.urlBoleto,
     urlFatura: registro.urlFatura,
     pagaEm: registro.pagaEm === null ? null : paraDia(registro.pagaEm),
+    canceladaEm: registro.canceladaEm,
+    motivoCancelamento: registro.motivoCancelamento,
+    renegociacaoDeId: registro.renegociacaoDeId,
+    renegociadaPorId: registro.renegociadaPor?.id ?? null,
   };
 }
 
@@ -114,9 +128,28 @@ export class CobrancasRepositorio {
         operacao: 'INCLUSAO',
         entidade: 'COBRANCA',
         registroId: criada.id,
-        detalhe: `Cobrança ${dados.origem === 'AVULSA' ? 'avulsa' : 'de mensalidade'} "${dados.descricao}" emitida no Asaas (${dados.idAsaas}).`,
+        detalhe:
+          `Cobrança ${dados.origem === 'AVULSA' ? 'avulsa' : 'de mensalidade'} "${dados.descricao}" emitida no Asaas (${dados.idAsaas})` +
+          (dados.renegociacaoDeId ? ', renegociando uma cobrança cancelada.' : '.'),
       });
       return paraCobranca(criada);
+    });
+  }
+
+  // [Cobranças.RF004] Marca como cancelada (o Asaas já confirmou) e registra motivo e autor.
+  async cancelar(id: string, motivo: string, autorId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.cobranca.update({
+        where: { id },
+        data: { situacao: 'CANCELADA', canceladaEm: new Date(), motivoCancelamento: motivo },
+      });
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'CANCELAMENTO',
+        entidade: 'COBRANCA',
+        registroId: id,
+        detalhe: `Cobrança cancelada no Asaas e aqui. Motivo: ${motivo}`,
+      });
     });
   }
 

@@ -9,6 +9,7 @@ import {
   type CobrancaDto,
 } from '@integracasd/api-client'
 import { useQueryClient } from '@tanstack/react-query'
+import type { NovaCobrancaPreenchida } from '@/compartilhado/acoes-globais'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarCpf, formatarData, formatarMoeda, paraCentavos } from '@/compartilhado/formatacao'
@@ -37,12 +38,12 @@ function acharAluno(alunos: AlunoDto[], texto: string): AlunoDto | undefined {
 }
 
 interface Props {
-  alunoInicial: string
+  preenchida: NovaCobrancaPreenchida
   aoFechar: () => void
 }
 
 // [Cobranças.RF002] Nova cobrança avulsa. O Layout só monta este diálogo enquanto ele está aberto.
-function DialogoNovaCobranca({ alunoInicial, aoFechar }: Props) {
+function DialogoNovaCobranca({ preenchida, aoFechar }: Props) {
   const sugestao = useSugerirNovaCobranca().data
   // Sugestões de aluno: os ativos (o filtro padrão da API).
   const alunos = useListarAlunos().data?.itens ?? []
@@ -52,7 +53,12 @@ function DialogoNovaCobranca({ alunoInicial, aoFechar }: Props) {
   const { register, handleSubmit, formState, setError } = useForm<Formulario>({
     resolver: zodResolver(esquema),
     // O vencimento sugerido chega depois; `values` atualiza o campo quando ele chegar.
-    values: { aluno: alunoInicial, valor: '', vencimento: sugestao?.vencimentoSugerido ?? '', descricao: '' },
+    values: {
+      aluno: preenchida.aluno ?? '',
+      valor: preenchida.valor ?? '',
+      vencimento: sugestao?.vencimentoSugerido ?? '',
+      descricao: preenchida.descricao ?? '',
+    },
     resetOptions: { keepDirtyValues: true },
   })
   const erros = formState.errors
@@ -70,6 +76,7 @@ function DialogoNovaCobranca({ alunoInicial, aoFechar }: Props) {
           valorCentavos: paraCentavos(formulario.valor),
           vencimento: formulario.vencimento,
           descricao: formulario.descricao,
+          renegociacaoDeId: preenchida.renegociacaoDeId,
         },
       })
       // As listas de cobranças (e o resumo) passam a mostrar a nova cobrança.
@@ -87,8 +94,12 @@ function DialogoNovaCobranca({ alunoInicial, aoFechar }: Props) {
     <Dialogo
       aberto
       aoFechar={aoFechar}
-      titulo="Nova cobrança avulsa"
-      descricao="O Asaas emite o boleto e envia por e-mail ao aluno."
+      titulo={preenchida.renegociacaoDeId ? 'Renegociação: nova cobrança' : 'Nova cobrança avulsa'}
+      descricao={
+        preenchida.renegociacaoDeId
+          ? 'Substitui a cobrança cancelada; o histórico do aluno mostra que é uma renegociação.'
+          : 'O Asaas emite o boleto e envia por e-mail ao aluno.'
+      }
       aoEnviar={(evento) => void handleSubmit(enviar)(evento)}
       rodape={
         <>

@@ -38,6 +38,16 @@ export class EmitirCobrancaAvulsa {
       }
       const aluno = await this.buscarAluno.executar(dados.alunoId);
       conferirAlunoCobravel(aluno);
+      if (dados.renegociacaoDeId !== null) {
+        // Renegociação [Cobranças.RF004] fluxo A1: só de cobrança cancelada, do mesmo aluno, uma vez.
+        const original = await this.cobrancas.buscarPorId(dados.renegociacaoDeId);
+        if (original === null || original.alunoId !== aluno.id || original.situacao !== 'CANCELADA') {
+          throw new CobrancaInvalida('Só uma cobrança cancelada do mesmo aluno pode ser renegociada.');
+        }
+        if (original.renegociadaPorId !== null) {
+          throw new CobrancaInvalida('Esta cobrança já foi renegociada. Abra a cobrança nova pelo detalhe da antiga.');
+        }
+      }
 
       const clienteIdAsaas = await this.garantirClienteAsaas.executar(aluno);
       const criada = await this.asaas.criarCobranca({
@@ -63,6 +73,7 @@ export class EmitirCobrancaAvulsa {
             jurosMensalPercentual: parametros.jurosMensalPercentual,
             urlBoleto: criada.urlBoleto,
             urlFatura: criada.urlFatura,
+            renegociacaoDeId: dados.renegociacaoDeId,
           },
           autorId,
         );

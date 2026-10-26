@@ -11,6 +11,8 @@ export type NovaCobrancaAvulsa = {
   valorCentavos: number;
   vencimento: string;
   descricao: string;
+  // Renegociação [Cobranças.RF004] fluxo A1: a cobrança cancelada que esta substitui.
+  renegociacaoDeId: string | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -35,7 +37,11 @@ export function lerNovaCobrancaAvulsa(entrada: Partial<Record<keyof NovaCobranca
   const descricao = typeof entrada.descricao === 'string' ? entrada.descricao.trim().replace(/\s+/g, ' ') : '';
   if (descricao.length < 3) throw new CobrancaInvalida('Descreva a cobrança, por exemplo: Camiseta do CASD.');
   if (descricao.length > 200) throw new CobrancaInvalida('Use no máximo 200 caracteres na descrição.');
-  return { alunoId: entrada.alunoId, valorCentavos: valor, vencimento, descricao };
+  const renegociacaoDeId = entrada.renegociacaoDeId ?? null;
+  if (renegociacaoDeId !== null && (typeof renegociacaoDeId !== 'string' || !UUID.test(renegociacaoDeId))) {
+    throw new CobrancaInvalida('A cobrança renegociada não foi encontrada. Abra a renegociação pelo detalhe da cobrança.');
+  }
+  return { alunoId: entrada.alunoId, valorCentavos: valor, vencimento, descricao, renegociacaoDeId };
 }
 
 // Vencimento sugerido no formulário: o próximo dia de vencimento dos parâmetros a partir de hoje.
@@ -170,4 +176,24 @@ export function conferirBoletoDisponivel(situacao: SituacaoGuardada): void {
   if (situacao !== 'ABERTA') {
     throw new CobrancaInvalida(`Esta cobrança está ${NOME_DA_SITUACAO[situacao]}: o boleto não vale mais e não é disponibilizado.`);
   }
+}
+
+// [Cobranças.RF004] Só cobrança aberta (vencida ou não) pode ser cancelada.
+export function conferirCancelamento(situacao: SituacaoGuardada): void {
+  if (situacao === 'PAGA' || situacao === 'PAGA_COM_REGISTRO_MANUAL') {
+    // Fluxo E1: devolução de valor não é cancelamento; é feita pelo Asaas e chega pela conciliação.
+    throw new CobrancaInvalida(
+      'Esta cobrança já foi paga e não pode ser cancelada. A devolução do valor é feita pelo Asaas (estorno) e chega aqui pela conciliação.',
+    );
+  }
+  if (situacao !== 'ABERTA') {
+    throw new CobrancaInvalida(`Esta cobrança já está ${NOME_DA_SITUACAO[situacao]}; não há o que cancelar.`);
+  }
+}
+
+export function lerMotivoDoCancelamento(valor: unknown): string {
+  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
+  if (motivo.length < 5) throw new CobrancaInvalida('Informe o motivo do cancelamento, por exemplo: renegociação em 3 parcelas.');
+  if (motivo.length > 300) throw new CobrancaInvalida('Use no máximo 300 caracteres no motivo.');
+  return motivo;
 }

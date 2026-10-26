@@ -6,6 +6,7 @@ import { CadastrosModule } from '../cadastros/index.js';
 import { CobrancasController } from './api/cobrancas.controller.js';
 import { GeracaoRecorrenteController } from './api/geracao-recorrente.controller.js';
 import { WebhookAsaasController } from './api/webhook-asaas.controller.js';
+import { CancelarCobranca } from './aplicacao/cancelar-cobranca.js';
 import { ConsultarCobrancas } from './aplicacao/consultar-cobrancas.js';
 import { DetalharCobranca } from './aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from './aplicacao/emitir-cobranca-avulsa.js';
@@ -43,6 +44,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     ResumirCobrancas,
     DetalharCobranca,
     ObterBoleto,
+    CancelarCobranca,
     ExecucoesRepositorio,
     RitmoDoAsaas,
     GerarCobrancasRecorrentes,

@@ -1005,6 +1005,45 @@
         ]
       }
     },
+    "/api/cobrancas/{id}/cancelar": {
+      "post": {
+        "operationId": "cancelarCobranca",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarCobrancaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Cancela uma cobrança aberta (no Asaas e aqui)",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
     "/api/cobrancas/geracao-recorrente/execucoes": {
       "get": {
         "operationId": "listarExecucoesDaGeracao",
@@ -2226,6 +2265,27 @@
             "type": "string",
             "nullable": true
           },
+          "canceladaEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "motivoCancelamento": {
+            "type": "string",
+            "nullable": true
+          },
+          "renegociacaoDeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "A cancelada que esta renegocia"
+          },
+          "renegociadaPorId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "A cobrança nova que renegociou esta"
+          },
           "ultimaSincronizacaoEm": {
             "type": "string",
             "format": "date-time",
@@ -2272,6 +2332,10 @@
           "urlFatura",
           "pagaEm",
           "justificativaManual",
+          "canceladaEm",
+          "motivoCancelamento",
+          "renegociacaoDeId",
+          "renegociadaPorId",
           "ultimaSincronizacaoEm",
           "diasDesdeUltimaSincronizacao",
           "sincronizacaoAntiga",
@@ -2290,6 +2354,18 @@
         },
         "required": [
           "url"
+        ]
+      },
+      "CancelarCobrancaDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Renegociação em 3 parcelas, acordada com o aluno"
+          }
+        },
+        "required": [
+          "motivo"
         ]
       },
       "EmitirCobrancaAvulsaDto": {
@@ -2311,6 +2387,11 @@
           "descricao": {
             "type": "string",
             "example": "Camiseta do CASD"
+          },
+          "renegociacaoDeId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Renegociação: a cobrança cancelada que esta substitui"
           }
         },
         "required": [

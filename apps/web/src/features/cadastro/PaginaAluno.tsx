@@ -91,7 +91,7 @@ function PaginaAluno() {
                   className="botao botao-principal"
                   disabled={!aluno.ativo || aluno.cadastroIncompleto}
                   title={aluno.cadastroIncompleto ? 'Complete CPF e e-mail para emitir cobranças.' : undefined}
-                  onClick={() => abrirNovaCobranca(aluno.nome)}
+                  onClick={() => abrirNovaCobranca({ aluno: aluno.nome })}
                 >
                   <Icone nome="mais" />
                   Nova cobrança

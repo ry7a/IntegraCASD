@@ -2,6 +2,8 @@ import {
   CobrancaInvalida,
   aceitaOperacoes,
   conferirBoletoDisponivel,
+  conferirCancelamento,
+  lerMotivoDoCancelamento,
   conferirAlunoCobravel,
   diasDeAtraso,
   lerFiltrosDaConsulta,
@@ -20,7 +22,7 @@ const entrada = {
 
 describe('cobrança avulsa [Cobranças.RF002]', () => {
   it('aceita a entrada e limpa a descrição', () => {
-    expect(lerNovaCobrancaAvulsa(entrada, HOJE)).toEqual({ ...entrada, descricao: 'Camiseta do CASD' });
+    expect(lerNovaCobrancaAvulsa(entrada, HOJE)).toEqual({ ...entrada, descricao: 'Camiseta do CASD', renegociacaoDeId: null });
   });
 
   it('recusa vencimento no passado (fluxo E2), mas aceita hoje', () => {
@@ -95,5 +97,18 @@ describe('boleto [Cobranças.RF003]', () => {
     expect(() => conferirBoletoDisponivel('ABERTA')).not.toThrow();
     expect(() => conferirBoletoDisponivel('PAGA')).toThrow(/está paga/);
     expect(() => conferirBoletoDisponivel('CANCELADA')).toThrow(/está cancelada/);
+  });
+});
+
+describe('cancelamento [Cobranças.RF004]', () => {
+  it('cobrança paga não se cancela: a devolução é pelo Asaas (fluxo E1)', () => {
+    expect(() => conferirCancelamento('PAGA')).toThrow(/devolução do valor é feita pelo Asaas/);
+    expect(() => conferirCancelamento('CANCELADA')).toThrow(/já está cancelada/);
+    expect(() => conferirCancelamento('ABERTA')).not.toThrow();
+  });
+
+  it('o motivo é obrigatório', () => {
+    expect(() => lerMotivoDoCancelamento('  ')).toThrow(/motivo/);
+    expect(lerMotivoDoCancelamento(' Renegociação   em 3 parcelas ')).toBe('Renegociação em 3 parcelas');
   });
 });

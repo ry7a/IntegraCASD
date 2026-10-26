@@ -29,7 +29,8 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem
 (`MENSALIDADE` ou `AVULSA`), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
-Asaas na emissão, links do boleto e da fatura, e os dados de cancelamento. "Vencida" não é guardada: é
+Asaas na emissão, links do boleto e da fatura, os dados de cancelamento e, na renegociação, o vínculo com a
+cobrança cancelada que ela substitui (`renegociacao_de_id`, único). "Vencida" não é guardada: é
 uma cobrança aberta com o vencimento passado.
 
 ## Regras que o diagrama não mostra
