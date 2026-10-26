@@ -1,34 +1,51 @@
 import { useState } from 'react'
-import { useListarUsuarios } from '@integracasd/api-client'
+import { useSearchParams } from 'react-router'
+import {
+  useListarTrilhaDeAuditoria,
+  useListarUsuarios,
+  type EntidadeAuditoria,
+  type OperacaoAuditoria,
+} from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
-import { formatarDataHora } from '@/compartilhado/formatacao'
-import { useListarTrilhaDeAuditoria } from './consultas'
-import type { EntidadeAuditoria, OperacaoAuditoria } from './contrato'
+import { formatarDataHora, hojeIso } from '@/compartilhado/formatacao'
 
 const ROTULO_DA_OPERACAO: Record<OperacaoAuditoria, string> = {
   INCLUSAO: 'Inclusão',
   ALTERACAO: 'Alteração',
   INATIVACAO: 'Inativação',
+  REATIVACAO: 'Reativação',
+  EXCLUSAO: 'Exclusão',
   ESTORNO: 'Estorno',
+  BLOQUEIO_AUTENTICACAO: 'Bloqueio de acesso',
+  OBTENCAO_DE_BOLETO: 'Obtenção de boleto',
   CANCELAMENTO: 'Cancelamento',
-  REGISTRO_MANUAL_DE_PAGAMENTO: 'Registro manual de pagamento',
-  GERACAO_RECORRENTE: 'Geração recorrente',
 }
 
 const ROTULO_DA_ENTIDADE: Record<EntidadeAuditoria, string> = {
+  USUARIO: 'Usuário',
+  CATEGORIA: 'Categoria',
   ALUNO: 'Aluno',
+  FUNCIONARIO: 'Funcionário',
+  CONTRATO: 'Contrato',
+  PROJETO: 'Projeto',
   COBRANCA: 'Cobrança',
   MOVIMENTACAO: 'Movimentação',
   CONFIGURACAO: 'Configuração',
+  PENDENCIA: 'Pendência de conciliação',
 }
 const ROTINA_AUTOMATICA = 'ROTINA_AUTOMATICA'
+const TAMANHO_DA_PAGINA = 200
 
 // Trilha de auditoria. [Administração.RF005]
-// Só leitura: a trilha não pode ser alterada nem excluída, por nenhum perfil.
+// Só leitura: a trilha não pode ser alterada nem excluída, por nenhum perfil (fluxo E1).
 function AbaTrilha() {
-  const [de, definirDe] = useState('')
-  const [ate, definirAte] = useState('')
+  // Fluxo A1: aberta a partir de um registro, chega com ?registroId=... e o filtro já aplicado.
+  const [parametros] = useSearchParams()
+  const [registroId, definirRegistroId] = useState(parametros.get('registroId') ?? '')
+  const hoje = hojeIso()
+  const [de, definirDe] = useState(`${hoje.slice(0, 7)}-01`)
+  const [ate, definirAte] = useState(hoje)
   const [usuario, definirUsuario] = useState('')
   const [operacao, definirOperacao] = useState<OperacaoAuditoria | ''>('')
   const [entidade, definirEntidade] = useState<EntidadeAuditoria | ''>('')
@@ -40,8 +57,11 @@ function AbaTrilha() {
     usuario: usuario || undefined,
     operacao: operacao || undefined,
     entidade: entidade || undefined,
+    registroId: registroId || undefined,
+    tamanhoPagina: TAMANHO_DA_PAGINA,
   })
   const itens = trilha.data?.itens ?? []
+  const total = trilha.data?.total ?? 0
 
   return (
     <>
@@ -59,7 +79,7 @@ function AbaTrilha() {
           <select id="tr-usuario" value={usuario} onChange={(evento) => definirUsuario(evento.target.value)}>
             <option value="">Todos</option>
             {usuarios.data?.itens.map((u) => (
-              <option key={u.id} value={u.nome}>
+              <option key={u.id} value={u.id}>
                 {u.nome}
               </option>
             ))}
@@ -96,6 +116,11 @@ function AbaTrilha() {
             ))}
           </select>
         </div>
+        {registroId && (
+          <button type="button" className="botao botao-pequeno" onClick={() => definirRegistroId('')}>
+            Só um registro · mostrar todos
+          </button>
+        )}
       </div>
 
       <EstadoDaConsulta
@@ -128,7 +153,9 @@ function AbaTrilha() {
               ))}
             </tbody>
           </table>
-          <RodapeDaTabela texto="A trilha não pode ser alterada nem excluída, por nenhum perfil." />
+          <RodapeDaTabela
+            texto={`${total > itens.length ? `Mostrando os ${itens.length} mais recentes de ${total}. Estreite o período para ver os demais. ` : ''}A trilha não pode ser alterada nem excluída, por nenhum perfil.`}
+          />
         </div>
       </EstadoDaConsulta>
     </>

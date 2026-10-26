@@ -592,6 +592,95 @@
         ]
       }
     },
+    "/api/admin/trilha-auditoria": {
+      "get": {
+        "operationId": "listarTrilhaDeAuditoria",
+        "parameters": [
+          {
+            "name": "tamanhoPagina",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pagina",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "registroId",
+            "required": false,
+            "in": "query",
+            "description": "Um registro específico (fluxo A1)",
+            "schema": {}
+          },
+          {
+            "name": "entidade",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EntidadeAuditoria"
+            }
+          },
+          {
+            "name": "operacao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OperacaoAuditoria"
+            }
+          },
+          {
+            "name": "usuario",
+            "required": false,
+            "in": "query",
+            "description": "Id do usuário, ou ROTINA_AUTOMATICA",
+            "schema": {}
+          },
+          {
+            "name": "ate",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM-DD",
+            "schema": {}
+          },
+          {
+            "name": "de",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM-DD",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDaTrilhaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Operações registradas na trilha (padrão: o mês corrente)",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
     "/api/alunos": {
       "get": {
         "operationId": "listarAlunos",
@@ -2757,6 +2846,104 @@
         },
         "required": [
           "ambiente"
+        ]
+      },
+      "EntidadeAuditoria": {
+        "type": "string",
+        "enum": [
+          "USUARIO",
+          "CATEGORIA",
+          "ALUNO",
+          "FUNCIONARIO",
+          "CONTRATO",
+          "PROJETO",
+          "COBRANCA",
+          "MOVIMENTACAO",
+          "CONFIGURACAO",
+          "PENDENCIA"
+        ]
+      },
+      "OperacaoAuditoria": {
+        "type": "string",
+        "enum": [
+          "INCLUSAO",
+          "ALTERACAO",
+          "INATIVACAO",
+          "REATIVACAO",
+          "EXCLUSAO",
+          "ESTORNO",
+          "BLOQUEIO_AUTENTICACAO",
+          "OBTENCAO_DE_BOLETO",
+          "CANCELAMENTO"
+        ]
+      },
+      "RegistroAuditoriaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ocorridoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usuarioNome": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nulo = rotina automática"
+          },
+          "operacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OperacaoAuditoria"
+              }
+            ]
+          },
+          "entidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EntidadeAuditoria"
+              }
+            ]
+          },
+          "registroId": {
+            "type": "string",
+            "nullable": true
+          },
+          "detalhe": {
+            "type": "string",
+            "description": "Nunca contém segredos, como a chave do Asaas"
+          }
+        },
+        "required": [
+          "id",
+          "ocorridoEm",
+          "usuarioNome",
+          "operacao",
+          "entidade",
+          "registroId",
+          "detalhe"
+        ]
+      },
+      "ListaDaTrilhaDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Do mais recente para o mais antigo",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistroAuditoriaDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total do filtro, de todas as páginas"
+          }
+        },
+        "required": [
+          "itens",
+          "total"
         ]
       },
       "CursoAluno": {

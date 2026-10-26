@@ -6,6 +6,7 @@ import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
 import { formatarData, formatarDataHora, formatarMoeda } from '@/compartilhado/formatacao'
+import { useUsuarioAtual } from '@/compartilhado/use-usuario-atual'
 import { DialogosDaCobranca, type DialogoDaCobranca } from './DialogosDaCobranca'
 
 // Detalhe da cobrança: o centro das ações (boleto, reenvio, sincronização, pagamento manual, cancelar).
@@ -13,6 +14,7 @@ import { DialogosDaCobranca, type DialogoDaCobranca } from './DialogosDaCobranca
 // só abrem os diálogos: entram com as suas issues.
 function PaginaCobranca() {
   const { id = '' } = useParams()
+  const usuario = useUsuarioAtual()
   const consulta = useBuscarCobranca(id, { query: { retry: false } })
   const [dialogo, definirDialogo] = useState<DialogoDaCobranca | null>(null)
   const cobranca = consulta.data
@@ -217,6 +219,13 @@ function PaginaCobranca() {
                   <h2 id="titulo-historico">Histórico de eventos do Asaas</h2>
                   <p>Do mais recente para o mais antigo.</p>
                 </div>
+                {/* [Administração.RF005] fluxo A1: a trilha só da cobrança. A trilha é da diretoria. */}
+                {usuario.perfil === 'DIRETORIA' && (
+                  <Link className="botao botao-pequeno" to={`/administracao?aba=trilha&registroId=${cobranca.id}`}>
+                    <Icone nome="trilha" />
+                    Ver na trilha de auditoria
+                  </Link>
+                )}
               </div>
               <ol className="linha-tempo">
                 {cobranca.eventos.map((evento) => (

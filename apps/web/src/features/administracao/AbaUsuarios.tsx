@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { useListarUsuarios, type UsuarioDto } from '@integracasd/api-client'
+import { useListarUsuarios, type UsuarioDto, type UsuarioDtoPerfil } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarDataHora } from '@/compartilhado/formatacao'
 import { useUsuarioAtual } from '@/compartilhado/use-usuario-atual'
-import type { PerfilUsuario } from './contrato'
 import DialogoUsuario from './DialogoUsuario'
 
-const ROTULO_DO_PERFIL: Record<PerfilUsuario, string> = {
+const ROTULO_DO_PERFIL: Record<UsuarioDtoPerfil, string> = {
   DIRETORIA: 'Diretoria',
   ADMINISTRATIVO: 'Administrativo',
 }
