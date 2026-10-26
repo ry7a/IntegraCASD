@@ -1,5 +1,5 @@
 import {
-  DadoDoAlunoInvalido,
+  DadoInvalido,
   cadastroIncompleto,
   cpfValido,
   lerAlojamento,
@@ -38,7 +38,7 @@ describe('CPF [Cadastros.RF001]', () => {
 describe('demais campos', () => {
   it('e-mail é obrigatório e vai para minúsculas', () => {
     expect(normalizarEmail(' Aluna@Exemplo.COM ')).toBe('aluna@exemplo.com');
-    expect(() => normalizarEmail('sem-arroba')).toThrow(DadoDoAlunoInvalido);
+    expect(() => normalizarEmail('sem-arroba')).toThrow(DadoInvalido);
   });
 
   it('celular aceita 10 ou 11 dígitos com DDD', () => {
@@ -50,7 +50,7 @@ describe('demais campos', () => {
   it('matrícula é inteiro positivo; vazio vira nulo', () => {
     expect(lerMatricula('2041')).toBe(2041);
     expect(lerMatricula('')).toBeNull();
-    expect(() => lerMatricula('-3')).toThrow(DadoDoAlunoInvalido);
+    expect(() => lerMatricula('-3')).toThrow(DadoInvalido);
   });
 
   it('turma no formato T28, sem diferenciar maiúsculas', () => {
