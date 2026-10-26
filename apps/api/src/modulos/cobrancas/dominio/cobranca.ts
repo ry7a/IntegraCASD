@@ -67,3 +67,91 @@ export function conferirAlunoCobravel(aluno: { ativo: boolean; cadastroIncomplet
     throw new CobrancaInvalida(`O cadastro do aluno está incompleto: falta ${falta}. Corrija na aba Dados do aluno e tente de novo.`);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Consulta [Cobranças.RF008]
+// ---------------------------------------------------------------------------
+
+export const SITUACOES_EXIBIDAS: SituacaoExibida[] = [
+  'ABERTA',
+  'VENCIDA',
+  'PAGA',
+  'PAGA_COM_REGISTRO_MANUAL',
+  'CANCELADA',
+  'ESTORNADA',
+];
+
+function diaEmMilissegundos(dia: string): number {
+  return Date.UTC(Number(dia.slice(0, 4)), Number(dia.slice(5, 7)) - 1, Number(dia.slice(8, 10)));
+}
+
+// Dias entre duas datas "AAAA-MM-DD" (fim - início).
+export function diasEntre(inicio: string, fim: string): number {
+  return Math.round((diaEmMilissegundos(fim) - diaEmMilissegundos(inicio)) / 86_400_000);
+}
+
+// Só cobrança vencida tem atraso: dias desde o vencimento até hoje.
+export function diasDeAtraso(situacao: SituacaoExibida, vencimento: string, hoje: string): number | null {
+  return situacao === 'VENCIDA' ? diasEntre(vencimento, hoje) : null;
+}
+
+// Cancelar e registrar pagamento manual só valem para cobrança aberta (vencida ou não).
+export function aceitaOperacoes(situacao: SituacaoGuardada): boolean {
+  return situacao === 'ABERTA';
+}
+
+export type FiltrosDaConsulta = {
+  situacoes: SituacaoExibida[];
+  busca: string | null;
+  alunoId: string | null;
+  vencimentoDe: string | null;
+  vencimentoAte: string | null;
+  valorMinimoCentavos: number | null;
+  valorMaximoCentavos: number | null;
+  pagina: number;
+  tamanhoPagina: number;
+};
+
+const TAMANHO_PADRAO = 50;
+const TAMANHO_MAXIMO = 200;
+
+function data(valor: unknown, nome: string): string | null {
+  if (valor === undefined || valor === '') return null;
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+    throw new CobrancaInvalida(`Informe ${nome} no formato AAAA-MM-DD.`);
+  }
+  return valor;
+}
+
+function inteiroNaoNegativo(valor: unknown, nome: string): number | null {
+  if (valor === undefined || valor === '') return null;
+  const numero = Number(valor);
+  if (!Number.isInteger(numero) || numero < 0) throw new CobrancaInvalida(`Informe ${nome} como número inteiro.`);
+  return numero;
+}
+
+// Lê os filtros da URL (sempre texto). Sem situação informada, abertas e vencidas (o padrão da tela).
+export function lerFiltrosDaConsulta(consulta: Record<string, unknown>): FiltrosDaConsulta {
+  const textoDasSituacoes = typeof consulta.situacoes === 'string' ? consulta.situacoes : '';
+  const situacoes = textoDasSituacoes === '' ? ['ABERTA', 'VENCIDA'] : textoDasSituacoes.split(',');
+  const desconhecidas = situacoes.filter((situacao) => !SITUACOES_EXIBIDAS.includes(situacao as SituacaoExibida));
+  if (desconhecidas.length > 0) {
+    throw new CobrancaInvalida(`Situação desconhecida: ${desconhecidas.join(', ')}. Use ${SITUACOES_EXIBIDAS.join(', ')}.`);
+  }
+  const alunoId = typeof consulta.alunoId === 'string' && consulta.alunoId !== '' ? consulta.alunoId : null;
+  if (alunoId !== null && !UUID.test(alunoId)) throw new CobrancaInvalida('Aluno não encontrado. Volte à lista e escolha outro.');
+  const busca = typeof consulta.busca === 'string' && consulta.busca.trim() !== '' ? consulta.busca.trim() : null;
+  const pagina = inteiroNaoNegativo(consulta.pagina, 'a página') ?? 1;
+  const tamanho = inteiroNaoNegativo(consulta.tamanhoPagina, 'o tamanho da página') ?? TAMANHO_PADRAO;
+  return {
+    situacoes: situacoes as SituacaoExibida[],
+    busca,
+    alunoId,
+    vencimentoDe: data(consulta.vencimentoDe, 'o início do período'),
+    vencimentoAte: data(consulta.vencimentoAte, 'o fim do período'),
+    valorMinimoCentavos: inteiroNaoNegativo(consulta.valorMinimoCentavos, 'o valor mínimo em centavos'),
+    valorMaximoCentavos: inteiroNaoNegativo(consulta.valorMaximoCentavos, 'o valor máximo em centavos'),
+    pagina: Math.max(1, pagina),
+    tamanhoPagina: Math.min(Math.max(1, tamanho), TAMANHO_MAXIMO),
+  };
+}

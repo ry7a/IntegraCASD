@@ -1,6 +1,6 @@
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import { formatarDataHora } from '@/compartilhado/formatacao'
-import type { SincronizacaoDto } from './contrato'
+import type { SincronizacaoDto } from '@integracasd/api-client'
 
 interface Props {
   aberto: boolean

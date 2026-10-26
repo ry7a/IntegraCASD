@@ -5,7 +5,7 @@ import { z } from 'zod'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarData, formatarMoeda, hojeIso, paraCentavos } from '@/compartilhado/formatacao'
-import type { CobrancaDetalheDto } from './contrato'
+import type { CobrancaDetalheDto } from '@integracasd/api-client'
 
 export type DialogoDaCobranca = 'sincronizar' | 'cancelar' | 'pagamento-manual'
 

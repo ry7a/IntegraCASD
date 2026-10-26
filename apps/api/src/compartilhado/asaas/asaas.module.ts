@@ -28,6 +28,15 @@ export class ClienteAsaasSobDemanda extends ClienteAsaas {
     return this.real;
   }
 
+  estaConfigurado(): boolean {
+    try {
+      configuracaoAsaasDoAmbiente();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
     return this.cliente().criarCliente(dados);
   }

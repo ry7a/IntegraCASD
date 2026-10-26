@@ -1,6 +1,9 @@
 import {
   CobrancaInvalida,
+  aceitaOperacoes,
   conferirAlunoCobravel,
+  diasDeAtraso,
+  lerFiltrosDaConsulta,
   lerNovaCobrancaAvulsa,
   situacaoExibida,
   vencimentoSugerido,
@@ -55,5 +58,33 @@ describe('aluno cobrável (fluxo A1)', () => {
   it('cadastro incompleto diz o que falta', () => {
     expect(() => conferirAlunoCobravel({ ativo: true, cadastroIncompleto: true, email: '' })).toThrow(/falta o e-mail/);
     expect(() => conferirAlunoCobravel({ ativo: true, cadastroIncompleto: true, email: 'a@exemplo.com' })).toThrow(/CPF válido/);
+  });
+});
+
+describe('consulta [Cobranças.RF008]', () => {
+  it('sem filtro de situação, mostra abertas e vencidas', () => {
+    expect(lerFiltrosDaConsulta({}).situacoes).toEqual(['ABERTA', 'VENCIDA']);
+  });
+
+  it('lê as situações separadas por vírgula e recusa as desconhecidas', () => {
+    expect(lerFiltrosDaConsulta({ situacoes: 'PAGA,CANCELADA' }).situacoes).toEqual(['PAGA', 'CANCELADA']);
+    expect(() => lerFiltrosDaConsulta({ situacoes: 'QUITADA' })).toThrow(/desconhecida/);
+  });
+
+  it('limita o tamanho da página e lê valores em centavos', () => {
+    const filtros = lerFiltrosDaConsulta({ tamanhoPagina: '1000', valorMinimoCentavos: '5000' });
+    expect(filtros.tamanhoPagina).toBe(200);
+    expect(filtros.valorMinimoCentavos).toBe(5000);
+    expect(() => lerFiltrosDaConsulta({ vencimentoDe: '10/11/2026' })).toThrow(/AAAA-MM-DD/);
+  });
+
+  it('dias de atraso só para vencida', () => {
+    expect(diasDeAtraso('VENCIDA', '2026-10-16', HOJE)).toBe(10);
+    expect(diasDeAtraso('ABERTA', '2026-11-10', HOJE)).toBeNull();
+  });
+
+  it('só cobrança aberta aceita cancelar e pagamento manual', () => {
+    expect(aceitaOperacoes('ABERTA')).toBe(true);
+    expect(aceitaOperacoes('PAGA')).toBe(false);
   });
 });

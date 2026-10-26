@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { useListarCobrancas, useResumirCobrancas, type ResumoSituacaoDto } from '@integracasd/api-client'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
@@ -11,25 +12,25 @@ import {
   formatarInteiro,
   formatarMoeda,
   haQuantoTempo,
+  nomeDoMes,
   paraCentavos,
 } from '@/compartilhado/formatacao'
 import type { SituacaoCobranca } from '@/compartilhado/dominio'
-import type { ResumoSituacaoDto } from './contrato'
-import { useListarCobrancas, useResumoDasCobrancas } from './consultas'
 import DialogoSincronizarCobrancas from './DialogoSincronizarCobrancas'
 
-// Texto pequeno sob o número de cada cartão de resumo.
-function legendaDoResumo(item: ResumoSituacaoDto): string {
+// Texto pequeno sob o número de cada cartão de resumo. `mes` é "AAAA-MM", o mês dos totais finais.
+function legendaDoResumo(item: ResumoSituacaoDto, mes: string): string {
+  const noMes = `em ${nomeDoMes(mes).toLowerCase()}`
   switch (item.situacao) {
     case 'ABERTA':
     case 'VENCIDA':
       return formatarMoeda(item.valorCentavos)
     case 'PAGA':
     case 'PAGA_COM_REGISTRO_MANUAL':
-      return `${formatarMoeda(item.valorCentavos)} em outubro`
+      return `${formatarMoeda(item.valorCentavos)} ${noMes}`
     case 'CANCELADA':
     case 'ESTORNADA':
-      return 'em outubro'
+      return noMes
   }
 }
 
@@ -45,11 +46,12 @@ function PaginaCobrancas() {
   const [valorMaximo, definirValorMaximo] = useState('')
   const [sincronizarAberto, definirSincronizarAberto] = useState(false)
 
-  const resumo = useResumoDasCobrancas()
+  const resumo = useResumirCobrancas()
   const minimo = paraCentavos(valorMinimo)
   const maximo = paraCentavos(valorMaximo)
+  // A API recebe as situações separadas por vírgula; o filtro de verdade é feito no backend.
   const cobrancas = useListarCobrancas({
-    situacoes,
+    situacoes: situacoes.join(','),
     busca: busca || undefined,
     vencimentoDe: vencimentoDe || undefined,
     vencimentoAte: vencimentoAte || undefined,
@@ -119,7 +121,7 @@ function PaginaCobrancas() {
           >
             <SeloDaCobranca situacao={item.situacao} />
             <strong>{formatarInteiro(item.quantidade)}</strong>
-            <span>{legendaDoResumo(item)}</span>
+            <span>{legendaDoResumo(item, resumo.data.mes)}</span>
           </button>
         ))}
       </div>
@@ -127,7 +129,6 @@ function PaginaCobrancas() {
       <div className="filtros">
         <div className="campo" style={{ flex: 1, maxWidth: 300 }}>
           <label htmlFor="cb-aluno">Aluno</label>
-          {/* TODO [Cobranças.RF002]: buscar também por CPF (o backend tem o CPF; esta amostra só filtra pelo nome). */}
           <input
             id="cb-aluno"
             type="search"
