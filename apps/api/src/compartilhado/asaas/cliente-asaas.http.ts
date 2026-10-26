@@ -54,6 +54,10 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     super();
   }
 
+  estaConfigurado(): boolean {
+    return true;
+  }
+
   async criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
     const resposta = await this.enviar<{ id: string }>('/customers', {
       name: dados.nome,

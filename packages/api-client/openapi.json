@@ -752,17 +752,82 @@
         ]
       }
     },
-    "/api/cobrancas/sugestao": {
+    "/api/cobrancas": {
       "get": {
-        "operationId": "sugerirNovaCobranca",
-        "parameters": [],
+        "operationId": "listarCobrancas",
+        "parameters": [
+          {
+            "name": "tamanhoPagina",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pagina",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "valorMaximoCentavos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "valorMinimoCentavos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "vencimentoAte",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "vencimentoDe",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "alunoId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "busca",
+            "required": false,
+            "in": "query",
+            "description": "Nome ou CPF do aluno",
+            "schema": {}
+          },
+          {
+            "name": "situacoes",
+            "required": false,
+            "in": "query",
+            "description": "Separadas por vírgula",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SugestaoDeNovaCobrancaDto"
+                  "$ref": "#/components/schemas/ListaDeCobrancasDto"
                 }
               }
             }
@@ -773,13 +838,11 @@
             "cookie": []
           }
         ],
-        "summary": "Vencimento sugerido, multa e juros vigentes",
+        "summary": "Localiza cobranças (padrão: abertas e vencidas)",
         "tags": [
           "cobrancas"
         ]
-      }
-    },
-    "/api/cobrancas": {
+      },
       "post": {
         "operationId": "emitirCobrancaAvulsa",
         "parameters": [],
@@ -811,6 +874,96 @@
           }
         ],
         "summary": "Emite uma cobrança avulsa no Asaas",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/resumo": {
+      "get": {
+        "operationId": "resumirCobrancas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoCobrancasDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Estado da conciliação e totais por situação",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/sugestao": {
+      "get": {
+        "operationId": "sugerirNovaCobranca",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SugestaoDeNovaCobrancaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Vencimento sugerido, multa e juros vigentes",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/{id}": {
+      "get": {
+        "operationId": "buscarCobranca",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CobrancaDetalheDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Detalhe de uma cobrança, com o histórico",
         "tags": [
           "cobrancas"
         ]
@@ -1645,6 +1798,211 @@
           }
         }
       },
+      "OrigemCobranca": {
+        "type": "string",
+        "enum": [
+          "MENSALIDADE",
+          "AVULSA"
+        ]
+      },
+      "SituacaoCobranca": {
+        "type": "string",
+        "enum": [
+          "ABERTA",
+          "VENCIDA",
+          "PAGA",
+          "PAGA_COM_REGISTRO_MANUAL",
+          "CANCELADA",
+          "ESTORNADA"
+        ]
+      },
+      "CobrancaListaItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemCobranca"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor original, sem multa e juros"
+          },
+          "vencimento": {
+            "type": "string",
+            "format": "date"
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoCobranca"
+              }
+            ]
+          },
+          "diasDeAtraso": {
+            "type": "number",
+            "nullable": true,
+            "description": "Só para cobrança vencida"
+          },
+          "semSincronizarHaDias": {
+            "type": "number",
+            "nullable": true,
+            "description": "Vencida há muito tempo sem sincronizar com o Asaas"
+          }
+        },
+        "required": [
+          "id",
+          "alunoId",
+          "alunoNome",
+          "descricao",
+          "origem",
+          "valorCentavos",
+          "vencimento",
+          "situacao",
+          "diasDeAtraso",
+          "semSincronizarHaDias"
+        ]
+      },
+      "ListaDeCobrancasDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CobrancaListaItemDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total de cobranças com esses filtros (todas as páginas)"
+          }
+        },
+        "required": [
+          "itens",
+          "total"
+        ]
+      },
+      "ResumoSituacaoDto": {
+        "type": "object",
+        "properties": {
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoCobranca"
+              }
+            ]
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Soma dos valores originais"
+          }
+        },
+        "required": [
+          "situacao",
+          "quantidade",
+          "valorCentavos"
+        ]
+      },
+      "SincronizacaoDto": {
+        "type": "object",
+        "properties": {
+          "iniciadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "conferidas": {
+            "type": "number"
+          },
+          "atualizadas": {
+            "type": "number"
+          },
+          "somenteNoAsaas": {
+            "type": "number"
+          },
+          "paraConferir": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "iniciadaEm",
+          "conferidas",
+          "atualizadas",
+          "somenteNoAsaas",
+          "paraConferir"
+        ]
+      },
+      "ConciliacaoDto": {
+        "type": "object",
+        "properties": {
+          "ativa": {
+            "type": "boolean",
+            "description": "A integração com o Asaas está configurada"
+          },
+          "ultimaNotificacaoEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ultimaSincronizacao": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SincronizacaoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ativa",
+          "ultimaNotificacaoEm",
+          "ultimaSincronizacao"
+        ]
+      },
+      "ResumoCobrancasDto": {
+        "type": "object",
+        "properties": {
+          "mes": {
+            "type": "string",
+            "example": "2026-10",
+            "description": "Mês dos totais de pagas, canceladas e estornadas"
+          },
+          "situacoes": {
+            "description": "Abertas e vencidas: todas. Demais: só as que mudaram de situação no mês",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResumoSituacaoDto"
+            }
+          },
+          "conciliacao": {
+            "$ref": "#/components/schemas/ConciliacaoDto"
+          }
+        },
+        "required": [
+          "mes",
+          "situacoes",
+          "conciliacao"
+        ]
+      },
       "SugestaoDeNovaCobrancaDto": {
         "type": "object",
         "properties": {
@@ -1671,6 +2029,165 @@
           "vencimentoSugerido",
           "multaPercentual",
           "jurosMensalPercentual"
+        ]
+      },
+      "EventoCobrancaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ocorridoEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "origem": {
+            "type": "string",
+            "enum": [
+              "ASAAS",
+              "USUARIO"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "ocorridoEm",
+          "descricao",
+          "origem"
+        ]
+      },
+      "CobrancaDetalheDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemCobranca"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor original, sem multa e juros"
+          },
+          "vencimento": {
+            "type": "string",
+            "format": "date"
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoCobranca"
+              }
+            ]
+          },
+          "diasDeAtraso": {
+            "type": "number",
+            "nullable": true,
+            "description": "Só para cobrança vencida"
+          },
+          "semSincronizarHaDias": {
+            "type": "number",
+            "nullable": true,
+            "description": "Vencida há muito tempo sem sincronizar com o Asaas"
+          },
+          "asaasId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Identificação da cobrança no Asaas"
+          },
+          "multaPercentual": {
+            "type": "number"
+          },
+          "jurosMensalPercentual": {
+            "type": "number"
+          },
+          "urlBoleto": {
+            "type": "string",
+            "nullable": true
+          },
+          "urlFatura": {
+            "type": "string",
+            "nullable": true
+          },
+          "pagaEm": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "justificativaManual": {
+            "type": "string",
+            "nullable": true
+          },
+          "ultimaSincronizacaoEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "diasDesdeUltimaSincronizacao": {
+            "type": "number",
+            "nullable": true
+          },
+          "sincronizacaoAntiga": {
+            "type": "boolean"
+          },
+          "podeCancelar": {
+            "type": "boolean",
+            "description": "Só cobrança aberta ou vencida pode ser cancelada"
+          },
+          "podeRegistrarPagamentoManual": {
+            "type": "boolean",
+            "description": "Só cobrança aberta ou vencida aceita pagamento manual"
+          },
+          "eventos": {
+            "description": "Do mais recente para o mais antigo",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventoCobrancaDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "alunoId",
+          "alunoNome",
+          "descricao",
+          "origem",
+          "valorCentavos",
+          "vencimento",
+          "situacao",
+          "diasDeAtraso",
+          "semSincronizarHaDias",
+          "asaasId",
+          "multaPercentual",
+          "jurosMensalPercentual",
+          "urlBoleto",
+          "urlFatura",
+          "pagaEm",
+          "justificativaManual",
+          "ultimaSincronizacaoEm",
+          "diasDesdeUltimaSincronizacao",
+          "sincronizacaoAntiga",
+          "podeCancelar",
+          "podeRegistrarPagamentoManual",
+          "eventos"
         ]
       },
       "EmitirCobrancaAvulsaDto": {
@@ -1700,25 +2217,6 @@
           "vencimento",
           "descricao"
         ]
-      },
-      "OrigemCobranca": {
-        "type": "string",
-        "enum": [
-          "MENSALIDADE",
-          "AVULSA"
-        ]
-      },
-      "SituacaoCobranca": {
-        "type": "string",
-        "enum": [
-          "ABERTA",
-          "VENCIDA",
-          "PAGA",
-          "PAGA_COM_REGISTRO_MANUAL",
-          "CANCELADA",
-          "ESTORNADA"
-        ],
-        "description": "VENCIDA = aberta com vencimento passado"
       },
       "CobrancaDto": {
         "type": "object",

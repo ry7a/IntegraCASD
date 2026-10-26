@@ -25,8 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  CobrancaDetalheDto,
   CobrancaDto,
   EmitirCobrancaAvulsaDto,
+  ListaDeCobrancasDto,
+  ListarCobrancasParams,
+  ResumoCobrancasDto,
   SugestaoDeNovaCobrancaDto
 } from '../api.schemas';
 
@@ -56,6 +60,300 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getListarCobrancasUrl = (params?: ListarCobrancasParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/cobrancas?${stringifiedParams}` : `/api/cobrancas`
+}
+
+/**
+ * @summary Localiza cobranças (padrão: abertas e vencidas)
+ */
+export const listarCobrancas = async (params?: ListarCobrancasParams, options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeCobrancasDto> => {
+
+  return clienteHttp<ListaDeCobrancasDto>(getListarCobrancasUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarCobrancasQueryKey = (params?: ListarCobrancasParams,) => {
+    return [
+    `/api/cobrancas`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListarCobrancasQueryOptions = <TData = Awaited<ReturnType<typeof listarCobrancas>>, TError = ErrorType<unknown>>(params?: ListarCobrancasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarCobrancasQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarCobrancas>>> = ({ signal }) => listarCobrancas(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarCobrancasQueryResult = NonNullable<Awaited<ReturnType<typeof listarCobrancas>>>
+export type ListarCobrancasQueryError = ErrorType<unknown>
+
+
+export function useListarCobrancas<TData = Awaited<ReturnType<typeof listarCobrancas>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListarCobrancasParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCobrancas>>,
+          TError,
+          Awaited<ReturnType<typeof listarCobrancas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCobrancas<TData = Awaited<ReturnType<typeof listarCobrancas>>, TError = ErrorType<unknown>>(
+ params?: ListarCobrancasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCobrancas>>,
+          TError,
+          Awaited<ReturnType<typeof listarCobrancas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCobrancas<TData = Awaited<ReturnType<typeof listarCobrancas>>, TError = ErrorType<unknown>>(
+ params?: ListarCobrancasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Localiza cobranças (padrão: abertas e vencidas)
+ */
+
+export function useListarCobrancas<TData = Awaited<ReturnType<typeof listarCobrancas>>, TError = ErrorType<unknown>>(
+ params?: ListarCobrancasParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarCobrancasQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getEmitirCobrancaAvulsaUrl = () => {
+
+
+
+
+  return `/api/cobrancas`
+}
+
+/**
+ * @summary Emite uma cobrança avulsa no Asaas
+ */
+export const emitirCobrancaAvulsa = async (emitirCobrancaAvulsaDto: EmitirCobrancaAvulsaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<CobrancaDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<CobrancaDto>(getEmitirCobrancaAvulsaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(emitirCobrancaAvulsaDto)
+  }
+);}
+
+
+
+
+
+export const getEmitirCobrancaAvulsaMutationKey = () => ['emitirCobrancaAvulsa'] as const;
+
+export const getEmitirCobrancaAvulsaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext> => {
+
+const mutationKey = getEmitirCobrancaAvulsaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, EmitirCobrancaAvulsaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  emitirCobrancaAvulsa(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EmitirCobrancaAvulsaMutationResult = NonNullable<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>>
+    export type EmitirCobrancaAvulsaMutationBody = EmitirCobrancaAvulsaDto
+    export type EmitirCobrancaAvulsaMutationError = ErrorType<unknown>
+    export type EmitirCobrancaAvulsaMutationVariables = {data: EmitirCobrancaAvulsaDto}
+
+    /**
+ * @summary Emite uma cobrança avulsa no Asaas
+ */
+export const useEmitirCobrancaAvulsa = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof emitirCobrancaAvulsa>>,
+        TError,
+        EmitirCobrancaAvulsaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getEmitirCobrancaAvulsaMutationOptions(options), queryClient);
+    }
+    export const getResumirCobrancasUrl = () => {
+
+
+
+
+  return `/api/cobrancas/resumo`
+}
+
+/**
+ * @summary Estado da conciliação e totais por situação
+ */
+export const resumirCobrancas = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ResumoCobrancasDto> => {
+
+  return clienteHttp<ResumoCobrancasDto>(getResumirCobrancasUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getResumirCobrancasQueryKey = () => {
+    return [
+    `/api/cobrancas/resumo`
+    ] as const;
+    }
+
+
+export const getResumirCobrancasQueryOptions = <TData = Awaited<ReturnType<typeof resumirCobrancas>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getResumirCobrancasQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof resumirCobrancas>>> = ({ signal }) => resumirCobrancas({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ResumirCobrancasQueryResult = NonNullable<Awaited<ReturnType<typeof resumirCobrancas>>>
+export type ResumirCobrancasQueryError = ErrorType<unknown>
+
+
+export function useResumirCobrancas<TData = Awaited<ReturnType<typeof resumirCobrancas>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof resumirCobrancas>>,
+          TError,
+          Awaited<ReturnType<typeof resumirCobrancas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useResumirCobrancas<TData = Awaited<ReturnType<typeof resumirCobrancas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof resumirCobrancas>>,
+          TError,
+          Awaited<ReturnType<typeof resumirCobrancas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useResumirCobrancas<TData = Awaited<ReturnType<typeof resumirCobrancas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Estado da conciliação e totais por situação
+ */
+
+export function useResumirCobrancas<TData = Awaited<ReturnType<typeof resumirCobrancas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof resumirCobrancas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getResumirCobrancasQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getSugerirNovaCobrancaUrl = () => {
 
@@ -157,39 +455,25 @@ export function useSugerirNovaCobranca<TData = Awaited<ReturnType<typeof sugerir
 
 
 
-export const getEmitirCobrancaAvulsaUrl = () => {
+export const getBuscarCobrancaUrl = (id: string,) => {
 
 
 
 
-  return `/api/cobrancas`
+  return `/api/cobrancas/${id}`
 }
 
 /**
- * @summary Emite uma cobrança avulsa no Asaas
+ * @summary Detalhe de uma cobrança, com o histórico
  */
-export const emitirCobrancaAvulsa = async (emitirCobrancaAvulsaDto: EmitirCobrancaAvulsaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<CobrancaDto> => {
+export const buscarCobranca = async (id: string, options?: Parameters<typeof clienteHttp>[1]): Promise<CobrancaDetalheDto> => {
 
-    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
-    if (!h) return {};
-    if (h instanceof Headers) return Object.fromEntries(h.entries());
-    if (Symbol.iterator in h) {
-      return Object.fromEntries(
-        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
-      );
-    }
-    const headers: Record<string, string | readonly string[]> = {};
-    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-      if (value !== undefined) headers[name] = value;
-    }
-    return headers;
-  };
-return clienteHttp<CobrancaDto>(getEmitirCobrancaAvulsaUrl(),
+  return clienteHttp<CobrancaDetalheDto>(getBuscarCobrancaUrl(id),
   {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
-    body: JSON.stringify(emitirCobrancaAvulsaDto)
+    method: 'GET'
+
+
   }
 );}
 
@@ -197,50 +481,77 @@ return clienteHttp<CobrancaDto>(getEmitirCobrancaAvulsaUrl(),
 
 
 
-export const getEmitirCobrancaAvulsaMutationKey = () => ['emitirCobrancaAvulsa'] as const;
-
-export const getEmitirCobrancaAvulsaMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
-): UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext> => {
-
-const mutationKey = getEmitirCobrancaAvulsaMutationKey();
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, EmitirCobrancaAvulsaMutationVariables> = (props) => {
-          const {data} = props ?? {};
-
-          return  emitirCobrancaAvulsa(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type EmitirCobrancaAvulsaMutationResult = NonNullable<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>>
-    export type EmitirCobrancaAvulsaMutationBody = EmitirCobrancaAvulsaDto
-    export type EmitirCobrancaAvulsaMutationError = ErrorType<unknown>
-    export type EmitirCobrancaAvulsaMutationVariables = {data: EmitirCobrancaAvulsaDto}
-
-    /**
- * @summary Emite uma cobrança avulsa no Asaas
- */
-export const useEmitirCobrancaAvulsa = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof emitirCobrancaAvulsa>>, TError,EmitirCobrancaAvulsaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof emitirCobrancaAvulsa>>,
-        TError,
-        EmitirCobrancaAvulsaMutationVariables,
-        TContext
-      > => {
-      return useMutation(getEmitirCobrancaAvulsaMutationOptions(options), queryClient);
+export const getBuscarCobrancaQueryKey = (id: string,) => {
+    return [
+    `/api/cobrancas/${id}`
+    ] as const;
     }
+
+
+export const getBuscarCobrancaQueryOptions = <TData = Awaited<ReturnType<typeof buscarCobranca>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuscarCobrancaQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof buscarCobranca>>> = ({ signal }) => buscarCobranca(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuscarCobrancaQueryResult = NonNullable<Awaited<ReturnType<typeof buscarCobranca>>>
+export type BuscarCobrancaQueryError = ErrorType<unknown>
+
+
+export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobranca>>, TError = ErrorType<unknown>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarCobranca>>,
+          TError,
+          Awaited<ReturnType<typeof buscarCobranca>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobranca>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarCobranca>>,
+          TError,
+          Awaited<ReturnType<typeof buscarCobranca>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobranca>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Detalhe de uma cobrança, com o histórico
+ */
+
+export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobranca>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarCobranca>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuscarCobrancaQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+

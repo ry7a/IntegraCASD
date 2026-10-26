@@ -343,24 +343,6 @@ export interface AlterarFuncionarioDto {
   dataDesligamento?: string | null;
 }
 
-export interface SugestaoDeNovaCobrancaDto {
-  /** Falso enquanto a diretoria não cadastrar os parâmetros de cobrança */
-  parametrosCadastrados: boolean;
-  /** @nullable */
-  vencimentoSugerido: string | null;
-  /** @nullable */
-  multaPercentual: number | null;
-  /** @nullable */
-  jurosMensalPercentual: number | null;
-}
-
-export interface EmitirCobrancaAvulsaDto {
-  alunoId: string;
-  valorCentavos: number;
-  vencimento: string;
-  descricao: string;
-}
-
 export type OrigemCobranca = typeof OrigemCobranca[keyof typeof OrigemCobranca];
 
 
@@ -369,9 +351,6 @@ export const OrigemCobranca = {
   AVULSA: 'AVULSA',
 } as const;
 
-/**
- * VENCIDA = aberta com vencimento passado
- */
 export type SituacaoCobranca = typeof SituacaoCobranca[keyof typeof SituacaoCobranca];
 
 
@@ -383,6 +362,147 @@ export const SituacaoCobranca = {
   CANCELADA: 'CANCELADA',
   ESTORNADA: 'ESTORNADA',
 } as const;
+
+export interface CobrancaListaItemDto {
+  id: string;
+  alunoId: string;
+  alunoNome: string;
+  descricao: string;
+  origem: OrigemCobranca;
+  /** Valor original, sem multa e juros */
+  valorCentavos: number;
+  vencimento: string;
+  situacao: SituacaoCobranca;
+  /**
+     * Só para cobrança vencida
+     * @nullable
+     */
+  diasDeAtraso: number | null;
+  /**
+     * Vencida há muito tempo sem sincronizar com o Asaas
+     * @nullable
+     */
+  semSincronizarHaDias: number | null;
+}
+
+export interface ListaDeCobrancasDto {
+  itens: CobrancaListaItemDto[];
+  /** Total de cobranças com esses filtros (todas as páginas) */
+  total: number;
+}
+
+export interface ResumoSituacaoDto {
+  situacao: SituacaoCobranca;
+  quantidade: number;
+  /** Soma dos valores originais */
+  valorCentavos: number;
+}
+
+export interface SincronizacaoDto {
+  iniciadaEm: string;
+  conferidas: number;
+  atualizadas: number;
+  somenteNoAsaas: number;
+  paraConferir: number;
+}
+
+export interface ConciliacaoDto {
+  /** A integração com o Asaas está configurada */
+  ativa: boolean;
+  /** @nullable */
+  ultimaNotificacaoEm: string | null;
+  /** @nullable */
+  ultimaSincronizacao: SincronizacaoDto | null;
+}
+
+export interface ResumoCobrancasDto {
+  /** Mês dos totais de pagas, canceladas e estornadas */
+  mes: string;
+  /** Abertas e vencidas: todas. Demais: só as que mudaram de situação no mês */
+  situacoes: ResumoSituacaoDto[];
+  conciliacao: ConciliacaoDto;
+}
+
+export interface SugestaoDeNovaCobrancaDto {
+  /** Falso enquanto a diretoria não cadastrar os parâmetros de cobrança */
+  parametrosCadastrados: boolean;
+  /** @nullable */
+  vencimentoSugerido: string | null;
+  /** @nullable */
+  multaPercentual: number | null;
+  /** @nullable */
+  jurosMensalPercentual: number | null;
+}
+
+export type EventoCobrancaDtoOrigem = typeof EventoCobrancaDtoOrigem[keyof typeof EventoCobrancaDtoOrigem];
+
+
+export const EventoCobrancaDtoOrigem = {
+  ASAAS: 'ASAAS',
+  USUARIO: 'USUARIO',
+} as const;
+
+export interface EventoCobrancaDto {
+  id: string;
+  ocorridoEm: string;
+  descricao: string;
+  origem: EventoCobrancaDtoOrigem;
+}
+
+export interface CobrancaDetalheDto {
+  id: string;
+  alunoId: string;
+  alunoNome: string;
+  descricao: string;
+  origem: OrigemCobranca;
+  /** Valor original, sem multa e juros */
+  valorCentavos: number;
+  vencimento: string;
+  situacao: SituacaoCobranca;
+  /**
+     * Só para cobrança vencida
+     * @nullable
+     */
+  diasDeAtraso: number | null;
+  /**
+     * Vencida há muito tempo sem sincronizar com o Asaas
+     * @nullable
+     */
+  semSincronizarHaDias: number | null;
+  /**
+     * Identificação da cobrança no Asaas
+     * @nullable
+     */
+  asaasId: string | null;
+  multaPercentual: number;
+  jurosMensalPercentual: number;
+  /** @nullable */
+  urlBoleto: string | null;
+  /** @nullable */
+  urlFatura: string | null;
+  /** @nullable */
+  pagaEm: string | null;
+  /** @nullable */
+  justificativaManual: string | null;
+  /** @nullable */
+  ultimaSincronizacaoEm: string | null;
+  /** @nullable */
+  diasDesdeUltimaSincronizacao: number | null;
+  sincronizacaoAntiga: boolean;
+  /** Só cobrança aberta ou vencida pode ser cancelada */
+  podeCancelar: boolean;
+  /** Só cobrança aberta ou vencida aceita pagamento manual */
+  podeRegistrarPagamentoManual: boolean;
+  /** Do mais recente para o mais antigo */
+  eventos: EventoCobrancaDto[];
+}
+
+export interface EmitirCobrancaAvulsaDto {
+  alunoId: string;
+  valorCentavos: number;
+  vencimento: string;
+  descricao: string;
+}
 
 export interface CobrancaDto {
   id: string;
@@ -433,4 +553,22 @@ export const ListarFuncionariosSituacao = {
   inativos: 'inativos',
   todos: 'todos',
 } as const;
+
+export type ListarCobrancasParams = {
+tamanhoPagina?: number;
+pagina?: number;
+valorMaximoCentavos?: number;
+valorMinimoCentavos?: number;
+vencimentoAte?: unknown;
+vencimentoDe?: unknown;
+alunoId?: unknown;
+/**
+ * Nome ou CPF do aluno
+ */
+busca?: unknown;
+/**
+ * Separadas por vírgula
+ */
+situacoes?: unknown;
+};
 

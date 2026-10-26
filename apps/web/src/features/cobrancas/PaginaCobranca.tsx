@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { useBuscarCobranca } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
 import { formatarData, formatarDataHora, formatarMoeda } from '@/compartilhado/formatacao'
-import { useBuscarCobranca } from './consultas'
 import { DialogosDaCobranca, type DialogoDaCobranca } from './DialogosDaCobranca'
 
 // Detalhe da cobrança: o centro das ações (boleto, reenvio, sincronização, pagamento manual, cancelar).
-// [Cobranças.RF003 a RF008] Todas as ações abaixo ainda não têm efeito: só abrem os diálogos.
+// [Cobranças.RF003 a RF008] Os dados vêm da API; as ações (sincronizar, cancelar, pagamento manual) ainda
+// só abrem os diálogos: entram com as suas issues.
 function PaginaCobranca() {
   const { id = '' } = useParams()
-  const consulta = useBuscarCobranca(id)
+  const consulta = useBuscarCobranca(id, { query: { retry: false } })
   const [dialogo, definirDialogo] = useState<DialogoDaCobranca | null>(null)
   const cobranca = consulta.data
 
@@ -107,7 +108,7 @@ function PaginaCobranca() {
                   {cobranca.pagaEm && (
                     <>
                       <dt>Pagamento</dt>
-                      <dd>{formatarDataHora(cobranca.pagaEm)}</dd>
+                      <dd>{formatarData(cobranca.pagaEm)}</dd>
                     </>
                   )}
                   {cobranca.justificativaManual && (
@@ -122,7 +123,8 @@ function PaginaCobranca() {
                 <div className="aviso" style={{ marginTop: 16 }}>
                   <Icone nome="relogio" />
                   <span>
-                    Multa de 2% e juros de 1% ao mês são aplicados pelo Asaas no boleto. O IntegraCASD mostra sempre o{' '}
+                    Multa de {cobranca.multaPercentual}% e juros de {cobranca.jurosMensalPercentual}% ao mês são aplicados pelo
+                    Asaas no boleto. O IntegraCASD mostra sempre o{' '}
                     <strong>valor original</strong>, sem multa e juros.
                   </span>
                 </div>

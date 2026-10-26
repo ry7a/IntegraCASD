@@ -40,6 +40,8 @@ export class ErroAsaas extends Error {
 }
 
 export abstract class ClienteAsaas {
+  // Se a chave e o ambiente estão configurados. Não chama o Asaas.
+  abstract estaConfigurado(): boolean;
   abstract criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }>;
   abstract criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas>;
 }

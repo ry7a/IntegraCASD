@@ -15,6 +15,13 @@ export class ClienteAsaasFalso extends ClienteAsaas {
   // Ligue para simular o Asaas fora do ar.
   indisponivel = false;
 
+  // Ligue para simular a integração sem chave configurada.
+  semConfiguracao = false;
+
+  estaConfigurado(): boolean {
+    return !this.semConfiguracao;
+  }
+
   criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
     this.verificarDisponibilidade();
     this.clientesCriados.push(dados);
