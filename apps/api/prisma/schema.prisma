@@ -67,31 +67,171 @@ model Turma {
   @@map("turmas")
 }
 
+// Cada registro é uma vaga: bloco + apartamento + vaga.
+model Alojamento {
+  id            String   @id @default(uuid()) @db.Uuid
+  bloco         String
+  apto          String
+  vaga          String
+  dataCriacao   DateTime @default(now()) @map("data_criacao")
+  dataAlteracao DateTime @updatedAt @map("data_alteracao")
+
+  alunos Aluno[]
+
+  @@unique([bloco, apto, vaga])
+  @@map("alojamentos")
+}
+
 model Aluno {
-  id            String         @id @default(uuid()) @db.Uuid
+  id            String      @id @default(uuid()) @db.Uuid
   nome          String
-  cpf           String         @db.Char(11) // só dígitos, sem pontuação
+  cpf           String      @db.Char(11) // só dígitos, sem pontuação
   email         String
-  matricula     Int?           @unique
-  situacao      SituacaoAluno?
+  matricula     Int?        @unique
   posto         PostoAluno?
   curso         CursoAluno?
-  turmaId       String?        @map("turma_id") @db.Uuid
-  turma         Turma?         @relation(fields: [turmaId], references: [id], onDelete: Restrict)
+  turmaId       String?     @map("turma_id") @db.Uuid
+  turma         Turma?      @relation(fields: [turmaId], references: [id], onDelete: Restrict)
   celular       String?
-  alojamento    String?
-  apto          String?
-  vaga          String?
+  apelido       String?
+  alojamentoId  String?     @map("alojamento_id") @db.Uuid
+  alojamento    Alojamento? @relation(fields: [alojamentoId], references: [id], onDelete: Restrict)
   // Define quem entra na cobrança recorrente. Inativar = ativo false (nunca excluir).
-  ativo         Boolean        @default(true)
-  dataCriacao   DateTime       @default(now()) @map("data_criacao")
-  dataAlteracao DateTime       @updatedAt @map("data_alteracao")
+  // É a "situação" do cadastro (ativo ou inativo) [Cadastros.RF001].
+  ativo         Boolean     @default(true)
+  dataCriacao   DateTime    @default(now()) @map("data_criacao")
+  dataAlteracao DateTime    @updatedAt @map("data_alteracao")
+
+  // Obsoletos: substituídos por `ativo` e por `alojamentoId`. Ficam até a carga inicial
+  // preencher os campos novos; depois saem numa migração própria (expandir e depois contrair).
+  situacao        SituacaoAluno?
+  alojamentoTexto String?        @map("alojamento")
+  apto            String?
+  vaga            String?
 
   // CPF único só entre alunos ativos (índice parcial): um aluno inativo
   // não impede o recadastro da mesma pessoa.
   @@unique([cpf], map: "alunos_cpf_ativo_key", where: { ativo: true })
+  // Pelo mesmo motivo, uma vaga tem no máximo um aluno ativo; os inativos guardam a vaga antiga.
+  @@unique([alojamentoId], map: "alunos_alojamento_ativo_key", where: { ativo: true })
   @@index([turmaId])
   @@map("alunos")
+}
+
+// [Cadastros.RF002]. O pagamento efetivo é sempre uma movimentação de saída vinculada ao funcionário.
+model Funcionario {
+  id                        String    @id @default(uuid()) @db.Uuid
+  nome                      String
+  cpf                       String    @db.Char(11) // só dígitos, sem pontuação
+  cargo                     String
+  salarioReferenciaCentavos Int       @map("salario_referencia_centavos") // informativo
+  dataAdmissao              DateTime  @map("data_admissao") @db.Date
+  dataDesligamento          DateTime? @map("data_desligamento") @db.Date
+  ativo                     Boolean   @default(true)
+  dataCriacao               DateTime  @default(now()) @map("data_criacao")
+  dataAlteracao             DateTime  @updatedAt @map("data_alteracao")
+
+  movimentacoes Movimentacao[]
+
+  @@unique([cpf], map: "funcionarios_cpf_ativo_key", where: { ativo: true })
+  @@map("funcionarios")
+}
+
+enum PeriodicidadeContrato {
+  MENSAL
+  ANUAL
+  POR_DEMANDA
+  UNICA
+
+  @@map("periodicidade_contrato")
+}
+
+// "Vigente" e "vence em breve" são calculados a partir das datas; aqui só fica se foi encerrado.
+enum SituacaoContrato {
+  ATIVO
+  ENCERRADO
+
+  @@map("situacao_contrato")
+}
+
+// [Cadastros.RF004]. A contraparte é só um nome: não há cadastro de fornecedores.
+model Contrato {
+  id                        String                @id @default(uuid()) @db.Uuid
+  codigo                    String                @unique // ex.: "24C002" (ano + C + sequência)
+  contraparte               String
+  objeto                    String
+  valorCentavos             Int                   @map("valor_centavos") // por periodicidade
+  periodicidade             PeriodicidadeContrato
+  dataInicio                DateTime              @map("data_inicio") @db.Date
+  dataFim                   DateTime?             @map("data_fim") @db.Date // nulo = indeterminado
+  situacao                  SituacaoContrato      @default(ATIVO)
+  dataEncerramento          DateTime?             @map("data_encerramento") @db.Date
+  justificativaEncerramento String?               @map("justificativa_encerramento")
+  dataCriacao               DateTime              @default(now()) @map("data_criacao")
+  dataAlteracao             DateTime              @updatedAt @map("data_alteracao")
+
+  movimentacoes Movimentacao[]
+
+  @@map("contratos")
+}
+
+// Os três primeiros contam como "em andamento" na tela; os dois últimos, como "encerrados".
+enum SituacaoProjeto {
+  A_LIBERAR
+  LIBERADO
+  EM_EXECUCAO
+  EXECUTADO
+  CANCELADO
+
+  @@map("situacao_projeto")
+}
+
+// [Cadastros.RF005]
+model Projeto {
+  id                        String          @id @default(uuid()) @db.Uuid
+  codigo                    String          @unique // ex.: "25P013" (ano + P + sequência)
+  nome                      String
+  responsavel               String?
+  dataInicio                DateTime        @map("data_inicio") @db.Date
+  dataFim                   DateTime?       @map("data_fim") @db.Date
+  orcamentoPrevistoCentavos Int?            @map("orcamento_previsto_centavos") // nulo = sem orçamento
+  situacao                  SituacaoProjeto @default(A_LIBERAR)
+  dataCriacao               DateTime        @default(now()) @map("data_criacao")
+  dataAlteracao             DateTime        @updatedAt @map("data_alteracao")
+
+  movimentacoes Movimentacao[]
+
+  @@map("projetos")
+}
+
+// Destino de gastos de manutenção sem contrato nem projeto (ex.: "Jardins", "Hidráulica Geral").
+model CentroCusto {
+  id            String   @id @default(uuid()) @db.Uuid
+  nome          String   @unique
+  descricao     String? // o que pode ser comprado com esta verba
+  ativo         Boolean  @default(true)
+  dataCriacao   DateTime @default(now()) @map("data_criacao")
+  dataAlteracao DateTime @updatedAt @map("data_alteracao")
+
+  verbas        VerbaMensal[]
+  movimentacoes Movimentacao[]
+
+  @@map("centros_custo")
+}
+
+// Quanto foi liberado para um centro de custo num mês. O saldo é calculado (liberado − saídas).
+model VerbaMensal {
+  id                    String      @id @default(uuid()) @db.Uuid
+  centroCustoId         String      @map("centro_custo_id") @db.Uuid
+  centroCusto           CentroCusto @relation(fields: [centroCustoId], references: [id], onDelete: Restrict)
+  ano                   Int
+  mes                   Int // 1 a 12 (CHECK no banco)
+  valorLiberadoCentavos Int         @map("valor_liberado_centavos")
+  dataCriacao           DateTime    @default(now()) @map("data_criacao")
+  dataAlteracao         DateTime    @updatedAt @map("data_alteracao")
+
+  @@unique([centroCustoId, ano, mes])
+  @@map("verbas_mensais")
 }
 
 // ---------------------------------------------------------------------------
@@ -114,4 +254,137 @@ model EventoWebhook {
   dataAlteracao DateTime  @updatedAt @map("data_alteracao")
 
   @@map("eventos_webhook")
+}
+
+// ---------------------------------------------------------------------------
+// Movimentações
+// ---------------------------------------------------------------------------
+
+enum TipoConta {
+  CORRENTE
+  APLICACAO
+
+  @@map("tipo_conta")
+}
+
+// Conta bancária do CASD. O saldo é calculado: saldo inicial + entradas − saídas.
+model Conta {
+  id                   String    @id @default(uuid()) @db.Uuid
+  nome                 String    @unique // ex.: "Conta corrente", "Aplicação renda fixa"
+  tipo                 TipoConta
+  saldoInicialCentavos Int       @map("saldo_inicial_centavos") // pode ser negativo
+  dataSaldoInicial     DateTime  @map("data_saldo_inicial") @db.Date
+  ativo                Boolean   @default(true)
+  dataCriacao          DateTime  @default(now()) @map("data_criacao")
+  dataAlteracao        DateTime  @updatedAt @map("data_alteracao")
+
+  movimentacoes Movimentacao[]
+
+  @@map("contas")
+}
+
+enum TipoCategoria {
+  ENTRADA
+  SAIDA
+  AMBOS
+
+  @@map("tipo_categoria")
+}
+
+// [Administração.RF002]. Eixo dos indicadores de gasto por categoria.
+model Categoria {
+  id            String        @id @default(uuid()) @db.Uuid
+  nome          String
+  tipo          TipoCategoria
+  ativo         Boolean       @default(true)
+  dataCriacao   DateTime      @default(now()) @map("data_criacao")
+  dataAlteracao DateTime      @updatedAt @map("data_alteracao")
+
+  movimentacoes Movimentacao[]
+
+  // Nome único só entre as ativas: uma categoria inativa não impede recriar o nome.
+  @@unique([nome], map: "categorias_nome_ativa_key", where: { ativo: true })
+  @@map("categorias")
+}
+
+enum TipoMovimentacao {
+  ENTRADA
+  SAIDA
+
+  @@map("tipo_movimentacao")
+}
+
+enum FormaPagamento {
+  ASAAS
+  PIX
+  TRANSFERENCIA
+  DINHEIRO
+  CARTAO
+
+  @@map("forma_pagamento")
+}
+
+// Quem criou a movimentação. Só as de origem MANUAL podem ser estornadas [Movimentações.RF002].
+enum OrigemMovimentacao {
+  MANUAL
+  CONCILIACAO_AUTOMATICA
+  REGISTRO_MANUAL_DE_COBRANCA
+  ESTORNO
+
+  @@map("origem_movimentacao")
+}
+
+// Toda entrada ou saída de dinheiro [Movimentações.RF001]. Nunca é alterada nem apagada:
+// a correção é um estorno, que é outra movimentação apontando para esta.
+// Regras garantidas por CHECK na migração (o Prisma não descreve CHECK):
+// - valorCentavos > 0 (o sinal vem do tipo);
+// - no máximo um vínculo de origem: contrato, projeto, funcionário ou centro de custo;
+// - origem ESTORNO se, e somente se, estornoDeId está preenchido, e aí motivoEstorno é obrigatório.
+model Movimentacao {
+  id             String             @id @default(uuid()) @db.Uuid
+  contaId        String             @map("conta_id") @db.Uuid
+  conta          Conta              @relation(fields: [contaId], references: [id], onDelete: Restrict)
+  tipo           TipoMovimentacao
+  valorCentavos  Int                @map("valor_centavos")
+  data           DateTime           @db.Date
+  categoriaId    String             @map("categoria_id") @db.Uuid
+  categoria      Categoria          @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  formaPagamento FormaPagamento     @map("forma_pagamento")
+  origem         OrigemMovimentacao @default(MANUAL)
+  descricao      String // ex.: "NF 685"
+
+  // Vínculo de origem (no máximo um).
+  contratoId    String?      @map("contrato_id") @db.Uuid
+  contrato      Contrato?    @relation(fields: [contratoId], references: [id], onDelete: Restrict)
+  projetoId     String?      @map("projeto_id") @db.Uuid
+  projeto       Projeto?     @relation(fields: [projetoId], references: [id], onDelete: Restrict)
+  funcionarioId String?      @map("funcionario_id") @db.Uuid
+  funcionario   Funcionario? @relation(fields: [funcionarioId], references: [id], onDelete: Restrict)
+  centroCustoId String?      @map("centro_custo_id") @db.Uuid
+  centroCusto   CentroCusto? @relation(fields: [centroCustoId], references: [id], onDelete: Restrict)
+
+  // Preenchido na movimentação espelho: aponta para a original que ela anula.
+  // UNIQUE: uma movimentação só pode ser estornada uma vez.
+  estornoDeId   String?       @unique @map("estorno_de_id") @db.Uuid
+  estornoDe     Movimentacao? @relation("Estorno", fields: [estornoDeId], references: [id], onDelete: Restrict)
+  estorno       Movimentacao? @relation("Estorno")
+  motivoEstorno String?       @map("motivo_estorno")
+
+  // Transferência entre contas (aplicar ou resgatar): duas movimentações de mesmo valor e
+  // tipos opostos. A segunda perna aponta para a primeira. Não entram no resultado do CASD.
+  transferenciaParId String?       @unique @map("transferencia_par_id") @db.Uuid
+  transferenciaPar   Movimentacao? @relation("Transferencia", fields: [transferenciaParId], references: [id], onDelete: Restrict)
+  transferenciaParDe Movimentacao? @relation("Transferencia")
+
+  dataCriacao   DateTime @default(now()) @map("data_criacao")
+  dataAlteracao DateTime @updatedAt @map("data_alteracao")
+
+  @@index([data])
+  @@index([contaId])
+  @@index([categoriaId])
+  @@index([contratoId])
+  @@index([projetoId])
+  @@index([funcionarioId])
+  @@index([centroCustoId])
+  @@map("movimentacoes")
 }

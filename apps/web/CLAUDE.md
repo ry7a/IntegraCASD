@@ -24,6 +24,10 @@ src/
 - **Nunca use `fetch` direto.** Toda chamada à API usa os hooks do TanStack Query gerados pelo orval em `packages/api-client`. Se faltar um endpoint, ele precisa existir na API primeiro.
 - Não crie estado global para dados que vêm da API; o cache do TanStack Query já cumpre esse papel.
 - Erros da API chegam traduzidos pelo cliente HTTP. Mostre a mensagem recebida; não invente texto técnico.
+- Enquanto um endpoint não existe, o contrato planejado fica em `features/<area>/contrato.ts` (com dados
+  fictícios ao lado). Os valores de enum ali seguem o `schema.prisma` e o MER
+  (`docs/arquitetura/mer-financeiro.md`). Pendente: `ProjetoDto` ainda usa `EM_ANDAMENTO | ENCERRADO`
+  e responsável obrigatório; o MER tem 5 situações e responsável opcional.
 
 ## Regras de interface
 

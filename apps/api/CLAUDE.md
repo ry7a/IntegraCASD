@@ -37,6 +37,11 @@ src/modulos/cobrancas/
 - Operações que mexem em mais de uma tabela usam `prisma.$transaction(async (tx) => ...)`, passando `tx` adiante.
 - Exclusão física é proibida: use o campo de situação (inativação) ou estorno.
 - CPF de cadastro ativo é único por índice parcial no banco, não só por validação no código.
+- Colunas obsoletas do aluno (`situacao`, `alojamentoTexto`, `apto`, `vaga`): não use em código novo.
+  Ficam até a carga inicial preencher `ativo` e `alojamentoId`; depois saem numa migração própria.
+- Regras do MER que ainda não têm caso de uso nem teste (entram com os casos de uso de Movimentações):
+  categoria compatível com o tipo da movimentação, estorno só de movimentação de origem `MANUAL`,
+  e as duas pernas da transferência com mesmo valor, tipos opostos e contas diferentes.
 - Todo ponto de entrada que monta a aplicação (`main.ts`, `main-worker.ts`, `gerar-openapi.ts`) carrega
   o `.env` da raiz: alguns providers leem variáveis já no construtor (o `PgBossService` exige `DATABASE_URL`).
 

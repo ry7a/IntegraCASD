@@ -39,7 +39,7 @@ export interface ContratoParaVincularDto {
   id: string
   nome: string
   valorCentavos: number
-  periodicidade: 'MENSAL' | 'POR_DEMANDA' | 'UNICA'
+  periodicidade: 'MENSAL' | 'ANUAL' | 'POR_DEMANDA' | 'UNICA'
   // Soma das saídas já pagas neste contrato no ano.
   pagoNoAnoCentavos: number
 }

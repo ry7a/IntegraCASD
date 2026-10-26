@@ -56,7 +56,7 @@ export interface ListaDeFuncionariosDto {
   itens: FuncionarioDto[]
 }
 
-export type PeriodicidadeContrato = 'MENSAL' | 'POR_DEMANDA' | 'UNICA'
+export type PeriodicidadeContrato = 'MENSAL' | 'ANUAL' | 'POR_DEMANDA' | 'UNICA'
 
 export interface ContratoDto {
   id: string

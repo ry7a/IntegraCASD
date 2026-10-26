@@ -33,6 +33,14 @@ const VALORES_INICIAIS: Formulario = {
 
 const ROTULO_DO_VINCULO = { CONTRATO: 'Contrato', PROJETO: 'Projeto', FUNCIONARIO: 'Funcionário' }
 
+// Completa a frase "Valor previsto no contrato: R$ X ...".
+const SUFIXO_DA_PERIODICIDADE = {
+  MENSAL: 'por mês',
+  ANUAL: 'por ano',
+  POR_DEMANDA: '(por demanda)',
+  UNICA: '(pagamento único)',
+}
+
 interface Props {
   aberto: boolean
   aoFechar: () => void
@@ -163,7 +171,7 @@ function DialogoNovaMovimentacao({ aberto, aoFechar }: Props) {
           <Icone nome="check" />
           <span>
             Valor previsto no contrato: <strong>{formatarMoeda(contrato.valorCentavos)}</strong>{' '}
-            {contrato.periodicidade === 'MENSAL' ? 'por mês' : contrato.periodicidade === 'UNICA' ? '(pagamento único)' : '(por demanda)'}.
+            {SUFIXO_DA_PERIODICIDADE[contrato.periodicidade]}.
             Já pago neste contrato em 2026: <strong>{formatarMoeda(contrato.pagoNoAnoCentavos)}</strong>.
           </span>
         </div>
