@@ -1,14 +1,18 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
+import { useListarProjetos, type ListarProjetosSituacao, type ProjetoDto } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarData, formatarMoeda } from '@/compartilhado/formatacao'
-import type { SituacaoDoFiltroDeProjetos } from './contrato'
-import { useListarProjetos } from './consultas'
+import DialogoProjeto from './DialogoProjeto'
+import { ROTULO_DA_SITUACAO_DO_PROJETO } from './rotulos'
 
 // [Cadastros.RF005] Orçamento previsto x movimentado.
 function AbaProjetos() {
-  const [situacao, definirSituacao] = useState<SituacaoDoFiltroDeProjetos>('em-andamento')
-  const projetos = useListarProjetos(situacao)
+  const [situacao, definirSituacao] = useState<ListarProjetosSituacao>('em-andamento')
+  // undefined = nenhum diálogo; null = novo projeto; um projeto = edição.
+  const [emEdicao, definirEmEdicao] = useState<ProjetoDto | null | undefined>(undefined)
+  const projetos = useListarProjetos({ situacao })
   const itens = projetos.data?.itens ?? []
 
   return (
@@ -16,15 +20,18 @@ function AbaProjetos() {
       <div className="filtros">
         <div className="campo">
           <label htmlFor="pr-situacao">Situação</label>
-          <select id="pr-situacao" value={situacao} onChange={(evento) => definirSituacao(evento.target.value as SituacaoDoFiltroDeProjetos)}>
+          <select
+            id="pr-situacao"
+            value={situacao}
+            onChange={(evento) => definirSituacao(evento.target.value as ListarProjetosSituacao)}
+          >
             <option value="em-andamento">Em andamento</option>
             <option value="encerrados">Encerrados</option>
             <option value="todos">Todos</option>
           </select>
         </div>
         <div className="campo" style={{ marginLeft: 'auto' }}>
-          {/* TODO [Cadastros.RF005]: formulário de novo projeto. */}
-          <button type="button" className="botao botao-principal">
+          <button type="button" className="botao botao-principal" onClick={() => definirEmEdicao(null)}>
             <Icone nome="mais" />
             Novo projeto
           </button>
@@ -40,39 +47,52 @@ function AbaProjetos() {
       >
         <div className="grade grade-3">
           {itens.map((projeto) => {
-            const gasto = projeto.movimentadoCentavos
-            const percentual = projeto.orcamentoCentavos
-              ? Math.min(100, Math.round((gasto / projeto.orcamentoCentavos) * 100))
-              : null
+            const gasto = projeto.saidasCentavos
+            const orcamento = projeto.orcamentoPrevistoCentavos
+            const percentual = orcamento ? Math.min(100, Math.round((gasto / orcamento) * 100)) : null
             return (
               <div className="cartao" key={projeto.id}>
                 <h3>{projeto.nome}</h3>
                 <p className="texto-apoio" style={{ margin: '4px 0 12px' }}>
-                  Resp.: {projeto.responsavel} · {formatarData(projeto.dataInicio)} a {formatarData(projeto.dataFim)}
+                  {projeto.codigo}
+                  {projeto.responsavel && ` · Resp.: ${projeto.responsavel}`} · {formatarData(projeto.dataInicio)}
+                  {projeto.dataFim ? ` a ${formatarData(projeto.dataFim)}` : ''}
                 </p>
                 <div className="texto-apoio">
-                  Movimentado <strong style={{ color: 'var(--foreground)' }}>{formatarMoeda(gasto)}</strong>
-                  {projeto.orcamentoCentavos
-                    ? ` de ${formatarMoeda(projeto.orcamentoCentavos)} previstos`
-                    : ' · sem orçamento previsto'}
+                  Gasto <strong style={{ color: 'var(--foreground)' }}>{formatarMoeda(gasto)}</strong>
+                  {orcamento ? ` de ${formatarMoeda(orcamento)} previstos` : ' · sem orçamento previsto'}
+                  {projeto.entradasCentavos > 0 && ` · entradas ${formatarMoeda(projeto.entradasCentavos)}`}
                 </div>
                 {percentual !== null && (
                   <div className="progresso" data-dica={`${percentual}% do orçamento previsto`}>
                     <div style={{ width: `${percentual}%` }}></div>
                   </div>
                 )}
-                <p style={{ margin: '12px 0 0' }}>
-                  {projeto.situacao === 'EM_ANDAMENTO' ? (
-                    <span className="selo selo-aberta">Em andamento</span>
-                  ) : (
-                    <span className="selo">Encerrado</span>
-                  )}
+                {/* Fluxo A1: encerrado, mostra o resultado contra o orçamento. */}
+                {projeto.encerrado && orcamento !== null && (
+                  <p className="texto-apoio" style={{ margin: '8px 0 0' }}>
+                    {gasto <= orcamento
+                      ? `Ficou ${formatarMoeda(orcamento - gasto)} abaixo do orçamento.`
+                      : `Passou ${formatarMoeda(gasto - orcamento)} do orçamento.`}
+                  </p>
+                )}
+                <p style={{ margin: '12px 0 0', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className={projeto.encerrado ? 'selo' : 'selo selo-aberta'}>{ROTULO_DA_SITUACAO_DO_PROJETO[projeto.situacao]}</span>
+                  <button type="button" className="botao botao-pequeno botao-fantasma" onClick={() => definirEmEdicao(projeto)}>
+                    <Icone nome="editar" />
+                    Editar
+                  </button>
+                  <Link className="botao botao-pequeno" to={`/movimentacoes?projetoId=${projeto.id}`}>
+                    Movimentações
+                  </Link>
                 </p>
               </div>
             )
           })}
         </div>
       </EstadoDaConsulta>
+
+      {emEdicao !== undefined && <DialogoProjeto projeto={emEdicao} aoFechar={() => definirEmEdicao(undefined)} />}
     </>
   )
 }

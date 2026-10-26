@@ -1,6 +1,6 @@
 // Regras do cadastro de contratos [Cadastros.RF004]. Só TypeScript puro.
 // Datas no formato "AAAA-MM-DD": comparar esses textos dá a mesma ordem que comparar as datas.
-import { DadoInvalido, lerData, texto } from './comum.js';
+import { DadoInvalido, lerData, proximoCodigoDoAno, texto } from './comum.js';
 
 export type Periodicidade = 'MENSAL' | 'ANUAL' | 'POR_DEMANDA' | 'UNICA';
 const PERIODICIDADES: Periodicidade[] = ['MENSAL', 'ANUAL', 'POR_DEMANDA', 'UNICA'];
@@ -119,11 +119,5 @@ export function situacaoDoContrato(
 
 // MER, regra 7: código no formato da planilha, ano com 2 dígitos + "C" + sequência de 3 dígitos.
 export function proximoCodigo(ano: string, codigosDoAno: string[]): string {
-  const prefixo = `${ano.slice(2, 4)}C`;
-  const maior = codigosDoAno
-    .filter((codigo) => codigo.startsWith(prefixo))
-    .map((codigo) => Number(codigo.slice(3)))
-    .filter((numero) => Number.isInteger(numero))
-    .reduce((maximo, numero) => Math.max(maximo, numero), 0);
-  return `${prefixo}${String(maior + 1).padStart(3, '0')}`;
+  return proximoCodigoDoAno(ano, 'C', codigosDoAno);
 }

@@ -1065,6 +1065,128 @@
         ]
       }
     },
+    "/api/projetos": {
+      "get": {
+        "operationId": "listarProjetos",
+        "parameters": [
+          {
+            "name": "situacao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "em-andamento",
+                "encerrados",
+                "todos"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeProjetosDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista os projetos (por padrão, os em andamento)",
+        "tags": [
+          "projetos"
+        ]
+      },
+      "post": {
+        "operationId": "criarProjeto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarProjetoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjetoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Inclui um projeto",
+        "tags": [
+          "projetos"
+        ]
+      }
+    },
+    "/api/projetos/{id}": {
+      "patch": {
+        "operationId": "alterarProjeto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarProjetoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjetoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera ou encerra (executado/cancelado) um projeto",
+        "tags": [
+          "projetos"
+        ]
+      }
+    },
     "/api/movimentacoes/{id}/estornar": {
       "post": {
         "operationId": "estornarMovimentacao",
@@ -3108,6 +3230,166 @@
           "dataEncerramento",
           "justificativa"
         ]
+      },
+      "SituacaoProjeto": {
+        "type": "string",
+        "enum": [
+          "A_LIBERAR",
+          "LIBERADO",
+          "EM_EXECUCAO",
+          "EXECUTADO",
+          "CANCELADO"
+        ]
+      },
+      "ProjetoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "26P001",
+            "description": "Gerado pelo sistema: ano + P + sequência"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "orcamentoPrevistoCentavos": {
+            "type": "number",
+            "nullable": true,
+            "description": "Nulo = sem orçamento previsto"
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoProjeto"
+              }
+            ]
+          },
+          "encerrado": {
+            "type": "boolean",
+            "description": "Executado ou cancelado"
+          },
+          "saidasCentavos": {
+            "type": "number",
+            "description": "Saídas vinculadas, sem estornos"
+          },
+          "entradasCentavos": {
+            "type": "number",
+            "description": "Entradas vinculadas, sem estornos"
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "nome",
+          "responsavel",
+          "dataInicio",
+          "dataFim",
+          "orcamentoPrevistoCentavos",
+          "situacao",
+          "encerrado",
+          "saidasCentavos",
+          "entradasCentavos"
+        ]
+      },
+      "ListaDeProjetosDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjetoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "CriarProjetoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "orcamentoPrevistoCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "situacao": {
+            "description": "Padrão: A_LIBERAR",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoProjeto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "dataInicio"
+        ]
+      },
+      "AlterarProjetoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "responsavel": {
+            "type": "string",
+            "nullable": true
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "orcamentoPrevistoCentavos": {
+            "type": "number",
+            "nullable": true
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoProjeto"
+              }
+            ]
+          }
+        }
       },
       "EstornoDto": {
         "type": "object",

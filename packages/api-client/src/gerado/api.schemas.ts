@@ -536,6 +536,70 @@ export interface EncerrarContratoDto {
   justificativa: string;
 }
 
+export type SituacaoProjeto = typeof SituacaoProjeto[keyof typeof SituacaoProjeto];
+
+
+export const SituacaoProjeto = {
+  A_LIBERAR: 'A_LIBERAR',
+  LIBERADO: 'LIBERADO',
+  EM_EXECUCAO: 'EM_EXECUCAO',
+  EXECUTADO: 'EXECUTADO',
+  CANCELADO: 'CANCELADO',
+} as const;
+
+export interface ProjetoDto {
+  id: string;
+  /** Gerado pelo sistema: ano + P + sequência */
+  codigo: string;
+  nome: string;
+  /** @nullable */
+  responsavel: string | null;
+  dataInicio: string;
+  /** @nullable */
+  dataFim: string | null;
+  /**
+     * Nulo = sem orçamento previsto
+     * @nullable
+     */
+  orcamentoPrevistoCentavos: number | null;
+  situacao: SituacaoProjeto;
+  /** Executado ou cancelado */
+  encerrado: boolean;
+  /** Saídas vinculadas, sem estornos */
+  saidasCentavos: number;
+  /** Entradas vinculadas, sem estornos */
+  entradasCentavos: number;
+}
+
+export interface ListaDeProjetosDto {
+  itens: ProjetoDto[];
+}
+
+export interface CriarProjetoDto {
+  nome: string;
+  /** @nullable */
+  responsavel?: string | null;
+  dataInicio: string;
+  /** @nullable */
+  dataFim?: string | null;
+  /** @nullable */
+  orcamentoPrevistoCentavos?: number | null;
+  /** Padrão: A_LIBERAR */
+  situacao?: SituacaoProjeto;
+}
+
+export interface AlterarProjetoDto {
+  nome?: string;
+  /** @nullable */
+  responsavel?: string | null;
+  dataInicio?: string;
+  /** @nullable */
+  dataFim?: string | null;
+  /** @nullable */
+  orcamentoPrevistoCentavos?: number | null;
+  situacao?: SituacaoProjeto;
+}
+
 export interface EstornoDto {
   motivo: string;
 }
@@ -1150,6 +1214,19 @@ export type ListarContratosSituacao = typeof ListarContratosSituacao[keyof typeo
 
 export const ListarContratosSituacao = {
   vigentes: 'vigentes',
+  encerrados: 'encerrados',
+  todos: 'todos',
+} as const;
+
+export type ListarProjetosParams = {
+situacao?: ListarProjetosSituacao;
+};
+
+export type ListarProjetosSituacao = typeof ListarProjetosSituacao[keyof typeof ListarProjetosSituacao];
+
+
+export const ListarProjetosSituacao = {
+  'em-andamento': 'em-andamento',
   encerrados: 'encerrados',
   todos: 'todos',
 } as const;

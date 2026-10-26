@@ -26,8 +26,7 @@ src/
 - Erros da API chegam traduzidos pelo cliente HTTP. Mostre a mensagem recebida; não invente texto técnico.
 - Enquanto um endpoint não existe, o contrato planejado fica em `features/<area>/contrato.ts` (com dados
   fictícios ao lado). Os valores de enum ali seguem o `schema.prisma` e o MER
-  (`docs/arquitetura/mer-financeiro.md`). Pendente: `ProjetoDto` ainda usa `EM_ANDAMENTO | ENCERRADO`
-  e responsável obrigatório; o MER tem 5 situações e responsável opcional.
+  (`docs/arquitetura/mer-financeiro.md`).
 
 ## Regras de interface
 
