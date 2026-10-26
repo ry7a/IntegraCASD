@@ -1,6 +1,8 @@
-import { NavLink } from 'react-router'
+import { getBuscarSessaoQueryKey, useSair } from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
+import { NavLink, useNavigate } from 'react-router'
 import Icone, { type NomeDoIcone } from '@/compartilhado/componentes/Icone'
-import { USUARIO_ATUAL } from '@/compartilhado/usuario-atual'
+import { useUsuarioAtual } from '@/compartilhado/use-usuario-atual'
 
 interface ItemDoMenu {
   icone: NomeDoIcone
@@ -18,6 +20,20 @@ const ITENS_DO_MENU: ItemDoMenu[] = [
 ]
 
 function MenuLateral() {
+  const usuario = useUsuarioAtual()
+  const sair = useSair()
+  const queryClient = useQueryClient()
+  const navegar = useNavigate()
+
+  async function encerrarSessao() {
+    try {
+      await sair.mutateAsync()
+    } finally {
+      queryClient.removeQueries({ queryKey: getBuscarSessaoQueryKey() })
+      navegar('/login', { replace: true })
+    }
+  }
+
   return (
     <aside className="menu">
       <NavLink className="marca" to="/">
@@ -25,7 +41,7 @@ function MenuLateral() {
         <span className="marca-nome">IntegraCASD</span>
       </NavLink>
       <nav aria-label="Menu principal">
-        {ITENS_DO_MENU.map((item) => (
+        {ITENS_DO_MENU.filter((item) => item.rota !== '/administracao' || usuario.perfil === 'DIRETORIA').map((item) => (
           // O NavLink coloca aria-current="page" no item da tela aberta; o CSS pinta o item ativo.
           // "end" no início evita que "/" fique ativo em todas as telas.
           <NavLink key={item.rota} className="menu-item" to={item.rota} end={item.rota === '/'}>
@@ -36,8 +52,11 @@ function MenuLateral() {
         ))}
       </nav>
       <div className="menu-usuario">
-        <strong>{USUARIO_ATUAL.nome}</strong>
-        <span>{USUARIO_ATUAL.perfil}</span>
+        <strong>{usuario.nome}</strong>
+        <span>{usuario.perfil === 'DIRETORIA' ? 'Diretoria' : 'Administrativo'}</span>
+        <button type="button" className="menu-sair" onClick={() => void encerrarSessao()} disabled={sair.isPending}>
+          Sair
+        </button>
       </div>
     </aside>
   )

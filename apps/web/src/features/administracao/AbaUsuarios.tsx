@@ -1,9 +1,11 @@
+import { useState } from 'react'
+import { useListarUsuarios, type UsuarioDto } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarDataHora } from '@/compartilhado/formatacao'
-import { USUARIO_ATUAL } from '@/compartilhado/usuario-atual'
-import { useListarUsuarios } from './consultas'
+import { useUsuarioAtual } from '@/compartilhado/use-usuario-atual'
 import type { PerfilUsuario } from './contrato'
+import DialogoUsuario from './DialogoUsuario'
 
 const ROTULO_DO_PERFIL: Record<PerfilUsuario, string> = {
   DIRETORIA: 'Diretoria',
@@ -14,6 +16,14 @@ const ROTULO_DO_PERFIL: Record<PerfilUsuario, string> = {
 function AbaUsuarios() {
   const consulta = useListarUsuarios()
   const itens = consulta.data?.itens ?? []
+  const usuarioAtual = useUsuarioAtual()
+  const [dialogoAberto, definirDialogoAberto] = useState(false)
+  const [usuarioEmEdicao, definirUsuarioEmEdicao] = useState<UsuarioDto | null>(null)
+
+  function abrirDialogo(usuario: UsuarioDto | null) {
+    definirUsuarioEmEdicao(usuario)
+    definirDialogoAberto(true)
+  }
 
   return (
     <>
@@ -23,8 +33,7 @@ function AbaUsuarios() {
           usuário de diretoria ativo.
         </p>
         <div className="campo" style={{ marginLeft: 'auto' }}>
-          {/* TODO [Administração.RF001]: formulário de novo usuário. */}
-          <button type="button" className="botao botao-principal">
+          <button type="button" className="botao botao-principal" onClick={() => abrirDialogo(null)}>
             <Icone nome="mais" />
             Novo usuário
           </button>
@@ -53,8 +62,8 @@ function AbaUsuarios() {
             </thead>
             <tbody>
               {itens.map((usuario) => {
-                const ehVoce = usuario.email === USUARIO_ATUAL.email
-                const secundario = ehVoce ? 'Você' : usuario.observacao
+                const ehVoce = usuario.id === usuarioAtual.id
+                const secundario = ehVoce ? 'Você' : null
                 return (
                   <tr key={usuario.id}>
                     <td>
@@ -75,7 +84,7 @@ function AbaUsuarios() {
                           </button>
                         </span>
                       ) : (
-                        <button type="button" className="botao botao-pequeno botao-fantasma">
+                        <button type="button" className="botao botao-pequeno botao-fantasma" onClick={() => abrirDialogo(usuario)}>
                           <Icone nome="editar" />
                           Editar
                         </button>
@@ -88,6 +97,13 @@ function AbaUsuarios() {
           </table>
         </div>
       </EstadoDaConsulta>
+      {dialogoAberto && (
+        <DialogoUsuario
+          aberto
+          usuario={usuarioEmEdicao}
+          aoFechar={() => definirDialogoAberto(false)}
+        />
+      )}
     </>
   )
 }

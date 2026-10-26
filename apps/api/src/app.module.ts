@@ -3,6 +3,9 @@ import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './compartilhado/prisma/prisma.module.js';
+import { AutenticacaoModule } from './compartilhado/autenticacao/autenticacao.module.js';
+import { AcessoModule } from './modulos/acesso/index.js';
+import { AdministracaoModule } from './modulos/administracao/index.js';
 import { CadastrosModule } from './modulos/cadastros/index.js';
 import { CobrancasModule } from './modulos/cobrancas/index.js';
 
@@ -18,6 +21,9 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'api',
     }),
     PrismaModule,
+    AutenticacaoModule,
+    AcessoModule,
+    AdministracaoModule,
     CadastrosModule,
     CobrancasModule,
   ],

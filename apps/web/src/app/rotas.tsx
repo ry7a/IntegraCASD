@@ -1,21 +1,22 @@
 import { createBrowserRouter } from 'react-router'
-import PaginaAdministracao from '@/features/administracao/PaginaAdministracao'
+import PaginaLogin from '@/features/acesso/PaginaLogin'
 import PaginaAluno from '@/features/cadastro/PaginaAluno'
 import PaginaCadastros from '@/features/cadastro/PaginaCadastros'
 import PaginaCobranca from '@/features/cobrancas/PaginaCobranca'
 import PaginaCobrancas from '@/features/cobrancas/PaginaCobrancas'
 import PaginaIndicadores from '@/features/indicadores/PaginaIndicadores'
 import PaginaMovimentacoes from '@/features/movimentacoes/PaginaMovimentacoes'
-import Layout from './Layout'
+import GuardaDiretoria from './GuardaDiretoria'
+import LayoutProtegido from './LayoutProtegido'
 import PaginaNaoEncontrada from './PaginaNaoEncontrada'
 
-// Uma rota por tela do protótipo. As telas ficam dentro do Layout (menu lateral + barra do topo).
-// TODO [Segurança]: a guarda de perfil esconderá /administracao de quem não é da diretoria
-// (a permissão de verdade é verificada na API).
+// Uma rota por tela do protótipo. As telas ficam dentro do layout autenticado.
+// A guarda de diretoria melhora a navegacao; a API continua sendo a autoridade da permissao.
 export const rotas = createBrowserRouter([
+  { path: '/login', element: <PaginaLogin /> },
   {
     path: '/',
-    element: <Layout />,
+    element: <LayoutProtegido />,
     children: [
       { index: true, element: <PaginaIndicadores /> },
       { path: 'cadastros', element: <PaginaCadastros /> },
@@ -23,7 +24,7 @@ export const rotas = createBrowserRouter([
       { path: 'cobrancas', element: <PaginaCobrancas /> },
       { path: 'cobrancas/:id', element: <PaginaCobranca /> },
       { path: 'movimentacoes', element: <PaginaMovimentacoes /> },
-      { path: 'administracao', element: <PaginaAdministracao /> },
+      { path: 'administracao', element: <GuardaDiretoria /> },
       { path: '*', element: <PaginaNaoEncontrada /> },
     ],
   },

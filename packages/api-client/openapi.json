@@ -10,9 +10,207 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
         "tags": [
           "App"
         ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "entrar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDaSessaoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais invalidas"
+          }
+        },
+        "summary": "Inicia uma sessao",
+        "tags": [
+          "autenticacao"
+        ]
+      }
+    },
+    "/api/auth/sessao": {
+      "get": {
+        "operationId": "buscarSessao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDaSessaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Retorna o usuario autenticado",
+        "tags": [
+          "autenticacao"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "sair",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Encerra a sessao atual",
+        "tags": [
+          "autenticacao"
+        ]
+      }
+    },
+    "/api/admin/usuarios": {
+      "get": {
+        "operationId": "listarUsuarios",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeUsuariosDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista usuarios e permissoes",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      },
+      "post": {
+        "operationId": "criarUsuario",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Concede acesso a um usuario",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/admin/usuarios/{id}": {
+      "patch": {
+        "operationId": "alterarUsuario",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarUsuarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera ou revoga um acesso",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
       }
     },
     "/api/alunos": {
@@ -31,6 +229,11 @@
             }
           }
         },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
         "summary": "Lista os alunos ativos",
         "tags": [
           "alunos"
@@ -47,7 +250,172 @@
   "tags": [],
   "servers": [],
   "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "integracasd_sessao"
+      }
+    },
     "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "diretoria@casd.ita.br"
+          },
+          "senha": {
+            "type": "string",
+            "minLength": 12,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "email",
+          "senha"
+        ]
+      },
+      "UsuarioDaSessaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRATIVO",
+              "DIRETORIA"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "perfil"
+        ]
+      },
+      "UsuarioDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRATIVO",
+              "DIRETORIA"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "ultimoAcessoEm": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "email",
+          "perfil",
+          "ativo",
+          "ultimoAcessoEm"
+        ]
+      },
+      "ListaDeUsuariosDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsuarioDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "CriarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "example": "usuario@casd.ita.br"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRATIVO",
+              "DIRETORIA"
+            ]
+          },
+          "ativo": {
+            "type": "boolean",
+            "default": true
+          },
+          "senhaInicial": {
+            "type": "string",
+            "minLength": 12,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "perfil",
+          "senhaInicial"
+        ]
+      },
+      "AlterarUsuarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "example": "usuario@casd.ita.br"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRATIVO",
+              "DIRETORIA"
+            ]
+          },
+          "ativo": {
+            "type": "boolean"
+          },
+          "novaSenha": {
+            "type": "string",
+            "minLength": 12,
+            "writeOnly": true
+          }
+        }
+      },
       "SituacaoAluno": {
         "type": "string",
         "enum": [
