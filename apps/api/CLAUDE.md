@@ -20,6 +20,9 @@ src/modulos/cobrancas/
 - Um caso de uso por arquivo, com nome de ação: `emitir-cobranca-avulsa.ts`.
 - O Cadastros é o módulo de referência: na dúvida sobre estrutura, siga o que ele faz.
 - Código compartilhado entre módulos (auditoria, autenticação, eventos internos, cliente Asaas) fica em `src/compartilhado/`.
+- Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
+  (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
+  enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
 
 ## Prisma e banco
 

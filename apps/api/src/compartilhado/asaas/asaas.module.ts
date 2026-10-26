@@ -44,6 +44,10 @@ export class ClienteAsaasSobDemanda extends ClienteAsaas {
     return this.cliente().criarCliente(dados);
   }
 
+  atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void> {
+    return this.cliente().atualizarCliente(idAsaas, dados);
+  }
+
   criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
     return this.cliente().criarCobranca(dados);
   }

@@ -6,6 +6,7 @@ import { CadastrosModule } from '../cadastros/index.js';
 import { CobrancasController } from './api/cobrancas.controller.js';
 import { GeracaoRecorrenteController } from './api/geracao-recorrente.controller.js';
 import { WebhookAsaasController } from './api/webhook-asaas.controller.js';
+import { AtualizarClienteAsaas } from './aplicacao/atualizar-cliente-asaas.js';
 import { CancelarCobranca } from './aplicacao/cancelar-cobranca.js';
 import { ConsultarCobrancas } from './aplicacao/consultar-cobrancas.js';
 import { DetalharCobranca } from './aplicacao/detalhar-cobranca.js';
@@ -24,6 +25,7 @@ import { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-rec
 import { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
 import { EventosWebhookRepositorio } from './infra/eventos-webhook.repositorio.js';
 import { ExecucoesRepositorio } from './infra/execucoes.repositorio.js';
+import { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
 import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
 
 // Módulo Cobranças: emissão no Asaas, consulta, geração recorrente e webhook. Exporta os
@@ -51,7 +53,9 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     PedirGeracaoAgora,
     ListarExecucoesDaGeracao,
     ConsumidorDaGeracaoRecorrente,
+    AtualizarClienteAsaas,
+    ReacaoAAlunoAlterado,
   ],
-  exports: [ConsumidorDeEventosWebhook, ConsumidorDaGeracaoRecorrente],
+  exports: [ConsumidorDeEventosWebhook, ConsumidorDaGeracaoRecorrente, ReacaoAAlunoAlterado],
 })
 export class CobrancasModule {}

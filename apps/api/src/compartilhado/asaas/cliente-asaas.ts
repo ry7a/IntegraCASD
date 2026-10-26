@@ -58,6 +58,8 @@ export abstract class ClienteAsaas {
   // Se a chave e o ambiente estão configurados. Não chama o Asaas.
   abstract estaConfigurado(): boolean;
   abstract criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }>;
+  // Atualiza nome, CPF e e-mail do cliente (quando o cadastro do aluno muda).
+  abstract atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void>;
   abstract criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas>;
   // Cancela (no Asaas, "exclui") uma cobrança não paga: o boleto deixa de valer.
   abstract cancelarCobranca(idAsaas: string): Promise<void>;

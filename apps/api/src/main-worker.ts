@@ -1,7 +1,11 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { NestFactory } from '@nestjs/core';
-import { ConsumidorDaGeracaoRecorrente, ConsumidorDeEventosWebhook } from './modulos/cobrancas/index.js';
+import {
+  ConsumidorDaGeracaoRecorrente,
+  ConsumidorDeEventosWebhook,
+  ReacaoAAlunoAlterado,
+} from './modulos/cobrancas/index.js';
 import { WorkerModule } from './worker.module.js';
 
 // Mesmo padrão do main.ts: em desenvolvimento carrega o .env da raiz do monorepo.
@@ -18,5 +22,6 @@ async function bootstrap() {
   app.enableShutdownHooks();
   await app.get(ConsumidorDeEventosWebhook).iniciar();
   await app.get(ConsumidorDaGeracaoRecorrente).iniciar();
+  await app.get(ReacaoAAlunoAlterado).iniciar();
 }
 await bootstrap();

@@ -67,6 +67,14 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     return { idAsaas: resposta.id };
   }
 
+  async atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void> {
+    await this.enviar<{ id: string }>('PUT', `/customers/${encodeURIComponent(idAsaas)}`, {
+      name: dados.nome,
+      cpfCnpj: dados.cpf,
+      email: dados.email,
+    });
+  }
+
   async criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
     if (!Number.isInteger(dados.valorEmCentavos) || dados.valorEmCentavos <= 0) {
       throw new Error('valorEmCentavos deve ser um inteiro positivo.');
@@ -99,7 +107,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
 
   // Envia a requisição. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
   // informou e tenta de novo, até o limite de tentativas.
-  private async enviar<T>(metodo: 'POST' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
+  private async enviar<T>(metodo: 'POST' | 'PUT' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
     for (let tentativa = 1; ; tentativa++) {
       let resposta: Response;
       try {

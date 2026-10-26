@@ -59,6 +59,17 @@ describe('ClienteAsaasHttp', () => {
     });
   });
 
+  it('atualiza o cliente com PUT /customers/{id}', async () => {
+    chamarHttp.mockResolvedValueOnce(resposta(200, { id: 'cus_1' }));
+
+    await cliente.atualizarCliente('cus_1', { nome: 'Ana Ficticia', cpf: '52998224725', email: 'ana@exemplo.com' });
+
+    const [url, opcoes = {}] = chamarHttp.mock.calls[0];
+    expect(url).toBe('https://asaas.teste/v3/customers/cus_1');
+    expect(opcoes.method).toBe('PUT');
+    expect(JSON.parse(opcoes.body as string)).toEqual({ name: 'Ana Ficticia', cpfCnpj: '52998224725', email: 'ana@exemplo.com' });
+  });
+
   it('cancela com DELETE /payments/{id}, sem corpo', async () => {
     chamarHttp.mockResolvedValueOnce(resposta(200, { deleted: true, id: 'pay_1' }));
 
