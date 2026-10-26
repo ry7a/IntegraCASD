@@ -58,7 +58,6 @@ pnpm gerar:cliente-api       # regenera packages/api-client depois de mudar cont
 pnpm verificar:arquitetura   # funções de aptidão (migrações imutáveis, cores)
 pnpm verificar:contrato      # falha se o cliente da API estiver desatualizado
 .\scripts\backup\fazer-backup.ps1   # backup do banco (docs/playbooks/backup-e-restauracao.md)
-.\scriptsackup
 .\scripts\backup\restaurar-backup.ps1 -Arquivo <dump>  # restaura num banco separado e confere
 ```
 
