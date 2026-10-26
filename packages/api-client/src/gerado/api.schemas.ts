@@ -125,6 +125,18 @@ export interface AlterarCategoriaDto {
   ativo?: boolean;
 }
 
+export interface OpcaoDto {
+  id: string;
+  nome: string;
+}
+
+export interface OpcoesDeDestinoDto {
+  /** Contas ativas */
+  contas: OpcaoDto[];
+  /** Categorias ativas de entrada */
+  categorias: OpcaoDto[];
+}
+
 export interface ParametrosVigentesDto {
   valorMensalidadeCentavos: number;
   /**
@@ -150,6 +162,21 @@ export interface ParametrosVigentesDto {
      * @maximum 1
      */
   jurosMensalPercentual: number;
+  /**
+     * Conta onde entram os pagamentos conciliados
+     * @nullable
+     */
+  contaRecebimentoId?: string | null;
+  /**
+     * Categoria da entrada de uma mensalidade paga
+     * @nullable
+     */
+  categoriaMensalidadeId?: string | null;
+  /**
+     * Categoria da entrada de uma cobrança avulsa paga
+     * @nullable
+     */
+  categoriaAvulsaId?: string | null;
   alteradoEm: string;
   /** Nome de quem fez a última alteração */
   alteradoPor: string;
@@ -199,6 +226,21 @@ export interface ParametrosDeCobrancaDto {
      * @maximum 1
      */
   jurosMensalPercentual: number;
+  /**
+     * Conta onde entram os pagamentos conciliados
+     * @nullable
+     */
+  contaRecebimentoId?: string | null;
+  /**
+     * Categoria da entrada de uma mensalidade paga
+     * @nullable
+     */
+  categoriaMensalidadeId?: string | null;
+  /**
+     * Categoria da entrada de uma cobrança avulsa paga
+     * @nullable
+     */
+  categoriaAvulsaId?: string | null;
 }
 
 /**

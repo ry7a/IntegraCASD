@@ -36,6 +36,7 @@ import type {
   IntegracaoAsaasDto,
   ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
+  OpcoesDeDestinoDto,
   ParametrosDeCobrancaDto,
   PrazoDoAlertaDto,
   SubstituirChaveAsaasDto,
@@ -692,7 +693,107 @@ export const useExcluirCategoria = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getExcluirCategoriaMutationOptions(options), queryClient);
     }
-    export const getBuscarParametrosDeCobrancaUrl = () => {
+    export const getListarDestinosDaConciliacaoUrl = () => {
+
+
+
+
+  return `/api/admin/parametros-cobranca/destinos`
+}
+
+/**
+ * @summary Contas e categorias que podem receber os pagamentos conciliados
+ */
+export const listarDestinosDaConciliacao = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<OpcoesDeDestinoDto> => {
+
+  return clienteHttp<OpcoesDeDestinoDto>(getListarDestinosDaConciliacaoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarDestinosDaConciliacaoQueryKey = () => {
+    return [
+    `/api/admin/parametros-cobranca/destinos`
+    ] as const;
+    }
+
+
+export const getListarDestinosDaConciliacaoQueryOptions = <TData = Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarDestinosDaConciliacaoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>> = ({ signal }) => listarDestinosDaConciliacao({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarDestinosDaConciliacaoQueryResult = NonNullable<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>>
+export type ListarDestinosDaConciliacaoQueryError = ErrorType<unknown>
+
+
+export function useListarDestinosDaConciliacao<TData = Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarDestinosDaConciliacao>>,
+          TError,
+          Awaited<ReturnType<typeof listarDestinosDaConciliacao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarDestinosDaConciliacao<TData = Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarDestinosDaConciliacao>>,
+          TError,
+          Awaited<ReturnType<typeof listarDestinosDaConciliacao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarDestinosDaConciliacao<TData = Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Contas e categorias que podem receber os pagamentos conciliados
+ */
+
+export function useListarDestinosDaConciliacao<TData = Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarDestinosDaConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarDestinosDaConciliacaoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getBuscarParametrosDeCobrancaUrl = () => {
 
 
 

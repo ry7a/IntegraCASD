@@ -22,16 +22,18 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 | --- | --- | --- |
 | `usuarios`, `sessoes` | acesso ao sistema ([Administração.RF001]) | perfis administrativo e diretoria |
 | `registros_auditoria` | trilha de auditoria ([Segurança.NF006]) | só de inclusão; o banco recusa `UPDATE` e `DELETE` (ADR-0004) |
-| `parametros_cobranca` | parâmetros da mensalidade ([Administração.RF003]) | uma linha por alteração, nunca alterada; a vigente é a mais recente |
-| `eventos_webhook` | eventos recebidos do Asaas ([Desempenho.NF001]) | id do Asaas único, para a idempotência |
+| `parametros_cobranca` | parâmetros da mensalidade ([Administração.RF003]) | uma linha por alteração, nunca alterada; a vigente é a mais recente. Guarda também a conta e as categorias onde entram os pagamentos conciliados |
+| `eventos_webhook` | eventos recebidos do Asaas ([Desempenho.NF001]) | id do Asaas único, para a idempotência; `processado_em` marcado na mesma transação da baixa; `pendencia` com o motivo quando o evento pede conferência humana |
 | `execucoes_geracao` | cada execução da geração recorrente ([Confiabilidade.NF007]) | início, fim, criadas, já existentes, falhas (aluno e motivo) e se foi interrompida |
 | `clientes_asaas` | o cliente do Asaas de cada aluno | criado na primeira cobrança; fica em Cobranças para o Cadastros não depender do Asaas |
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem
 (`MENSALIDADE` ou `AVULSA`), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
 Asaas na emissão, links do boleto e da fatura, os dados de cancelamento e, na renegociação, o vínculo com a
-cobrança cancelada que ela substitui (`renegociacao_de_id`, único). "Vencida" não é guardada: é
-uma cobrança aberta com o vencimento passado.
+cobrança cancelada que ela substitui (`renegociacao_de_id`, único), e a data em que o valor ficou disponível
+no Asaas (`disponivel_em`, [Cobranças.RF005] fluxo A1). "Vencida" não é guardada: é
+uma cobrança aberta com o vencimento passado. Cobrança paga sempre tem `paga_em` e a movimentação de
+entrada (CHECK no banco).
 
 ## Regras que o diagrama não mostra
 
@@ -130,3 +132,13 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
 12. **Exclusão de categoria:** categoria que nunca foi usada pode ser excluída (por exemplo, criada por
     engano). Com movimentações, só pode ser inativada. É a única exceção à regra "nada é excluído
     fisicamente" e diverge do [Administração.RF002] (decisão de 26/10/2026).
+13. **Destino da conciliação** ([Cobranças.RF005], passo 6): o requisito fala em "categoria associada ao
+    tipo da cobrança", mas não dizia onde essa associação vive. Ela fica nos parâmetros de cobrança: conta
+    de recebimento, categoria das mensalidades e categoria das avulsas (opcionais, porque a conta pode
+    ainda não existir). Sem elas, o pagamento confirmado não é baixado pela metade: o evento fica sem
+    processar, o worker registra o motivo no log e a fila tenta de novo (decisão de 26/10/2026).
+14. **Valor da entrada conciliada:** o valor pago pelo aluno (com multa e juros, se houve), como o Asaas
+    informa. A taxa do Asaas não é descontada nem lançada como saída; fica para decidir com a equipe.
+15. **Estorno vindo do Asaas:** a cobrança passa a "Estornada" e a entrada é anulada por uma movimentação
+    espelho (origem `ESTORNO`), nunca apagada nem alterada. Cobrança removida no painel do Asaas é
+    cancelada aqui.

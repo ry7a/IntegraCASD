@@ -4,14 +4,12 @@
     {
       "id": "Confiabilidade.NF003",
       "titulo": "Idempotência no processamento de notificações",
-      "situacao": "pendente",
-      "motivo": "Webhook e worker ainda não existem. O teste vem junto com o módulo de Cobranças (B10 no ADR-0003)."
+      "situacao": "coberto"
     },
     {
       "id": "Confiabilidade.NF004",
       "titulo": "Atomicidade da baixa de cobrança",
-      "situacao": "pendente",
-      "motivo": "A baixa depende do módulo de Cobranças, ainda não implementado (B10 no ADR-0003)."
+      "situacao": "coberto"
     },
     {
       "id": "Confiabilidade.NF005",

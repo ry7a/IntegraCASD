@@ -8,6 +8,14 @@ export type ParametrosDeCobranca = {
   // Percentuais inteiros (2 = 2%). Quem calcula multa e juros é o Asaas, no pagamento.
   multaPercentual: number;
   jurosMensalPercentual: number;
+} & DestinoDaConciliacao;
+
+// Onde entra o pagamento conciliado [Cobranças.RF005] passo 6. Nulo = ainda não escolhido: a
+// conciliação espera, porque não há como criar a movimentação de entrada sem conta e categoria.
+export type DestinoDaConciliacao = {
+  contaRecebimentoId: string | null;
+  categoriaMensalidadeId: string | null;
+  categoriaAvulsaId: string | null;
 };
 
 export class ParametroInvalido extends Error {}
@@ -16,6 +24,14 @@ export class ParametroInvalido extends Error {}
 // mora até 1% ao mês.
 export const MULTA_MAXIMA_PERCENTUAL = 2;
 export const JUROS_MAXIMO_PERCENTUAL_AO_MES = 1;
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function idOpcional(valor: unknown, mensagem: string): string | null {
+  if (valor === undefined || valor === null || valor === '') return null;
+  if (typeof valor !== 'string' || !UUID.test(valor)) throw new ParametroInvalido(mensagem);
+  return valor;
+}
 
 function inteiroEntre(valor: unknown, minimo: number, maximo: number, mensagem: string): number {
   if (typeof valor !== 'number' || !Number.isInteger(valor) || valor < minimo || valor > maximo) {
@@ -47,6 +63,9 @@ export function lerParametros(entrada: Partial<Record<keyof ParametrosDeCobranca
       JUROS_MAXIMO_PERCENTUAL_AO_MES,
       `Os juros devem ser de 0% a ${JUROS_MAXIMO_PERCENTUAL_AO_MES}% ao mês.`,
     ),
+    contaRecebimentoId: idOpcional(entrada.contaRecebimentoId, 'Escolha a conta de recebimento na lista.'),
+    categoriaMensalidadeId: idOpcional(entrada.categoriaMensalidadeId, 'Escolha a categoria das mensalidades na lista.'),
+    categoriaAvulsaId: idOpcional(entrada.categoriaAvulsaId, 'Escolha a categoria das cobranças avulsas na lista.'),
   };
   // Fluxo E1: gerar depois do vencimento produziria cobranças já vencidas na emissão.
   if (parametros.diaGeracao >= parametros.diaVencimento) {
@@ -90,4 +109,30 @@ export function conferir(parametros: ParametrosDeCobranca, hoje: string, alunosC
     alunosCobrados: alunosCobraveis,
     totalPrevistoCentavos: alunosCobraveis * parametros.valorMensalidadeCentavos,
   };
+}
+
+export type OpcaoDeDestino = { id: string; ativo: boolean; tipo?: 'ENTRADA' | 'SAIDA' | 'AMBOS' };
+
+// Confere o destino escolhido contra o que existe no banco: conta ativa e categorias ativas que
+// aceitam entrada (uma mensalidade paga é entrada de dinheiro).
+export function conferirDestino(
+  destino: DestinoDaConciliacao,
+  encontrados: { conta: OpcaoDeDestino | null; categoriaMensalidade: OpcaoDeDestino | null; categoriaAvulsa: OpcaoDeDestino | null },
+): void {
+  if (destino.contaRecebimentoId !== null && (encontrados.conta === null || !encontrados.conta.ativo)) {
+    throw new ParametroInvalido('A conta de recebimento não foi encontrada ou está inativa. Escolha outra na lista.');
+  }
+  const categorias = [
+    { id: destino.categoriaMensalidadeId, encontrada: encontrados.categoriaMensalidade, nome: 'das mensalidades' },
+    { id: destino.categoriaAvulsaId, encontrada: encontrados.categoriaAvulsa, nome: 'das cobranças avulsas' },
+  ];
+  for (const { id, encontrada, nome } of categorias) {
+    if (id === null) continue;
+    if (encontrada === null || !encontrada.ativo) {
+      throw new ParametroInvalido(`A categoria ${nome} não foi encontrada ou está inativa. Escolha outra na lista.`);
+    }
+    if (encontrada.tipo === 'SAIDA') {
+      throw new ParametroInvalido(`A categoria ${nome} é só de saída. Escolha uma categoria de entrada.`);
+    }
+  }
 }

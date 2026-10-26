@@ -10,12 +10,16 @@ const validos = {
   diaGeracao: 1,
   multaPercentual: 2,
   jurosMensalPercentual: 1,
+  contaRecebimentoId: null,
+  categoriaMensalidadeId: null,
+  categoriaAvulsaId: null,
 };
 
 function repositorioFalso(vigentes: object | null) {
   const gravados: unknown[] = [];
   const repositorio = {
     buscarVigentes: async () => vigentes,
+    encontrarDestino: async () => ({ conta: null, categoriaMensalidade: null, categoriaAvulsa: null }),
     gravar: async (parametros: unknown) => void gravados.push(parametros),
   } as unknown as ParametrosRepositorio;
   return { repositorio, gravados };

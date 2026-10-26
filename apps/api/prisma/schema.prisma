@@ -318,6 +318,9 @@ model EventoWebhook {
   payload       Json
   // Preenchido pelo worker, na mesma transação da baixa. Nulo = ainda não processado.
   processadoEm  DateTime? @map("processado_em")
+  // [Cobranças.RF005] fluxo E1 e [Cobranças.RF006] fluxo E2: o evento foi processado, mas precisa de
+  // conferência humana (cobrança não encontrada, pagamento de cobrança já baixada à mão). Nulo = nada a conferir.
+  pendencia     String?
   dataCriacao   DateTime  @default(now()) @map("data_criacao")
   dataAlteracao DateTime  @updatedAt @map("data_alteracao")
 
@@ -346,7 +349,8 @@ model Conta {
   dataCriacao          DateTime  @default(now()) @map("data_criacao")
   dataAlteracao        DateTime  @updatedAt @map("data_alteracao")
 
-  movimentacoes Movimentacao[]
+  movimentacoes      Movimentacao[]
+  parametrosCobranca ParametrosCobranca[]
 
   @@map("contas")
 }
@@ -368,7 +372,9 @@ model Categoria {
   dataCriacao   DateTime      @default(now()) @map("data_criacao")
   dataAlteracao DateTime      @updatedAt @map("data_alteracao")
 
-  movimentacoes Movimentacao[]
+  movimentacoes         Movimentacao[]
+  parametrosMensalidade ParametrosCobranca[] @relation("CategoriaMensalidade")
+  parametrosAvulsa      ParametrosCobranca[] @relation("CategoriaAvulsa")
 
   // Nome único só entre as ativas: uma categoria inativa não impede recriar o nome.
   @@unique([nome], map: "categorias_nome_ativa_key", where: { ativo: true })
@@ -469,16 +475,24 @@ model Movimentacao {
 // não são afetadas. Regras garantidas por CHECK na migração: dias de 1 a 28, geração antes do
 // vencimento, valor positivo, multa de 0 a 2% e juros de 0 a 1% ao mês.
 model ParametrosCobranca {
-  id                       String   @id @default(uuid()) @db.Uuid
-  valorMensalidadeCentavos Int      @map("valor_mensalidade_centavos")
-  diaVencimento            Int      @map("dia_vencimento")
-  diaGeracao               Int      @map("dia_geracao")
+  id                       String     @id @default(uuid()) @db.Uuid
+  valorMensalidadeCentavos Int        @map("valor_mensalidade_centavos")
+  diaVencimento            Int        @map("dia_vencimento")
+  diaGeracao               Int        @map("dia_geracao")
   // Percentual inteiro (2 = 2%). Quem calcula multa e juros é o Asaas, no pagamento.
-  multaPercentual          Int      @map("multa_percentual")
-  jurosMensalPercentual    Int      @map("juros_mensal_percentual")
-  alteradoPorId            String   @map("alterado_por_id") @db.Uuid
-  alteradoPor              Usuario  @relation(fields: [alteradoPorId], references: [id], onDelete: Restrict)
-  dataCriacao              DateTime @default(now()) @map("data_criacao")
+  multaPercentual          Int        @map("multa_percentual")
+  jurosMensalPercentual    Int        @map("juros_mensal_percentual")
+  // Onde entra o pagamento conciliado [Cobranças.RF005] passo 6: conta e categoria por origem da
+  // cobrança. Opcionais (a conta pode ainda não existir); sem eles, a conciliação espera.
+  contaRecebimentoId       String?    @map("conta_recebimento_id") @db.Uuid
+  contaRecebimento         Conta?     @relation(fields: [contaRecebimentoId], references: [id], onDelete: Restrict)
+  categoriaMensalidadeId   String?    @map("categoria_mensalidade_id") @db.Uuid
+  categoriaMensalidade     Categoria? @relation("CategoriaMensalidade", fields: [categoriaMensalidadeId], references: [id], onDelete: Restrict)
+  categoriaAvulsaId        String?    @map("categoria_avulsa_id") @db.Uuid
+  categoriaAvulsa          Categoria? @relation("CategoriaAvulsa", fields: [categoriaAvulsaId], references: [id], onDelete: Restrict)
+  alteradoPorId            String     @map("alterado_por_id") @db.Uuid
+  alteradoPor              Usuario    @relation(fields: [alteradoPorId], references: [id], onDelete: Restrict)
+  dataCriacao              DateTime   @default(now()) @map("data_criacao")
 
   @@index([dataCriacao])
   @@map("parametros_cobranca")
@@ -519,7 +533,8 @@ enum SituacaoCobranca {
 
 // [Cobranças.RF001 a RF008]. Nenhuma cobrança existe só aqui: ela é gravada depois que o Asaas a
 // criou, com o id dele. Multa e juros são os dos parâmetros no momento da emissão (o Asaas calcula).
-// Regras garantidas por CHECK na migração: valor positivo e percentuais nos limites legais.
+// Regras garantidas por CHECK na migração: valor positivo, percentuais nos limites legais e cobrança
+// paga sempre com data do pagamento e movimentação de entrada.
 model Cobranca {
   id                    String           @id @default(uuid()) @db.Uuid
   idAsaas               String           @unique @map("id_asaas") // ex.: "pay_..."
@@ -541,6 +556,8 @@ model Cobranca {
   emitidaPor            Usuario?         @relation(fields: [emitidaPorId], references: [id], onDelete: Restrict)
   // Preenchidos na baixa (mesma transação da movimentação de entrada) [Confiabilidade.NF004].
   pagaEm                DateTime?        @map("paga_em") @db.Date
+  // [Cobranças.RF005] fluxo A1: quando o valor ficou disponível na conta do Asaas (pode vir depois do pagamento).
+  disponivelEm          DateTime?        @map("disponivel_em") @db.Date
   movimentacaoId        String?          @unique @map("movimentacao_id") @db.Uuid
   movimentacao          Movimentacao?    @relation(fields: [movimentacaoId], references: [id], onDelete: Restrict)
   canceladaEm           DateTime?        @map("cancelada_em")

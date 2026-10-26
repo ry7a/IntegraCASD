@@ -1,4 +1,4 @@
-import { ParametroInvalido, conferir, lerParametros, proximoCiclo } from './parametros-de-cobranca.js';
+import { ParametroInvalido, conferir, conferirDestino, lerParametros, proximoCiclo } from './parametros-de-cobranca.js';
 
 const validos = {
   valorMensalidadeCentavos: 8500,
@@ -6,7 +6,13 @@ const validos = {
   diaGeracao: 1,
   multaPercentual: 2,
   jurosMensalPercentual: 1,
+  contaRecebimentoId: null,
+  categoriaMensalidadeId: null,
+  categoriaAvulsaId: null,
 };
+
+const CONTA = '11111111-1111-4111-8111-111111111111';
+const CATEGORIA = '22222222-2222-4222-8222-222222222222';
 
 describe('parâmetros de cobrança [Administração.RF003]', () => {
   it('aceita parâmetros válidos', () => {
@@ -30,6 +36,43 @@ describe('parâmetros de cobrança [Administração.RF003]', () => {
   it('valor em centavos, inteiro e positivo', () => {
     expect(() => lerParametros({ ...validos, valorMensalidadeCentavos: 85.5 })).toThrow(ParametroInvalido);
     expect(() => lerParametros({ ...validos, valorMensalidadeCentavos: 0 })).toThrow(ParametroInvalido);
+  });
+});
+
+describe('destino da conciliação [Cobranças.RF005]', () => {
+  it('conta e categorias são opcionais; vazio vira nulo', () => {
+    expect(lerParametros({ ...validos, contaRecebimentoId: '' })).toMatchObject({ contaRecebimentoId: null });
+    expect(lerParametros({ ...validos, contaRecebimentoId: CONTA })).toMatchObject({ contaRecebimentoId: CONTA });
+    expect(() => lerParametros({ ...validos, categoriaAvulsaId: 'nao-e-id' })).toThrow(/categoria das cobranças avulsas/);
+  });
+
+  it('aceita conta ativa e categorias de entrada ou de ambos os tipos', () => {
+    const destino = { contaRecebimentoId: CONTA, categoriaMensalidadeId: CATEGORIA, categoriaAvulsaId: CATEGORIA };
+    expect(() =>
+      conferirDestino(destino, {
+        conta: { id: CONTA, ativo: true },
+        categoriaMensalidade: { id: CATEGORIA, ativo: true, tipo: 'ENTRADA' },
+        categoriaAvulsa: { id: CATEGORIA, ativo: true, tipo: 'AMBOS' },
+      }),
+    ).not.toThrow();
+  });
+
+  it('recusa conta inativa, categoria inexistente e categoria só de saída', () => {
+    const destino = { contaRecebimentoId: CONTA, categoriaMensalidadeId: CATEGORIA, categoriaAvulsaId: null };
+    const categoriaBoa = { id: CATEGORIA, ativo: true, tipo: 'ENTRADA' as const };
+    expect(() =>
+      conferirDestino(destino, { conta: { id: CONTA, ativo: false }, categoriaMensalidade: categoriaBoa, categoriaAvulsa: null }),
+    ).toThrow(/conta de recebimento/);
+    expect(() =>
+      conferirDestino(destino, { conta: { id: CONTA, ativo: true }, categoriaMensalidade: null, categoriaAvulsa: null }),
+    ).toThrow(/não foi encontrada/);
+    expect(() =>
+      conferirDestino(destino, {
+        conta: { id: CONTA, ativo: true },
+        categoriaMensalidade: { ...categoriaBoa, tipo: 'SAIDA' },
+        categoriaAvulsa: null,
+      }),
+    ).toThrow(/só de saída/);
   });
 });
 

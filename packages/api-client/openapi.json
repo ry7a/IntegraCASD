@@ -352,6 +352,34 @@
         "x-perfil": "DIRETORIA"
       }
     },
+    "/api/admin/parametros-cobranca/destinos": {
+      "get": {
+        "operationId": "listarDestinosDaConciliacao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpcoesDeDestinoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Contas e categorias que podem receber os pagamentos conciliados",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
     "/api/admin/parametros-cobranca": {
       "get": {
         "operationId": "buscarParametrosDeCobranca",
@@ -1490,6 +1518,45 @@
           }
         }
       },
+      "OpcaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "OpcoesDeDestinoDto": {
+        "type": "object",
+        "properties": {
+          "contas": {
+            "description": "Contas ativas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpcaoDto"
+            }
+          },
+          "categorias": {
+            "description": "Categorias ativas de entrada",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpcaoDto"
+            }
+          }
+        },
+        "required": [
+          "contas",
+          "categorias"
+        ]
+      },
       "ParametrosVigentesDto": {
         "type": "object",
         "properties": {
@@ -1521,6 +1588,24 @@
             "minimum": 0,
             "maximum": 1,
             "description": "Percentual inteiro ao mês (1 = 1%)"
+          },
+          "contaRecebimentoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Conta onde entram os pagamentos conciliados"
+          },
+          "categoriaMensalidadeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Categoria da entrada de uma mensalidade paga"
+          },
+          "categoriaAvulsaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Categoria da entrada de uma cobrança avulsa paga"
           },
           "alteradoEm": {
             "type": "string",
@@ -1627,6 +1712,24 @@
             "minimum": 0,
             "maximum": 1,
             "description": "Percentual inteiro ao mês (1 = 1%)"
+          },
+          "contaRecebimentoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Conta onde entram os pagamentos conciliados"
+          },
+          "categoriaMensalidadeId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Categoria da entrada de uma mensalidade paga"
+          },
+          "categoriaAvulsaId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Categoria da entrada de uma cobrança avulsa paga"
           }
         },
         "required": [

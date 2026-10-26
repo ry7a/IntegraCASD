@@ -17,6 +17,7 @@ function criarEvento(processadoEm: Date | null): EventoWebhook {
     tipo: recebido.tipo,
     payload: recebido.payload,
     processadoEm,
+    pendencia: null,
     dataCriacao: new Date('2026-01-01'),
     dataAlteracao: new Date('2026-01-01'),
   };

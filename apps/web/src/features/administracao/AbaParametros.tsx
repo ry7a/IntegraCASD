@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import {
   getBuscarParametrosDeCobrancaQueryKey,
@@ -8,10 +8,12 @@ import {
   useAlterarParametrosDeCobranca,
   useBuscarParametrosDeCobranca,
   useConferirParametrosDeCobranca,
+  useListarDestinosDaConciliacao,
   useListarExecucoesDaGeracao,
   usePedirGeracaoAgora,
   type ConferenciaDto,
   type ExecucaoGeracaoDto,
+  type OpcoesDeDestinoDto,
   type ParametrosDeCobrancaDto,
   type ParametrosVigentesDto,
 } from '@integracasd/api-client'
@@ -38,12 +40,25 @@ const esquema = z.object({
   diaGeracao: inteiro('Informe o dia de geração, de 1 a 28.'),
   multaPercentual: inteiro('Informe a multa em % inteiro, de 0 a 2.'),
   jurosMensalPercentual: inteiro('Informe os juros em % inteiro ao mês, de 0 a 1.'),
+  // Vazio = ainda não escolhido.
+  contaRecebimentoId: z.string(),
+  categoriaMensalidadeId: z.string(),
+  categoriaAvulsaId: z.string(),
 })
 type Formulario = z.infer<typeof esquema>
 
 function paraFormulario(vigentes: ParametrosVigentesDto | null): Formulario {
   if (vigentes === null) {
-    return { valor: '', diaVencimento: '10', diaGeracao: '1', multaPercentual: '2', jurosMensalPercentual: '1' }
+    return {
+      valor: '',
+      diaVencimento: '10',
+      diaGeracao: '1',
+      multaPercentual: '2',
+      jurosMensalPercentual: '1',
+      contaRecebimentoId: '',
+      categoriaMensalidadeId: '',
+      categoriaAvulsaId: '',
+    }
   }
   return {
     valor: formatarValorParaCampo(vigentes.valorMensalidadeCentavos),
@@ -51,6 +66,9 @@ function paraFormulario(vigentes: ParametrosVigentesDto | null): Formulario {
     diaGeracao: String(vigentes.diaGeracao),
     multaPercentual: String(vigentes.multaPercentual),
     jurosMensalPercentual: String(vigentes.jurosMensalPercentual),
+    contaRecebimentoId: vigentes.contaRecebimentoId ?? '',
+    categoriaMensalidadeId: vigentes.categoriaMensalidadeId ?? '',
+    categoriaAvulsaId: vigentes.categoriaAvulsaId ?? '',
   }
 }
 
@@ -61,20 +79,28 @@ function paraCorpo(formulario: Formulario): ParametrosDeCobrancaDto {
     diaGeracao: Number(formulario.diaGeracao),
     multaPercentual: Number(formulario.multaPercentual),
     jurosMensalPercentual: Number(formulario.jurosMensalPercentual),
+    contaRecebimentoId: formulario.contaRecebimentoId || null,
+    categoriaMensalidadeId: formulario.categoriaMensalidadeId || null,
+    categoriaAvulsaId: formulario.categoriaAvulsaId || null,
   }
 }
 
 // Parâmetros das cobranças recorrentes. [Administração.RF003]
 function AbaParametros() {
   const consulta = useBuscarParametrosDeCobranca()
+  const destinos = useListarDestinosDaConciliacao()
   const dados = consulta.data
 
   return (
-    <EstadoDaConsulta carregando={consulta.isPending} erro={consulta.error} aoTentarDeNovo={() => void consulta.refetch()}>
-      {dados && (
+    <EstadoDaConsulta
+      carregando={consulta.isPending || destinos.isPending}
+      erro={consulta.error ?? destinos.error}
+      aoTentarDeNovo={() => void Promise.all([consulta.refetch(), destinos.refetch()])}
+    >
+      {dados && destinos.data && (
         <div className="grade grade-2-1">
           {/* `key` recria o formulário quando os vigentes mudam (depois de salvar). */}
-          <FormularioDeParametros key={dados.vigentes?.alteradoEm ?? 'novo'} vigentes={dados.vigentes} />
+          <FormularioDeParametros key={dados.vigentes?.alteradoEm ?? 'novo'} vigentes={dados.vigentes} destinos={destinos.data} />
           <ConferenciaDosParametros conferencia={dados.conferencia} />
         </div>
       )}
@@ -82,12 +108,20 @@ function AbaParametros() {
   )
 }
 
-function FormularioDeParametros({ vigentes }: { vigentes: ParametrosVigentesDto | null }) {
-  const { register, handleSubmit, formState } = useForm<Formulario>({
+interface PropsDoFormulario {
+  vigentes: ParametrosVigentesDto | null
+  destinos: OpcoesDeDestinoDto
+}
+
+function FormularioDeParametros({ vigentes, destinos }: PropsDoFormulario) {
+  const { register, handleSubmit, formState, control } = useForm<Formulario>({
     resolver: zodResolver(esquema),
     defaultValues: paraFormulario(vigentes),
   })
   const erros = formState.errors
+  // useWatch acompanha os campos enquanto o usuário escolhe, para o aviso aparecer e sumir na hora.
+  const destinoEscolhido = useWatch({ control, name: ['contaRecebimentoId', 'categoriaMensalidadeId', 'categoriaAvulsaId'] })
+  const destinoIncompleto = destinoEscolhido.some((id) => !id)
   const conferir = useConferirParametrosDeCobranca()
   // Valores conferidos, à espera da confirmação no diálogo (passos 4 e 5 do requisito).
   const [aConfirmar, definirAConfirmar] = useState<{ corpo: ParametrosDeCobrancaDto; conferencia: ConferenciaDto } | null>(null)
@@ -152,6 +186,54 @@ function FormularioDeParametros({ vigentes }: { vigentes: ParametrosVigentesDto 
             {erros.jurosMensalPercentual?.message ?? 'Multa e juros são calculados pelo Asaas no pagamento.'}
           </span>
         </div>
+        <h3 className="inteiro" style={{ marginTop: 8 }}>
+          Recebimento pela conciliação
+        </h3>
+        <div className="campo">
+          <label htmlFor="pa-conta">Conta de recebimento</label>
+          <select id="pa-conta" {...register('contaRecebimentoId')}>
+            <option value="">Escolha a conta</option>
+            {destinos.contas.map((conta) => (
+              <option key={conta.id} value={conta.id}>
+                {conta.nome}
+              </option>
+            ))}
+          </select>
+          <span className="dica">Onde entram os pagamentos confirmados pelo Asaas.</span>
+        </div>
+        <div className="campo"></div>
+        <div className="campo">
+          <label htmlFor="pa-cat-mensalidade">Categoria das mensalidades</label>
+          <select id="pa-cat-mensalidade" {...register('categoriaMensalidadeId')}>
+            <option value="">Escolha a categoria</option>
+            {destinos.categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="campo">
+          <label htmlFor="pa-cat-avulsa">Categoria das cobranças avulsas</label>
+          <select id="pa-cat-avulsa" {...register('categoriaAvulsaId')}>
+            <option value="">Escolha a categoria</option>
+            {destinos.categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+        {destinoIncompleto && (
+          <div className="aviso inteiro" role="status">
+            <Icone nome="alerta" />
+            <span>
+              Sem conta e categorias de recebimento, os pagamentos confirmados pelo Asaas ficam esperando: a cobrança só
+              passa a paga depois desta escolha.
+              {destinos.contas.length === 0 && ' Ainda não há conta cadastrada.'}
+            </span>
+          </div>
+        )}
         {conferir.error && (
           <p className="erro-formulario inteiro" role="alert">
             {conferir.error.message}
