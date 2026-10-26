@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PerfilUsuario } from '../../../compartilhado/autenticacao/perfil.js';
 import { criarHashDaSenha } from '../../../compartilhado/autenticacao/senha.js';
+import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { IdentidadeDoUsuario } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import type { EntradaAlterarUsuario, EntradaCriarUsuario, UsuarioResumo } from './usuarios.types.js';
@@ -29,14 +30,12 @@ export class UsuariosService {
         data: { ...dadosDoUsuario, senhaHash },
         select: { id: true, nome: true, email: true, perfil: true, ativo: true, ultimoAcessoEm: true },
       });
-      await tx.registroAuditoria.create({
-        data: {
-          usuarioId: autor.id,
-          operacao: 'INCLUSAO',
-          entidade: 'USUARIO',
-          registroId: criado.id,
-          detalhe: `Usuario ${criado.email} incluido com perfil ${criado.perfil}.`,
-        },
+      await registrarNaTrilha(tx, {
+        usuarioId: autor.id,
+        operacao: 'INCLUSAO',
+        entidade: 'USUARIO',
+        registroId: criado.id,
+        detalhe: `Usuario ${criado.email} incluido com perfil ${criado.perfil}.`,
       });
       return criado;
     });
@@ -89,14 +88,12 @@ export class UsuariosService {
           data: { revogadaEm: new Date() },
         });
       }
-      await tx.registroAuditoria.create({
-        data: {
-          usuarioId: autor.id,
-          operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
-          entidade: 'USUARIO',
-          registroId: alterado.id,
-          detalhe: `Usuario ${alterado.email} alterado.`,
-        },
+      await registrarNaTrilha(tx, {
+        usuarioId: autor.id,
+        operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
+        entidade: 'USUARIO',
+        registroId: alterado.id,
+        detalhe: `Usuario ${alterado.email} alterado.`,
       });
       return alterado;
     });

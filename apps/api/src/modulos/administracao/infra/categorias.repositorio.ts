@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client.js';
+import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import { CategoriaEmUso, NomeDeCategoriaDuplicado } from '../dominio/categoria.js';
 import type { TipoDeCategoria, UsoDaCategoria } from '../dominio/categoria.js';
@@ -93,14 +94,12 @@ export class CategoriasRepositorio {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const criada = await tx.categoria.create({ data: dados, select: SELECAO });
-        await tx.registroAuditoria.create({
-          data: {
-            usuarioId: autorId,
-            operacao: 'INCLUSAO',
-            entidade: 'CATEGORIA',
-            registroId: criada.id,
-            detalhe: `Categoria "${criada.nome}" incluída (tipo ${criada.tipo}).`,
-          },
+        await registrarNaTrilha(tx, {
+          usuarioId: autorId,
+          operacao: 'INCLUSAO',
+          entidade: 'CATEGORIA',
+          registroId: criada.id,
+          detalhe: `Categoria "${criada.nome}" incluída (tipo ${criada.tipo}).`,
         });
         return paraCategoriaComUso(criada);
       });
@@ -119,14 +118,12 @@ export class CategoriasRepositorio {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const alterada = await tx.categoria.update({ where: { id }, data: dados, select: SELECAO });
-        await tx.registroAuditoria.create({
-          data: {
-            usuarioId: autorId,
-            operacao,
-            entidade: 'CATEGORIA',
-            registroId: alterada.id,
-            detalhe: `Categoria "${alterada.nome}": ${Object.keys(dados).join(', ')} alterado(s).`,
-          },
+        await registrarNaTrilha(tx, {
+          usuarioId: autorId,
+          operacao,
+          entidade: 'CATEGORIA',
+          registroId: alterada.id,
+          detalhe: `Categoria "${alterada.nome}": ${Object.keys(dados).join(', ')} alterado(s).`,
         });
         return paraCategoriaComUso(alterada);
       });
@@ -142,14 +139,12 @@ export class CategoriasRepositorio {
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.categoria.delete({ where: { id: categoria.id } });
-        await tx.registroAuditoria.create({
-          data: {
-            usuarioId: autorId,
-            operacao: 'EXCLUSAO',
-            entidade: 'CATEGORIA',
-            registroId: categoria.id,
-            detalhe: `Categoria "${categoria.nome}" excluída (nunca foi usada).`,
-          },
+        await registrarNaTrilha(tx, {
+          usuarioId: autorId,
+          operacao: 'EXCLUSAO',
+          entidade: 'CATEGORIA',
+          registroId: categoria.id,
+          detalhe: `Categoria "${categoria.nome}" excluída (nunca foi usada).`,
         });
       });
     } catch (erro) {

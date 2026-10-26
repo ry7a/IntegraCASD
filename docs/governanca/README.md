@@ -8,7 +8,7 @@ Na raiz do repositório (PowerShell):
 
 ```powershell
 pnpm lint                    # ESLint do web (F1, F2, F4, F5, F6, F7) e oxlint da API (B11, B12)
-pnpm test                    # testes da API, inclui apps/api/test/arquitetura (B1 a B8, B11, G3, G4, G5)
+pnpm test                    # testes da API, inclui apps/api/test/arquitetura (B1 a B8, B11, B13, G3, G4, G5)
 pnpm verificar:arquitetura   # migrações (B7) e cores em CSS (F5); não precisa de build
 pnpm build
 pnpm verificar:build         # orçamento de bundle (F8) e dados fictícios no bundle (F6)
@@ -34,6 +34,7 @@ Os testes não executam o código: leem os `.ts` com `node:fs` e conferem import
 | B6  | Sem `.delete(`, `.deleteMany(` no `src/`; sem `DELETE FROM` e `DROP TABLE` nas migrações | excluir registro | inativar (campo `ativo`/situação) ou estornar |
 | B8  | Toda operação do `packages/api-client/openapi.json` tem `security` não vazio, exceto login e webhook; rota `/api/admin...` declara `x-perfil: DIRETORIA` | rota nova sem autenticação | veja "Convenção de segurança" abaixo |
 | B11 | Nenhum arquivo versionado com o prefixo de chave do Asaas; nenhum `.env` versionado (só `.env.example`) | colar a chave num arquivo | usar o `.env` (ignorado pelo git) |
+| B13 | Só `src/compartilhado/auditoria/trilha.ts` grava em `registroAuditoria`; ninguém faz `update`/`delete` nela; existe a migração com o gatilho que recusa `UPDATE`, `DELETE` e `TRUNCATE` na trilha ([Segurança.NF006]) | `tx.registroAuditoria.create(...)` direto no módulo | `registrarNaTrilha(tx, {...})` dentro da transação da alteração (ADR-0004) |
 | G3  | Todo `package.json` do workspace só tem dependências da lista; `typescript` 6.0.3, `prisma`, `@prisma/client` e `@prisma/adapter-pg` 7.10.0 | instalar pacote novo | veja "Dependências" abaixo |
 | G4  | Exceções com regra, alvo, justificativa e referência; exceção obsoleta falha | | veja "Exceções" abaixo |
 | G5  | Requisito "coberto" é citado por um teste; requisito citado num teste está na lista; ids existem no documento de requisitos | | veja "Requisitos" abaixo |
