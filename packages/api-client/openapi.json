@@ -897,6 +897,370 @@
         ]
       }
     },
+    "/api/contratos": {
+      "get": {
+        "operationId": "listarContratos",
+        "parameters": [
+          {
+            "name": "situacao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "vigentes",
+                "encerrados",
+                "todos"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeContratosDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lista os contratos (por padrão, os vigentes)",
+        "tags": [
+          "contratos"
+        ]
+      },
+      "post": {
+        "operationId": "criarContrato",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarContratoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContratoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Inclui um contrato",
+        "tags": [
+          "contratos"
+        ]
+      }
+    },
+    "/api/contratos/{id}": {
+      "patch": {
+        "operationId": "alterarContrato",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlterarContratoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContratoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Altera um contrato não encerrado",
+        "tags": [
+          "contratos"
+        ]
+      }
+    },
+    "/api/contratos/{id}/encerrar": {
+      "post": {
+        "operationId": "encerrarContrato",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncerrarContratoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContratoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Encerra o contrato, com data e justificativa",
+        "tags": [
+          "contratos"
+        ]
+      }
+    },
+    "/api/movimentacoes/{id}/estornar": {
+      "post": {
+        "operationId": "estornarMovimentacao",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EstornoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EstornoRegistradoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Anula uma movimentação manual com um lançamento espelho",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
+    "/api/movimentacoes": {
+      "post": {
+        "operationId": "registrarMovimentacao",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaMovimentacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovimentacaoRegistradaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Lança uma entrada ou saída manual",
+        "tags": [
+          "movimentacoes"
+        ]
+      },
+      "get": {
+        "operationId": "listarMovimentacoes",
+        "parameters": [
+          {
+            "name": "ocultarEstornos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "projetoId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "contratoId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "forma",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ASAAS",
+                "PIX",
+                "TRANSFERENCIA",
+                "DINHEIRO",
+                "CARTAO"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoriaId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ENTRADA",
+                "SAIDA"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "mes",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM; padrão: o mês corrente",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeMovimentacoesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Movimentações do mês, com os totais do recorte",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
+    "/api/movimentacoes/opcoes": {
+      "get": {
+        "operationId": "listarOpcoesDaMovimentacao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpcoesDaMovimentacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Contas, categorias e vínculos possíveis",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
     "/api/cobrancas": {
       "get": {
         "operationId": "listarCobrancas",
@@ -1491,202 +1855,6 @@
         "summary": "Marca a pendência como resolvida, com o que foi feito",
         "tags": [
           "cobrancas"
-        ]
-      }
-    },
-    "/api/movimentacoes/{id}/estornar": {
-      "post": {
-        "operationId": "estornarMovimentacao",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EstornoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EstornoRegistradoDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Anula uma movimentação manual com um lançamento espelho",
-        "tags": [
-          "movimentacoes"
-        ]
-      }
-    },
-    "/api/movimentacoes": {
-      "post": {
-        "operationId": "registrarMovimentacao",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NovaMovimentacaoDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MovimentacaoRegistradaDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Lança uma entrada ou saída manual",
-        "tags": [
-          "movimentacoes"
-        ]
-      },
-      "get": {
-        "operationId": "listarMovimentacoes",
-        "parameters": [
-          {
-            "name": "ocultarEstornos",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "projetoId",
-            "required": false,
-            "in": "query",
-            "schema": {}
-          },
-          {
-            "name": "contratoId",
-            "required": false,
-            "in": "query",
-            "schema": {}
-          },
-          {
-            "name": "forma",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "ASAAS",
-                "PIX",
-                "TRANSFERENCIA",
-                "DINHEIRO",
-                "CARTAO"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "categoriaId",
-            "required": false,
-            "in": "query",
-            "schema": {}
-          },
-          {
-            "name": "tipo",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "ENTRADA",
-                "SAIDA"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "mes",
-            "required": false,
-            "in": "query",
-            "description": "AAAA-MM; padrão: o mês corrente",
-            "schema": {}
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ListaDeMovimentacoesDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Movimentações do mês, com os totais do recorte",
-        "tags": [
-          "movimentacoes"
-        ]
-      }
-    },
-    "/api/movimentacoes/opcoes": {
-      "get": {
-        "operationId": "listarOpcoesDaMovimentacao",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OpcoesDaMovimentacaoDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "summary": "Contas, categorias e vínculos possíveis",
-        "tags": [
-          "movimentacoes"
         ]
       }
     }
@@ -2738,6 +2906,707 @@
           }
         }
       },
+      "PeriodicidadeContrato": {
+        "type": "string",
+        "enum": [
+          "MENSAL",
+          "ANUAL",
+          "POR_DEMANDA",
+          "UNICA"
+        ]
+      },
+      "SituacaoDoContrato": {
+        "type": "string",
+        "enum": [
+          "VIGENTE",
+          "VENCE_EM_BREVE",
+          "ENCERRADO"
+        ]
+      },
+      "ContratoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string",
+            "example": "26C001",
+            "description": "Gerado pelo sistema: ano + C + sequência"
+          },
+          "contraparte": {
+            "type": "string",
+            "description": "Nome de quem contratamos (texto livre)"
+          },
+          "objeto": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor previsto por periodicidade"
+          },
+          "periodicidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicidadeContrato"
+              }
+            ]
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Nulo = prazo indeterminado"
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoDoContrato"
+              }
+            ]
+          },
+          "diasParaVencer": {
+            "type": "number",
+            "nullable": true,
+            "description": "Dias até o término; negativo se já passou"
+          },
+          "pagoNoAnoCentavos": {
+            "type": "number",
+            "description": "Saídas pagas no ano corrente"
+          },
+          "dataEncerramento": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "justificativaEncerramento": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "codigo",
+          "contraparte",
+          "objeto",
+          "valorCentavos",
+          "periodicidade",
+          "dataInicio",
+          "dataFim",
+          "situacao",
+          "diasParaVencer",
+          "pagoNoAnoCentavos",
+          "dataEncerramento",
+          "justificativaEncerramento"
+        ]
+      },
+      "ListaDeContratosDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContratoDto"
+            }
+          },
+          "quantidadeVencendo": {
+            "type": "number",
+            "description": "Quantos vencem nos próximos 60 dias"
+          }
+        },
+        "required": [
+          "itens",
+          "quantidadeVencendo"
+        ]
+      },
+      "CriarContratoDto": {
+        "type": "object",
+        "properties": {
+          "contraparte": {
+            "type": "string"
+          },
+          "objeto": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "example": 120000
+          },
+          "periodicidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicidadeContrato"
+              }
+            ]
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "required": [
+          "contraparte",
+          "objeto",
+          "valorCentavos",
+          "periodicidade",
+          "dataInicio"
+        ]
+      },
+      "AlterarContratoDto": {
+        "type": "object",
+        "properties": {
+          "contraparte": {
+            "type": "string"
+          },
+          "objeto": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "periodicidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicidadeContrato"
+              }
+            ]
+          },
+          "dataInicio": {
+            "type": "string",
+            "format": "date"
+          },
+          "dataFim": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
+      },
+      "EncerrarContratoDto": {
+        "type": "object",
+        "properties": {
+          "dataEncerramento": {
+            "type": "string",
+            "format": "date"
+          },
+          "justificativa": {
+            "type": "string",
+            "example": "Serviço passou a ser feito pela AEITA"
+          }
+        },
+        "required": [
+          "dataEncerramento",
+          "justificativa"
+        ]
+      },
+      "EstornoDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Valor lançado errado; o correto é R$ 1.020,00"
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "EstornoRegistradoDto": {
+        "type": "object",
+        "properties": {
+          "espelhoId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A movimentação espelho, de sinal contrário"
+          }
+        },
+        "required": [
+          "espelhoId"
+        ]
+      },
+      "TipoMovimentacao": {
+        "type": "string",
+        "enum": [
+          "ENTRADA",
+          "SAIDA"
+        ]
+      },
+      "FormaPagamentoManual": {
+        "type": "string",
+        "enum": [
+          "PIX",
+          "TRANSFERENCIA",
+          "DINHEIRO",
+          "CARTAO"
+        ]
+      },
+      "NovaMovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "contaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoMovimentacao"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "example": 120000,
+            "description": "Maior que zero, em centavos"
+          },
+          "data": {
+            "type": "string",
+            "format": "date",
+            "description": "Não pode ser no futuro"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Ativa e compatível com o tipo"
+          },
+          "forma": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormaPagamentoManual"
+              }
+            ]
+          },
+          "descricao": {
+            "type": "string",
+            "example": "NF 685, limpeza de outubro"
+          },
+          "contratoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "projetoId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "funcionarioId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "contaId",
+          "tipo",
+          "valorCentavos",
+          "data",
+          "categoriaId",
+          "forma",
+          "descricao"
+        ]
+      },
+      "MovimentacaoRegistradaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "aviso": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ex.: lançamento em projeto já executado"
+          }
+        },
+        "required": [
+          "id",
+          "aviso"
+        ]
+      },
+      "FormaPagamento": {
+        "type": "string",
+        "enum": [
+          "ASAAS",
+          "PIX",
+          "TRANSFERENCIA",
+          "DINHEIRO",
+          "CARTAO"
+        ]
+      },
+      "OrigemMovimentacao": {
+        "type": "string",
+        "enum": [
+          "MANUAL",
+          "CONCILIACAO_AUTOMATICA",
+          "REGISTRO_MANUAL_DE_COBRANCA",
+          "ESTORNO"
+        ]
+      },
+      "TipoDeVinculo": {
+        "type": "string",
+        "enum": [
+          "COBRANCA",
+          "CONTRATO",
+          "PROJETO",
+          "FUNCIONARIO"
+        ]
+      },
+      "VinculoDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoDeVinculo"
+              }
+            ]
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true,
+            "description": "Aluno da cobrança, contrato, projeto ou funcionário"
+          }
+        },
+        "required": [
+          "tipo",
+          "nome"
+        ]
+      },
+      "MovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "data": {
+            "type": "string",
+            "format": "date"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoMovimentacao"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Sempre positivo, em centavos; o sinal vem do tipo"
+          },
+          "categoriaNome": {
+            "type": "string"
+          },
+          "forma": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormaPagamento"
+              }
+            ]
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemMovimentacao"
+              }
+            ]
+          },
+          "contaNome": {
+            "type": "string"
+          },
+          "registradaPor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nulo = rotina automática"
+          },
+          "vinculo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VinculoDto"
+              }
+            ]
+          },
+          "estornadaEm": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Preenchido na movimentação estornada"
+          },
+          "motivoEstorno": {
+            "type": "string",
+            "nullable": true
+          },
+          "podeEstornar": {
+            "type": "boolean",
+            "description": "Só lançamento manual, ainda não estornado"
+          },
+          "motivoSemEstorno": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "data",
+          "descricao",
+          "tipo",
+          "valorCentavos",
+          "categoriaNome",
+          "forma",
+          "origem",
+          "contaNome",
+          "registradaPor",
+          "vinculo",
+          "estornadaEm",
+          "motivoEstorno",
+          "podeEstornar",
+          "motivoSemEstorno"
+        ]
+      },
+      "TotaisDto": {
+        "type": "object",
+        "properties": {
+          "entradasCentavos": {
+            "type": "number"
+          },
+          "quantidadeEntradas": {
+            "type": "number"
+          },
+          "saidasCentavos": {
+            "type": "number"
+          },
+          "quantidadeSaidas": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number",
+            "description": "Entradas menos saídas. Estornos e transferências entre contas não entram"
+          }
+        },
+        "required": [
+          "entradasCentavos",
+          "quantidadeEntradas",
+          "saidasCentavos",
+          "quantidadeSaidas",
+          "saldoCentavos"
+        ]
+      },
+      "ListaDeMovimentacoesDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Das mais recentes para as mais antigas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovimentacaoDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "totais": {
+            "description": "Do mesmo recorte da lista",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TotaisDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "itens",
+          "total",
+          "totais"
+        ]
+      },
+      "TipoConta": {
+        "type": "string",
+        "enum": [
+          "CORRENTE",
+          "APLICACAO"
+        ]
+      },
+      "ContaDaOpcaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoConta"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo"
+        ]
+      },
+      "CategoriaDaOpcaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoCategoria"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo"
+        ]
+      },
+      "ContratoParaVincularDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor previsto por periodicidade"
+          },
+          "periodicidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicidadeContrato"
+              }
+            ]
+          },
+          "pagoNoAnoCentavos": {
+            "type": "number",
+            "description": "Saídas já pagas neste contrato no ano"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "valorCentavos",
+          "periodicidade",
+          "pagoNoAnoCentavos"
+        ]
+      },
+      "ProjetoParaVincularDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "encerrado": {
+            "type": "boolean",
+            "description": "Executado: aceita lançamento, mas a tela sinaliza"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "encerrado"
+        ]
+      },
+      "OpcaoDeVinculoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "OpcoesDaMovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "contas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContaDaOpcaoDto"
+            }
+          },
+          "categorias": {
+            "description": "Ativas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoriaDaOpcaoDto"
+            }
+          },
+          "contratos": {
+            "description": "Ativos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContratoParaVincularDto"
+            }
+          },
+          "projetos": {
+            "description": "Não cancelados",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjetoParaVincularDto"
+            }
+          },
+          "funcionarios": {
+            "description": "Ativos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpcaoDeVinculoDto"
+            }
+          }
+        },
+        "required": [
+          "contas",
+          "categorias",
+          "contratos",
+          "projetos",
+          "funcionarios"
+        ]
+      },
       "OrigemCobranca": {
         "type": "string",
         "enum": [
@@ -3746,513 +4615,6 @@
         },
         "required": [
           "resolucao"
-        ]
-      },
-      "EstornoDto": {
-        "type": "object",
-        "properties": {
-          "motivo": {
-            "type": "string",
-            "example": "Valor lançado errado; o correto é R$ 1.020,00"
-          }
-        },
-        "required": [
-          "motivo"
-        ]
-      },
-      "EstornoRegistradoDto": {
-        "type": "object",
-        "properties": {
-          "espelhoId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "A movimentação espelho, de sinal contrário"
-          }
-        },
-        "required": [
-          "espelhoId"
-        ]
-      },
-      "TipoMovimentacao": {
-        "type": "string",
-        "enum": [
-          "ENTRADA",
-          "SAIDA"
-        ]
-      },
-      "FormaPagamentoManual": {
-        "type": "string",
-        "enum": [
-          "PIX",
-          "TRANSFERENCIA",
-          "DINHEIRO",
-          "CARTAO"
-        ]
-      },
-      "NovaMovimentacaoDto": {
-        "type": "object",
-        "properties": {
-          "contaId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "tipo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TipoMovimentacao"
-              }
-            ]
-          },
-          "valorCentavos": {
-            "type": "number",
-            "example": 120000,
-            "description": "Maior que zero, em centavos"
-          },
-          "data": {
-            "type": "string",
-            "format": "date",
-            "description": "Não pode ser no futuro"
-          },
-          "categoriaId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Ativa e compatível com o tipo"
-          },
-          "forma": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FormaPagamentoManual"
-              }
-            ]
-          },
-          "descricao": {
-            "type": "string",
-            "example": "NF 685, limpeza de outubro"
-          },
-          "contratoId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "projetoId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "funcionarioId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          }
-        },
-        "required": [
-          "contaId",
-          "tipo",
-          "valorCentavos",
-          "data",
-          "categoriaId",
-          "forma",
-          "descricao"
-        ]
-      },
-      "MovimentacaoRegistradaDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "aviso": {
-            "type": "string",
-            "nullable": true,
-            "description": "Ex.: lançamento em projeto já executado"
-          }
-        },
-        "required": [
-          "id",
-          "aviso"
-        ]
-      },
-      "FormaPagamento": {
-        "type": "string",
-        "enum": [
-          "ASAAS",
-          "PIX",
-          "TRANSFERENCIA",
-          "DINHEIRO",
-          "CARTAO"
-        ]
-      },
-      "OrigemMovimentacao": {
-        "type": "string",
-        "enum": [
-          "MANUAL",
-          "CONCILIACAO_AUTOMATICA",
-          "REGISTRO_MANUAL_DE_COBRANCA",
-          "ESTORNO"
-        ]
-      },
-      "TipoDeVinculo": {
-        "type": "string",
-        "enum": [
-          "COBRANCA",
-          "CONTRATO",
-          "PROJETO",
-          "FUNCIONARIO"
-        ]
-      },
-      "VinculoDto": {
-        "type": "object",
-        "properties": {
-          "tipo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TipoDeVinculo"
-              }
-            ]
-          },
-          "nome": {
-            "type": "string",
-            "nullable": true,
-            "description": "Aluno da cobrança, contrato, projeto ou funcionário"
-          }
-        },
-        "required": [
-          "tipo",
-          "nome"
-        ]
-      },
-      "MovimentacaoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "data": {
-            "type": "string",
-            "format": "date"
-          },
-          "descricao": {
-            "type": "string"
-          },
-          "tipo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TipoMovimentacao"
-              }
-            ]
-          },
-          "valorCentavos": {
-            "type": "number",
-            "description": "Sempre positivo, em centavos; o sinal vem do tipo"
-          },
-          "categoriaNome": {
-            "type": "string"
-          },
-          "forma": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FormaPagamento"
-              }
-            ]
-          },
-          "origem": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OrigemMovimentacao"
-              }
-            ]
-          },
-          "contaNome": {
-            "type": "string"
-          },
-          "registradaPor": {
-            "type": "string",
-            "nullable": true,
-            "description": "Nulo = rotina automática"
-          },
-          "vinculo": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/VinculoDto"
-              }
-            ]
-          },
-          "estornadaEm": {
-            "type": "string",
-            "format": "date",
-            "nullable": true,
-            "description": "Preenchido na movimentação estornada"
-          },
-          "motivoEstorno": {
-            "type": "string",
-            "nullable": true
-          },
-          "podeEstornar": {
-            "type": "boolean",
-            "description": "Só lançamento manual, ainda não estornado"
-          },
-          "motivoSemEstorno": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "data",
-          "descricao",
-          "tipo",
-          "valorCentavos",
-          "categoriaNome",
-          "forma",
-          "origem",
-          "contaNome",
-          "registradaPor",
-          "vinculo",
-          "estornadaEm",
-          "motivoEstorno",
-          "podeEstornar",
-          "motivoSemEstorno"
-        ]
-      },
-      "TotaisDto": {
-        "type": "object",
-        "properties": {
-          "entradasCentavos": {
-            "type": "number"
-          },
-          "quantidadeEntradas": {
-            "type": "number"
-          },
-          "saidasCentavos": {
-            "type": "number"
-          },
-          "quantidadeSaidas": {
-            "type": "number"
-          },
-          "saldoCentavos": {
-            "type": "number",
-            "description": "Entradas menos saídas. Estornos e transferências entre contas não entram"
-          }
-        },
-        "required": [
-          "entradasCentavos",
-          "quantidadeEntradas",
-          "saidasCentavos",
-          "quantidadeSaidas",
-          "saldoCentavos"
-        ]
-      },
-      "ListaDeMovimentacoesDto": {
-        "type": "object",
-        "properties": {
-          "itens": {
-            "description": "Das mais recentes para as mais antigas",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MovimentacaoDto"
-            }
-          },
-          "total": {
-            "type": "number"
-          },
-          "totais": {
-            "description": "Do mesmo recorte da lista",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TotaisDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "itens",
-          "total",
-          "totais"
-        ]
-      },
-      "TipoConta": {
-        "type": "string",
-        "enum": [
-          "CORRENTE",
-          "APLICACAO"
-        ]
-      },
-      "ContaDaOpcaoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "tipo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TipoConta"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "nome",
-          "tipo"
-        ]
-      },
-      "CategoriaDaOpcaoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "tipo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TipoCategoria"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "nome",
-          "tipo"
-        ]
-      },
-      "PeriodicidadeContrato": {
-        "type": "string",
-        "enum": [
-          "MENSAL",
-          "ANUAL",
-          "POR_DEMANDA",
-          "UNICA"
-        ]
-      },
-      "ContratoParaVincularDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "valorCentavos": {
-            "type": "number",
-            "description": "Valor previsto por periodicidade"
-          },
-          "periodicidade": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PeriodicidadeContrato"
-              }
-            ]
-          },
-          "pagoNoAnoCentavos": {
-            "type": "number",
-            "description": "Saídas já pagas neste contrato no ano"
-          }
-        },
-        "required": [
-          "id",
-          "nome",
-          "valorCentavos",
-          "periodicidade",
-          "pagoNoAnoCentavos"
-        ]
-      },
-      "ProjetoParaVincularDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nome": {
-            "type": "string"
-          },
-          "encerrado": {
-            "type": "boolean",
-            "description": "Executado: aceita lançamento, mas a tela sinaliza"
-          }
-        },
-        "required": [
-          "id",
-          "nome",
-          "encerrado"
-        ]
-      },
-      "OpcaoDeVinculoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nome": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "nome"
-        ]
-      },
-      "OpcoesDaMovimentacaoDto": {
-        "type": "object",
-        "properties": {
-          "contas": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContaDaOpcaoDto"
-            }
-          },
-          "categorias": {
-            "description": "Ativas",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CategoriaDaOpcaoDto"
-            }
-          },
-          "contratos": {
-            "description": "Ativos",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContratoParaVincularDto"
-            }
-          },
-          "projetos": {
-            "description": "Não cancelados",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProjetoParaVincularDto"
-            }
-          },
-          "funcionarios": {
-            "description": "Ativos",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OpcaoDeVinculoDto"
-            }
-          }
-        },
-        "required": [
-          "contas",
-          "categorias",
-          "contratos",
-          "projetos",
-          "funcionarios"
         ]
       }
     }

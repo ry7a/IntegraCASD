@@ -240,6 +240,40 @@ export class MovimentacoesRepositorio {
     }
   }
 
+  // Saídas de cada contrato no ano, sem o par estornada + espelho.
+  async saidasPorContrato(ano: string): Promise<Map<string, number>> {
+    const grupos = await this.prisma.movimentacao.groupBy({
+      by: ['contratoId'],
+      where: {
+        contratoId: { not: null },
+        tipo: 'SAIDA',
+        origem: { not: 'ESTORNO' },
+        estorno: { is: null },
+        data: { gte: deDia(`${ano}-01-01`), lte: deDia(`${ano}-12-31`) },
+      },
+      _sum: { valorCentavos: true },
+    });
+    return new Map(grupos.flatMap((grupo) => (grupo.contratoId === null ? [] : [[grupo.contratoId, grupo._sum.valorCentavos ?? 0]])));
+  }
+
+  // Saídas e entradas de cada projeto, sem o par estornada + espelho.
+  async movimentadoPorProjeto(): Promise<Map<string, { saidasCentavos: number; entradasCentavos: number }>> {
+    const grupos = await this.prisma.movimentacao.groupBy({
+      by: ['projetoId', 'tipo'],
+      where: { projetoId: { not: null }, origem: { not: 'ESTORNO' }, estorno: { is: null } },
+      _sum: { valorCentavos: true },
+    });
+    const porProjeto = new Map<string, { saidasCentavos: number; entradasCentavos: number }>();
+    for (const grupo of grupos) {
+      if (grupo.projetoId === null) continue;
+      const totais = porProjeto.get(grupo.projetoId) ?? { saidasCentavos: 0, entradasCentavos: 0 };
+      if (grupo.tipo === 'SAIDA') totais.saidasCentavos += grupo._sum.valorCentavos ?? 0;
+      else totais.entradasCentavos += grupo._sum.valorCentavos ?? 0;
+      porProjeto.set(grupo.projetoId, totais);
+    }
+    return porProjeto;
+  }
+
   // O que o filtro e o diálogo "Nova movimentação" oferecem.
   async opcoes(anoCorrente: string): Promise<OpcoesDaMovimentacao> {
     const [contas, categorias, contratos, projetos, funcionarios, pagoNoAno] = await Promise.all([
@@ -256,20 +290,10 @@ export class MovimentacoesRepositorio {
         orderBy: { nome: 'asc' },
       }),
       this.prisma.funcionario.findMany({ where: { ativo: true }, select: { id: true, nome: true }, orderBy: { nome: 'asc' } }),
-      // [Movimentações.RF001] fluxo A1: total já pago em cada contrato no ano (saídas que contam).
-      this.prisma.movimentacao.groupBy({
-        by: ['contratoId'],
-        where: {
-          contratoId: { not: null },
-          tipo: 'SAIDA',
-          origem: { not: 'ESTORNO' },
-          estorno: { is: null },
-          data: { gte: deDia(`${anoCorrente}-01-01`), lte: deDia(`${anoCorrente}-12-31`) },
-        },
-        _sum: { valorCentavos: true },
-      }),
+      // [Movimentações.RF001] fluxo A1: total já pago em cada contrato no ano.
+      this.saidasPorContrato(anoCorrente),
     ]);
-    const pagoPorContrato = new Map(pagoNoAno.map((grupo) => [grupo.contratoId, grupo._sum.valorCentavos ?? 0]));
+    const pagoPorContrato = pagoNoAno;
     return {
       contas,
       categorias,

@@ -456,6 +456,283 @@ export interface AlterarFuncionarioDto {
   dataDesligamento?: string | null;
 }
 
+export type PeriodicidadeContrato = typeof PeriodicidadeContrato[keyof typeof PeriodicidadeContrato];
+
+
+export const PeriodicidadeContrato = {
+  MENSAL: 'MENSAL',
+  ANUAL: 'ANUAL',
+  POR_DEMANDA: 'POR_DEMANDA',
+  UNICA: 'UNICA',
+} as const;
+
+export type SituacaoDoContrato = typeof SituacaoDoContrato[keyof typeof SituacaoDoContrato];
+
+
+export const SituacaoDoContrato = {
+  VIGENTE: 'VIGENTE',
+  VENCE_EM_BREVE: 'VENCE_EM_BREVE',
+  ENCERRADO: 'ENCERRADO',
+} as const;
+
+export interface ContratoDto {
+  id: string;
+  /** Gerado pelo sistema: ano + C + sequência */
+  codigo: string;
+  /** Nome de quem contratamos (texto livre) */
+  contraparte: string;
+  objeto: string;
+  /** Valor previsto por periodicidade */
+  valorCentavos: number;
+  periodicidade: PeriodicidadeContrato;
+  dataInicio: string;
+  /**
+     * Nulo = prazo indeterminado
+     * @nullable
+     */
+  dataFim: string | null;
+  situacao: SituacaoDoContrato;
+  /**
+     * Dias até o término; negativo se já passou
+     * @nullable
+     */
+  diasParaVencer: number | null;
+  /** Saídas pagas no ano corrente */
+  pagoNoAnoCentavos: number;
+  /** @nullable */
+  dataEncerramento: string | null;
+  /** @nullable */
+  justificativaEncerramento: string | null;
+}
+
+export interface ListaDeContratosDto {
+  itens: ContratoDto[];
+  /** Quantos vencem nos próximos 60 dias */
+  quantidadeVencendo: number;
+}
+
+export interface CriarContratoDto {
+  contraparte: string;
+  objeto: string;
+  valorCentavos: number;
+  periodicidade: PeriodicidadeContrato;
+  dataInicio: string;
+  /** @nullable */
+  dataFim?: string | null;
+}
+
+export interface AlterarContratoDto {
+  contraparte?: string;
+  objeto?: string;
+  valorCentavos?: number;
+  periodicidade?: PeriodicidadeContrato;
+  dataInicio?: string;
+  /** @nullable */
+  dataFim?: string | null;
+}
+
+export interface EncerrarContratoDto {
+  dataEncerramento: string;
+  justificativa: string;
+}
+
+export interface EstornoDto {
+  motivo: string;
+}
+
+export interface EstornoRegistradoDto {
+  /** A movimentação espelho, de sinal contrário */
+  espelhoId: string;
+}
+
+export type TipoMovimentacao = typeof TipoMovimentacao[keyof typeof TipoMovimentacao];
+
+
+export const TipoMovimentacao = {
+  ENTRADA: 'ENTRADA',
+  SAIDA: 'SAIDA',
+} as const;
+
+export type FormaPagamentoManual = typeof FormaPagamentoManual[keyof typeof FormaPagamentoManual];
+
+
+export const FormaPagamentoManual = {
+  PIX: 'PIX',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  DINHEIRO: 'DINHEIRO',
+  CARTAO: 'CARTAO',
+} as const;
+
+export interface NovaMovimentacaoDto {
+  contaId: string;
+  tipo: TipoMovimentacao;
+  /** Maior que zero, em centavos */
+  valorCentavos: number;
+  /** Não pode ser no futuro */
+  data: string;
+  /** Ativa e compatível com o tipo */
+  categoriaId: string;
+  forma: FormaPagamentoManual;
+  descricao: string;
+  /** @nullable */
+  contratoId?: string | null;
+  /** @nullable */
+  projetoId?: string | null;
+  /** @nullable */
+  funcionarioId?: string | null;
+}
+
+export interface MovimentacaoRegistradaDto {
+  id: string;
+  /**
+     * Ex.: lançamento em projeto já executado
+     * @nullable
+     */
+  aviso: string | null;
+}
+
+export type FormaPagamento = typeof FormaPagamento[keyof typeof FormaPagamento];
+
+
+export const FormaPagamento = {
+  ASAAS: 'ASAAS',
+  PIX: 'PIX',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  DINHEIRO: 'DINHEIRO',
+  CARTAO: 'CARTAO',
+} as const;
+
+export type OrigemMovimentacao = typeof OrigemMovimentacao[keyof typeof OrigemMovimentacao];
+
+
+export const OrigemMovimentacao = {
+  MANUAL: 'MANUAL',
+  CONCILIACAO_AUTOMATICA: 'CONCILIACAO_AUTOMATICA',
+  REGISTRO_MANUAL_DE_COBRANCA: 'REGISTRO_MANUAL_DE_COBRANCA',
+  ESTORNO: 'ESTORNO',
+} as const;
+
+export type TipoDeVinculo = typeof TipoDeVinculo[keyof typeof TipoDeVinculo];
+
+
+export const TipoDeVinculo = {
+  COBRANCA: 'COBRANCA',
+  CONTRATO: 'CONTRATO',
+  PROJETO: 'PROJETO',
+  FUNCIONARIO: 'FUNCIONARIO',
+} as const;
+
+export interface VinculoDto {
+  tipo: TipoDeVinculo;
+  /**
+     * Aluno da cobrança, contrato, projeto ou funcionário
+     * @nullable
+     */
+  nome: string | null;
+}
+
+export interface MovimentacaoDto {
+  id: string;
+  data: string;
+  descricao: string;
+  tipo: TipoMovimentacao;
+  /** Sempre positivo, em centavos; o sinal vem do tipo */
+  valorCentavos: number;
+  categoriaNome: string;
+  forma: FormaPagamento;
+  origem: OrigemMovimentacao;
+  contaNome: string;
+  /**
+     * Nulo = rotina automática
+     * @nullable
+     */
+  registradaPor: string | null;
+  /** @nullable */
+  vinculo: VinculoDto | null;
+  /**
+     * Preenchido na movimentação estornada
+     * @nullable
+     */
+  estornadaEm: string | null;
+  /** @nullable */
+  motivoEstorno: string | null;
+  /** Só lançamento manual, ainda não estornado */
+  podeEstornar: boolean;
+  /** @nullable */
+  motivoSemEstorno: string | null;
+}
+
+export interface TotaisDto {
+  entradasCentavos: number;
+  quantidadeEntradas: number;
+  saidasCentavos: number;
+  quantidadeSaidas: number;
+  /** Entradas menos saídas. Estornos e transferências entre contas não entram */
+  saldoCentavos: number;
+}
+
+export interface ListaDeMovimentacoesDto {
+  /** Das mais recentes para as mais antigas */
+  itens: MovimentacaoDto[];
+  total: number;
+  /** Do mesmo recorte da lista */
+  totais: TotaisDto;
+}
+
+export type TipoConta = typeof TipoConta[keyof typeof TipoConta];
+
+
+export const TipoConta = {
+  CORRENTE: 'CORRENTE',
+  APLICACAO: 'APLICACAO',
+} as const;
+
+export interface ContaDaOpcaoDto {
+  id: string;
+  nome: string;
+  tipo: TipoConta;
+}
+
+export interface CategoriaDaOpcaoDto {
+  id: string;
+  nome: string;
+  tipo: TipoCategoria;
+}
+
+export interface ContratoParaVincularDto {
+  id: string;
+  nome: string;
+  /** Valor previsto por periodicidade */
+  valorCentavos: number;
+  periodicidade: PeriodicidadeContrato;
+  /** Saídas já pagas neste contrato no ano */
+  pagoNoAnoCentavos: number;
+}
+
+export interface ProjetoParaVincularDto {
+  id: string;
+  nome: string;
+  /** Executado: aceita lançamento, mas a tela sinaliza */
+  encerrado: boolean;
+}
+
+export interface OpcaoDeVinculoDto {
+  id: string;
+  nome: string;
+}
+
+export interface OpcoesDaMovimentacaoDto {
+  contas: ContaDaOpcaoDto[];
+  /** Ativas */
+  categorias: CategoriaDaOpcaoDto[];
+  /** Ativos */
+  contratos: ContratoParaVincularDto[];
+  /** Não cancelados */
+  projetos: ProjetoParaVincularDto[];
+  /** Ativos */
+  funcionarios: OpcaoDeVinculoDto[];
+}
+
 export type OrigemCobranca = typeof OrigemCobranca[keyof typeof OrigemCobranca];
 
 
@@ -838,213 +1115,6 @@ export interface ResolucaoDto {
   resolucao: string;
 }
 
-export interface EstornoDto {
-  motivo: string;
-}
-
-export interface EstornoRegistradoDto {
-  /** A movimentação espelho, de sinal contrário */
-  espelhoId: string;
-}
-
-export type TipoMovimentacao = typeof TipoMovimentacao[keyof typeof TipoMovimentacao];
-
-
-export const TipoMovimentacao = {
-  ENTRADA: 'ENTRADA',
-  SAIDA: 'SAIDA',
-} as const;
-
-export type FormaPagamentoManual = typeof FormaPagamentoManual[keyof typeof FormaPagamentoManual];
-
-
-export const FormaPagamentoManual = {
-  PIX: 'PIX',
-  TRANSFERENCIA: 'TRANSFERENCIA',
-  DINHEIRO: 'DINHEIRO',
-  CARTAO: 'CARTAO',
-} as const;
-
-export interface NovaMovimentacaoDto {
-  contaId: string;
-  tipo: TipoMovimentacao;
-  /** Maior que zero, em centavos */
-  valorCentavos: number;
-  /** Não pode ser no futuro */
-  data: string;
-  /** Ativa e compatível com o tipo */
-  categoriaId: string;
-  forma: FormaPagamentoManual;
-  descricao: string;
-  /** @nullable */
-  contratoId?: string | null;
-  /** @nullable */
-  projetoId?: string | null;
-  /** @nullable */
-  funcionarioId?: string | null;
-}
-
-export interface MovimentacaoRegistradaDto {
-  id: string;
-  /**
-     * Ex.: lançamento em projeto já executado
-     * @nullable
-     */
-  aviso: string | null;
-}
-
-export type FormaPagamento = typeof FormaPagamento[keyof typeof FormaPagamento];
-
-
-export const FormaPagamento = {
-  ASAAS: 'ASAAS',
-  PIX: 'PIX',
-  TRANSFERENCIA: 'TRANSFERENCIA',
-  DINHEIRO: 'DINHEIRO',
-  CARTAO: 'CARTAO',
-} as const;
-
-export type OrigemMovimentacao = typeof OrigemMovimentacao[keyof typeof OrigemMovimentacao];
-
-
-export const OrigemMovimentacao = {
-  MANUAL: 'MANUAL',
-  CONCILIACAO_AUTOMATICA: 'CONCILIACAO_AUTOMATICA',
-  REGISTRO_MANUAL_DE_COBRANCA: 'REGISTRO_MANUAL_DE_COBRANCA',
-  ESTORNO: 'ESTORNO',
-} as const;
-
-export type TipoDeVinculo = typeof TipoDeVinculo[keyof typeof TipoDeVinculo];
-
-
-export const TipoDeVinculo = {
-  COBRANCA: 'COBRANCA',
-  CONTRATO: 'CONTRATO',
-  PROJETO: 'PROJETO',
-  FUNCIONARIO: 'FUNCIONARIO',
-} as const;
-
-export interface VinculoDto {
-  tipo: TipoDeVinculo;
-  /**
-     * Aluno da cobrança, contrato, projeto ou funcionário
-     * @nullable
-     */
-  nome: string | null;
-}
-
-export interface MovimentacaoDto {
-  id: string;
-  data: string;
-  descricao: string;
-  tipo: TipoMovimentacao;
-  /** Sempre positivo, em centavos; o sinal vem do tipo */
-  valorCentavos: number;
-  categoriaNome: string;
-  forma: FormaPagamento;
-  origem: OrigemMovimentacao;
-  contaNome: string;
-  /**
-     * Nulo = rotina automática
-     * @nullable
-     */
-  registradaPor: string | null;
-  /** @nullable */
-  vinculo: VinculoDto | null;
-  /**
-     * Preenchido na movimentação estornada
-     * @nullable
-     */
-  estornadaEm: string | null;
-  /** @nullable */
-  motivoEstorno: string | null;
-  /** Só lançamento manual, ainda não estornado */
-  podeEstornar: boolean;
-  /** @nullable */
-  motivoSemEstorno: string | null;
-}
-
-export interface TotaisDto {
-  entradasCentavos: number;
-  quantidadeEntradas: number;
-  saidasCentavos: number;
-  quantidadeSaidas: number;
-  /** Entradas menos saídas. Estornos e transferências entre contas não entram */
-  saldoCentavos: number;
-}
-
-export interface ListaDeMovimentacoesDto {
-  /** Das mais recentes para as mais antigas */
-  itens: MovimentacaoDto[];
-  total: number;
-  /** Do mesmo recorte da lista */
-  totais: TotaisDto;
-}
-
-export type TipoConta = typeof TipoConta[keyof typeof TipoConta];
-
-
-export const TipoConta = {
-  CORRENTE: 'CORRENTE',
-  APLICACAO: 'APLICACAO',
-} as const;
-
-export interface ContaDaOpcaoDto {
-  id: string;
-  nome: string;
-  tipo: TipoConta;
-}
-
-export interface CategoriaDaOpcaoDto {
-  id: string;
-  nome: string;
-  tipo: TipoCategoria;
-}
-
-export type PeriodicidadeContrato = typeof PeriodicidadeContrato[keyof typeof PeriodicidadeContrato];
-
-
-export const PeriodicidadeContrato = {
-  MENSAL: 'MENSAL',
-  ANUAL: 'ANUAL',
-  POR_DEMANDA: 'POR_DEMANDA',
-  UNICA: 'UNICA',
-} as const;
-
-export interface ContratoParaVincularDto {
-  id: string;
-  nome: string;
-  /** Valor previsto por periodicidade */
-  valorCentavos: number;
-  periodicidade: PeriodicidadeContrato;
-  /** Saídas já pagas neste contrato no ano */
-  pagoNoAnoCentavos: number;
-}
-
-export interface ProjetoParaVincularDto {
-  id: string;
-  nome: string;
-  /** Executado: aceita lançamento, mas a tela sinaliza */
-  encerrado: boolean;
-}
-
-export interface OpcaoDeVinculoDto {
-  id: string;
-  nome: string;
-}
-
-export interface OpcoesDaMovimentacaoDto {
-  contas: ContaDaOpcaoDto[];
-  /** Ativas */
-  categorias: CategoriaDaOpcaoDto[];
-  /** Ativos */
-  contratos: ContratoParaVincularDto[];
-  /** Não cancelados */
-  projetos: ProjetoParaVincularDto[];
-  /** Ativos */
-  funcionarios: OpcaoDeVinculoDto[];
-}
-
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };
@@ -1071,30 +1141,18 @@ export const ListarFuncionariosSituacao = {
   todos: 'todos',
 } as const;
 
-export type ListarCobrancasParams = {
-tamanhoPagina?: number;
-pagina?: number;
-valorMaximoCentavos?: number;
-valorMinimoCentavos?: number;
-vencimentoAte?: unknown;
-vencimentoDe?: unknown;
-alunoId?: unknown;
-/**
- * Nome ou CPF do aluno
- */
-busca?: unknown;
-/**
- * Separadas por vírgula
- */
-situacoes?: unknown;
+export type ListarContratosParams = {
+situacao?: ListarContratosSituacao;
 };
 
-export type ListarPendenciasDeConciliacaoParams = {
-/**
- * true: as já resolvidas
- */
-resolvidas?: boolean;
-};
+export type ListarContratosSituacao = typeof ListarContratosSituacao[keyof typeof ListarContratosSituacao];
+
+
+export const ListarContratosSituacao = {
+  vigentes: 'vigentes',
+  encerrados: 'encerrados',
+  todos: 'todos',
+} as const;
 
 export type ListarMovimentacoesParams = {
 ocultarEstornos?: boolean;
@@ -1127,4 +1185,29 @@ export const ListarMovimentacoesTipo = {
   ENTRADA: 'ENTRADA',
   SAIDA: 'SAIDA',
 } as const;
+
+export type ListarCobrancasParams = {
+tamanhoPagina?: number;
+pagina?: number;
+valorMaximoCentavos?: number;
+valorMinimoCentavos?: number;
+vencimentoAte?: unknown;
+vencimentoDe?: unknown;
+alunoId?: unknown;
+/**
+ * Nome ou CPF do aluno
+ */
+busca?: unknown;
+/**
+ * Separadas por vírgula
+ */
+situacoes?: unknown;
+};
+
+export type ListarPendenciasDeConciliacaoParams = {
+/**
+ * true: as já resolvidas
+ */
+resolvidas?: boolean;
+};
 

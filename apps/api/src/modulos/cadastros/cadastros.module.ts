@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
+import { MovimentacoesModule } from '../movimentacoes/index.js';
 import { AlunosController, TurmasController } from './api/alunos.controller.js';
+import { ContratosController } from './api/contratos.controller.js';
 import { FuncionariosController } from './api/funcionarios.controller.js';
 import { AlterarAluno } from './aplicacao/alterar-aluno.js';
 import { AlterarFuncionario } from './aplicacao/alterar-funcionario.js';
 import { BuscarAluno } from './aplicacao/buscar-aluno.js';
+import { AlterarContrato, CriarContrato, EncerrarContrato, ListarContratos } from './aplicacao/contratos.js';
 import { CriarAluno } from './aplicacao/criar-aluno.js';
 import { CriarFuncionario } from './aplicacao/criar-funcionario.js';
 import { ListarAlunos } from './aplicacao/listar-alunos.js';
@@ -11,12 +14,15 @@ import { ListarAlunosCobraveis } from './aplicacao/listar-alunos-cobraveis.js';
 import { ListarFuncionarios } from './aplicacao/listar-funcionarios.js';
 import { ListarTurmas } from './aplicacao/listar-turmas.js';
 import { AlunosRepositorio } from './infra/alunos.repositorio.js';
+import { ContratosRepositorio } from './infra/contratos.repositorio.js';
 import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
 
-// Módulo Cadastros: alunos, turmas e funcionários. O que outros módulos usam entra em `exports`
+// Módulo Cadastros: alunos, turmas, funcionários e contratos. O que outros módulos usam entra em `exports`
 // (e também no index.ts, que é por onde eles importam).
 @Module({
-  controllers: [AlunosController, TurmasController, FuncionariosController],
+  // Movimentações entrega o total pago em cada contrato (e não depende do Cadastros: sem ciclo).
+  imports: [MovimentacoesModule],
+  controllers: [AlunosController, TurmasController, FuncionariosController, ContratosController],
   providers: [
     ListarAlunos,
     BuscarAluno,
@@ -29,6 +35,11 @@ import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
     CriarFuncionario,
     AlterarFuncionario,
     FuncionariosRepositorio,
+    ListarContratos,
+    CriarContrato,
+    AlterarContrato,
+    EncerrarContrato,
+    ContratosRepositorio,
   ],
   exports: [ListarAlunosCobraveis, BuscarAluno, ListarAlunos],
 })

@@ -1,38 +1,10 @@
-// Contrato planejado da API de Cadastros [Cadastros.RF004 e RF005] e da aba Movimentações do
-// aluno. O cadastro do aluno (lista, detalhe, inclusão e alteração) já vem da API, pelos hooks do orval. Dinheiro em centavos; dias em "AAAA-MM-DD".
+// Contrato planejado da API de Cadastros [Cadastros.RF005] e da aba Movimentações do
+// aluno. Alunos, funcionários e contratos já vêm da API, pelos hooks do orval. Dinheiro em centavos; dias em "AAAA-MM-DD".
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 
 // GET /api/alunos/:id/movimentacoes
 export interface MovimentacoesDoAlunoDto {
   itens: MovimentacaoDto[]
-}
-
-export type PeriodicidadeContrato = 'MENSAL' | 'ANUAL' | 'POR_DEMANDA' | 'UNICA'
-
-export interface ContratoDto {
-  id: string
-  // Nome de quem contratamos (texto livre; não há cadastro de fornecedores).
-  contraparte: string
-  objeto: string
-  // Valor previsto por periodicidade.
-  valorCentavos: number
-  periodicidade: PeriodicidadeContrato
-  dataInicio: string
-  dataFim: string
-  situacao: 'VIGENTE' | 'VENCE_EM_BREVE' | 'ENCERRADO'
-  // Dias até o término; negativo se já encerrou.
-  diasParaVencer: number
-  // Soma das saídas já pagas neste contrato no ano (dado de Movimentações, entregue pela API junto do contrato).
-  pagoNoAnoCentavos: number
-}
-
-export type SituacaoDoFiltroDeContratos = 'vigentes' | 'encerrados' | 'todos'
-
-// GET /api/contratos?situacao=vigentes|encerrados|todos
-export interface ListaDeContratosDto {
-  itens: ContratoDto[]
-  // Quantos contratos vencem nos próximos 60 dias (aviso da tela).
-  quantidadeVencendo: number
 }
 
 export interface ProjetoDto {

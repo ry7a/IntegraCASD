@@ -3,14 +3,11 @@
 // Alunos e funcionários NÃO estão aqui: já usam os hooks reais, gerados pelo orval.
 import { useQuery } from '@tanstack/react-query'
 import type {
-  ListaDeContratosDto,
   ListaDeProjetosDto,
   MovimentacoesDoAlunoDto,
-  SituacaoDoFiltroDeContratos,
   SituacaoDoFiltroDeProjetos,
 } from './contrato'
 import {
-  contratos,
   movimentacoesDoLucas,
   projetos,
 } from './dados-ficticios'
@@ -25,22 +22,6 @@ export function useListarMovimentacoesDoAluno(alunoId: string) {
     queryFn: async () => {
       await esperar()
       return { itens: alunoId === 'aluno-lucas' ? movimentacoesDoLucas : [] }
-    },
-  })
-}
-
-// TODO [Cadastros.RF004]: trocar por GET /api/contratos?situacao=.
-export function useListarContratos(situacao: SituacaoDoFiltroDeContratos) {
-  return useQuery<ListaDeContratosDto>({
-    queryKey: ['contratos', situacao],
-    queryFn: async () => {
-      await esperar()
-      const itens = contratos.filter((c) => {
-        if (situacao === 'vigentes') return c.situacao !== 'ENCERRADO'
-        if (situacao === 'encerrados') return c.situacao === 'ENCERRADO'
-        return true
-      })
-      return { itens, quantidadeVencendo: contratos.filter((c) => c.situacao === 'VENCE_EM_BREVE').length }
     },
   })
 }
