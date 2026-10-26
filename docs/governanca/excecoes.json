@@ -10,5 +10,11 @@
     "alvo": "apps/web/src/compartilhado/estilo-telas.css",
     "justificativa": "Folha de estilo das telas do protótipo, importada em main.tsx, ainda com cores em hex (selos, séries do gráfico, tons de apoio). Migrar as cores para variáveis do tema em src/index.css e então remover esta exceção.",
     "referencia": "ADR-0003; apps/web/CLAUDE.md (Identidade visual)"
+  },
+  {
+    "regra": "B4",
+    "alvo": "apps/api/src/compartilhado/notificacao/notificador-por-email.http.ts",
+    "justificativa": "Adaptador de saída do alerta de interrupção da conciliação: envia e-mail à diretoria pela API HTTP de um provedor transacional (Resend), com fetch e sem dependência nova. Não fala com o Asaas. A Railway bloqueia SMTP de saída nos planos baratos, por isso API HTTP e não SMTP. Fica isolado atrás de NotificadorDeAlertas, único ponto que envia e-mail, como o ClienteAsaas é o único que fala com o Asaas.",
+    "referencia": "[Confiabilidade.NF002]; Relatório Descritivo, Figura 2 (Serviço de e-mail); apps/api/CLAUDE.md (Notificador de alertas)"
   }
 ]
