@@ -1,24 +1,36 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
+import { useConsultarEvolucao, useConsultarResumoDosIndicadores } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
-import { formatarMes, formatarMoeda, formatarPercentual, nomeDoMes, somarMeses } from '@/compartilhado/formatacao'
+import { formatarMes, formatarMoeda, formatarPercentual, hojeIso, nomeDoMes, somarMeses } from '@/compartilhado/formatacao'
 import BlocoDeGastosPorCategoria from './BlocoDeGastosPorCategoria'
 import BlocoDeInadimplencia from './BlocoDeInadimplencia'
-import { MES_DOS_DADOS as mes, useEvolucaoDeEntradasESaidas, useResumoDosIndicadores } from './consultas'
 import GraficoDeEntradasESaidas from './GraficoDeEntradasESaidas'
 
+// Os últimos 12 meses, do corrente para trás ("AAAA-MM").
+function ultimosMeses(): string[] {
+  const atual = hojeIso().slice(0, 7)
+  return Array.from({ length: 12 }, (_, atras) => somarMeses(atual, -atras))
+}
+
 // "+4,0% em relação a setembro", "−2,1% em relação a setembro" ou aviso de que não há base de comparação.
-function textoDaVariacao(variacao: number | null): string {
+function textoDaVariacao(variacao: number | null, mes: string): string {
   const anterior = nomeDoMes(somarMeses(mes, -1))
   if (variacao === null) return `Sem movimento em ${anterior} para comparar`
   const sinal = variacao >= 0 ? '+' : '−'
   return `${sinal}${formatarPercentual(Math.abs(variacao))} em relação a ${anterior}`
 }
 
+// Cartão clicável: leva às movimentações que compõem o número (passo 5), sem cara de link.
+const CARTAO_LINK = { display: 'block', color: 'inherit', textDecoration: 'none' }
+
 // Página inicial. [Indicadores.RF001 a RF003]
 function PaginaIndicadores() {
-  const resumo = useResumoDosIndicadores()
-  const evolucao = useEvolucaoDeEntradasESaidas()
+  const meses = ultimosMeses()
+  const [mes, definirMes] = useState(meses[0])
+  const resumo = useConsultarResumoDosIndicadores({ mes })
+  const evolucao = useConsultarEvolucao({ ate: mes })
   const dados = resumo.data
 
   return (
@@ -31,9 +43,12 @@ function PaginaIndicadores() {
         <div className="acoes">
           <div className="campo">
             <label htmlFor="periodo">Período de referência</label>
-            {/* TODO [Indicadores.RF001]: escolher outros meses e "Últimos 12 meses" quando a API aceitar o período. */}
-            <select id="periodo" value={mes} disabled>
-              <option value={mes}>{formatarMes(mes)}</option>
+            <select id="periodo" value={mes} onChange={(evento) => definirMes(evento.target.value)}>
+              {meses.map((opcao) => (
+                <option key={opcao} value={opcao}>
+                  {formatarMes(opcao)}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -53,29 +68,37 @@ function PaginaIndicadores() {
                   </strong>{' '}
                   O aluno pode ter pago e a notificação não ter chegado. Sincronize antes de cobrar.
                 </p>
-                <Link className="botao botao-pequeno" to="/cobrancas">
+                <Link className="botao botao-pequeno" to="/cobrancas?situacoes=VENCIDA">
                   <Icone nome="sincronizar" />
                   Sincronizar agora
                 </Link>
               </div>
             )}
 
+            {/* Fluxo A1: mês sem movimentação mostra zeros e avisa, em vez de dar erro. */}
+            {dados.semMovimentacao && (
+              <p className="texto-apoio" role="status">
+                Não há movimentações em {formatarMes(mes).toLowerCase()}.
+              </p>
+            )}
+
             <section className="grade grade-4" aria-label="Resumo do período">
-              <div className="cartao indicador">
+              <Link className="cartao indicador" style={CARTAO_LINK} to={`/movimentacoes?mes=${mes}&tipo=ENTRADA`}>
                 <div className="rotulo">Entradas</div>
                 <div className="valor">{formatarMoeda(dados.entradasCentavos)}</div>
-                <div className="detalhe">{textoDaVariacao(dados.variacaoEntradasPercentual)}</div>
-              </div>
-              <div className="cartao indicador">
+                <div className="detalhe">{textoDaVariacao(dados.variacaoEntradasPercentual, mes)}</div>
+              </Link>
+              <Link className="cartao indicador" style={CARTAO_LINK} to={`/movimentacoes?mes=${mes}&tipo=SAIDA`}>
                 <div className="rotulo">Saídas</div>
                 <div className="valor">{formatarMoeda(dados.saidasCentavos)}</div>
-                <div className="detalhe">{textoDaVariacao(dados.variacaoSaidasPercentual)}</div>
-              </div>
-              <div className="cartao indicador indicador-destaque">
+                <div className="detalhe">{textoDaVariacao(dados.variacaoSaidasPercentual, mes)}</div>
+              </Link>
+              <Link className="cartao indicador indicador-destaque" style={CARTAO_LINK} to={`/movimentacoes?mes=${mes}`}>
                 <div className="rotulo">Resultado do período</div>
                 <div className="valor">{formatarMoeda(dados.resultadoCentavos)}</div>
                 <div className="detalhe">Entradas menos saídas de {nomeDoMes(mes)}</div>
-              </div>
+              </Link>
+              {/* Fluxo A2: o resultado não é dinheiro disponível; o que o Asaas ainda vai liberar fica à parte. */}
               <div className="cartao indicador">
                 <div className="rotulo">Aguardando liberação do Asaas</div>
                 <div className="valor">{formatarMoeda(dados.aguardandoLiberacaoCentavos)}</div>
@@ -91,7 +114,7 @@ function PaginaIndicadores() {
           <div className="cartao-cabecalho">
             <div>
               <h2>Entradas e saídas</h2>
-              <p>Últimos 6 meses</p>
+              <p>6 meses até {nomeDoMes(mes)}</p>
             </div>
             <div className="legenda" aria-hidden="true">
               <span>

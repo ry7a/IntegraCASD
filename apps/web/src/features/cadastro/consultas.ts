@@ -1,4 +1,4 @@
-// Mesmo padrão de features/indicadores/consultas.ts: hooks do TanStack Query que devolvem dados fictícios.
+// Enquanto o endpoint não existe no NestJS, cada consulta é um hook do TanStack Query que devolve dados fictícios.
 // Quando o endpoint existir no NestJS, troca-se cada hook pelo gerado pelo orval, com o mesmo formato.
 // Alunos, funcionários, contratos e projetos NÃO estão aqui: já usam os hooks reais, gerados pelo orval.
 import { useQuery } from '@tanstack/react-query'

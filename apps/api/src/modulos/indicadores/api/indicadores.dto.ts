@@ -2,6 +2,30 @@ import { ApiProperty } from '@nestjs/swagger';
 
 // DTOs dos indicadores [Indicadores.RF001 a RF003]. Dinheiro em centavos.
 
+export class ResumoIndicadoresDto {
+  @ApiProperty({ example: '2026-10' }) mes!: string;
+  @ApiProperty() entradasCentavos!: number;
+  @ApiProperty() saidasCentavos!: number;
+  @ApiProperty({ description: 'Entradas menos saídas do mês' }) resultadoCentavos!: number;
+  @ApiProperty({ type: Number, nullable: true, description: 'Variação % sobre o mês anterior; nula sem movimento lá' })
+  variacaoEntradasPercentual!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) variacaoSaidasPercentual!: number | null;
+  @ApiProperty({ description: 'Nenhuma movimentação no mês' }) semMovimentacao!: boolean;
+  @ApiProperty({ description: 'Pago pelos alunos, ainda não disponível na conta do Asaas' }) aguardandoLiberacaoCentavos!: number;
+  @ApiProperty({ description: 'Cobranças vencidas há mais de 7 dias sem sincronizar com o Asaas' }) vencidasSemSincronizar!: number;
+}
+
+export class PontoDeEvolucaoDto {
+  @ApiProperty({ example: '2026-10' }) mes!: string;
+  @ApiProperty() entradasCentavos!: number;
+  @ApiProperty() saidasCentavos!: number;
+  @ApiProperty() resultadoCentavos!: number;
+}
+
+export class EvolucaoDto {
+  @ApiProperty({ type: [PontoDeEvolucaoDto], description: 'Do mês mais antigo para o mais recente' }) meses!: PontoDeEvolucaoDto[];
+}
+
 export class GastoPorCategoriaDto {
   @ApiProperty({ format: 'uuid' }) categoriaId!: string;
   @ApiProperty() categoriaNome!: string;

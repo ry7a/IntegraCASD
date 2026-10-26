@@ -1980,6 +1980,80 @@
         ]
       }
     },
+    "/api/indicadores/resumo": {
+      "get": {
+        "operationId": "consultarResumoDosIndicadores",
+        "parameters": [
+          {
+            "name": "mes",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM; padrão: o mês corrente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumoIndicadoresDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Entradas, saídas e resultado do mês, comparados ao anterior",
+        "tags": [
+          "indicadores"
+        ]
+      }
+    },
+    "/api/indicadores/evolucao": {
+      "get": {
+        "operationId": "consultarEvolucao",
+        "parameters": [
+          {
+            "name": "ate",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM; padrão: o mês corrente",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvolucaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Entradas e saídas dos 6 meses até o mês de referência",
+        "tags": [
+          "indicadores"
+        ]
+      }
+    },
     "/api/indicadores/gastos-por-categoria": {
       "get": {
         "operationId": "consultarGastosPorCategoria",
@@ -4961,6 +5035,96 @@
         },
         "required": [
           "resolucao"
+        ]
+      },
+      "ResumoIndicadoresDto": {
+        "type": "object",
+        "properties": {
+          "mes": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "entradasCentavos": {
+            "type": "number"
+          },
+          "saidasCentavos": {
+            "type": "number"
+          },
+          "resultadoCentavos": {
+            "type": "number",
+            "description": "Entradas menos saídas do mês"
+          },
+          "variacaoEntradasPercentual": {
+            "type": "number",
+            "nullable": true,
+            "description": "Variação % sobre o mês anterior; nula sem movimento lá"
+          },
+          "variacaoSaidasPercentual": {
+            "type": "number",
+            "nullable": true
+          },
+          "semMovimentacao": {
+            "type": "boolean",
+            "description": "Nenhuma movimentação no mês"
+          },
+          "aguardandoLiberacaoCentavos": {
+            "type": "number",
+            "description": "Pago pelos alunos, ainda não disponível na conta do Asaas"
+          },
+          "vencidasSemSincronizar": {
+            "type": "number",
+            "description": "Cobranças vencidas há mais de 7 dias sem sincronizar com o Asaas"
+          }
+        },
+        "required": [
+          "mes",
+          "entradasCentavos",
+          "saidasCentavos",
+          "resultadoCentavos",
+          "variacaoEntradasPercentual",
+          "variacaoSaidasPercentual",
+          "semMovimentacao",
+          "aguardandoLiberacaoCentavos",
+          "vencidasSemSincronizar"
+        ]
+      },
+      "PontoDeEvolucaoDto": {
+        "type": "object",
+        "properties": {
+          "mes": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "entradasCentavos": {
+            "type": "number"
+          },
+          "saidasCentavos": {
+            "type": "number"
+          },
+          "resultadoCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "mes",
+          "entradasCentavos",
+          "saidasCentavos",
+          "resultadoCentavos"
+        ]
+      },
+      "EvolucaoDto": {
+        "type": "object",
+        "properties": {
+          "meses": {
+            "description": "Do mês mais antigo para o mais recente",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PontoDeEvolucaoDto"
+            }
+          }
+        },
+        "required": [
+          "meses"
         ]
       },
       "GastoPorCategoriaDto": {

@@ -1,5 +1,5 @@
 import { abreviarMes, formatarMes, formatarMoeda } from '@/compartilhado/formatacao'
-import type { PontoDeEvolucaoDto } from './contrato'
+import type { PontoDeEvolucaoDto } from '@integracasd/api-client'
 
 // Gráfico de barras agrupadas em SVG puro (sem biblioteca), como no protótipo.
 // Os dados também aparecem em tabela, para quem não enxerga o gráfico.
@@ -12,7 +12,8 @@ const TOPO = 16
 const BASE = 324
 const LARGURA_DA_BARRA = 26
 const ESPACO = 2
-const PASSO_DAS_LINHAS = 20000 // a cada R$ 20 mil, em reais
+// Passos possíveis entre as linhas de grade, em reais. Usa o menor que deixa no máximo 5 linhas.
+const PASSOS = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000]
 
 // Barra com cantos arredondados só no topo, presa à linha de base.
 function caminhoDaBarra(x: number, topoDaBarra: number): string {
@@ -38,15 +39,16 @@ function Barra({ x, topoDaBarra, cor, dica }: BarraProps) {
   )
 }
 function GraficoDeEntradasESaidas({ meses }: { meses: PontoDeEvolucaoDto[] }) {
-  // A API manda centavos; o gráfico trabalha em reais. A escala vai até o próximo múltiplo de R$ 10 mil.
+  // A API manda centavos; o gráfico trabalha em reais. A escala vai até o próximo múltiplo do passo.
   const maiorValor = Math.max(1, ...meses.flatMap((m) => [m.entradasCentavos, m.saidasCentavos])) / 100
-  const maximo = Math.ceil(maiorValor / 10000) * 10000
+  const passo = PASSOS.find((candidato) => maiorValor / candidato <= 5) ?? PASSOS[PASSOS.length - 1]
+  const maximo = Math.ceil(maiorValor / passo) * passo
 
   const y = (reais: number) => BASE - (reais / maximo) * (BASE - TOPO)
   const larguraDoGrupo = (DIREITA - ESQUERDA) / meses.length
 
   const marcas: number[] = []
-  for (let marca = 0; marca < maximo; marca += PASSO_DAS_LINHAS) marcas.push(marca)
+  for (let marca = 0; marca < maximo; marca += passo) marcas.push(marca)
 
   return (
     <>
@@ -60,7 +62,7 @@ function GraficoDeEntradasESaidas({ meses }: { meses: PontoDeEvolucaoDto[] }) {
             <g key={marca}>
               <line className="grade-linha" x1={ESQUERDA} x2={DIREITA} y1={y(marca)} y2={y(marca)} />
               <text x={ESQUERDA - 8} y={y(marca) + 4} textAnchor="end">
-                {marca === 0 ? 'R$ 0' : `R$ ${marca / 1000} mil`}
+                {marca === 0 ? 'R$ 0' : marca % 1000 === 0 ? `R$ ${marca / 1000} mil` : formatarMoeda(marca * 100)}
               </text>
             </g>
           ))}
