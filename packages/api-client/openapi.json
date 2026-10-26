@@ -751,6 +751,70 @@
           "funcionarios"
         ]
       }
+    },
+    "/api/cobrancas/sugestao": {
+      "get": {
+        "operationId": "sugerirNovaCobranca",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SugestaoDeNovaCobrancaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Vencimento sugerido, multa e juros vigentes",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas": {
+      "post": {
+        "operationId": "emitirCobrancaAvulsa",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmitirCobrancaAvulsaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CobrancaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Emite uma cobrança avulsa no Asaas",
+        "tags": [
+          "cobrancas"
+        ]
+      }
     }
   },
   "info": {
@@ -1580,6 +1644,154 @@
             "nullable": true
           }
         }
+      },
+      "SugestaoDeNovaCobrancaDto": {
+        "type": "object",
+        "properties": {
+          "parametrosCadastrados": {
+            "type": "boolean",
+            "description": "Falso enquanto a diretoria não cadastrar os parâmetros de cobrança"
+          },
+          "vencimentoSugerido": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "multaPercentual": {
+            "type": "number",
+            "nullable": true
+          },
+          "jurosMensalPercentual": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "parametrosCadastrados",
+          "vencimentoSugerido",
+          "multaPercentual",
+          "jurosMensalPercentual"
+        ]
+      },
+      "EmitirCobrancaAvulsaDto": {
+        "type": "object",
+        "properties": {
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "example": 4500
+          },
+          "vencimento": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-10"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Camiseta do CASD"
+          }
+        },
+        "required": [
+          "alunoId",
+          "valorCentavos",
+          "vencimento",
+          "descricao"
+        ]
+      },
+      "OrigemCobranca": {
+        "type": "string",
+        "enum": [
+          "MENSALIDADE",
+          "AVULSA"
+        ]
+      },
+      "SituacaoCobranca": {
+        "type": "string",
+        "enum": [
+          "ABERTA",
+          "VENCIDA",
+          "PAGA",
+          "PAGA_COM_REGISTRO_MANUAL",
+          "CANCELADA",
+          "ESTORNADA"
+        ],
+        "description": "VENCIDA = aberta com vencimento passado"
+      },
+      "CobrancaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemCobranca"
+              }
+            ]
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor original, sem multa e juros"
+          },
+          "vencimento": {
+            "type": "string",
+            "format": "date"
+          },
+          "situacao": {
+            "description": "VENCIDA = aberta com vencimento passado",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoCobranca"
+              }
+            ]
+          },
+          "multaPercentual": {
+            "type": "number",
+            "description": "Percentual inteiro enviado ao Asaas na emissão"
+          },
+          "jurosMensalPercentual": {
+            "type": "number",
+            "description": "Percentual inteiro ao mês enviado ao Asaas na emissão"
+          },
+          "urlBoleto": {
+            "type": "string",
+            "nullable": true
+          },
+          "urlFatura": {
+            "type": "string",
+            "nullable": true,
+            "description": "Página da fatura no Asaas (boleto e Pix)"
+          }
+        },
+        "required": [
+          "id",
+          "alunoId",
+          "alunoNome",
+          "origem",
+          "descricao",
+          "valorCentavos",
+          "vencimento",
+          "situacao",
+          "multaPercentual",
+          "jurosMensalPercentual",
+          "urlBoleto",
+          "urlFatura"
+        ]
       }
     }
   }

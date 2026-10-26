@@ -18,11 +18,16 @@ export interface NovaCobrancaAsaas {
   valorEmCentavos: number;
   vencimento: string; // AAAA-MM-DD
   descricao: string;
+  // Percentuais inteiros (2 = 2%), dos parâmetros vigentes. O Asaas calcula multa e juros no pagamento.
+  multaPercentual: number;
+  jurosMensalPercentual: number;
 }
 
 export interface CobrancaAsaas {
   idAsaas: string;
   urlBoleto: string | null;
+  // Página da fatura no Asaas, com boleto e Pix, que o aluno também recebe por e-mail.
+  urlFatura: string | null;
 }
 
 // Erro lançado quando o Asaas falha. A mensagem já vem traduzida e orientada à ação

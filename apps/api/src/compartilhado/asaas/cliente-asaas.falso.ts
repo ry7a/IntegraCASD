@@ -28,6 +28,7 @@ export class ClienteAsaasFalso extends ClienteAsaas {
     return Promise.resolve({
       idAsaas: `pay_falso_${numero}`,
       urlBoleto: `https://asaas.falso/boleto/pay_falso_${numero}`,
+      urlFatura: `https://asaas.falso/fatura/pay_falso_${numero}`,
     });
   }
 

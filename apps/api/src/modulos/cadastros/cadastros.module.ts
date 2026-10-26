@@ -30,6 +30,6 @@ import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
     AlterarFuncionario,
     FuncionariosRepositorio,
   ],
-  exports: [ListarAlunosCobraveis],
+  exports: [ListarAlunosCobraveis, BuscarAluno],
 })
 export class CadastrosModule {}

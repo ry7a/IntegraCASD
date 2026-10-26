@@ -343,6 +343,71 @@ export interface AlterarFuncionarioDto {
   dataDesligamento?: string | null;
 }
 
+export interface SugestaoDeNovaCobrancaDto {
+  /** Falso enquanto a diretoria não cadastrar os parâmetros de cobrança */
+  parametrosCadastrados: boolean;
+  /** @nullable */
+  vencimentoSugerido: string | null;
+  /** @nullable */
+  multaPercentual: number | null;
+  /** @nullable */
+  jurosMensalPercentual: number | null;
+}
+
+export interface EmitirCobrancaAvulsaDto {
+  alunoId: string;
+  valorCentavos: number;
+  vencimento: string;
+  descricao: string;
+}
+
+export type OrigemCobranca = typeof OrigemCobranca[keyof typeof OrigemCobranca];
+
+
+export const OrigemCobranca = {
+  MENSALIDADE: 'MENSALIDADE',
+  AVULSA: 'AVULSA',
+} as const;
+
+/**
+ * VENCIDA = aberta com vencimento passado
+ */
+export type SituacaoCobranca = typeof SituacaoCobranca[keyof typeof SituacaoCobranca];
+
+
+export const SituacaoCobranca = {
+  ABERTA: 'ABERTA',
+  VENCIDA: 'VENCIDA',
+  PAGA: 'PAGA',
+  PAGA_COM_REGISTRO_MANUAL: 'PAGA_COM_REGISTRO_MANUAL',
+  CANCELADA: 'CANCELADA',
+  ESTORNADA: 'ESTORNADA',
+} as const;
+
+export interface CobrancaDto {
+  id: string;
+  alunoId: string;
+  alunoNome: string;
+  origem: OrigemCobranca;
+  descricao: string;
+  /** Valor original, sem multa e juros */
+  valorCentavos: number;
+  vencimento: string;
+  /** VENCIDA = aberta com vencimento passado */
+  situacao: SituacaoCobranca;
+  /** Percentual inteiro enviado ao Asaas na emissão */
+  multaPercentual: number;
+  /** Percentual inteiro ao mês enviado ao Asaas na emissão */
+  jurosMensalPercentual: number;
+  /** @nullable */
+  urlBoleto: string | null;
+  /**
+     * Página da fatura no Asaas (boleto e Pix)
+     * @nullable
+     */
+  urlFatura: string | null;
+}
+
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };

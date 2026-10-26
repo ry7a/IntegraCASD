@@ -39,11 +39,10 @@ function Layout() {
         </div>
       </div>
 
-      <DialogoNovaCobranca
-        aberto={cobrancaAberta}
-        alunoInicial={alunoDaCobranca}
-        aoFechar={() => definirCobrancaAberta(false)}
-      />
+      {/* Montado só enquanto aberto: cada abertura começa com o formulário limpo. */}
+      {cobrancaAberta && (
+        <DialogoNovaCobranca alunoInicial={alunoDaCobranca} aoFechar={() => definirCobrancaAberta(false)} />
+      )}
       <DialogoNovaMovimentacao aberto={movimentacaoAberta} aoFechar={() => definirMovimentacaoAberta(false)} />
       <DicaFlutuante />
     </AcoesGlobaisContexto.Provider>

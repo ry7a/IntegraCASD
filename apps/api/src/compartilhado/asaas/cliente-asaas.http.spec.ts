@@ -19,6 +19,8 @@ describe('ClienteAsaasHttp', () => {
     valorEmCentavos: 12990,
     vencimento: '2026-11-10',
     descricao: 'Mensalidade de novembro',
+    multaPercentual: 2,
+    jurosMensalPercentual: 1,
   };
 
   beforeEach(() => {
@@ -30,12 +32,20 @@ describe('ClienteAsaasHttp', () => {
 
   it('cria a cobrança enviando o valor em reais e a chave no cabeçalho access_token', async () => {
     chamarHttp.mockResolvedValueOnce(
-      resposta(200, { id: 'pay_1', bankSlipUrl: 'https://asaas.teste/boleto/pay_1' }),
+      resposta(200, {
+        id: 'pay_1',
+        bankSlipUrl: 'https://asaas.teste/boleto/pay_1',
+        invoiceUrl: 'https://asaas.teste/i/pay_1',
+      }),
     );
 
     const cobranca = await cliente.criarCobranca(novaCobranca);
 
-    expect(cobranca).toEqual({ idAsaas: 'pay_1', urlBoleto: 'https://asaas.teste/boleto/pay_1' });
+    expect(cobranca).toEqual({
+      idAsaas: 'pay_1',
+      urlBoleto: 'https://asaas.teste/boleto/pay_1',
+      urlFatura: 'https://asaas.teste/i/pay_1',
+    });
     const [url, opcoes = {}] = chamarHttp.mock.calls[0];
     expect(url).toBe('https://asaas.teste/v3/payments');
     expect((opcoes.headers as Record<string, string>).access_token).toBe('chave-falsa');
@@ -44,6 +54,8 @@ describe('ClienteAsaasHttp', () => {
       billingType: 'BOLETO',
       value: 129.9,
       dueDate: '2026-11-10',
+      fine: { value: 2, type: 'PERCENTAGE' },
+      interest: { value: 1 },
     });
   });
 
@@ -72,7 +84,7 @@ describe('ClienteAsaasHttp', () => {
 
     const cobranca = await cliente.criarCobranca(novaCobranca);
 
-    expect(cobranca).toEqual({ idAsaas: 'pay_2', urlBoleto: null });
+    expect(cobranca).toEqual({ idAsaas: 'pay_2', urlBoleto: null, urlFatura: null });
     expect(esperar).toHaveBeenCalledWith(2000);
     expect(chamarHttp).toHaveBeenCalledTimes(2);
   });
