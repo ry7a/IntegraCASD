@@ -21,9 +21,13 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ConsultarEvolucaoParams,
   ConsultarGastosPorCategoriaParams,
+  ConsultarResumoDosIndicadoresParams,
+  EvolucaoDto,
   GastosPorCategoriaDto,
-  InadimplenciaDto
+  InadimplenciaDto,
+  ResumoIndicadoresDto
 } from '../api.schemas';
 
 import { clienteHttp } from '../../cliente-http';
@@ -52,6 +56,220 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getConsultarResumoDosIndicadoresUrl = (params?: ConsultarResumoDosIndicadoresParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/indicadores/resumo?${stringifiedParams}` : `/api/indicadores/resumo`
+}
+
+/**
+ * @summary Entradas, saídas e resultado do mês, comparados ao anterior
+ */
+export const consultarResumoDosIndicadores = async (params?: ConsultarResumoDosIndicadoresParams, options?: Parameters<typeof clienteHttp>[1]): Promise<ResumoIndicadoresDto> => {
+
+  return clienteHttp<ResumoIndicadoresDto>(getConsultarResumoDosIndicadoresUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConsultarResumoDosIndicadoresQueryKey = (params?: ConsultarResumoDosIndicadoresParams,) => {
+    return [
+    `/api/indicadores/resumo`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getConsultarResumoDosIndicadoresQueryOptions = <TData = Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError = ErrorType<unknown>>(params?: ConsultarResumoDosIndicadoresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConsultarResumoDosIndicadoresQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>> = ({ signal }) => consultarResumoDosIndicadores(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConsultarResumoDosIndicadoresQueryResult = NonNullable<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>>
+export type ConsultarResumoDosIndicadoresQueryError = ErrorType<unknown>
+
+
+export function useConsultarResumoDosIndicadores<TData = Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError = ErrorType<unknown>>(
+ params: undefined |  ConsultarResumoDosIndicadoresParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarResumoDosIndicadores>>,
+          TError,
+          Awaited<ReturnType<typeof consultarResumoDosIndicadores>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarResumoDosIndicadores<TData = Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError = ErrorType<unknown>>(
+ params?: ConsultarResumoDosIndicadoresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarResumoDosIndicadores>>,
+          TError,
+          Awaited<ReturnType<typeof consultarResumoDosIndicadores>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarResumoDosIndicadores<TData = Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError = ErrorType<unknown>>(
+ params?: ConsultarResumoDosIndicadoresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Entradas, saídas e resultado do mês, comparados ao anterior
+ */
+
+export function useConsultarResumoDosIndicadores<TData = Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError = ErrorType<unknown>>(
+ params?: ConsultarResumoDosIndicadoresParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarResumoDosIndicadores>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConsultarResumoDosIndicadoresQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getConsultarEvolucaoUrl = (params?: ConsultarEvolucaoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/indicadores/evolucao?${stringifiedParams}` : `/api/indicadores/evolucao`
+}
+
+/**
+ * @summary Entradas e saídas dos 6 meses até o mês de referência
+ */
+export const consultarEvolucao = async (params?: ConsultarEvolucaoParams, options?: Parameters<typeof clienteHttp>[1]): Promise<EvolucaoDto> => {
+
+  return clienteHttp<EvolucaoDto>(getConsultarEvolucaoUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getConsultarEvolucaoQueryKey = (params?: ConsultarEvolucaoParams,) => {
+    return [
+    `/api/indicadores/evolucao`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getConsultarEvolucaoQueryOptions = <TData = Awaited<ReturnType<typeof consultarEvolucao>>, TError = ErrorType<unknown>>(params?: ConsultarEvolucaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getConsultarEvolucaoQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof consultarEvolucao>>> = ({ signal }) => consultarEvolucao(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ConsultarEvolucaoQueryResult = NonNullable<Awaited<ReturnType<typeof consultarEvolucao>>>
+export type ConsultarEvolucaoQueryError = ErrorType<unknown>
+
+
+export function useConsultarEvolucao<TData = Awaited<ReturnType<typeof consultarEvolucao>>, TError = ErrorType<unknown>>(
+ params: undefined |  ConsultarEvolucaoParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarEvolucao>>,
+          TError,
+          Awaited<ReturnType<typeof consultarEvolucao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarEvolucao<TData = Awaited<ReturnType<typeof consultarEvolucao>>, TError = ErrorType<unknown>>(
+ params?: ConsultarEvolucaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof consultarEvolucao>>,
+          TError,
+          Awaited<ReturnType<typeof consultarEvolucao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useConsultarEvolucao<TData = Awaited<ReturnType<typeof consultarEvolucao>>, TError = ErrorType<unknown>>(
+ params?: ConsultarEvolucaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Entradas e saídas dos 6 meses até o mês de referência
+ */
+
+export function useConsultarEvolucao<TData = Awaited<ReturnType<typeof consultarEvolucao>>, TError = ErrorType<unknown>>(
+ params?: ConsultarEvolucaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof consultarEvolucao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getConsultarEvolucaoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export const getConsultarGastosPorCategoriaUrl = (params?: ConsultarGastosPorCategoriaParams,) => {
   const normalizedParams = new URLSearchParams();

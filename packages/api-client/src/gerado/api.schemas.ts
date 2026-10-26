@@ -1179,6 +1179,39 @@ export interface ResolucaoDto {
   resolucao: string;
 }
 
+export interface ResumoIndicadoresDto {
+  mes: string;
+  entradasCentavos: number;
+  saidasCentavos: number;
+  /** Entradas menos saídas do mês */
+  resultadoCentavos: number;
+  /**
+     * Variação % sobre o mês anterior; nula sem movimento lá
+     * @nullable
+     */
+  variacaoEntradasPercentual: number | null;
+  /** @nullable */
+  variacaoSaidasPercentual: number | null;
+  /** Nenhuma movimentação no mês */
+  semMovimentacao: boolean;
+  /** Pago pelos alunos, ainda não disponível na conta do Asaas */
+  aguardandoLiberacaoCentavos: number;
+  /** Cobranças vencidas há mais de 7 dias sem sincronizar com o Asaas */
+  vencidasSemSincronizar: number;
+}
+
+export interface PontoDeEvolucaoDto {
+  mes: string;
+  entradasCentavos: number;
+  saidasCentavos: number;
+  resultadoCentavos: number;
+}
+
+export interface EvolucaoDto {
+  /** Do mês mais antigo para o mais recente */
+  meses: PontoDeEvolucaoDto[];
+}
+
 export interface GastoPorCategoriaDto {
   categoriaId: string;
   categoriaNome: string;
@@ -1334,6 +1367,20 @@ export type ListarPendenciasDeConciliacaoParams = {
  * true: as já resolvidas
  */
 resolvidas?: boolean;
+};
+
+export type ConsultarResumoDosIndicadoresParams = {
+/**
+ * AAAA-MM; padrão: o mês corrente
+ */
+mes?: string;
+};
+
+export type ConsultarEvolucaoParams = {
+/**
+ * AAAA-MM; padrão: o mês corrente
+ */
+ate?: string;
 };
 
 export type ConsultarGastosPorCategoriaParams = {

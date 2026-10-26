@@ -36,7 +36,8 @@ function PaginaMovimentacoes() {
   // O mês e a categoria podem chegar pela URL (link "Gastos por categoria" dos Indicadores).
   const [parametros] = useSearchParams()
   const [mes, definirMes] = useState(parametros.get('mes') ?? MESES_PARA_ESCOLHER[0])
-  const [tipo, definirTipo] = useState<TipoMovimentacao | ''>('')
+  const tipoNaUrl = parametros.get('tipo')
+  const [tipo, definirTipo] = useState<TipoMovimentacao | ''>(tipoNaUrl === 'ENTRADA' || tipoNaUrl === 'SAIDA' ? tipoNaUrl : '')
   const [categoriaId, definirCategoriaId] = useState(parametros.get('categoriaId') ?? '')
   const [forma, definirForma] = useState<FormaPagamento | ''>('')
   const [ocultarEstornos, definirOcultarEstornos] = useState(false)

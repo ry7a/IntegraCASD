@@ -12,6 +12,53 @@ import { limitesDoMes } from '../dominio/periodo.js';
 export class IndicadoresRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
+  // [Indicadores.RF001] Entradas e saídas do mês. Fora: o par estornada + espelho e as transferências
+  // entre contas (as mesmas regras dos totais da consulta de movimentações).
+  async totaisDoMes(mes: string): Promise<{ entradasCentavos: number; saidasCentavos: number }> {
+    const { inicio, fim } = limitesDoMes(mes);
+    const grupos = await this.prisma.movimentacao.groupBy({
+      by: ['tipo'],
+      where: {
+        data: { gte: deDia(inicio), lte: deDia(fim) },
+        origem: { not: 'ESTORNO' },
+        estorno: { is: null },
+        transferenciaParId: null,
+        transferenciaParDe: { is: null },
+      },
+      _sum: { valorCentavos: true },
+    });
+    const total = (tipo: 'ENTRADA' | 'SAIDA') => grupos.find((grupo) => grupo.tipo === tipo)?._sum.valorCentavos ?? 0;
+    return { entradasCentavos: total('ENTRADA'), saidasCentavos: total('SAIDA') };
+  }
+
+  // [Indicadores.RF001] fluxo A2: pago pelo aluno e ainda não disponível na conta do Asaas. É o valor da
+  // entrada criada na baixa, enquanto a data de disponibilidade não chegou (ou não foi informada).
+  async aguardandoLiberacao(hoje: string): Promise<number> {
+    const total = await this.prisma.movimentacao.aggregate({
+      where: {
+        cobranca: {
+          situacao: 'PAGA',
+          OR: [{ disponivelEm: null }, { disponivelEm: { gt: deDia(hoje) } }],
+        },
+      },
+      _sum: { valorCentavos: true },
+    });
+    return total._sum.valorCentavos ?? 0;
+  }
+
+  // [Indicadores.RF002] fluxo A2: vencidas cuja última sincronização (ou, sem ela, o vencimento) tem
+  // mais de `dias` dias.
+  async vencidasSemSincronizar(hoje: string, dias: number): Promise<number> {
+    const limite = new Date(deDia(hoje).getTime() - dias * 86_400_000);
+    return this.prisma.cobranca.count({
+      where: {
+        situacao: 'ABERTA',
+        vencimento: { lt: deDia(hoje) },
+        OR: [{ sincronizadaEm: null, vencimento: { lt: limite } }, { sincronizadaEm: { lt: limite } }],
+      },
+    });
+  }
+
   // [Indicadores.RF003] Saídas do mês por categoria. Fora: o par estornada + espelho (se anula) e as
   // transferências entre contas, que não são despesa (MER, regra 4).
   async saidasPorCategoria(mes: string): Promise<SaidasDaCategoria[]> {
