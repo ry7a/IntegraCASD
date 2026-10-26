@@ -11,6 +11,7 @@ import {
 export class ClienteAsaasFalso extends ClienteAsaas {
   readonly clientesCriados: NovoClienteAsaas[] = [];
   readonly cobrancasCriadas: NovaCobrancaAsaas[] = [];
+  readonly cobrancasCanceladas: string[] = [];
 
   // Ligue para simular o Asaas fora do ar.
   indisponivel = false;
@@ -42,6 +43,12 @@ export class ClienteAsaasFalso extends ClienteAsaas {
       urlBoleto: `https://asaas.falso/boleto/pay_falso_${numero}`,
       urlFatura: `https://asaas.falso/fatura/pay_falso_${numero}`,
     });
+  }
+
+  cancelarCobranca(idAsaas: string): Promise<void> {
+    this.verificarDisponibilidade();
+    this.cobrancasCanceladas.push(idAsaas);
+    return Promise.resolve();
   }
 
   private verificarDisponibilidade() {

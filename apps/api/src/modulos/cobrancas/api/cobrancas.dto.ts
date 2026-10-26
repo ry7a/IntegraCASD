@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // DTOs da API de cobranças. Dinheiro em centavos; dias em "AAAA-MM-DD".
 
@@ -27,6 +27,8 @@ export class EmitirCobrancaAvulsaDto {
   @ApiProperty({ example: 4500 }) valorCentavos!: number;
   @ApiProperty({ format: 'date', example: '2026-11-10' }) vencimento!: string;
   @ApiProperty({ example: 'Camiseta do CASD' }) descricao!: string;
+  @ApiPropertyOptional({ format: 'uuid', description: 'Renegociação: a cobrança cancelada que esta substitui' })
+  renegociacaoDeId?: string;
 }
 
 export class SugestaoDeNovaCobrancaDto {
@@ -105,6 +107,12 @@ export class CobrancaDetalheDto extends CobrancaListaItemDto {
   @ApiProperty({ type: String, nullable: true }) urlFatura!: string | null;
   @ApiProperty({ type: String, format: 'date', nullable: true }) pagaEm!: string | null;
   @ApiProperty({ type: String, nullable: true }) justificativaManual!: string | null;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true }) canceladaEm!: string | null;
+  @ApiProperty({ type: String, nullable: true }) motivoCancelamento!: string | null;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, description: 'A cancelada que esta renegocia' })
+  renegociacaoDeId!: string | null;
+  @ApiProperty({ type: String, format: 'uuid', nullable: true, description: 'A cobrança nova que renegociou esta' })
+  renegociadaPorId!: string | null;
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) ultimaSincronizacaoEm!: string | null;
   @ApiProperty({ type: Number, nullable: true }) diasDesdeUltimaSincronizacao!: number | null;
   @ApiProperty() sincronizacaoAntiga!: boolean;
@@ -115,4 +123,8 @@ export class CobrancaDetalheDto extends CobrancaListaItemDto {
 
 export class BoletoDto {
   @ApiProperty({ description: 'Arquivo do boleto no Asaas' }) url!: string;
+}
+
+export class CancelarCobrancaDto {
+  @ApiProperty({ example: 'Renegociação em 3 parcelas, acordada com o aluno' }) motivo!: string;
 }

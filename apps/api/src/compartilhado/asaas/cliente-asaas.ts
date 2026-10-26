@@ -59,4 +59,6 @@ export abstract class ClienteAsaas {
   abstract estaConfigurado(): boolean;
   abstract criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }>;
   abstract criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas>;
+  // Cancela (no Asaas, "exclui") uma cobrança não paga: o boleto deixa de valer.
+  abstract cancelarCobranca(idAsaas: string): Promise<void>;
 }

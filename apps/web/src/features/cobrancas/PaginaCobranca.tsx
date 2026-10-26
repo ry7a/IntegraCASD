@@ -149,6 +149,30 @@ function PaginaCobranca() {
                   )}
                   <dt>Identificação no Asaas</dt>
                   <dd>{cobranca.asaasId ?? '—'}</dd>
+                  {cobranca.canceladaEm && (
+                    <>
+                      <dt>Cancelamento</dt>
+                      <dd>
+                        {formatarDataHora(cobranca.canceladaEm)}: {cobranca.motivoCancelamento}
+                      </dd>
+                    </>
+                  )}
+                  {cobranca.renegociacaoDeId && (
+                    <>
+                      <dt>Renegociação</dt>
+                      <dd>
+                        Substitui a <Link to={`/cobrancas/${cobranca.renegociacaoDeId}`}>cobrança cancelada</Link>
+                      </dd>
+                    </>
+                  )}
+                  {cobranca.renegociadaPorId && (
+                    <>
+                      <dt>Renegociada</dt>
+                      <dd>
+                        Substituída pela <Link to={`/cobrancas/${cobranca.renegociadaPorId}`}>nova cobrança</Link>
+                      </dd>
+                    </>
+                  )}
                 </dl>
                 <div className="aviso" style={{ marginTop: 16 }}>
                   <Icone nome="relogio" />

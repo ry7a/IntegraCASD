@@ -544,6 +544,10 @@ model Cobranca {
   movimentacao          Movimentacao?    @relation(fields: [movimentacaoId], references: [id], onDelete: Restrict)
   canceladaEm           DateTime?        @map("cancelada_em")
   motivoCancelamento    String?          @map("motivo_cancelamento")
+  // Renegociação [Cobranças.RF004] fluxo A1: a cobrança nova aponta para a cancelada que ela substitui.
+  renegociacaoDeId      String?          @unique @map("renegociacao_de_id") @db.Uuid
+  renegociacaoDe        Cobranca?        @relation("Renegociacao", fields: [renegociacaoDeId], references: [id], onDelete: Restrict)
+  renegociadaPor        Cobranca?        @relation("Renegociacao")
   dataCriacao           DateTime         @default(now()) @map("data_criacao")
   dataAlteracao         DateTime         @updatedAt @map("data_alteracao")
 

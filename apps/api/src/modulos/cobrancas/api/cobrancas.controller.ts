@@ -1,11 +1,20 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
-import { ApiCookieAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCookieAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import {
   UsuarioAutenticado,
   type IdentidadeDoUsuario,
 } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import { ConsultarCobrancas, type ItemDaLista } from '../aplicacao/consultar-cobrancas.js';
+import { CancelarCobranca } from '../aplicacao/cancelar-cobranca.js';
 import { DetalharCobranca } from '../aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from '../aplicacao/emitir-cobranca-avulsa.js';
 import { ObterBoleto } from '../aplicacao/obter-boleto.js';
@@ -17,6 +26,7 @@ import {
   CobrancaDto,
   CobrancaListaItemDto,
   BoletoDto,
+  CancelarCobrancaDto,
   EmitirCobrancaAvulsaDto,
   ListaDeCobrancasDto,
   ResumoCobrancasDto,
@@ -58,6 +68,7 @@ export class CobrancasController {
     private readonly resumirCobrancas: ResumirCobrancas,
     private readonly detalharCobranca: DetalharCobranca,
     private readonly obterBoleto: ObterBoleto,
+    private readonly cancelarCobranca: CancelarCobranca,
   ) {}
 
   // [Cobranças.RF008] Os filtros vêm na URL; situações separadas por vírgula (ex.: ABERTA,VENCIDA).
@@ -116,6 +127,10 @@ export class CobrancasController {
       pagaEm: cobranca.pagaEm,
       // Preenchidos pelo registro manual (Cobranças.RF006) e pela sincronização (RF007).
       justificativaManual: null,
+      canceladaEm: cobranca.canceladaEm?.toISOString() ?? null,
+      motivoCancelamento: cobranca.motivoCancelamento,
+      renegociacaoDeId: cobranca.renegociacaoDeId,
+      renegociadaPorId: cobranca.renegociadaPorId,
       ultimaSincronizacaoEm: null,
       diasDesdeUltimaSincronizacao: null,
       sincronizacaoAntiga: false,
@@ -132,6 +147,20 @@ export class CobrancasController {
   @ApiOkResponse({ type: BoletoDto })
   boleto(@Param('id', ID_DA_COBRANCA) id: string, @UsuarioAutenticado() autor: IdentidadeDoUsuario): Promise<BoletoDto> {
     return this.obterBoleto.executar(id, autor.id);
+  }
+
+  // [Cobranças.RF004] Cancela no Asaas e aqui; a renegociação é emitir em seguida uma avulsa com
+  // renegociacaoDeId apontando para esta.
+  @Post(':id/cancelar')
+  @HttpCode(204)
+  @ApiOperation({ operationId: 'cancelarCobranca', summary: 'Cancela uma cobrança aberta (no Asaas e aqui)' })
+  @ApiNoContentResponse()
+  async cancelar(
+    @Param('id', ID_DA_COBRANCA) id: string,
+    @Body() dto: CancelarCobrancaDto,
+    @UsuarioAutenticado() autor: IdentidadeDoUsuario,
+  ): Promise<void> {
+    await this.cancelarCobranca.executar(id, dto ?? {}, autor.id);
   }
 
   // [Cobranças.RF002]

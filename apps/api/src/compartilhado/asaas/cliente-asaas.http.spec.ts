@@ -59,6 +59,17 @@ describe('ClienteAsaasHttp', () => {
     });
   });
 
+  it('cancela com DELETE /payments/{id}, sem corpo', async () => {
+    chamarHttp.mockResolvedValueOnce(resposta(200, { deleted: true, id: 'pay_1' }));
+
+    await cliente.cancelarCobranca('pay_1');
+
+    const [url, opcoes = {}] = chamarHttp.mock.calls[0];
+    expect(url).toBe('https://asaas.teste/v3/payments/pay_1');
+    expect(opcoes.method).toBe('DELETE');
+    expect(opcoes.body).toBeUndefined();
+  });
+
   it('recusa valor que não seja inteiro positivo, sem chamar o Asaas', async () => {
     await expect(cliente.criarCobranca({ ...novaCobranca, valorEmCentavos: 0 })).rejects.toThrow();
     await expect(cliente.criarCobranca({ ...novaCobranca, valorEmCentavos: 10.5 })).rejects.toThrow();

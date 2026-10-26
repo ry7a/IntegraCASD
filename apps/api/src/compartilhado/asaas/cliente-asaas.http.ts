@@ -59,7 +59,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
   }
 
   async criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
-    const resposta = await this.enviar<{ id: string }>('/customers', {
+    const resposta = await this.enviar<{ id: string }>('POST', '/customers', {
       name: dados.nome,
       cpfCnpj: dados.cpf,
       email: dados.email,
@@ -73,6 +73,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     }
 
     const resposta = await this.enviar<{ id: string; bankSlipUrl?: string | null; invoiceUrl?: string | null }>(
+      'POST',
       '/payments',
       {
         customer: dados.clienteIdAsaas,
@@ -90,21 +91,27 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     return { idAsaas: resposta.id, urlBoleto: resposta.bankSlipUrl ?? null, urlFatura: resposta.invoiceUrl ?? null };
   }
 
-  // Envia um POST. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
+  async cancelarCobranca(idAsaas: string): Promise<void> {
+    // O Asaas chama de "excluir" a cobrança que não deve mais ficar disponível para pagamento.
+    // encodeURIComponent: o id vai na URL e nunca deve conseguir mudar o caminho.
+    await this.enviar<{ deleted: boolean }>('DELETE', `/payments/${encodeURIComponent(idAsaas)}`);
+  }
+
+  // Envia a requisição. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
   // informou e tenta de novo, até o limite de tentativas.
-  private async enviar<T>(caminho: string, corpo: object): Promise<T> {
+  private async enviar<T>(metodo: 'POST' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
     for (let tentativa = 1; ; tentativa++) {
       let resposta: Response;
       try {
         resposta = await this.chamarHttp(`${this.configuracao.urlBase}${caminho}`, {
-          method: 'POST',
+          method: metodo,
           headers: {
             'Content-Type': 'application/json',
             // O Asaas não usa "Authorization: Bearer": a chave vai neste cabeçalho.
             access_token: this.configuracao.chaveApi,
             'User-Agent': 'IntegraCASD',
           },
-          body: JSON.stringify(corpo),
+          ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
         });
       } catch {
         throw new ErroAsaas(

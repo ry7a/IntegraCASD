@@ -47,6 +47,10 @@ export class ClienteAsaasSobDemanda extends ClienteAsaas {
   criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
     return this.cliente().criarCobranca(dados);
   }
+
+  cancelarCobranca(idAsaas: string): Promise<void> {
+    return this.cliente().cancelarCobranca(idAsaas);
+  }
 }
 
 // Quem pede `ClienteAsaas` recebe o cliente real (sob demanda). Nos testes, cada teste entrega
