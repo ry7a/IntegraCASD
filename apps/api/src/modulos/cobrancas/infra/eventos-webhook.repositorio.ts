@@ -20,6 +20,17 @@ export interface EventoRegistrado {
 export class EventosWebhookRepositorio {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Ids dos eventos gravados antes de `gravadosAntesDe` e ainda sem processar, os mais antigos primeiro.
+  async listarNaoProcessados(gravadosAntesDe: Date, limite: number): Promise<string[]> {
+    const eventos = await this.prisma.eventoWebhook.findMany({
+      where: { processadoEm: null, dataCriacao: { lt: gravadosAntesDe } },
+      orderBy: { dataCriacao: 'asc' },
+      take: limite,
+      select: { id: true },
+    });
+    return eventos.map((evento) => evento.id);
+  }
+
   buscarPorId(id: string): Promise<EventoWebhook | null> {
     return this.prisma.eventoWebhook.findUnique({ where: { id } });
   }

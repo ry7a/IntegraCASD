@@ -7,3 +7,5 @@ export { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhoo
 export { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-recorrente.js';
 // O worker liga a atualização do cliente no Asaas (reação ao evento "aluno alterado").
 export { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
+// E a rotina que retoma eventos gravados e não processados (ADR-0002).
+export { ConsumidorDoReprocessamento } from './infra/consumidor-do-reprocessamento.js';

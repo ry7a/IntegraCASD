@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import {
   ConsumidorDaGeracaoRecorrente,
   ConsumidorDeEventosWebhook,
+  ConsumidorDoReprocessamento,
   ReacaoAAlunoAlterado,
 } from './modulos/cobrancas/index.js';
 import { WorkerModule } from './worker.module.js';
@@ -23,5 +24,6 @@ async function bootstrap() {
   await app.get(ConsumidorDeEventosWebhook).iniciar();
   await app.get(ConsumidorDaGeracaoRecorrente).iniciar();
   await app.get(ReacaoAAlunoAlterado).iniciar();
+  await app.get(ConsumidorDoReprocessamento).iniciar();
 }
 await bootstrap();

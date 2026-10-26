@@ -18,12 +18,14 @@ import { ListarExecucoesDaGeracao } from './aplicacao/listar-execucoes-da-geraca
 import { PedirGeracaoAgora } from './aplicacao/pedir-geracao-agora.js';
 import { ProcessarEventoWebhook } from './aplicacao/processar-evento-webhook.js';
 import { ReceberEventoWebhook } from './aplicacao/receber-evento-webhook.js';
+import { ReenfileirarEventosParados } from './aplicacao/reenfileirar-eventos-parados.js';
 import { ResumirCobrancas } from './aplicacao/resumir-cobrancas.js';
 import { SugerirNovaCobranca } from './aplicacao/sugerir-nova-cobranca.js';
 import { CobrancasRepositorio } from './infra/cobrancas.repositorio.js';
 import { ConciliacaoRepositorio } from './infra/conciliacao.repositorio.js';
 import { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-recorrente.js';
 import { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
+import { ConsumidorDoReprocessamento } from './infra/consumidor-do-reprocessamento.js';
 import { EventosWebhookRepositorio } from './infra/eventos-webhook.repositorio.js';
 import { ExecucoesRepositorio } from './infra/execucoes.repositorio.js';
 import { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
@@ -40,6 +42,8 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     EventosWebhookRepositorio,
     ConciliacaoRepositorio,
     ConsumidorDeEventosWebhook,
+    ReenfileirarEventosParados,
+    ConsumidorDoReprocessamento,
     CobrancasRepositorio,
     GarantirClienteAsaas,
     EmitirCobrancaAvulsa,
@@ -58,6 +62,6 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     AtualizarClienteAsaas,
     ReacaoAAlunoAlterado,
   ],
-  exports: [ConsumidorDeEventosWebhook, ConsumidorDaGeracaoRecorrente, ReacaoAAlunoAlterado],
+  exports: [ConsumidorDeEventosWebhook, ConsumidorDaGeracaoRecorrente, ReacaoAAlunoAlterado, ConsumidorDoReprocessamento],
 })
 export class CobrancasModule {}
