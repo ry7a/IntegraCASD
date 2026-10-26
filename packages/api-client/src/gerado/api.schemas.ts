@@ -851,6 +851,11 @@ export interface OpcoesDaMovimentacaoDto {
   funcionarios: OpcaoDeVinculoDto[];
 }
 
+export interface ListaDeMovimentacoesDoAlunoDto {
+  /** Das mais recentes para as mais antigas */
+  itens: MovimentacaoDto[];
+}
+
 export type OrigemCobranca = typeof OrigemCobranca[keyof typeof OrigemCobranca];
 
 

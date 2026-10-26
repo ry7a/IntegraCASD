@@ -32,6 +32,10 @@ export class MovimentacaoDto {
   @ApiProperty({ type: String, nullable: true }) motivoSemEstorno!: string | null;
 }
 
+export class ListaDeMovimentacoesDoAlunoDto {
+  @ApiProperty({ type: [MovimentacaoDto], description: 'Das mais recentes para as mais antigas' }) itens!: MovimentacaoDto[];
+}
+
 export class TotaisDto {
   @ApiProperty() entradasCentavos!: number;
   @ApiProperty() quantidadeEntradas!: number;

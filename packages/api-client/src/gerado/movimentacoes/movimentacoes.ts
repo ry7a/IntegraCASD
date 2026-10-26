@@ -27,6 +27,7 @@ import type {
 import type {
   EstornoDto,
   EstornoRegistradoDto,
+  ListaDeMovimentacoesDoAlunoDto,
   ListaDeMovimentacoesDto,
   ListarMovimentacoesParams,
   MovimentacaoRegistradaDto,
@@ -432,6 +433,106 @@ export function useListarOpcoesDaMovimentacao<TData = Awaited<ReturnType<typeof 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListarOpcoesDaMovimentacaoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getListarMovimentacoesDoAlunoUrl = (alunoId: string,) => {
+
+
+
+
+  return `/api/alunos/${alunoId}/movimentacoes`
+}
+
+/**
+ * @summary Entradas das cobranças do aluno e os estornos delas
+ */
+export const listarMovimentacoesDoAluno = async (alunoId: string, options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeMovimentacoesDoAlunoDto> => {
+
+  return clienteHttp<ListaDeMovimentacoesDoAlunoDto>(getListarMovimentacoesDoAlunoUrl(alunoId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarMovimentacoesDoAlunoQueryKey = (alunoId: string,) => {
+    return [
+    `/api/alunos/${alunoId}/movimentacoes`
+    ] as const;
+    }
+
+
+export const getListarMovimentacoesDoAlunoQueryOptions = <TData = Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError = ErrorType<unknown>>(alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarMovimentacoesDoAlunoQueryKey(alunoId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>> = ({ signal }) => listarMovimentacoesDoAluno(alunoId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: alunoId !== null && alunoId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarMovimentacoesDoAlunoQueryResult = NonNullable<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>>
+export type ListarMovimentacoesDoAlunoQueryError = ErrorType<unknown>
+
+
+export function useListarMovimentacoesDoAluno<TData = Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarMovimentacoesDoAluno<TData = Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarMovimentacoesDoAluno<TData = Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Entradas das cobranças do aluno e os estornos delas
+ */
+
+export function useListarMovimentacoesDoAluno<TData = Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarMovimentacoesDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarMovimentacoesDoAlunoQueryOptions(alunoId,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

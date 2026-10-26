@@ -5,6 +5,17 @@ import { MovimentacoesRepositorio, type MovimentacaoRegistrada, type Totais } fr
 
 export type ItemDaLista = MovimentacaoRegistrada & { podeEstornar: boolean; motivoSemEstorno: string | null };
 
+// Caso de uso [Cadastros.RF001]: as movimentações das cobranças de um aluno. Não altera nada.
+@Injectable()
+export class ListarMovimentacoesDoAluno {
+  constructor(private readonly movimentacoes: MovimentacoesRepositorio) {}
+
+  async executar(alunoId: string): Promise<ItemDaLista[]> {
+    const itens = await this.movimentacoes.listarDoAluno(alunoId);
+    return itens.map((item) => ({ ...item, ...regraDoEstorno(item.origem, item.estornadaEm !== null) }));
+  }
+}
+
 // Caso de uso [Movimentações.RF003]: lista do recorte e totais. Não altera nada.
 @Injectable()
 export class ConsultarMovimentacoes {

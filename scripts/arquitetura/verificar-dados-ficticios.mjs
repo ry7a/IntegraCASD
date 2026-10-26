@@ -3,8 +3,8 @@
 // features/<x>/dados-ficticios.ts deixa no bundle (veja compartilhado/dados-ficticios-marcador.ts).
 //
 // Modo padrão (AVISO): lista as features que ainda usam dados fictícios e sai com 0.
-// Modo --estrito: falha (código 1) se houver qualquer marcador. Hoje as telas usam dados
-// fictícios de propósito; o ADR-0003 registra quando passar o CI para --estrito.
+// Modo --estrito: falha (código 1) se houver qualquer marcador. É o que o CI usa desde que todas as
+// telas passaram a usar a API (ADR-0003).
 //
 // Uso: node scripts/arquitetura/verificar-dados-ficticios.mjs [--estrito]
 import { readFileSync, readdirSync } from 'node:fs'

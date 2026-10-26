@@ -1472,6 +1472,42 @@
         ]
       }
     },
+    "/api/alunos/{alunoId}/movimentacoes": {
+      "get": {
+        "operationId": "listarMovimentacoesDoAluno",
+        "parameters": [
+          {
+            "name": "alunoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeMovimentacoesDoAlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Entradas das cobranças do aluno e os estornos delas",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
     "/api/cobrancas": {
       "get": {
         "operationId": "listarCobrancas",
@@ -4212,6 +4248,21 @@
           "contratos",
           "projetos",
           "funcionarios"
+        ]
+      },
+      "ListaDeMovimentacoesDoAlunoDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Das mais recentes para as mais antigas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovimentacaoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
         ]
       },
       "OrigemCobranca": {
