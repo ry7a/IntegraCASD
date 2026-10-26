@@ -191,6 +191,48 @@ export function conferirCancelamento(situacao: SituacaoGuardada): void {
   }
 }
 
+// [Cobranças.RF006] Registro manual de pagamento. Formas de pagamento fora do Asaas.
+export type FormaDePagamentoManual = 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
+const FORMAS_MANUAIS: FormaDePagamentoManual[] = ['PIX', 'TRANSFERENCIA', 'DINHEIRO', 'CARTAO'];
+
+export type PagamentoManual = {
+  pagoEm: string;
+  valorCentavos: number;
+  formaPagamento: FormaDePagamentoManual;
+  justificativa: string;
+};
+
+export function conferirPagamentoManual(situacao: SituacaoGuardada): void {
+  if (situacao === 'PAGA' || situacao === 'PAGA_COM_REGISTRO_MANUAL') {
+    throw new CobrancaInvalida('Esta cobrança já está paga; não há pagamento a registrar.');
+  }
+  if (situacao !== 'ABERTA') {
+    throw new CobrancaInvalida(`Esta cobrança está ${NOME_DA_SITUACAO[situacao]}; só cobrança aberta ou vencida recebe pagamento manual.`);
+  }
+}
+
+// `hoje` entra por parâmetro para o teste.
+export function lerPagamentoManual(entrada: Partial<Record<keyof PagamentoManual, unknown>>, hoje: string): PagamentoManual {
+  const pagoEm = entrada.pagoEm;
+  if (typeof pagoEm !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(pagoEm)) {
+    throw new CobrancaInvalida('Informe a data do pagamento no formato AAAA-MM-DD.');
+  }
+  if (pagoEm > hoje) throw new CobrancaInvalida('A data do pagamento não pode ser no futuro.');
+  const valor = entrada.valorCentavos;
+  if (typeof valor !== 'number' || !Number.isInteger(valor) || valor <= 0) {
+    throw new CobrancaInvalida('Informe o valor pago em centavos, como número inteiro maior que zero (ex.: 8500 para R$ 85,00).');
+  }
+  const forma = FORMAS_MANUAIS.find((permitida) => permitida === entrada.formaPagamento);
+  if (forma === undefined) throw new CobrancaInvalida('Escolha a forma do pagamento: Pix, transferência, dinheiro ou cartão.');
+  // Fluxo E1: sem justificativa escrita, não há registro de por que o sistema passou a divergir do Asaas.
+  const justificativa = typeof entrada.justificativa === 'string' ? entrada.justificativa.trim().replace(/\s+/g, ' ') : '';
+  if (justificativa.length < 10) {
+    throw new CobrancaInvalida('A justificativa é obrigatória: explique como o pagamento foi comprovado (ex.: Pix recebido na conta do CASD).');
+  }
+  if (justificativa.length > 500) throw new CobrancaInvalida('Use no máximo 500 caracteres na justificativa.');
+  return { pagoEm, valorCentavos: valor, formaPagamento: forma, justificativa };
+}
+
 export function lerMotivoDoCancelamento(valor: unknown): string {
   const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
   if (motivo.length < 5) throw new CobrancaInvalida('Informe o motivo do cancelamento, por exemplo: renegociação em 3 parcelas.');

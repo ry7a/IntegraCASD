@@ -15,6 +15,7 @@ import {
 } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import { ConsultarCobrancas, type ItemDaLista } from '../aplicacao/consultar-cobrancas.js';
 import { CancelarCobranca } from '../aplicacao/cancelar-cobranca.js';
+import { RegistrarPagamentoManual } from '../aplicacao/registrar-pagamento-manual.js';
 import { DetalharCobranca } from '../aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from '../aplicacao/emitir-cobranca-avulsa.js';
 import { ObterBoleto } from '../aplicacao/obter-boleto.js';
@@ -27,6 +28,7 @@ import {
   CobrancaListaItemDto,
   BoletoDto,
   CancelarCobrancaDto,
+  PagamentoManualDto,
   EmitirCobrancaAvulsaDto,
   ListaDeCobrancasDto,
   ResumoCobrancasDto,
@@ -69,6 +71,7 @@ export class CobrancasController {
     private readonly detalharCobranca: DetalharCobranca,
     private readonly obterBoleto: ObterBoleto,
     private readonly cancelarCobranca: CancelarCobranca,
+    private readonly registrarPagamentoManual: RegistrarPagamentoManual,
   ) {}
 
   // [Cobranças.RF008] Os filtros vêm na URL; situações separadas por vírgula (ex.: ABERTA,VENCIDA).
@@ -125,8 +128,8 @@ export class CobrancasController {
       urlBoleto: cobranca.urlBoleto,
       urlFatura: cobranca.urlFatura,
       pagaEm: cobranca.pagaEm,
-      // Preenchidos pelo registro manual (Cobranças.RF006) e pela sincronização (RF007).
-      justificativaManual: null,
+      justificativaManual: cobranca.justificativaManual,
+      // Preenchidos pela sincronização (Cobranças.RF007).
       canceladaEm: cobranca.canceladaEm?.toISOString() ?? null,
       motivoCancelamento: cobranca.motivoCancelamento,
       renegociacaoDeId: cobranca.renegociacaoDeId,
@@ -161,6 +164,19 @@ export class CobrancasController {
     @UsuarioAutenticado() autor: IdentidadeDoUsuario,
   ): Promise<void> {
     await this.cancelarCobranca.executar(id, dto ?? {}, autor.id);
+  }
+
+  // [Cobranças.RF006] Pagamento fora do Asaas, com justificativa obrigatória.
+  @Post(':id/pagamento-manual')
+  @HttpCode(204)
+  @ApiOperation({ operationId: 'registrarPagamentoManual', summary: 'Registra o pagamento de uma cobrança feito fora do Asaas' })
+  @ApiNoContentResponse()
+  async pagamentoManual(
+    @Param('id', ID_DA_COBRANCA) id: string,
+    @Body() dto: PagamentoManualDto,
+    @UsuarioAutenticado() autor: IdentidadeDoUsuario,
+  ): Promise<void> {
+    await this.registrarPagamentoManual.executar(id, dto ?? {}, autor.id);
   }
 
   // [Cobranças.RF002]

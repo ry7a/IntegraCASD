@@ -1189,6 +1189,45 @@
         ]
       }
     },
+    "/api/cobrancas/{id}/pagamento-manual": {
+      "post": {
+        "operationId": "registrarPagamentoManual",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagamentoManualDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Registra o pagamento de uma cobrança feito fora do Asaas",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
     "/api/cobrancas/geracao-recorrente/execucoes": {
       "get": {
         "operationId": "listarExecucoesDaGeracao",
@@ -2730,6 +2769,46 @@
         },
         "required": [
           "motivo"
+        ]
+      },
+      "FormaDePagamentoManual": {
+        "type": "string",
+        "enum": [
+          "PIX",
+          "TRANSFERENCIA",
+          "DINHEIRO",
+          "CARTAO"
+        ]
+      },
+      "PagamentoManualDto": {
+        "type": "object",
+        "properties": {
+          "pagoEm": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-20"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "example": 8500
+          },
+          "formaPagamento": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormaDePagamentoManual"
+              }
+            ]
+          },
+          "justificativa": {
+            "type": "string",
+            "example": "Pix recebido na conta do CASD em 20/10, comprovante enviado pelo aluno"
+          }
+        },
+        "required": [
+          "pagoEm",
+          "valorCentavos",
+          "formaPagamento",
+          "justificativa"
         ]
       },
       "EmitirCobrancaAvulsaDto": {

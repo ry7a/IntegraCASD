@@ -18,6 +18,7 @@ import { ListarExecucoesDaGeracao } from './aplicacao/listar-execucoes-da-geraca
 import { PedirGeracaoAgora } from './aplicacao/pedir-geracao-agora.js';
 import { ProcessarEventoWebhook } from './aplicacao/processar-evento-webhook.js';
 import { ReceberEventoWebhook } from './aplicacao/receber-evento-webhook.js';
+import { RegistrarPagamentoManual } from './aplicacao/registrar-pagamento-manual.js';
 import { ReenfileirarEventosParados } from './aplicacao/reenfileirar-eventos-parados.js';
 import { ResumirCobrancas } from './aplicacao/resumir-cobrancas.js';
 import { SugerirNovaCobranca } from './aplicacao/sugerir-nova-cobranca.js';
@@ -53,6 +54,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     DetalharCobranca,
     ObterBoleto,
     CancelarCobranca,
+    RegistrarPagamentoManual,
     ExecucoesRepositorio,
     RitmoDoAsaas,
     GerarCobrancasRecorrentes,

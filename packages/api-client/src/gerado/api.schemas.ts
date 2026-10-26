@@ -633,6 +633,23 @@ export interface CancelarCobrancaDto {
   motivo: string;
 }
 
+export type FormaDePagamentoManual = typeof FormaDePagamentoManual[keyof typeof FormaDePagamentoManual];
+
+
+export const FormaDePagamentoManual = {
+  PIX: 'PIX',
+  TRANSFERENCIA: 'TRANSFERENCIA',
+  DINHEIRO: 'DINHEIRO',
+  CARTAO: 'CARTAO',
+} as const;
+
+export interface PagamentoManualDto {
+  pagoEm: string;
+  valorCentavos: number;
+  formaPagamento: FormaDePagamentoManual;
+  justificativa: string;
+}
+
 export interface EmitirCobrancaAvulsaDto {
   alunoId: string;
   valorCentavos: number;

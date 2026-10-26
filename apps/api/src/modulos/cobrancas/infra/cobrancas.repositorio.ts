@@ -3,7 +3,7 @@ import type { Prisma } from '../../../generated/prisma/client.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import type { FiltrosDaConsulta, SituacaoExibida, SituacaoGuardada } from '../dominio/cobranca.js';
+import { CobrancaInvalida, type FiltrosDaConsulta, type PagamentoManual, type SituacaoExibida, type SituacaoGuardada } from '../dominio/cobranca.js';
 
 export type OrigemDaCobranca = 'MENSALIDADE' | 'AVULSA';
 
@@ -24,6 +24,7 @@ export type CobrancaRegistrada = {
   urlBoleto: string | null;
   urlFatura: string | null;
   pagaEm: string | null;
+  justificativaManual: string | null;
   canceladaEm: Date | null;
   motivoCancelamento: string | null;
   // Renegociação: a cancelada que esta substitui, e a que substituiu esta.
@@ -64,6 +65,7 @@ type RegistroDoBanco = {
   urlBoleto: string | null;
   urlFatura: string | null;
   pagaEm: Date | null;
+  justificativaManual: string | null;
   canceladaEm: Date | null;
   motivoCancelamento: string | null;
   renegociacaoDeId: string | null;
@@ -88,6 +90,7 @@ function paraCobranca(registro: RegistroDoBanco): CobrancaRegistrada {
     urlBoleto: registro.urlBoleto,
     urlFatura: registro.urlFatura,
     pagaEm: registro.pagaEm === null ? null : paraDia(registro.pagaEm),
+    justificativaManual: registro.justificativaManual,
     canceladaEm: registro.canceladaEm,
     motivoCancelamento: registro.motivoCancelamento,
     renegociacaoDeId: registro.renegociacaoDeId,
@@ -149,6 +152,57 @@ export class CobrancasRepositorio {
         entidade: 'COBRANCA',
         registroId: id,
         detalhe: `Cobrança cancelada no Asaas e aqui. Motivo: ${motivo}`,
+      });
+    });
+  }
+
+  // [Cobranças.RF006] Pagamento fora do Asaas: entrada, cobrança e trilha na mesma transação
+  // [Confiabilidade.NF004]. A atualização só vale se a cobrança ainda estiver aberta; se a
+  // conciliação a baixou nesse meio-tempo, nada é gravado e o usuário é avisado.
+  async registrarPagamentoManual(
+    cobranca: { id: string; idAsaas: string; descricao: string },
+    pagamento: PagamentoManual,
+    destino: { contaId: string; categoriaId: string },
+    autorId: string,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const entrada = await tx.movimentacao.create({
+        data: {
+          contaId: destino.contaId,
+          categoriaId: destino.categoriaId,
+          tipo: 'ENTRADA',
+          valorCentavos: pagamento.valorCentavos,
+          data: deDia(pagamento.pagoEm),
+          formaPagamento: pagamento.formaPagamento,
+          origem: 'REGISTRO_MANUAL_DE_COBRANCA',
+          descricao: `Cobrança "${cobranca.descricao}" (${cobranca.idAsaas}) paga fora do Asaas`,
+        },
+      });
+      const atualizada = await tx.cobranca.updateMany({
+        where: { id: cobranca.id, situacao: 'ABERTA' },
+        data: {
+          situacao: 'PAGA_COM_REGISTRO_MANUAL',
+          pagaEm: deDia(pagamento.pagoEm),
+          movimentacaoId: entrada.id,
+          justificativaManual: pagamento.justificativa,
+        },
+      });
+      if (atualizada.count === 0) {
+        throw new CobrancaInvalida('A situação desta cobrança mudou enquanto você registrava (por exemplo, o Asaas confirmou o pagamento). Atualize a página e confira.');
+      }
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'ALTERACAO',
+        entidade: 'COBRANCA',
+        registroId: cobranca.id,
+        detalhe: `Pagamento registrado manualmente em ${pagamento.pagoEm}. Justificativa: ${pagamento.justificativa}`,
+      });
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'INCLUSAO',
+        entidade: 'MOVIMENTACAO',
+        registroId: entrada.id,
+        detalhe: `Entrada do pagamento manual da cobrança "${cobranca.descricao}" (${cobranca.idAsaas}).`,
       });
     });
   }
