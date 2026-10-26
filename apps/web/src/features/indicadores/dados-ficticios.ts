@@ -4,7 +4,6 @@ import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   EvolucaoDto,
   GastosPorCategoriaDto,
-  InadimplenciaDto,
   ResumoIndicadoresDto,
 } from './contrato'
 
@@ -36,19 +35,6 @@ export const evolucao: EvolucaoDto = {
 }
 
 // Os ids dos alunos são os mesmos de features/cadastro/dados-ficticios.ts.
-export const inadimplencia: InadimplenciaDto = {
-  alunosInadimplentes: 37,
-  valorEmAbertoCentavos: 481000,
-  alunosPorFaixa: { ate30Dias: 24, de31a60Dias: 9, acimaDe60Dias: 4 },
-  maioresDevedores: [
-    { alunoId: 'aluno-lucas', alunoNome: 'Lucas Andrade Ferreira', quantidade: 3, valorCentavos: 25500, diasDeAtrasoMaisAntigo: 70 },
-    { alunoId: 'aluno-beatriz', alunoNome: 'Beatriz Moura Lima', quantidade: 2, valorCentavos: 17000, diasDeAtrasoMaisAntigo: 39 },
-    { alunoId: 'aluno-rafael', alunoNome: 'Rafael Tavares Costa', quantidade: 2, valorCentavos: 17000, diasDeAtrasoMaisAntigo: 39 },
-    { alunoId: 'aluno-julia', alunoNome: 'Júlia Nogueira Prado', quantidade: 1, valorCentavos: 15000, diasDeAtrasoMaisAntigo: 22 },
-    { alunoId: 'aluno-pedro', alunoNome: 'Pedro Henrique Saldanha', quantidade: 1, valorCentavos: 8500, diasDeAtrasoMaisAntigo: 9 },
-  ],
-}
-
 export const gastosPorCategoria: GastosPorCategoriaDto = {
   mes: MES_DOS_DADOS,
   totalSaidasCentavos: 4121530,

@@ -1179,6 +1179,32 @@ export interface ResolucaoDto {
   resolucao: string;
 }
 
+export interface FaixasDeAtrasoDto {
+  ate30Dias: number;
+  de31a60Dias: number;
+  acimaDe60Dias: number;
+}
+
+export interface DevedorDto {
+  alunoId: string;
+  alunoNome: string;
+  /** Cobranças vencidas */
+  quantidade: number;
+  /** Soma dos valores originais vencidos, sem multa e juros */
+  valorCentavos: number;
+  diasDeAtrasoMaisAntigo: number;
+}
+
+export interface InadimplenciaDto {
+  alunosInadimplentes: number;
+  /** Valores originais, sem multa e juros */
+  valorEmAbertoCentavos: number;
+  /** Pelo atraso da cobrança mais antiga de cada aluno */
+  alunosPorFaixa: FaixasDeAtrasoDto;
+  /** Os 10 maiores, por valor */
+  maioresDevedores: DevedorDto[];
+}
+
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };

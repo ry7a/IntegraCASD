@@ -30,30 +30,6 @@ export interface EvolucaoDto {
   meses: PontoDeEvolucaoDto[]
 }
 
-export interface DevedorDto {
-  alunoId: string
-  alunoNome: string
-  // Quantidade de cobranças vencidas.
-  quantidade: number
-  // Soma dos valores originais vencidos (sem multa e juros).
-  valorCentavos: number
-  diasDeAtrasoMaisAntigo: number
-}
-
-export interface FaixasDeAtrasoDto {
-  ate30Dias: number
-  de31a60Dias: number
-  acimaDe60Dias: number
-}
-
-// GET /api/indicadores/inadimplencia
-export interface InadimplenciaDto {
-  alunosInadimplentes: number
-  valorEmAbertoCentavos: number
-  alunosPorFaixa: FaixasDeAtrasoDto
-  maioresDevedores: DevedorDto[]
-}
-
 export interface GastoPorCategoriaDto {
   // Nulo = movimentações não classificadas.
   categoriaId: string | null
