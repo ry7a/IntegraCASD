@@ -16,7 +16,8 @@ import {
 import { AlterarParametrosDeCobranca } from '../aplicacao/alterar-parametros-de-cobranca.js';
 import { ConferirParametrosDeCobranca } from '../aplicacao/conferir-parametros-de-cobranca.js';
 import { ConsultarParametrosDeCobranca } from '../aplicacao/consultar-parametros-de-cobranca.js';
-import { ConferenciaDto, ConsultaDosParametrosDto, ParametrosDeCobrancaDto } from './parametros.dto.js';
+import { ListarOpcoesDeDestino } from '../aplicacao/listar-opcoes-de-destino.js';
+import { ConferenciaDto, ConsultaDosParametrosDto, OpcoesDeDestinoDto, ParametrosDeCobrancaDto } from './parametros.dto.js';
 
 // [Administração.RF003] Só a diretoria define os parâmetros das cobranças recorrentes.
 @ApiTags('administracao')
@@ -29,7 +30,18 @@ export class ParametrosController {
     private readonly consultar: ConsultarParametrosDeCobranca,
     private readonly conferirParametros: ConferirParametrosDeCobranca,
     private readonly alterar: AlterarParametrosDeCobranca,
+    private readonly listarOpcoes: ListarOpcoesDeDestino,
   ) {}
+
+  @Get('destinos')
+  @ApiOperation({
+    operationId: 'listarDestinosDaConciliacao',
+    summary: 'Contas e categorias que podem receber os pagamentos conciliados',
+  })
+  @ApiOkResponse({ type: OpcoesDeDestinoDto })
+  destinos(): Promise<OpcoesDeDestinoDto> {
+    return this.listarOpcoes.executar();
+  }
 
   @Get()
   @ApiOperation({

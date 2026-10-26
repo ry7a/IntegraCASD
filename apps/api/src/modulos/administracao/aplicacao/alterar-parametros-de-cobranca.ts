@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { lerParametros, type ParametrosDeCobranca } from '../dominio/parametros-de-cobranca.js';
+import { conferirDestino, lerParametros, type ParametrosDeCobranca } from '../dominio/parametros-de-cobranca.js';
 import { ParametrosRepositorio } from '../infra/parametros.repositorio.js';
 import { traduzirErrosDosParametros } from './erros-dos-parametros.js';
 
@@ -11,7 +11,9 @@ export class AlterarParametrosDeCobranca {
 
   executar(entrada: Partial<Record<keyof ParametrosDeCobranca, unknown>>, autorId: string): Promise<void> {
     return traduzirErrosDosParametros(async () => {
-      await this.parametros.gravar(lerParametros(entrada), autorId);
+      const parametros = lerParametros(entrada);
+      conferirDestino(parametros, await this.parametros.encontrarDestino(parametros));
+      await this.parametros.gravar(parametros, autorId);
     });
   }
 }

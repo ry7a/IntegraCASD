@@ -66,6 +66,9 @@ src/modulos/cobrancas/
 
 - O controller do webhook só faz: validar `asaas-access-token`, gravar o evento (id do Asaas com `UNIQUE`), enfileirar no pg-boss e responder 200. Nenhuma regra de negócio ali.
 - O processamento fica em handlers do worker. Antes de processar, verificar se o evento já foi processado; a marcação de "processado" acontece dentro da mesma transação da baixa.
+  A conciliação segue esse desenho: as regras (qual aviso leva a qual efeito) ficam em
+  `modulos/cobrancas/dominio/conciliacao.ts`; o `ConciliacaoRepositorio` marca o evento como processado
+  (com `updateMany ... processadoEm: null`, só um processamento consegue) e aplica o efeito na mesma transação.
 - Rotinas agendadas (geração recorrente, sincronização, alerta de webhook parado) são jobs do pg-boss registrados no worker e devem gravar início, fim, total processado e falhas.
   Use o `AgendadorDeRotinas` (`src/compartilhado/fila/`): o nome da rotina entra em `ROTINAS` (vira uma fila
   "singleton", no máximo uma execução por vez) e o consumidor é ligado no `main-worker.ts`.

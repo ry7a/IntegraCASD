@@ -21,6 +21,7 @@ import { ReceberEventoWebhook } from './aplicacao/receber-evento-webhook.js';
 import { ResumirCobrancas } from './aplicacao/resumir-cobrancas.js';
 import { SugerirNovaCobranca } from './aplicacao/sugerir-nova-cobranca.js';
 import { CobrancasRepositorio } from './infra/cobrancas.repositorio.js';
+import { ConciliacaoRepositorio } from './infra/conciliacao.repositorio.js';
 import { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-recorrente.js';
 import { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
 import { EventosWebhookRepositorio } from './infra/eventos-webhook.repositorio.js';
@@ -37,6 +38,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     ReceberEventoWebhook,
     ProcessarEventoWebhook,
     EventosWebhookRepositorio,
+    ConciliacaoRepositorio,
     ConsumidorDeEventosWebhook,
     CobrancasRepositorio,
     GarantirClienteAsaas,
