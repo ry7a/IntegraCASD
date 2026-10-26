@@ -838,6 +838,15 @@ export interface ResolucaoDto {
   resolucao: string;
 }
 
+export interface EstornoDto {
+  motivo: string;
+}
+
+export interface EstornoRegistradoDto {
+  /** A movimentação espelho, de sinal contrário */
+  espelhoId: string;
+}
+
 export type TipoMovimentacao = typeof TipoMovimentacao[keyof typeof TipoMovimentacao];
 
 

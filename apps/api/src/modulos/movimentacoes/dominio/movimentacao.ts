@@ -84,6 +84,13 @@ export function regraDoEstorno(
   return { podeEstornar: true, motivoSemEstorno: null };
 }
 
+export function lerMotivoDoEstorno(valor: unknown): string {
+  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
+  if (motivo.length < 5) throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
+  if (motivo.length > 300) throw new MovimentacaoInvalida('Use no máximo 300 caracteres no motivo.');
+  return motivo;
+}
+
 // ---------------------------------------------------------------------------
 // Registro [Movimentações.RF001]
 // ---------------------------------------------------------------------------

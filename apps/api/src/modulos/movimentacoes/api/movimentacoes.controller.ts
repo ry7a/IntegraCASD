@@ -1,18 +1,25 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiCookieAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   UsuarioAutenticado,
   type IdentidadeDoUsuario,
 } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import { ConsultarMovimentacoes } from '../aplicacao/consultar-movimentacoes.js';
+import { EstornarMovimentacao } from '../aplicacao/estornar-movimentacao.js';
 import { ListarOpcoesDaMovimentacao } from '../aplicacao/listar-opcoes.js';
 import { RegistrarMovimentacao } from '../aplicacao/registrar-movimentacao.js';
 import {
+  EstornoDto,
+  EstornoRegistradoDto,
   ListaDeMovimentacoesDto,
   MovimentacaoRegistradaDto,
   NovaMovimentacaoDto,
   OpcoesDaMovimentacaoDto,
 } from './movimentacoes.dto.js';
+
+const ID_DA_MOVIMENTACAO = new ParseUUIDPipe({
+  exceptionFactory: () => new BadRequestException('Movimentação não encontrada. Atualize a lista.'),
+});
 
 // Entradas e saídas do CASD. Qualquer usuário autenticado (área administrativa e diretoria).
 @ApiTags('movimentacoes')
@@ -23,7 +30,21 @@ export class MovimentacoesController {
     private readonly consultar: ConsultarMovimentacoes,
     private readonly listarOpcoes: ListarOpcoesDaMovimentacao,
     private readonly registrarMovimentacao: RegistrarMovimentacao,
+    private readonly estornarMovimentacao: EstornarMovimentacao,
   ) {}
+
+  // [Movimentações.RF002] Só lançamento manual ainda não estornado.
+  @Post(':id/estornar')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'estornarMovimentacao', summary: 'Anula uma movimentação manual com um lançamento espelho' })
+  @ApiOkResponse({ type: EstornoRegistradoDto })
+  estornar(
+    @Param('id', ID_DA_MOVIMENTACAO) id: string,
+    @Body() dto: EstornoDto,
+    @UsuarioAutenticado() autor: IdentidadeDoUsuario,
+  ): Promise<EstornoRegistradoDto> {
+    return this.estornarMovimentacao.executar(id, dto ?? {}, autor.id);
+  }
 
   // [Movimentações.RF001] Lançamento manual de entrada ou saída.
   @Post()

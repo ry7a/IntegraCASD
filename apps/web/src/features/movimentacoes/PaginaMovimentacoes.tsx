@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { useListarMovimentacoes, useListarOpcoesDaMovimentacao } from '@integracasd/api-client'
+import { useListarMovimentacoes, useListarOpcoesDaMovimentacao, type MovimentacaoDto } from '@integracasd/api-client'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import { CelulaDeOrigem } from '@/compartilhado/componentes/CelulasDeMovimentacao'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
-import { ROTULO_DA_FORMA, type FormaPagamento, type MovimentacaoDto, type TipoMovimentacao } from '@/compartilhado/dominio'
+import { ROTULO_DA_FORMA, type FormaPagamento, type TipoMovimentacao } from '@/compartilhado/dominio'
 import { formatarData, formatarMes, formatarMoeda, formatarMoedaComSinal, hojeIso } from '@/compartilhado/formatacao'
 import DialogoEstornar from './DialogoEstornar'
 
@@ -266,7 +266,7 @@ function PaginaMovimentacoes() {
         </div>
       </EstadoDaConsulta>
 
-      <DialogoEstornar movimentacao={paraEstornar} aoFechar={() => definirParaEstornar(null)} />
+      {paraEstornar && <DialogoEstornar movimentacao={paraEstornar} aoFechar={() => definirParaEstornar(null)} />}
     </>
   )
 }
