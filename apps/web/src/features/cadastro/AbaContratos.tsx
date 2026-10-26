@@ -7,6 +7,7 @@ import { useListarContratos } from './consultas'
 
 const ROTULO_DA_PERIODICIDADE: Record<PeriodicidadeContrato, string> = {
   MENSAL: 'Mensal',
+  ANUAL: 'Anual',
   POR_DEMANDA: 'Por demanda',
   UNICA: 'Única',
 }
