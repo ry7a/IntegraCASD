@@ -1493,6 +1493,121 @@
           "cobrancas"
         ]
       }
+    },
+    "/api/movimentacoes": {
+      "get": {
+        "operationId": "listarMovimentacoes",
+        "parameters": [
+          {
+            "name": "ocultarEstornos",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "projetoId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "contratoId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "forma",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ASAAS",
+                "PIX",
+                "TRANSFERENCIA",
+                "DINHEIRO",
+                "CARTAO"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoriaId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ENTRADA",
+                "SAIDA"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "mes",
+            "required": false,
+            "in": "query",
+            "description": "AAAA-MM; padrão: o mês corrente",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeMovimentacoesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Movimentações do mês, com os totais do recorte",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
+    },
+    "/api/movimentacoes/opcoes": {
+      "get": {
+        "operationId": "listarOpcoesDaMovimentacao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpcoesDaMovimentacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Contas, categorias e vínculos possíveis",
+        "tags": [
+          "movimentacoes"
+        ]
+      }
     }
   },
   "info": {
@@ -3550,6 +3665,395 @@
         },
         "required": [
           "resolucao"
+        ]
+      },
+      "TipoMovimentacao": {
+        "type": "string",
+        "enum": [
+          "ENTRADA",
+          "SAIDA"
+        ]
+      },
+      "FormaPagamento": {
+        "type": "string",
+        "enum": [
+          "ASAAS",
+          "PIX",
+          "TRANSFERENCIA",
+          "DINHEIRO",
+          "CARTAO"
+        ]
+      },
+      "OrigemMovimentacao": {
+        "type": "string",
+        "enum": [
+          "MANUAL",
+          "CONCILIACAO_AUTOMATICA",
+          "REGISTRO_MANUAL_DE_COBRANCA",
+          "ESTORNO"
+        ]
+      },
+      "TipoDeVinculo": {
+        "type": "string",
+        "enum": [
+          "COBRANCA",
+          "CONTRATO",
+          "PROJETO",
+          "FUNCIONARIO"
+        ]
+      },
+      "VinculoDto": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoDeVinculo"
+              }
+            ]
+          },
+          "nome": {
+            "type": "string",
+            "nullable": true,
+            "description": "Aluno da cobrança, contrato, projeto ou funcionário"
+          }
+        },
+        "required": [
+          "tipo",
+          "nome"
+        ]
+      },
+      "MovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "data": {
+            "type": "string",
+            "format": "date"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoMovimentacao"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Sempre positivo, em centavos; o sinal vem do tipo"
+          },
+          "categoriaNome": {
+            "type": "string"
+          },
+          "forma": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormaPagamento"
+              }
+            ]
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemMovimentacao"
+              }
+            ]
+          },
+          "contaNome": {
+            "type": "string"
+          },
+          "registradaPor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nulo = rotina automática"
+          },
+          "vinculo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VinculoDto"
+              }
+            ]
+          },
+          "estornadaEm": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Preenchido na movimentação estornada"
+          },
+          "motivoEstorno": {
+            "type": "string",
+            "nullable": true
+          },
+          "podeEstornar": {
+            "type": "boolean",
+            "description": "Só lançamento manual, ainda não estornado"
+          },
+          "motivoSemEstorno": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "data",
+          "descricao",
+          "tipo",
+          "valorCentavos",
+          "categoriaNome",
+          "forma",
+          "origem",
+          "contaNome",
+          "registradaPor",
+          "vinculo",
+          "estornadaEm",
+          "motivoEstorno",
+          "podeEstornar",
+          "motivoSemEstorno"
+        ]
+      },
+      "TotaisDto": {
+        "type": "object",
+        "properties": {
+          "entradasCentavos": {
+            "type": "number"
+          },
+          "quantidadeEntradas": {
+            "type": "number"
+          },
+          "saidasCentavos": {
+            "type": "number"
+          },
+          "quantidadeSaidas": {
+            "type": "number"
+          },
+          "saldoCentavos": {
+            "type": "number",
+            "description": "Entradas menos saídas. Estornos e transferências entre contas não entram"
+          }
+        },
+        "required": [
+          "entradasCentavos",
+          "quantidadeEntradas",
+          "saidasCentavos",
+          "quantidadeSaidas",
+          "saldoCentavos"
+        ]
+      },
+      "ListaDeMovimentacoesDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Das mais recentes para as mais antigas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MovimentacaoDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "totais": {
+            "description": "Do mesmo recorte da lista",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TotaisDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "itens",
+          "total",
+          "totais"
+        ]
+      },
+      "TipoConta": {
+        "type": "string",
+        "enum": [
+          "CORRENTE",
+          "APLICACAO"
+        ]
+      },
+      "ContaDaOpcaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoConta"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo"
+        ]
+      },
+      "CategoriaDaOpcaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "tipo": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TipoCategoria"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "tipo"
+        ]
+      },
+      "PeriodicidadeContrato": {
+        "type": "string",
+        "enum": [
+          "MENSAL",
+          "ANUAL",
+          "POR_DEMANDA",
+          "UNICA"
+        ]
+      },
+      "ContratoParaVincularDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Valor previsto por periodicidade"
+          },
+          "periodicidade": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicidadeContrato"
+              }
+            ]
+          },
+          "pagoNoAnoCentavos": {
+            "type": "number",
+            "description": "Saídas já pagas neste contrato no ano"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "valorCentavos",
+          "periodicidade",
+          "pagoNoAnoCentavos"
+        ]
+      },
+      "ProjetoParaVincularDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "encerrado": {
+            "type": "boolean",
+            "description": "Executado: aceita lançamento, mas a tela sinaliza"
+          }
+        },
+        "required": [
+          "id",
+          "nome",
+          "encerrado"
+        ]
+      },
+      "OpcaoDeVinculoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nome": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nome"
+        ]
+      },
+      "OpcoesDaMovimentacaoDto": {
+        "type": "object",
+        "properties": {
+          "contas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContaDaOpcaoDto"
+            }
+          },
+          "categorias": {
+            "description": "Ativas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoriaDaOpcaoDto"
+            }
+          },
+          "contratos": {
+            "description": "Ativos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContratoParaVincularDto"
+            }
+          },
+          "projetos": {
+            "description": "Não cancelados",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjetoParaVincularDto"
+            }
+          },
+          "funcionarios": {
+            "description": "Ativos",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OpcaoDeVinculoDto"
+            }
+          }
+        },
+        "required": [
+          "contas",
+          "categorias",
+          "contratos",
+          "projetos",
+          "funcionarios"
         ]
       }
     }

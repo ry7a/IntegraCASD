@@ -44,13 +44,14 @@ model Usuario {
   dataCriacao      DateTime      @default(now()) @map("data_criacao")
   dataAlteracao    DateTime      @updatedAt @map("data_alteracao")
 
-  sessoes              Sessao[]
-  registrosDeAuditoria RegistroAuditoria[]
-  parametrosAlterados  ParametrosCobranca[]
-  cobrancasEmitidas    Cobranca[]
-  configuracoesAsaas   ConfiguracaoAsaas[]
-  sincronizacoes       ExecucaoSincronizacao[]
-  pendencias           PendenciaConciliacao[]
+  sessoes                  Sessao[]
+  registrosDeAuditoria     RegistroAuditoria[]
+  parametrosAlterados      ParametrosCobranca[]
+  cobrancasEmitidas        Cobranca[]
+  configuracoesAsaas       ConfiguracaoAsaas[]
+  sincronizacoes           ExecucaoSincronizacao[]
+  pendencias               PendenciaConciliacao[]
+  movimentacoesRegistradas Movimentacao[]
 
   @@map("usuarios")
 }
@@ -455,6 +456,10 @@ model Movimentacao {
 
   // Cobrança paga que gerou esta entrada (conciliação ou registro manual).
   cobranca Cobranca?
+
+  // [Movimentações.RF001] Quem lançou. Nulo = rotina automática (conciliação, sincronização).
+  registradaPorId String?  @map("registrada_por_id") @db.Uuid
+  registradaPor   Usuario? @relation(fields: [registradaPorId], references: [id], onDelete: Restrict)
 
   dataCriacao   DateTime @default(now()) @map("data_criacao")
   dataAlteracao DateTime @updatedAt @map("data_alteracao")

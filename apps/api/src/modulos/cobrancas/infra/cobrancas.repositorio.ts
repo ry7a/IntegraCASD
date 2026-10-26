@@ -179,6 +179,7 @@ export class CobrancasRepositorio {
           data: deDia(pagamento.pagoEm),
           formaPagamento: pagamento.formaPagamento,
           origem: 'REGISTRO_MANUAL_DE_COBRANCA',
+          registradaPorId: autorId,
           descricao: `Cobrança "${cobranca.descricao}" (${cobranca.idAsaas}) paga fora do Asaas`,
         },
       });
