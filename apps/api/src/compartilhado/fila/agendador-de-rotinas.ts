@@ -6,7 +6,8 @@ export type DadosDaRotina = Record<string, unknown>;
 
 // Nomes das rotinas (cada uma vira uma fila no pg-boss).
 export const ROTINA_GERACAO_RECORRENTE = 'geracao-recorrente';
-export const ROTINAS = [ROTINA_GERACAO_RECORRENTE];
+export const ROTINA_ATUALIZAR_CLIENTE_ASAAS = 'atualizar-cliente-asaas';
+export const ROTINAS = [ROTINA_GERACAO_RECORRENTE, ROTINA_ATUALIZAR_CLIENTE_ASAAS];
 
 export abstract class AgendadorDeRotinas {
   // Roda a rotina conforme a expressão cron, no fuso de São Paulo. Pode ser chamado a cada subida do

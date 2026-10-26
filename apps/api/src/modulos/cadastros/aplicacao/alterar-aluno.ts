@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { OperacaoAuditada } from '../../../compartilhado/auditoria/trilha.js';
+import { EventosInternos } from '../../../compartilhado/eventos/eventos-internos.js';
 import {
   CadastroDuplicado,
   DadoInvalido,
@@ -16,7 +17,10 @@ export type EntradaAlterarAluno = EntradaDoAluno & { ativo?: unknown };
 // O cadastro nunca é excluído: inativo deixa de receber a mensalidade automática.
 @Injectable()
 export class AlterarAluno {
-  constructor(private readonly alunos: AlunosRepositorio) {}
+  constructor(
+    private readonly alunos: AlunosRepositorio,
+    private readonly eventos: EventosInternos,
+  ) {}
 
   executar(id: string, entrada: EntradaAlterarAluno, autorId: string): Promise<AlunoDetalhe> {
     return traduzirErrosDoCadastro(async () => {
@@ -68,6 +72,10 @@ export class AlterarAluno {
       if (reativa) operacao = 'REATIVACAO';
 
       const alterado = await this.alunos.alterar(id, { ...dados, ...(ativo === undefined ? {} : { ativo }) }, operacao, autorId);
+      // Nome, CPF e e-mail também ficam no cliente do Asaas: avisa quem cuida disso (Cobranças).
+      if (dados.nome !== undefined || dados.cpf !== undefined || dados.email !== undefined) {
+        await this.eventos.publicar({ tipo: 'aluno-alterado', alunoId: id });
+      }
       return paraDetalhe(alterado);
     });
   }

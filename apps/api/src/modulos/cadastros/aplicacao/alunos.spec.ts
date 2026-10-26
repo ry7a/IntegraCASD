@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import type { AlunoRegistrado, AlunosRepositorio } from '../infra/alunos.repositorio.js';
+import { EventosInternos } from '../../../compartilhado/eventos/eventos-internos.js';
 import { AlterarAluno } from './alterar-aluno.js';
 import { CriarAluno } from './criar-aluno.js';
 import { ListarAlunos } from './listar-alunos.js';
@@ -102,7 +103,7 @@ describe('CriarAluno [Cadastros.RF001]', () => {
 describe('AlterarAluno [Cadastros.RF001]', () => {
   it('inativar não exclui e fica registrado como INATIVACAO (fluxo A1)', async () => {
     const { repositorio, chamadas } = criarRepositorioFalso({ existente: ana });
-    const resultado = await new AlterarAluno(repositorio).executar('a1', { ativo: false }, AUTOR);
+    const resultado = await new AlterarAluno(repositorio, new EventosInternos()).executar('a1', { ativo: false }, AUTOR);
     expect(chamadas.alterar).toEqual([{ dados: { ativo: false }, operacao: 'INATIVACAO' }]);
     expect(resultado.ativo).toBe(false);
   });
@@ -110,7 +111,7 @@ describe('AlterarAluno [Cadastros.RF001]', () => {
   it('reativar confere se o CPF foi recadastrado por outro aluno ativo', async () => {
     const inativa = { ...ana, ativo: false };
     const { repositorio, chamadas } = criarRepositorioFalso({ existente: inativa, cpfAtivoDe: { id: 'a9', nome: 'Outra' } });
-    await expect(new AlterarAluno(repositorio).executar('a1', { ativo: true }, AUTOR)).rejects.toBeInstanceOf(
+    await expect(new AlterarAluno(repositorio, new EventosInternos()).executar('a1', { ativo: true }, AUTOR)).rejects.toBeInstanceOf(
       ConflictException,
     );
     expect(chamadas.alterar).toEqual([]);
@@ -118,23 +119,36 @@ describe('AlterarAluno [Cadastros.RF001]', () => {
 
   it('trocar o CPF para o de outro aluno ativo é recusado', async () => {
     const { repositorio } = criarRepositorioFalso({ existente: ana, cpfAtivoDe: { id: 'a9', nome: 'Outra' } });
-    await expect(new AlterarAluno(repositorio).executar('a1', { cpf: CPF_OUTRO }, AUTOR)).rejects.toBeInstanceOf(
+    await expect(new AlterarAluno(repositorio, new EventosInternos()).executar('a1', { cpf: CPF_OUTRO }, AUTOR)).rejects.toBeInstanceOf(
       ConflictException,
     );
   });
 
   it('manter a própria vaga não acusa vaga ocupada', async () => {
     const { repositorio, chamadas } = criarRepositorioFalso({ existente: ana, vagaOcupada: true });
-    await new AlterarAluno(repositorio).executar('a1', { apelido: 'Aninha' }, AUTOR);
+    await new AlterarAluno(repositorio, new EventosInternos()).executar('a1', { apelido: 'Aninha' }, AUTOR);
     expect(chamadas.alterar).toHaveLength(1);
   });
 
   it('aluno inexistente responde 404; corpo vazio responde 400', async () => {
     const vazio = criarRepositorioFalso({ existente: null });
-    await expect(new AlterarAluno(vazio.repositorio).executar('x', { ativo: false }, AUTOR)).rejects.toBeInstanceOf(
+    await expect(new AlterarAluno(vazio.repositorio, new EventosInternos()).executar('x', { ativo: false }, AUTOR)).rejects.toBeInstanceOf(
       NotFoundException,
     );
     const { repositorio } = criarRepositorioFalso({ existente: ana });
-    await expect(new AlterarAluno(repositorio).executar('a1', {}, AUTOR)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(new AlterarAluno(repositorio, new EventosInternos()).executar('a1', {}, AUTOR)).rejects.toBeInstanceOf(BadRequestException);
+  });
+});
+
+describe('evento "aluno alterado"', () => {
+  it('mudar nome, CPF ou e-mail avisa os outros módulos; mudar só o apelido não', async () => {
+    const eventos = new EventosInternos();
+    const recebidos: string[] = [];
+    eventos.ouvir('aluno-alterado', async (evento) => void recebidos.push(evento.alunoId));
+    const { repositorio } = criarRepositorioFalso({ existente: ana });
+    await new AlterarAluno(repositorio, eventos).executar('a1', { apelido: 'Aninha' }, AUTOR);
+    expect(recebidos).toEqual([]);
+    await new AlterarAluno(repositorio, eventos).executar('a1', { email: 'nova@exemplo.com' }, AUTOR);
+    expect(recebidos).toEqual(['a1']);
   });
 });

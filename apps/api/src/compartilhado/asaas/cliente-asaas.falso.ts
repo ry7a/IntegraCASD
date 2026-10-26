@@ -12,6 +12,7 @@ export class ClienteAsaasFalso extends ClienteAsaas {
   readonly clientesCriados: NovoClienteAsaas[] = [];
   readonly cobrancasCriadas: NovaCobrancaAsaas[] = [];
   readonly cobrancasCanceladas: string[] = [];
+  readonly clientesAtualizados: Array<{ idAsaas: string; dados: NovoClienteAsaas }> = [];
 
   // Ligue para simular o Asaas fora do ar.
   indisponivel = false;
@@ -32,6 +33,12 @@ export class ClienteAsaasFalso extends ClienteAsaas {
     }
     this.clientesCriados.push(dados);
     return Promise.resolve({ idAsaas: `cus_falso_${this.clientesCriados.length}` });
+  }
+
+  atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void> {
+    this.verificarDisponibilidade();
+    this.clientesAtualizados.push({ idAsaas, dados });
+    return Promise.resolve();
   }
 
   criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {

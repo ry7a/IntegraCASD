@@ -5,3 +5,5 @@ export { CobrancasModule } from './cobrancas.module.js';
 export { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
 // O worker também liga a rotina da geração recorrente.
 export { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-recorrente.js';
+// O worker liga a atualização do cliente no Asaas (reação ao evento "aluno alterado").
+export { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
