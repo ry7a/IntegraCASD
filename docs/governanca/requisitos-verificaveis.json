@@ -48,6 +48,11 @@
       "situacao": "coberto"
     },
     {
+      "id": "Segurança.NF006",
+      "titulo": "Trilha de auditoria inalterável",
+      "situacao": "coberto"
+    },
+    {
       "id": "Segurança.NF007",
       "titulo": "Bloqueio após tentativas de acesso malsucedidas",
       "situacao": "coberto"

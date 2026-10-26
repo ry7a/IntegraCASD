@@ -64,7 +64,9 @@ src/modulos/cobrancas/
 - Toda rota exige sessão autenticada, exceto login e webhook (que usa o token próprio).
 - Rotas de Administração exigem perfil de diretoria; o perfil é verificado no backend, sempre.
 - Senhas com argon2. A chave do Asaas é guardada cifrada e nunca é logada.
-- Auditoria é registrada por um ponto central (interceptor), não manualmente em cada caso de uso.
+- Auditoria: toda alteração chama `registrarNaTrilha(tx, {...})` (`src/compartilhado/auditoria/trilha.ts`)
+  dentro da mesma transação, nunca `tx.registroAuditoria.create` direto. A trilha é só de inclusão: o banco
+  recusa `UPDATE`/`DELETE` nela (ADR-0004, regra B13). Rotina automática grava com `usuarioId: null`.
 
 ## Testes
 

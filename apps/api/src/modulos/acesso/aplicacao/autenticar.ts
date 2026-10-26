@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import { criarTokenDeSessao, DURACAO_SESSAO_MS, resumirToken } from '../../../compartilhado/autenticacao/sessao.js';
 import { senhaConfere, simularVerificacaoDeSenha } from '../../../compartilhado/autenticacao/senha.js';
@@ -73,14 +74,12 @@ export class Autenticar {
         });
       }
       if (atualizado.tentativasFalhas === LIMITE_DE_FALHAS) {
-        await tx.registroAuditoria.create({
-          data: {
-            usuarioId,
-            operacao: 'BLOQUEIO_AUTENTICACAO',
-            entidade: 'USUARIO',
-            registroId: usuarioId,
-            detalhe: 'Acesso bloqueado temporariamente apos cinco tentativas malsucedidas.',
-          },
+        await registrarNaTrilha(tx, {
+          usuarioId,
+          operacao: 'BLOQUEIO_AUTENTICACAO',
+          entidade: 'USUARIO',
+          registroId: usuarioId,
+          detalhe: 'Acesso bloqueado temporariamente apos cinco tentativas malsucedidas.',
         });
       }
     });
