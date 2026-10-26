@@ -35,6 +35,26 @@ export interface CobrancaAsaas {
   urlFatura: string | null;
 }
 
+// Uma cobrança como o Asaas a enxerga agora [Cobranças.RF007]. Valores em centavos, datas em AAAA-MM-DD.
+export interface CobrancaNoAsaas {
+  idAsaas: string;
+  idCliente: string;
+  // Situação no Asaas (PENDING, CONFIRMED, RECEIVED, OVERDUE, REFUNDED...).
+  situacao: string;
+  // Excluída (no painel ou pelo cancelamento daqui).
+  removida: boolean;
+  valorCentavos: number;
+  vencimento: string;
+  descricao: string | null;
+  referenciaExterna: string | null;
+  pagoEm: string | null;
+  disponivelEm: string | null;
+  multaPercentual: number;
+  jurosMensalPercentual: number;
+  urlBoleto: string | null;
+  urlFatura: string | null;
+}
+
 // Por que o Asaas falhou. Rotinas em lote usam isto para decidir: dados recusados afetam só aquele
 // aluno (segue para o próximo); os demais motivos afetam todos (interrompe e tenta mais tarde).
 export type MotivoDoErroAsaas =
@@ -67,4 +87,8 @@ export abstract class ClienteAsaas {
   abstract criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas>;
   // Cancela (no Asaas, "exclui") uma cobrança não paga: o boleto deixa de valer.
   abstract cancelarCobranca(idAsaas: string): Promise<void>;
+  // Situação atual de uma cobrança (inclusive excluída). Nulo se o Asaas não a conhece.
+  abstract buscarCobranca(idAsaas: string): Promise<CobrancaNoAsaas | null>;
+  // Todas as cobranças (não excluídas) com vencimento no período, já percorrendo as páginas.
+  abstract listarCobrancas(periodo: { vencimentoDe: string; vencimentoAte: string }): Promise<CobrancaNoAsaas[]>;
 }

@@ -70,10 +70,19 @@ export class ResumoSituacaoDto {
 
 export class SincronizacaoDto {
   @ApiProperty({ format: 'date-time' }) iniciadaEm!: string;
-  @ApiProperty() conferidas!: number;
-  @ApiProperty() atualizadas!: number;
-  @ApiProperty() somenteNoAsaas!: number;
-  @ApiProperty() paraConferir!: number;
+  @ApiProperty({ type: String, format: 'date-time', nullable: true }) finalizadaEm!: string | null;
+  @ApiProperty({ description: 'Cobranças daqui comparadas com o Asaas' }) conferidas!: number;
+  @ApiProperty({ description: 'Pagas, estornadas ou canceladas conforme o Asaas' }) atualizadas!: number;
+  @ApiProperty({ description: 'Encontradas só no Asaas e registradas aqui' }) somenteNoAsaas!: number;
+  @ApiProperty({ description: 'Só no Asaas, sem aluno correspondente aqui' }) naoIdentificadas!: number;
+  @ApiProperty({ description: 'Divergências para conferir (ex.: paga à mão aqui e paga no Asaas)' }) paraConferir!: number;
+  @ApiProperty({ type: String, nullable: true, description: 'Motivo de uma interrupção ou de baixas que ficaram pendentes' })
+  falha!: string | null;
+}
+
+export class PeriodoDeSincronizacaoDto {
+  @ApiProperty({ format: 'date', example: '2026-10-01' }) vencimentoDe!: string;
+  @ApiProperty({ format: 'date', example: '2026-10-31' }) vencimentoAte!: string;
 }
 
 export class ConciliacaoDto {

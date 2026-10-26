@@ -26,12 +26,14 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 | `eventos_webhook` | eventos recebidos do Asaas ([Desempenho.NF001]) | id do Asaas único, para a idempotência; `processado_em` marcado na mesma transação da baixa; `pendencia` com o motivo quando o evento pede conferência humana |
 | `execucoes_geracao` | cada execução da geração recorrente ([Confiabilidade.NF007]) | início, fim, criadas, já existentes, falhas (aluno e motivo) e se foi interrompida |
 | `clientes_asaas` | o cliente do Asaas de cada aluno | criado na primeira cobrança; fica em Cobranças para o Cadastros não depender do Asaas |
+| `execucoes_sincronizacao` | cada sincronização com o Asaas ([Cobranças.RF007], [Confiabilidade.NF007]) | período ou cobrança única, quem pediu, início, fim, conferidas, atualizadas, trazidas do Asaas, não identificadas, para conferir e o motivo de uma interrupção |
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem
 (`MENSALIDADE` ou `AVULSA`), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
 Asaas na emissão, links do boleto e da fatura, os dados de cancelamento e, na renegociação, o vínculo com a
 cobrança cancelada que ela substitui (`renegociacao_de_id`, único), e a data em que o valor ficou disponível
-no Asaas (`disponivel_em`, [Cobranças.RF005] fluxo A1). "Vencida" não é guardada: é
+no Asaas (`disponivel_em`, [Cobranças.RF005] fluxo A1), a justificativa do pagamento registrado à mão
+(`justificativa_manual`, [Cobranças.RF006]) e a última conferência com o Asaas (`sincronizada_em`, [Cobranças.RF007]). "Vencida" não é guardada: é
 uma cobrança aberta com o vencimento passado. Cobrança paga sempre tem `paga_em` e a movimentação de
 entrada (CHECK no banco).
 

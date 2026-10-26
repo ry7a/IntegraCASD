@@ -81,6 +81,52 @@ describe('ClienteAsaasHttp', () => {
     expect(opcoes.body).toBeUndefined();
   });
 
+  it('consulta uma cobrança e converte reais em centavos; desconhecida (404) vira nulo', async () => {
+    chamarHttp.mockResolvedValueOnce(
+      resposta(200, {
+        id: 'pay_1',
+        customer: 'cus_1',
+        status: 'RECEIVED',
+        value: 85.5,
+        dueDate: '2026-10-10',
+        paymentDate: '2026-10-09',
+        creditDate: '2026-10-11',
+        externalReference: 'mensalidade:x:2026-10',
+        fine: { value: 2 },
+        interest: { value: 1 },
+      }),
+    );
+    expect(await cliente.buscarCobranca('pay_1')).toMatchObject({
+      idAsaas: 'pay_1',
+      idCliente: 'cus_1',
+      situacao: 'RECEIVED',
+      removida: false,
+      valorCentavos: 8550,
+      pagoEm: '2026-10-09',
+      disponivelEm: '2026-10-11',
+      referenciaExterna: 'mensalidade:x:2026-10',
+    });
+    expect(chamarHttp.mock.calls[0][0]).toBe('https://asaas.teste/v3/payments/pay_1');
+
+    chamarHttp.mockResolvedValueOnce(resposta(404, { errors: [{ code: 'not_found' }] }));
+    expect(await cliente.buscarCobranca('pay_x')).toBeNull();
+  });
+
+  it('lista as cobranças do período percorrendo todas as páginas', async () => {
+    const pagamento = (id: string) => ({ id, customer: 'cus_1', status: 'PENDING', value: 10, dueDate: '2026-10-10' });
+    chamarHttp
+      .mockResolvedValueOnce(resposta(200, { data: [pagamento('pay_1')], hasMore: true }))
+      .mockResolvedValueOnce(resposta(200, { data: [pagamento('pay_2')], hasMore: false }));
+
+    const cobrancas = await cliente.listarCobrancas({ vencimentoDe: '2026-10-01', vencimentoAte: '2026-10-31' });
+
+    expect(cobrancas.map((cobranca) => cobranca.idAsaas)).toEqual(['pay_1', 'pay_2']);
+    const primeira = new URL(chamarHttp.mock.calls[0][0] as string);
+    expect(primeira.searchParams.get('dueDate[ge]')).toBe('2026-10-01');
+    expect(primeira.searchParams.get('dueDate[le]')).toBe('2026-10-31');
+    expect(new URL(chamarHttp.mock.calls[1][0] as string).searchParams.get('offset')).toBe('100');
+  });
+
   it('recusa valor que não seja inteiro positivo, sem chamar o Asaas', async () => {
     await expect(cliente.criarCobranca({ ...novaCobranca, valorEmCentavos: 0 })).rejects.toThrow();
     await expect(cliente.criarCobranca({ ...novaCobranca, valorEmCentavos: 10.5 })).rejects.toThrow();

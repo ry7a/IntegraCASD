@@ -9,3 +9,5 @@ export { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-rec
 export { ReacaoAAlunoAlterado } from './infra/reacao-a-aluno-alterado.js';
 // E a rotina que retoma eventos gravados e não processados (ADR-0002).
 export { ConsumidorDoReprocessamento } from './infra/consumidor-do-reprocessamento.js';
+// E a sincronização diária com o Asaas [Cobranças.RF007].
+export { ConsumidorDaSincronizacao } from './infra/consumidor-da-sincronizacao.js';

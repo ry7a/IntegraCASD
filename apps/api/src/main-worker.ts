@@ -3,6 +3,7 @@ import path from 'node:path';
 import { NestFactory } from '@nestjs/core';
 import {
   ConsumidorDaGeracaoRecorrente,
+  ConsumidorDaSincronizacao,
   ConsumidorDeEventosWebhook,
   ConsumidorDoReprocessamento,
   ReacaoAAlunoAlterado,
@@ -25,5 +26,6 @@ async function bootstrap() {
   await app.get(ConsumidorDaGeracaoRecorrente).iniciar();
   await app.get(ReacaoAAlunoAlterado).iniciar();
   await app.get(ConsumidorDoReprocessamento).iniciar();
+  await app.get(ConsumidorDaSincronizacao).iniciar();
 }
 await bootstrap();

@@ -35,7 +35,9 @@ import type {
   ListarCobrancasParams,
   PagamentoManualDto,
   PedidoDeGeracaoDto,
+  PeriodoDeSincronizacaoDto,
   ResumoCobrancasDto,
+  SincronizacaoDto,
   SugestaoDeNovaCobrancaDto
 } from '../api.schemas';
 
@@ -720,6 +722,166 @@ export const useCancelarCobranca = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCancelarCobrancaMutationOptions(options), queryClient);
+    }
+    export const getSincronizarCobrancasUrl = () => {
+
+
+
+
+  return `/api/cobrancas/sincronizar`
+}
+
+/**
+ * @summary Consulta o Asaas e atualiza as cobranças do período
+ */
+export const sincronizarCobrancas = async (periodoDeSincronizacaoDto: PeriodoDeSincronizacaoDto, options?: Parameters<typeof clienteHttp>[1]): Promise<SincronizacaoDto> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<SincronizacaoDto>(getSincronizarCobrancasUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(periodoDeSincronizacaoDto)
+  }
+);}
+
+
+
+
+
+export const getSincronizarCobrancasMutationKey = () => ['sincronizarCobrancas'] as const;
+
+export const getSincronizarCobrancasMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobrancas>>, TError,SincronizarCobrancasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobrancas>>, TError,SincronizarCobrancasMutationVariables, TContext> => {
+
+const mutationKey = getSincronizarCobrancasMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sincronizarCobrancas>>, SincronizarCobrancasMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  sincronizarCobrancas(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SincronizarCobrancasMutationResult = NonNullable<Awaited<ReturnType<typeof sincronizarCobrancas>>>
+    export type SincronizarCobrancasMutationBody = PeriodoDeSincronizacaoDto
+    export type SincronizarCobrancasMutationError = ErrorType<unknown>
+    export type SincronizarCobrancasMutationVariables = {data: PeriodoDeSincronizacaoDto}
+
+    /**
+ * @summary Consulta o Asaas e atualiza as cobranças do período
+ */
+export const useSincronizarCobrancas = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobrancas>>, TError,SincronizarCobrancasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sincronizarCobrancas>>,
+        TError,
+        SincronizarCobrancasMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSincronizarCobrancasMutationOptions(options), queryClient);
+    }
+    export const getSincronizarCobrancaUrl = (id: string,) => {
+
+
+
+
+  return `/api/cobrancas/${id}/sincronizar`
+}
+
+/**
+ * @summary Consulta o Asaas e atualiza só esta cobrança
+ */
+export const sincronizarCobranca = async (id: string, options?: Parameters<typeof clienteHttp>[1]): Promise<SincronizacaoDto> => {
+
+  return clienteHttp<SincronizacaoDto>(getSincronizarCobrancaUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSincronizarCobrancaMutationKey = () => ['sincronizarCobranca'] as const;
+
+export const getSincronizarCobrancaMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobranca>>, TError,SincronizarCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobranca>>, TError,SincronizarCobrancaMutationVariables, TContext> => {
+
+const mutationKey = getSincronizarCobrancaMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sincronizarCobranca>>, SincronizarCobrancaMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  sincronizarCobranca(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SincronizarCobrancaMutationResult = NonNullable<Awaited<ReturnType<typeof sincronizarCobranca>>>
+
+    export type SincronizarCobrancaMutationError = ErrorType<unknown>
+    export type SincronizarCobrancaMutationVariables = {id: string}
+
+    /**
+ * @summary Consulta o Asaas e atualiza só esta cobrança
+ */
+export const useSincronizarCobranca = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sincronizarCobranca>>, TError,SincronizarCobrancaMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sincronizarCobranca>>,
+        TError,
+        SincronizarCobrancaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSincronizarCobrancaMutationOptions(options), queryClient);
     }
     export const getRegistrarPagamentoManualUrl = (id: string,) => {
 

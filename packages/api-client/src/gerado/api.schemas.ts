@@ -513,10 +513,23 @@ export interface ResumoSituacaoDto {
 
 export interface SincronizacaoDto {
   iniciadaEm: string;
+  /** @nullable */
+  finalizadaEm: string | null;
+  /** Cobranças daqui comparadas com o Asaas */
   conferidas: number;
+  /** Pagas, estornadas ou canceladas conforme o Asaas */
   atualizadas: number;
+  /** Encontradas só no Asaas e registradas aqui */
   somenteNoAsaas: number;
+  /** Só no Asaas, sem aluno correspondente aqui */
+  naoIdentificadas: number;
+  /** Divergências para conferir (ex.: paga à mão aqui e paga no Asaas) */
   paraConferir: number;
+  /**
+     * Motivo de uma interrupção ou de baixas que ficaram pendentes
+     * @nullable
+     */
+  falha: string | null;
 }
 
 export interface ConciliacaoDto {
@@ -631,6 +644,11 @@ export interface BoletoDto {
 
 export interface CancelarCobrancaDto {
   motivo: string;
+}
+
+export interface PeriodoDeSincronizacaoDto {
+  vencimentoDe: string;
+  vencimentoAte: string;
 }
 
 export type FormaDePagamentoManual = typeof FormaDePagamentoManual[keyof typeof FormaDePagamentoManual];

@@ -1189,6 +1189,79 @@
         ]
       }
     },
+    "/api/cobrancas/sincronizar": {
+      "post": {
+        "operationId": "sincronizarCobrancas",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeriodoDeSincronizacaoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SincronizacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Consulta o Asaas e atualiza as cobranças do período",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/{id}/sincronizar": {
+      "post": {
+        "operationId": "sincronizarCobranca",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SincronizacaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Consulta o Asaas e atualiza só esta cobrança",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
     "/api/cobrancas/{id}/pagamento-manual": {
       "post": {
         "operationId": "registrarPagamentoManual",
@@ -2461,25 +2534,46 @@
             "type": "string",
             "format": "date-time"
           },
+          "finalizadaEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
           "conferidas": {
-            "type": "number"
+            "type": "number",
+            "description": "Cobranças daqui comparadas com o Asaas"
           },
           "atualizadas": {
-            "type": "number"
+            "type": "number",
+            "description": "Pagas, estornadas ou canceladas conforme o Asaas"
           },
           "somenteNoAsaas": {
-            "type": "number"
+            "type": "number",
+            "description": "Encontradas só no Asaas e registradas aqui"
+          },
+          "naoIdentificadas": {
+            "type": "number",
+            "description": "Só no Asaas, sem aluno correspondente aqui"
           },
           "paraConferir": {
-            "type": "number"
+            "type": "number",
+            "description": "Divergências para conferir (ex.: paga à mão aqui e paga no Asaas)"
+          },
+          "falha": {
+            "type": "string",
+            "nullable": true,
+            "description": "Motivo de uma interrupção ou de baixas que ficaram pendentes"
           }
         },
         "required": [
           "iniciadaEm",
+          "finalizadaEm",
           "conferidas",
           "atualizadas",
           "somenteNoAsaas",
-          "paraConferir"
+          "naoIdentificadas",
+          "paraConferir",
+          "falha"
         ]
       },
       "ConciliacaoDto": {
@@ -2769,6 +2863,25 @@
         },
         "required": [
           "motivo"
+        ]
+      },
+      "PeriodoDeSincronizacaoDto": {
+        "type": "object",
+        "properties": {
+          "vencimentoDe": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-01"
+          },
+          "vencimentoAte": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-31"
+          }
+        },
+        "required": [
+          "vencimentoDe",
+          "vencimentoAte"
         ]
       },
       "FormaDePagamentoManual": {

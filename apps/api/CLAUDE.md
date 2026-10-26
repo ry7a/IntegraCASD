@@ -71,6 +71,9 @@ src/modulos/cobrancas/
   (com `updateMany ... processadoEm: null`, só um processamento consegue) e aplica o efeito na mesma transação.
 - Evento gravado e não processado há mais de 5 minutos (queda entre gravar e enfileirar, ou tentativas
   esgotadas) é reenfileirado pela rotina `reprocessar-eventos-asaas`, a cada 15 minutos (ADR-0002).
+- A sincronização com o Asaas ([Cobranças.RF007]) não tem regra de baixa própria: traduz a situação no Asaas
+  no aviso equivalente do webhook (`dominio/sincronizacao.ts`) e aplica pela mesma `ConciliacaoRepositorio`.
+  Roda sob pedido (tela) e todo dia às 5h (rotina `sincronizacao-asaas`).
 - Rotinas agendadas (geração recorrente, sincronização, alerta de webhook parado) são jobs do pg-boss registrados no worker e devem gravar início, fim, total processado e falhas.
   Use o `AgendadorDeRotinas` (`src/compartilhado/fila/`): o nome da rotina entra em `ROTINAS` (vira uma fila
   "singleton", no máximo uma execução por vez) e o consumidor é ligado no `main-worker.ts`.

@@ -1,6 +1,7 @@
 import {
   ClienteAsaas,
   CobrancaAsaas,
+  CobrancaNoAsaas,
   ErroAsaas,
   NovaCobrancaAsaas,
   NovoClienteAsaas,
@@ -56,10 +57,44 @@ export class ClienteAsaasFalso extends ClienteAsaas {
     return Promise.resolve();
   }
 
+  // O que o Asaas "tem" agora, por id: as criadas aqui entram como PENDING. O teste pode mudar a
+  // situação (ex.: RECEIVED) ou incluir cobranças criadas direto no painel.
+  readonly noAsaas = new Map<string, CobrancaNoAsaas>();
+
+  buscarCobranca(idAsaas: string): Promise<CobrancaNoAsaas | null> {
+    this.verificarDisponibilidade();
+    return Promise.resolve(this.noAsaas.get(idAsaas) ?? null);
+  }
+
+  listarCobrancas(periodo: { vencimentoDe: string; vencimentoAte: string }): Promise<CobrancaNoAsaas[]> {
+    this.verificarDisponibilidade();
+    return Promise.resolve(
+      [...this.noAsaas.values()].filter(
+        (cobranca) => !cobranca.removida && cobranca.vencimento >= periodo.vencimentoDe && cobranca.vencimento <= periodo.vencimentoAte,
+      ),
+    );
+  }
+
   criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
     this.verificarDisponibilidade();
     this.cobrancasCriadas.push(dados);
     const numero = this.cobrancasCriadas.length;
+    this.noAsaas.set(`pay_falso_${numero}`, {
+      idAsaas: `pay_falso_${numero}`,
+      idCliente: dados.clienteIdAsaas,
+      situacao: 'PENDING',
+      removida: false,
+      valorCentavos: dados.valorEmCentavos,
+      vencimento: dados.vencimento,
+      descricao: dados.descricao,
+      referenciaExterna: dados.referenciaExterna ?? null,
+      pagoEm: null,
+      disponivelEm: null,
+      multaPercentual: dados.multaPercentual,
+      jurosMensalPercentual: dados.jurosMensalPercentual,
+      urlBoleto: null,
+      urlFatura: null,
+    });
     return Promise.resolve({
       idAsaas: `pay_falso_${numero}`,
       urlBoleto: `https://asaas.falso/boleto/pay_falso_${numero}`,
@@ -70,6 +105,8 @@ export class ClienteAsaasFalso extends ClienteAsaas {
   cancelarCobranca(idAsaas: string): Promise<void> {
     this.verificarDisponibilidade();
     this.cobrancasCanceladas.push(idAsaas);
+    const existente = this.noAsaas.get(idAsaas);
+    if (existente) this.noAsaas.set(idAsaas, { ...existente, removida: true });
     return Promise.resolve();
   }
 

@@ -3,6 +3,7 @@ import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import { BuscarParametrosVigentes } from '../../administracao/index.js';
 import { decidirConciliacao, lerAvisoDePagamento } from '../dominio/conciliacao.js';
 import { ConciliacaoRepositorio, type DestinoDaBaixa } from '../infra/conciliacao.repositorio.js';
+import { buscarDestinoDaBaixa } from './destino-da-baixa.js';
 import { EventosWebhookRepositorio } from '../infra/eventos-webhook.repositorio.js';
 
 // Sem conta ou categoria de recebimento não dá para criar a entrada. O evento fica sem processar:
@@ -57,9 +58,8 @@ export class ProcessarEventoWebhook {
   }
 
   private async destinoDaBaixa(origem: 'MENSALIDADE' | 'AVULSA'): Promise<DestinoDaBaixa> {
-    const vigentes = await this.parametros.executar();
-    const categoriaId = origem === 'MENSALIDADE' ? vigentes?.categoriaMensalidadeId : vigentes?.categoriaAvulsaId;
-    if (!vigentes?.contaRecebimentoId || !categoriaId) throw new DestinoDaBaixaNaoDefinido(origem);
-    return { contaId: vigentes.contaRecebimentoId, categoriaId };
+    const destino = await buscarDestinoDaBaixa(this.parametros, origem);
+    if (destino === null) throw new DestinoDaBaixaNaoDefinido(origem);
+    return destino;
   }
 }

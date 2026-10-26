@@ -3,6 +3,7 @@ import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import { BuscarParametrosVigentes } from '../../administracao/index.js';
 import { CobrancaInvalida, conferirPagamentoManual, lerPagamentoManual, type PagamentoManual } from '../dominio/cobranca.js';
 import { CobrancasRepositorio } from '../infra/cobrancas.repositorio.js';
+import { buscarDestinoDaBaixa } from './destino-da-baixa.js';
 import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
 
 // Caso de uso [Cobranças.RF006]: registra o pagamento de uma cobrança que não passou pela conciliação
@@ -27,14 +28,13 @@ export class RegistrarPagamentoManual {
       conferirPagamentoManual(cobranca.situacao);
       const pagamento = lerPagamentoManual(entrada, hoje);
 
-      const vigentes = await this.parametros.executar();
-      const categoriaId = cobranca.origem === 'MENSALIDADE' ? vigentes?.categoriaMensalidadeId : vigentes?.categoriaAvulsaId;
-      if (!vigentes?.contaRecebimentoId || !categoriaId) {
+      const destino = await buscarDestinoDaBaixa(this.parametros, cobranca.origem);
+      if (destino === null) {
         throw new CobrancaInvalida(
           'Falta escolher a conta de recebimento e as categorias em Administração > Parâmetros. Peça à diretoria e tente de novo.',
         );
       }
-      await this.cobrancas.registrarPagamentoManual(cobranca, pagamento, { contaId: vigentes.contaRecebimentoId, categoriaId }, autorId);
+      await this.cobrancas.registrarPagamentoManual(cobranca, pagamento, destino, autorId);
     });
   }
 }
