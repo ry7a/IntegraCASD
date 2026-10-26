@@ -551,3 +551,30 @@ model Cobranca {
   @@index([situacao, vencimento])
   @@map("cobrancas")
 }
+
+enum OrigemExecucao {
+  AGENDADA
+  MANUAL
+
+  @@map("origem_execucao")
+}
+
+// Cada execução da geração recorrente [Cobranças.RF001], [Confiabilidade.NF007]: quando começou e
+// terminou, quantas cobranças criou, quantas já existiam e quais alunos falharam (e por quê).
+model ExecucaoGeracao {
+  id                String         @id @default(uuid()) @db.Uuid
+  referencia        String         @db.Char(7) // mês das mensalidades, "AAAA-MM"
+  origem            OrigemExecucao
+  iniciadaEm        DateTime       @default(now()) @map("iniciada_em")
+  finalizadaEm      DateTime?      @map("finalizada_em")
+  totalCriadas      Int            @default(0) @map("total_criadas")
+  totalJaExistentes Int            @default(0) @map("total_ja_existentes")
+  totalFalhas       Int            @default(0) @map("total_falhas")
+  // Lista de { alunoId, alunoNome, motivo }.
+  falhas            Json           @default("[]")
+  // Verdadeiro quando o Asaas parou de responder no meio (fluxo E1): nova tentativa é agendada.
+  interrompida      Boolean        @default(false)
+
+  @@index([referencia, iniciadaEm])
+  @@map("execucoes_geracao")
+}

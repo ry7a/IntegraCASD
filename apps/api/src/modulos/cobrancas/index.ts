@@ -3,3 +3,5 @@
 export { CobrancasModule } from './cobrancas.module.js';
 // O worker liga este consumidor ao iniciar (main-worker.ts).
 export { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
+// O worker também liga a rotina da geração recorrente.
+export { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-recorrente.js';

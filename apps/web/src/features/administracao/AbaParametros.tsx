@@ -4,10 +4,14 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import {
   getBuscarParametrosDeCobrancaQueryKey,
+  getListarExecucoesDaGeracaoQueryKey,
   useAlterarParametrosDeCobranca,
   useBuscarParametrosDeCobranca,
   useConferirParametrosDeCobranca,
+  useListarExecucoesDaGeracao,
+  usePedirGeracaoAgora,
   type ConferenciaDto,
+  type ExecucaoGeracaoDto,
   type ParametrosDeCobrancaDto,
   type ParametrosVigentesDto,
 } from '@integracasd/api-client'
@@ -18,7 +22,9 @@ import Icone from '@/compartilhado/componentes/Icone'
 import {
   formatarData,
   formatarDataHora,
+  formatarHora,
   formatarInteiro,
+  formatarMes,
   formatarMoeda,
   formatarValorParaCampo,
   paraCentavos,
@@ -270,10 +276,99 @@ function ConferenciaDosParametros({ conferencia }: { conferencia: ConferenciaDto
           </li>
         </ul>
       )}
-      <h3 style={{ marginTop: 18 }}>Últimas execuções</h3>
-      {/* TODO [Cobranças.RF001]: as execuções aparecem aqui quando a geração recorrente existir (#27). */}
-      <p className="texto-apoio">Nenhuma execução registrada.</p>
+      <UltimasExecucoes />
     </div>
+  )
+}
+
+// [Cobranças.RF001] e [Confiabilidade.NF007]: o que a geração recorrente fez em cada execução. O botão
+// gera de novo só os pendentes do mês (fluxo A2), depois de corrigidos os cadastros.
+function UltimasExecucoes() {
+  const consulta = useListarExecucoesDaGeracao()
+  const pedir = usePedirGeracaoAgora()
+  const queryClient = useQueryClient()
+  const execucoes = consulta.data?.itens ?? []
+
+  async function gerarPendentes() {
+    try {
+      await pedir.mutateAsync()
+      // A geração roda no worker; em alguns segundos a nova execução aparece na lista.
+      setTimeout(() => void queryClient.invalidateQueries({ queryKey: getListarExecucoesDaGeracaoQueryKey() }), 5000)
+    } catch {
+      // Mensagem da API abaixo do botão.
+    }
+  }
+
+  return (
+    <>
+      <h3 style={{ marginTop: 18 }}>Últimas execuções</h3>
+      {execucoes.length === 0 ? (
+        <p className="texto-apoio">Nenhuma execução registrada.</p>
+      ) : (
+        <ul className="lista-linhas">
+          {execucoes.map((execucao) => (
+            <ItemDaExecucao key={execucao.id} execucao={execucao} />
+          ))}
+        </ul>
+      )}
+      <button type="button" className="botao" style={{ marginTop: 12 }} disabled={pedir.isPending} onClick={() => void gerarPendentes()}>
+        <Icone nome="sincronizar" />
+        {pedir.isPending ? 'Pedindo…' : 'Gerar pendentes agora'}
+      </button>
+      {pedir.isSuccess && (
+        <p className="texto-apoio" role="status">
+          Geração de {formatarMes(pedir.data.referencia)} pedida. Quem já tem a mensalidade do mês é pulado.
+        </p>
+      )}
+      {pedir.error && (
+        <p className="erro-formulario" role="alert">
+          {pedir.error.message}
+        </p>
+      )}
+    </>
+  )
+}
+
+function ItemDaExecucao({ execucao }: { execucao: ExecucaoGeracaoDto }) {
+  return (
+    <li style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+      <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <span>
+          {formatarMes(execucao.referencia)} · {formatarDataHora(execucao.iniciadaEm)}
+          {execucao.finalizadaEm && ` a ${formatarHora(execucao.finalizadaEm)}`}
+          <span className="secundario">
+            {execucao.totalProcessado} criadas · {execucao.totalJaExistentes} já existiam ·{' '}
+            {execucao.totalFalhas === 0 ? 'nenhuma falha' : `${execucao.totalFalhas} falharam`}
+            {execucao.origem === 'MANUAL' && ' · pedida manualmente'}
+          </span>
+        </span>
+        {execucao.interrompida ? (
+          <span className="selo selo-alerta">
+            <Icone nome="alerta" />
+            Interrompida
+          </span>
+        ) : execucao.totalFalhas > 0 ? (
+          <span className="selo selo-alerta">Com falhas</span>
+        ) : (
+          <span className="selo selo-paga">
+            <Icone nome="check" />
+            Concluída
+          </span>
+        )}
+      </span>
+      {execucao.falhas.length > 0 && (
+        <details>
+          <summary>Ver falhas</summary>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+            {execucao.falhas.map((falha, indice) => (
+              <li key={`${falha.alunoId}-${indice}`}>
+                <strong>{falha.alunoNome}</strong>: {falha.motivo}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </li>
   )
 }
 

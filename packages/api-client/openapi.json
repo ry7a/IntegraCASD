@@ -968,6 +968,60 @@
           "cobrancas"
         ]
       }
+    },
+    "/api/cobrancas/geracao-recorrente/execucoes": {
+      "get": {
+        "operationId": "listarExecucoesDaGeracao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeExecucoesDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Últimas execuções da geração recorrente",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/geracao-recorrente": {
+      "post": {
+        "operationId": "pedirGeracaoAgora",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PedidoDeGeracaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Gera agora as mensalidades pendentes do mês",
+        "tags": [
+          "cobrancas"
+        ]
+      }
     }
   },
   "info": {
@@ -2289,6 +2343,116 @@
           "jurosMensalPercentual",
           "urlBoleto",
           "urlFatura"
+        ]
+      },
+      "FalhaDaGeracaoDto": {
+        "type": "object",
+        "properties": {
+          "alunoId": {
+            "type": "string",
+            "description": "Vazio quando a falha é da rotina inteira (ex.: Asaas fora do ar)"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "alunoId",
+          "alunoNome",
+          "motivo"
+        ]
+      },
+      "ExecucaoGeracaoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "referencia": {
+            "type": "string",
+            "example": "2026-11",
+            "description": "Mês das mensalidades"
+          },
+          "origem": {
+            "type": "string",
+            "enum": [
+              "AGENDADA",
+              "MANUAL"
+            ]
+          },
+          "iniciadaEm": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finalizadaEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "totalProcessado": {
+            "type": "number",
+            "description": "Cobranças criadas"
+          },
+          "totalJaExistentes": {
+            "type": "number",
+            "description": "Alunos que já tinham a mensalidade do mês"
+          },
+          "totalFalhas": {
+            "type": "number"
+          },
+          "falhas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FalhaDaGeracaoDto"
+            }
+          },
+          "interrompida": {
+            "type": "boolean",
+            "description": "O Asaas parou no meio; nova tentativa agendada"
+          }
+        },
+        "required": [
+          "id",
+          "referencia",
+          "origem",
+          "iniciadaEm",
+          "finalizadaEm",
+          "totalProcessado",
+          "totalJaExistentes",
+          "totalFalhas",
+          "falhas",
+          "interrompida"
+        ]
+      },
+      "ListaDeExecucoesDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Da mais recente para a mais antiga",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExecucaoGeracaoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
+        ]
+      },
+      "PedidoDeGeracaoDto": {
+        "type": "object",
+        "properties": {
+          "referencia": {
+            "type": "string",
+            "example": "2026-11"
+          }
+        },
+        "required": [
+          "referencia"
         ]
       }
     }

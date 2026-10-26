@@ -22,7 +22,10 @@ export class ClienteAsaasSobDemanda extends ClienteAsaas {
       } catch (erro) {
         // O detalhe (qual variável falta) vai para o log; a chave nunca.
         this.logger.error(erro instanceof Error ? erro.message : 'Configuração do Asaas inválida.');
-        throw new ErroAsaas('A integração com o Asaas não está configurada. Peça à diretoria para conferir a configuração.');
+        throw new ErroAsaas(
+          'A integração com o Asaas não está configurada. Peça à diretoria para conferir a configuração.',
+          'NAO_CONFIGURADO',
+        );
       }
     }
     return this.real;

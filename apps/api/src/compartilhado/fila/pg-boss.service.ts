@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PgBoss } from 'pg-boss';
+import { ROTINAS } from './agendador-de-rotinas.js';
 
 // Nome da fila dos eventos do webhook. O pg-boss exige criar a fila antes de usá-la.
 export const FILA_EVENTOS_ASAAS = 'eventos-asaas';
@@ -25,6 +26,10 @@ export class PgBossService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.boss.start();
     await this.boss.createQueue(FILA_EVENTOS_ASAAS);
+    // Rotinas automáticas: cada uma com a sua fila, no máximo uma execução por vez ("singleton").
+    for (const rotina of ROTINAS) {
+      await this.boss.createQueue(rotina, { policy: 'singleton' });
+    }
   }
 
   // Termina os jobs em andamento e fecha as conexões ao encerrar a API ou o worker.

@@ -29,7 +29,9 @@ import type {
   CobrancaDto,
   EmitirCobrancaAvulsaDto,
   ListaDeCobrancasDto,
+  ListaDeExecucoesDto,
   ListarCobrancasParams,
+  PedidoDeGeracaoDto,
   ResumoCobrancasDto,
   SugestaoDeNovaCobrancaDto
 } from '../api.schemas';
@@ -555,3 +557,176 @@ export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobran
 
 
 
+export const getListarExecucoesDaGeracaoUrl = () => {
+
+
+
+
+  return `/api/cobrancas/geracao-recorrente/execucoes`
+}
+
+/**
+ * @summary Últimas execuções da geração recorrente
+ */
+export const listarExecucoesDaGeracao = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeExecucoesDto> => {
+
+  return clienteHttp<ListaDeExecucoesDto>(getListarExecucoesDaGeracaoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarExecucoesDaGeracaoQueryKey = () => {
+    return [
+    `/api/cobrancas/geracao-recorrente/execucoes`
+    ] as const;
+    }
+
+
+export const getListarExecucoesDaGeracaoQueryOptions = <TData = Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarExecucoesDaGeracaoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>> = ({ signal }) => listarExecucoesDaGeracao({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarExecucoesDaGeracaoQueryResult = NonNullable<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>>
+export type ListarExecucoesDaGeracaoQueryError = ErrorType<unknown>
+
+
+export function useListarExecucoesDaGeracao<TData = Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarExecucoesDaGeracao>>,
+          TError,
+          Awaited<ReturnType<typeof listarExecucoesDaGeracao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarExecucoesDaGeracao<TData = Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarExecucoesDaGeracao>>,
+          TError,
+          Awaited<ReturnType<typeof listarExecucoesDaGeracao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarExecucoesDaGeracao<TData = Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Últimas execuções da geração recorrente
+ */
+
+export function useListarExecucoesDaGeracao<TData = Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarExecucoesDaGeracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarExecucoesDaGeracaoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getPedirGeracaoAgoraUrl = () => {
+
+
+
+
+  return `/api/cobrancas/geracao-recorrente`
+}
+
+/**
+ * @summary Gera agora as mensalidades pendentes do mês
+ */
+export const pedirGeracaoAgora = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<PedidoDeGeracaoDto> => {
+
+  return clienteHttp<PedidoDeGeracaoDto>(getPedirGeracaoAgoraUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getPedirGeracaoAgoraMutationKey = () => ['pedirGeracaoAgora'] as const;
+
+export const getPedirGeracaoAgoraMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof pedirGeracaoAgora>>, TError,void, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof pedirGeracaoAgora>>, TError,void, TContext> => {
+
+const mutationKey = getPedirGeracaoAgoraMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof pedirGeracaoAgora>>, void> = () => {
+
+
+          return  pedirGeracaoAgora(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PedirGeracaoAgoraMutationResult = NonNullable<Awaited<ReturnType<typeof pedirGeracaoAgora>>>
+
+    export type PedirGeracaoAgoraMutationError = ErrorType<unknown>
+
+
+    /**
+ * @summary Gera agora as mensalidades pendentes do mês
+ */
+export const usePedirGeracaoAgora = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof pedirGeracaoAgora>>, TError,void, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof pedirGeracaoAgora>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getPedirGeracaoAgoraMutationOptions(options), queryClient);
+    }

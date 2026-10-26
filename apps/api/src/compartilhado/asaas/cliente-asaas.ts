@@ -21,6 +21,9 @@ export interface NovaCobrancaAsaas {
   // Percentuais inteiros (2 = 2%), dos parâmetros vigentes. O Asaas calcula multa e juros no pagamento.
   multaPercentual: number;
   jurosMensalPercentual: number;
+  // Identificação nossa, guardada no Asaas (externalReference). Permite à sincronização achar uma
+  // cobrança criada lá e não gravada aqui, em vez de criar outra (Cobranças.RF001, fluxo E2).
+  referenciaExterna?: string;
 }
 
 export interface CobrancaAsaas {
@@ -30,10 +33,22 @@ export interface CobrancaAsaas {
   urlFatura: string | null;
 }
 
+// Por que o Asaas falhou. Rotinas em lote usam isto para decidir: dados recusados afetam só aquele
+// aluno (segue para o próximo); os demais motivos afetam todos (interrompe e tenta mais tarde).
+export type MotivoDoErroAsaas =
+  | 'DADOS_RECUSADOS'
+  | 'INDISPONIVEL'
+  | 'CHAVE_RECUSADA'
+  | 'LIMITE_DE_REQUISICOES'
+  | 'NAO_CONFIGURADO';
+
 // Erro lançado quando o Asaas falha. A mensagem já vem traduzida e orientada à ação
 // ([Usabilidade.NF002]); a resposta crua do Asaas nunca deve chegar ao usuário.
 export class ErroAsaas extends Error {
-  constructor(mensagem: string) {
+  constructor(
+    mensagem: string,
+    readonly motivo: MotivoDoErroAsaas = 'INDISPONIVEL',
+  ) {
     super(mensagem);
     this.name = 'ErroAsaas';
   }

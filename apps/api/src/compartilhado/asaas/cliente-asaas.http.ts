@@ -84,6 +84,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
         // Multa e juros em percentual: o Asaas aplica no pagamento em atraso.
         fine: { value: dados.multaPercentual, type: 'PERCENTAGE' },
         interest: { value: dados.jurosMensalPercentual },
+        ...(dados.referenciaExterna === undefined ? {} : { externalReference: dados.referenciaExterna }),
       },
     );
     return { idAsaas: resposta.id, urlBoleto: resposta.bankSlipUrl ?? null, urlFatura: resposta.invoiceUrl ?? null };
@@ -135,16 +136,19 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     if (resposta.status === 400) {
       return new ErroAsaas(
         'O Asaas recusou os dados enviados. Confira CPF, e-mail e valor e tente novamente.',
+        'DADOS_RECUSADOS',
       );
     }
     if (resposta.status === 401 || resposta.status === 403) {
       return new ErroAsaas(
         'O Asaas recusou a chave de acesso. Peça à diretoria para conferir a configuração da integração.',
+        'CHAVE_RECUSADA',
       );
     }
     if (resposta.status === 429) {
       return new ErroAsaas(
         'O Asaas pediu para reduzir o ritmo das requisições. Aguarde alguns minutos e tente novamente.',
+        'LIMITE_DE_REQUISICOES',
       );
     }
     return new ErroAsaas('O Asaas está com problemas no momento. Tente novamente em alguns minutos.');

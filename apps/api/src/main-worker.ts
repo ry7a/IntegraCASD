@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { NestFactory } from '@nestjs/core';
-import { ConsumidorDeEventosWebhook } from './modulos/cobrancas/index.js';
+import { ConsumidorDaGeracaoRecorrente, ConsumidorDeEventosWebhook } from './modulos/cobrancas/index.js';
 import { WorkerModule } from './worker.module.js';
 
 // Mesmo padrão do main.ts: em desenvolvimento carrega o .env da raiz do monorepo.
@@ -17,5 +17,6 @@ async function bootstrap() {
   // Ao receber Ctrl+C (ou o sinal de parada), o Nest fecha a fila e o banco com calma.
   app.enableShutdownHooks();
   await app.get(ConsumidorDeEventosWebhook).iniciar();
+  await app.get(ConsumidorDaGeracaoRecorrente).iniciar();
 }
 await bootstrap();
