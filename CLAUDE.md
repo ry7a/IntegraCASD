@@ -57,8 +57,9 @@ pnpm --filter api dados-ficticios  # popula o banco local com dados fictícios
 pnpm gerar:cliente-api       # regenera packages/api-client depois de mudar controller ou DTO
 pnpm verificar:arquitetura   # funções de aptidão (migrações imutáveis, cores)
 pnpm verificar:contrato      # falha se o cliente da API estiver desatualizado
-.\scriptsackupazer-backup.ps1        # backup do banco (docs/playbooks/backup-e-restauracao.md)
-.\scriptsackupestaurar-backup.ps1 -Arquivo <dump>  # restaura num banco separado e confere
+.\scripts\backup\fazer-backup.ps1   # backup do banco (docs/playbooks/backup-e-restauracao.md)
+.\scriptsackup
+.\scripts\backup\restaurar-backup.ps1 -Arquivo <dump>  # restaura num banco separado e confere
 ```
 
 Lint, testes e `verificar:arquitetura` também rodam sozinhos nos ganchos do git
