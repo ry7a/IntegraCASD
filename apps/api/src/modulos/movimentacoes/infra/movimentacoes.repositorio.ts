@@ -130,6 +130,17 @@ export class MovimentacoesRepositorio {
     };
   }
 
+  // [Cadastros.RF001] Aba Movimentações do aluno: as entradas das cobranças dele (conciliação ou registro
+  // manual) e os estornos delas, das mais recentes para as mais antigas.
+  async listarDoAluno(alunoId: string): Promise<MovimentacaoRegistrada[]> {
+    const registros = await this.prisma.movimentacao.findMany({
+      where: { OR: [{ cobranca: { alunoId } }, { estornoDe: { cobranca: { alunoId } } }] },
+      include: { ...INCLUSAO, estorno: { select: { data: true, motivoEstorno: true } } },
+      orderBy: [{ data: 'desc' }, { dataCriacao: 'desc' }],
+    });
+    return registros.map((registro) => paraMovimentacao(registro, registro.estorno?.motivoEstorno ?? null));
+  }
+
   // O que o registro precisa conferir: a categoria (ativa e compatível), a conta e o vínculo existem.
   async referenciasDoRegistro(nova: NovaMovimentacao): Promise<{
     categoria: { ativo: boolean; tipo: 'ENTRADA' | 'SAIDA' | 'AMBOS' } | null;

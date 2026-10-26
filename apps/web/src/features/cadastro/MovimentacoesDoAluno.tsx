@@ -1,10 +1,10 @@
+import { useListarMovimentacoesDoAluno } from '@integracasd/api-client'
 import { CelulaDeOrigem } from '@/compartilhado/componentes/CelulasDeMovimentacao'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import { ROTULO_DA_FORMA } from '@/compartilhado/dominio'
 import { formatarData, formatarMoedaComSinal } from '@/compartilhado/formatacao'
-import { useListarMovimentacoesDoAluno } from './consultas'
 
-// Aba "Movimentações" da tela do aluno: as entradas geradas pelas cobranças pagas dele.
+// Aba "Movimentações" da tela do aluno: as entradas geradas pelas cobranças pagas dele e os estornos delas.
 function MovimentacoesDoAluno({ alunoId }: { alunoId: string }) {
   const consulta = useListarMovimentacoesDoAluno(alunoId)
   const itens = consulta.data?.itens ?? []
@@ -38,7 +38,9 @@ function MovimentacoesDoAluno({ alunoId }: { alunoId: string }) {
                   <td>{formatarData(movimentacao.data)}</td>
                   <td>
                     <span className="nome-principal">{movimentacao.descricao}</span>
-                    <span className="secundario">Cobrança</span>
+                    <span className="secundario">
+                      {movimentacao.motivoEstorno ? `Estorno: ${movimentacao.motivoEstorno}` : 'Cobrança'}
+                    </span>
                   </td>
                   <td>{ROTULO_DA_FORMA[movimentacao.forma]}</td>
                   <td>
