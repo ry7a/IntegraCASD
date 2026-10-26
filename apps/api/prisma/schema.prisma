@@ -32,20 +32,21 @@ enum PerfilUsuario {
 }
 
 model Usuario {
-  id                    String         @id @default(uuid()) @db.Uuid
-  nome                  String
-  email                 String         @unique
-  senhaHash             String         @map("senha_hash")
-  perfil                PerfilUsuario
-  ativo                 Boolean        @default(true)
-  tentativasFalhas      Int            @default(0) @map("tentativas_falhas")
-  bloqueadoAte          DateTime?      @map("bloqueado_ate")
-  ultimoAcessoEm        DateTime?      @map("ultimo_acesso_em")
-  dataCriacao           DateTime       @default(now()) @map("data_criacao")
-  dataAlteracao         DateTime       @updatedAt @map("data_alteracao")
+  id               String        @id @default(uuid()) @db.Uuid
+  nome             String
+  email            String        @unique
+  senhaHash        String        @map("senha_hash")
+  perfil           PerfilUsuario
+  ativo            Boolean       @default(true)
+  tentativasFalhas Int           @default(0) @map("tentativas_falhas")
+  bloqueadoAte     DateTime?     @map("bloqueado_ate")
+  ultimoAcessoEm   DateTime?     @map("ultimo_acesso_em")
+  dataCriacao      DateTime      @default(now()) @map("data_criacao")
+  dataAlteracao    DateTime      @updatedAt @map("data_alteracao")
 
-  sessoes               Sessao[]
-  registrosDeAuditoria  RegistroAuditoria[]
+  sessoes              Sessao[]
+  registrosDeAuditoria RegistroAuditoria[]
+  parametrosAlterados  ParametrosCobranca[]
 
   @@map("usuarios")
 }
@@ -53,14 +54,14 @@ model Usuario {
 // O token em claro existe somente no cookie. O banco guarda seu SHA-256.
 // O perfil fica na sessao para que uma mudanca de permissao valha no proximo acesso.
 model Sessao {
-  id            String         @id @default(uuid()) @db.Uuid
-  usuarioId     String         @map("usuario_id") @db.Uuid
-  usuario       Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  tokenHash     String         @unique @map("token_hash") @db.Char(64)
-  perfil        PerfilUsuario
-  expiraEm      DateTime       @map("expira_em")
-  revogadaEm    DateTime?      @map("revogada_em")
-  dataCriacao   DateTime       @default(now()) @map("data_criacao")
+  id          String        @id @default(uuid()) @db.Uuid
+  usuarioId   String        @map("usuario_id") @db.Uuid
+  usuario     Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  tokenHash   String        @unique @map("token_hash") @db.Char(64)
+  perfil      PerfilUsuario
+  expiraEm    DateTime      @map("expira_em")
+  revogadaEm  DateTime?     @map("revogada_em")
+  dataCriacao DateTime      @default(now()) @map("data_criacao")
 
   @@index([usuarioId])
   @@index([expiraEm])
@@ -69,14 +70,14 @@ model Sessao {
 
 // Esta tabela e somente de inclusao: nao existe caso de uso para alterar ou excluir registros.
 model RegistroAuditoria {
-  id            String    @id @default(uuid()) @db.Uuid
-  usuarioId     String?   @map("usuario_id") @db.Uuid
-  usuario       Usuario?  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  operacao      String
-  entidade      String
-  registroId    String?   @map("registro_id")
-  detalhe       String
-  ocorridoEm    DateTime  @default(now()) @map("ocorrido_em")
+  id         String   @id @default(uuid()) @db.Uuid
+  usuarioId  String?  @map("usuario_id") @db.Uuid
+  usuario    Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  operacao   String
+  entidade   String
+  registroId String?  @map("registro_id")
+  detalhe    String
+  ocorridoEm DateTime @default(now()) @map("ocorrido_em")
 
   @@index([usuarioId])
   @@index([ocorridoEm])
@@ -450,4 +451,28 @@ model Movimentacao {
   @@index([funcionarioId])
   @@index([centroCustoId])
   @@map("movimentacoes")
+}
+
+// ---------------------------------------------------------------------------
+// Parâmetros de cobrança [Administração.RF003]
+// ---------------------------------------------------------------------------
+
+// Cada alteração grava uma linha nova; as antigas nunca mudam. A vigente é a mais recente.
+// Assim fica o histórico (quem mudou, quando, de quanto para quanto), e as cobranças já emitidas
+// não são afetadas. Regras garantidas por CHECK na migração: dias de 1 a 28, geração antes do
+// vencimento, valor positivo, multa de 0 a 2% e juros de 0 a 1% ao mês.
+model ParametrosCobranca {
+  id                       String   @id @default(uuid()) @db.Uuid
+  valorMensalidadeCentavos Int      @map("valor_mensalidade_centavos")
+  diaVencimento            Int      @map("dia_vencimento")
+  diaGeracao               Int      @map("dia_geracao")
+  // Percentual inteiro (2 = 2%). Quem calcula multa e juros é o Asaas, no pagamento.
+  multaPercentual          Int      @map("multa_percentual")
+  jurosMensalPercentual    Int      @map("juros_mensal_percentual")
+  alteradoPorId            String   @map("alterado_por_id") @db.Uuid
+  alteradoPor              Usuario  @relation(fields: [alteradoPorId], references: [id], onDelete: Restrict)
+  dataCriacao              DateTime @default(now()) @map("data_criacao")
+
+  @@index([dataCriacao])
+  @@map("parametros_cobranca")
 }

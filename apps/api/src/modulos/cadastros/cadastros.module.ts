@@ -7,13 +7,14 @@ import { BuscarAluno } from './aplicacao/buscar-aluno.js';
 import { CriarAluno } from './aplicacao/criar-aluno.js';
 import { CriarFuncionario } from './aplicacao/criar-funcionario.js';
 import { ListarAlunos } from './aplicacao/listar-alunos.js';
+import { ListarAlunosCobraveis } from './aplicacao/listar-alunos-cobraveis.js';
 import { ListarFuncionarios } from './aplicacao/listar-funcionarios.js';
 import { ListarTurmas } from './aplicacao/listar-turmas.js';
 import { AlunosRepositorio } from './infra/alunos.repositorio.js';
 import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
 
-// Módulo Cadastros: alunos, turmas e funcionários. Ainda não exporta nada; quando
-// outro módulo precisar de algo daqui, o caso de uso entra em `exports`.
+// Módulo Cadastros: alunos, turmas e funcionários. O que outros módulos usam entra em `exports`
+// (e também no index.ts, que é por onde eles importam).
 @Module({
   controllers: [AlunosController, TurmasController, FuncionariosController],
   providers: [
@@ -22,11 +23,13 @@ import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
     CriarAluno,
     AlterarAluno,
     ListarTurmas,
+    ListarAlunosCobraveis,
     AlunosRepositorio,
     ListarFuncionarios,
     CriarFuncionario,
     AlterarFuncionario,
     FuncionariosRepositorio,
   ],
+  exports: [ListarAlunosCobraveis],
 })
 export class CadastrosModule {}

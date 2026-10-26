@@ -4,7 +4,6 @@ import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
   IntegracaoAsaasDto,
   ListaDeUsuariosDto,
-  ParametrosCobrancaDto,
   RegistroAuditoriaDto,
 } from './contrato'
 
@@ -17,27 +16,6 @@ export const usuarios: ListaDeUsuariosDto = {
     { id: 'usuario-sonia', nome: 'Sônia Aparecida Martins', email: 'sonia.martins@exemplo.com', perfil: 'ADMINISTRATIVO', ativo: true, observacao: null, ultimoAcessoEm: '2026-10-19T07:45:00-03:00' },
     { id: 'usuario-thiago', nome: 'Thiago Rezende', email: 'thiago.rezende@exemplo.com', perfil: 'DIRETORIA', ativo: true, observacao: null, ultimoAcessoEm: '2026-10-14T21:10:00-03:00' },
     { id: 'usuario-gabriela', nome: 'Gabriela Sato', email: 'gabriela.sato@exemplo.com', perfil: 'DIRETORIA', ativo: false, observacao: 'Gestão 2025', ultimoAcessoEm: '2025-12-20T18:30:00-03:00' },
-  ],
-}
-
-export const parametros: ParametrosCobrancaDto = {
-  valorMensalidadeCentavos: 8500,
-  diaVencimento: 10,
-  diaGeracao: 1,
-  multaPercentual: 2,
-  jurosMensalPercentual: 1,
-  alteradoEm: '2026-03-02',
-  alteradoPor: 'Marina Teixeira',
-  conferencia: {
-    proximaGeracao: '2026-11-01',
-    proximoVencimento: '2026-11-10',
-    alunosCobrados: 742,
-    totalPrevistoCentavos: 6307000,
-  },
-  ultimasExecucoes: [
-    { id: 'exec-1026', iniciadaEm: '2026-10-01T06:00:00-03:00', finalizadaEm: '2026-10-01T06:14:00-03:00', totalProcessado: 739, totalFalhas: 3, motivoFalhas: 'cadastro incompleto' },
-    { id: 'exec-0926', iniciadaEm: '2026-09-01T06:00:00-03:00', finalizadaEm: '2026-09-01T06:13:00-03:00', totalProcessado: 741, totalFalhas: 0, motivoFalhas: null },
-    { id: 'exec-0826', iniciadaEm: '2026-08-01T06:00:00-03:00', finalizadaEm: '2026-08-01T06:15:00-03:00', totalProcessado: 736, totalFalhas: 2, motivoFalhas: 'cadastro incompleto' },
   ],
 }
 

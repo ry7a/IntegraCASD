@@ -125,6 +125,82 @@ export interface AlterarCategoriaDto {
   ativo?: boolean;
 }
 
+export interface ParametrosVigentesDto {
+  valorMensalidadeCentavos: number;
+  /**
+     * @minimum 1
+     * @maximum 28
+     */
+  diaVencimento: number;
+  /**
+     * Precisa ser antes do dia de vencimento
+     * @minimum 1
+     * @maximum 28
+     */
+  diaGeracao: number;
+  /**
+     * Percentual inteiro (2 = 2%)
+     * @minimum 0
+     * @maximum 2
+     */
+  multaPercentual: number;
+  /**
+     * Percentual inteiro ao mês (1 = 1%)
+     * @minimum 0
+     * @maximum 1
+     */
+  jurosMensalPercentual: number;
+  alteradoEm: string;
+  /** Nome de quem fez a última alteração */
+  alteradoPor: string;
+}
+
+export interface ConferenciaDto {
+  proximaGeracao: string;
+  proximoVencimento: string;
+  /** Alunos ativos com cadastro completo, que receberão a mensalidade */
+  alunosCobrados: number;
+  /** Alunos cobrados x valor da mensalidade */
+  totalPrevistoCentavos: number;
+}
+
+export interface ConsultaDosParametrosDto {
+  /**
+     * Nulo até o primeiro cadastro
+     * @nullable
+     */
+  vigentes: ParametrosVigentesDto | null;
+  /** @nullable */
+  conferencia: ConferenciaDto | null;
+}
+
+export interface ParametrosDeCobrancaDto {
+  valorMensalidadeCentavos: number;
+  /**
+     * @minimum 1
+     * @maximum 28
+     */
+  diaVencimento: number;
+  /**
+     * Precisa ser antes do dia de vencimento
+     * @minimum 1
+     * @maximum 28
+     */
+  diaGeracao: number;
+  /**
+     * Percentual inteiro (2 = 2%)
+     * @minimum 0
+     * @maximum 2
+     */
+  multaPercentual: number;
+  /**
+     * Percentual inteiro ao mês (1 = 1%)
+     * @minimum 0
+     * @maximum 1
+     */
+  jurosMensalPercentual: number;
+}
+
 export type CursoAluno = typeof CursoAluno[keyof typeof CursoAluno];
 
 
