@@ -1,24 +1,6 @@
-// Contrato planejado da API de Cadastros [Cadastros.RF004 e RF005] e das abas Cobranças e Movimentações do
+// Contrato planejado da API de Cadastros [Cadastros.RF004 e RF005] e da aba Movimentações do
 // aluno. O cadastro do aluno (lista, detalhe, inclusão e alteração) já vem da API, pelos hooks do orval. Dinheiro em centavos; dias em "AAAA-MM-DD".
-import type { MovimentacaoDto, SituacaoCobranca } from '@/compartilhado/dominio'
-
-export interface CobrancaDoAlunoDto {
-  id: string
-  descricao: string
-  valorCentavos: number
-  vencimento: string
-  situacao: SituacaoCobranca
-  diasDeAtraso: number | null
-  pagaEm: string | null
-}
-
-// GET /api/alunos/:id/cobrancas
-export interface CobrancasDoAlunoDto {
-  itens: CobrancaDoAlunoDto[]
-  // Soma das cobranças vencidas.
-  totalEmAbertoCentavos: number
-  quantidadeVencidas: number
-}
+import type { MovimentacaoDto } from '@/compartilhado/dominio'
 
 // GET /api/alunos/:id/movimentacoes
 export interface MovimentacoesDoAlunoDto {

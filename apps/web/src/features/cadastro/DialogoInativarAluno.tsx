@@ -2,13 +2,13 @@ import {
   getBuscarAlunoQueryKey,
   getListarAlunosQueryKey,
   useAlterarAluno,
+  useListarCobrancasDoAluno,
   type AlunoDto,
 } from '@integracasd/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarMoeda } from '@/compartilhado/formatacao'
-import { useListarCobrancasDoAluno } from './consultas'
 
 interface Props {
   aoFechar: () => void
@@ -18,8 +18,7 @@ interface Props {
 // Operação com efeitos: passa pelo diálogo de confirmação, que mostra o resumo do efeito ([Usabilidade.NF003]).
 // [Cadastros.RF001] fluxo A1. O cadastro não é excluído: fica inativo e pode ser reativado.
 function DialogoInativarAluno({ aoFechar, aluno }: Props) {
-  // TODO [Cadastros.RF001] fluxo E2: as cobranças ainda são fictícias; o aviso de débito passa a ser real
-  // quando o módulo de Cobranças entregar GET /api/alunos/:id/cobrancas.
+  // [Cadastros.RF001] fluxo E2: com cobrança vencida, o diálogo mostra o débito antes da confirmação.
   const cobrancas = useListarCobrancasDoAluno(aluno.id)
   const dados = cobrancas.data
   const temDebito = !!dados && dados.quantidadeVencidas > 0
@@ -62,8 +61,9 @@ function DialogoInativarAluno({ aoFechar, aluno }: Props) {
         <div className="aviso aviso-perigo">
           <Icone nome="alerta" />
           <span>
-            <strong>Este aluno tem débito:</strong> {dados.quantidadeVencidas} cobranças vencidas, somando{' '}
-            {formatarMoeda(dados.totalEmAbertoCentavos)}.
+            <strong>Este aluno tem débito:</strong>{' '}
+            {dados.quantidadeVencidas === 1 ? '1 cobrança vencida' : `${dados.quantidadeVencidas} cobranças vencidas`}, somando{' '}
+            {formatarMoeda(dados.totalVencidoCentavos)}.
           </span>
         </div>
       )}
@@ -75,7 +75,7 @@ function DialogoInativarAluno({ aoFechar, aluno }: Props) {
             <>
               <dt>Cobranças vencidas</dt>
               <dd>
-                {dados.quantidadeVencidas} · {formatarMoeda(dados.totalEmAbertoCentavos)}
+                {dados.quantidadeVencidas} · {formatarMoeda(dados.totalVencidoCentavos)}
               </dd>
             </>
           )}

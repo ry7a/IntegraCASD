@@ -4,7 +4,6 @@
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type {
-  CobrancasDoAlunoDto,
   ContratoDto,
   ProjetoDto,
 } from './contrato'
@@ -12,20 +11,7 @@ import type {
 // Deixa no bundle o marcador que o verificar-dados-ficticios.mjs procura (F6).
 marcarDadosFicticios('dados-ficticios-integracasd:cadastro')
 
-// Só o Lucas tem cobranças e movimentações no mockup; os outros alunos mostram o estado "vazio".
-export const cobrancasDoLucas: CobrancasDoAlunoDto = {
-  itens: [
-    { id: 'cob-lucas-0826', descricao: 'Mensalidade 08/2026', valorCentavos: 8500, vencimento: '2026-08-10', situacao: 'VENCIDA', diasDeAtraso: 70, pagaEm: null },
-    { id: 'cob-lucas-0926', descricao: 'Mensalidade 09/2026', valorCentavos: 8500, vencimento: '2026-09-10', situacao: 'VENCIDA', diasDeAtraso: 39, pagaEm: null },
-    { id: 'cob-lucas-1026', descricao: 'Mensalidade 10/2026', valorCentavos: 8500, vencimento: '2026-10-10', situacao: 'VENCIDA', diasDeAtraso: 9, pagaEm: null },
-    { id: 'cob-lucas-0726', descricao: 'Mensalidade 07/2026', valorCentavos: 8500, vencimento: '2026-07-10', situacao: 'PAGA', diasDeAtraso: null, pagaEm: '2026-07-08T09:00:00-03:00' },
-    { id: 'cob-lucas-0626', descricao: 'Mensalidade 06/2026', valorCentavos: 8500, vencimento: '2026-06-10', situacao: 'PAGA', diasDeAtraso: null, pagaEm: '2026-06-09T09:00:00-03:00' },
-    { id: 'cob-lucas-0526', descricao: 'Mensalidade 05/2026', valorCentavos: 8500, vencimento: '2026-05-10', situacao: 'PAGA', diasDeAtraso: null, pagaEm: '2026-05-11T09:00:00-03:00' },
-  ],
-  totalEmAbertoCentavos: 25500,
-  quantidadeVencidas: 3,
-}
-
+// Só o Lucas tem movimentações no mockup; os outros alunos mostram o estado "vazio".
 function entradaDeMensalidade(id: string, data: string, mes: string): MovimentacaoDto {
   return {
     id,

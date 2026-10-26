@@ -1301,6 +1301,69 @@
         ]
       }
     },
+    "/api/alunos/{alunoId}/cobrancas": {
+      "get": {
+        "operationId": "listarCobrancasDoAluno",
+        "parameters": [
+          {
+            "name": "alunoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CobrancasDoAlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Cobranças de um aluno, com o total em aberto e o vencido",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
+    "/api/cobrancas/totais/por-aluno": {
+      "get": {
+        "operationId": "listarTotaisEmAbertoPorAluno",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaDeTotaisPorAlunoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Total em aberto e vencido de cada aluno com cobrança aberta",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
     "/api/cobrancas/geracao-recorrente/execucoes": {
       "get": {
         "operationId": "listarExecucoesDaGeracao",
@@ -3109,6 +3172,125 @@
           "jurosMensalPercentual",
           "urlBoleto",
           "urlFatura"
+        ]
+      },
+      "CobrancaDoAlunoDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "origem": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemCobranca"
+              }
+            ]
+          },
+          "valorCentavos": {
+            "type": "number"
+          },
+          "vencimento": {
+            "type": "string",
+            "format": "date"
+          },
+          "situacao": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SituacaoCobranca"
+              }
+            ]
+          },
+          "diasDeAtraso": {
+            "type": "number",
+            "nullable": true
+          },
+          "pagaEm": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "descricao",
+          "origem",
+          "valorCentavos",
+          "vencimento",
+          "situacao",
+          "diasDeAtraso",
+          "pagaEm"
+        ]
+      },
+      "CobrancasDoAlunoDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Das mais recentes para as mais antigas",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CobrancaDoAlunoDto"
+            }
+          },
+          "totalEmAbertoCentavos": {
+            "type": "number",
+            "description": "Abertas, vencidas ou não"
+          },
+          "quantidadeVencidas": {
+            "type": "number"
+          },
+          "totalVencidoCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "itens",
+          "totalEmAbertoCentavos",
+          "quantidadeVencidas",
+          "totalVencidoCentavos"
+        ]
+      },
+      "TotaisDoAlunoDto": {
+        "type": "object",
+        "properties": {
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "totalEmAbertoCentavos": {
+            "type": "number"
+          },
+          "quantidadeVencidas": {
+            "type": "number"
+          },
+          "totalVencidoCentavos": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "alunoId",
+          "totalEmAbertoCentavos",
+          "quantidadeVencidas",
+          "totalVencidoCentavos"
+        ]
+      },
+      "ListaDeTotaisPorAlunoDto": {
+        "type": "object",
+        "properties": {
+          "itens": {
+            "description": "Só alunos com alguma cobrança aberta",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TotaisDoAlunoDto"
+            }
+          }
+        },
+        "required": [
+          "itens"
         ]
       },
       "FalhaDaGeracaoDto": {

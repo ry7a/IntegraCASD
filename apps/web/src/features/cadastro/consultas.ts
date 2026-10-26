@@ -3,7 +3,6 @@
 // Alunos e funcionários NÃO estão aqui: já usam os hooks reais, gerados pelo orval.
 import { useQuery } from '@tanstack/react-query'
 import type {
-  CobrancasDoAlunoDto,
   ListaDeContratosDto,
   ListaDeProjetosDto,
   MovimentacoesDoAlunoDto,
@@ -11,7 +10,6 @@ import type {
   SituacaoDoFiltroDeProjetos,
 } from './contrato'
 import {
-  cobrancasDoLucas,
   contratos,
   movimentacoesDoLucas,
   projetos,
@@ -19,19 +17,6 @@ import {
 
 // Pequeno atraso para a tela mostrar o estado "Carregando…" como mostraria com a API de verdade.
 const esperar = () => new Promise((resolver) => setTimeout(resolver, 200))
-
-// TODO [Cadastros.RF001]: trocar por GET /api/alunos/:id/cobrancas.
-export function useListarCobrancasDoAluno(alunoId: string, opcoes?: { enabled: boolean }) {
-  return useQuery<CobrancasDoAlunoDto>({
-    queryKey: ['alunos', alunoId, 'cobrancas'],
-    queryFn: async () => {
-      await esperar()
-      if (alunoId === 'aluno-lucas') return cobrancasDoLucas
-      return { itens: [], totalEmAbertoCentavos: 0, quantidadeVencidas: 0 }
-    },
-    enabled: opcoes?.enabled,
-  })
-}
 
 // TODO [Cadastros.RF001]: trocar por GET /api/alunos/:id/movimentacoes.
 export function useListarMovimentacoesDoAluno(alunoId: string) {

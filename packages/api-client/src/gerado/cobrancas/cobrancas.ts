@@ -29,10 +29,12 @@ import type {
   CancelarCobrancaDto,
   CobrancaDetalheDto,
   CobrancaDto,
+  CobrancasDoAlunoDto,
   EmitirCobrancaAvulsaDto,
   FilaDePendenciasDto,
   ListaDeCobrancasDto,
   ListaDeExecucoesDto,
+  ListaDeTotaisPorAlunoDto,
   ListarCobrancasParams,
   ListarPendenciasDeConciliacaoParams,
   PagamentoManualDto,
@@ -974,7 +976,207 @@ export const useRegistrarPagamentoManual = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getRegistrarPagamentoManualMutationOptions(options), queryClient);
     }
-    export const getListarExecucoesDaGeracaoUrl = () => {
+    export const getListarCobrancasDoAlunoUrl = (alunoId: string,) => {
+
+
+
+
+  return `/api/alunos/${alunoId}/cobrancas`
+}
+
+/**
+ * @summary Cobranças de um aluno, com o total em aberto e o vencido
+ */
+export const listarCobrancasDoAluno = async (alunoId: string, options?: Parameters<typeof clienteHttp>[1]): Promise<CobrancasDoAlunoDto> => {
+
+  return clienteHttp<CobrancasDoAlunoDto>(getListarCobrancasDoAlunoUrl(alunoId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarCobrancasDoAlunoQueryKey = (alunoId: string,) => {
+    return [
+    `/api/alunos/${alunoId}/cobrancas`
+    ] as const;
+    }
+
+
+export const getListarCobrancasDoAlunoQueryOptions = <TData = Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError = ErrorType<unknown>>(alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarCobrancasDoAlunoQueryKey(alunoId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarCobrancasDoAluno>>> = ({ signal }) => listarCobrancasDoAluno(alunoId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: alunoId !== null && alunoId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarCobrancasDoAlunoQueryResult = NonNullable<Awaited<ReturnType<typeof listarCobrancasDoAluno>>>
+export type ListarCobrancasDoAlunoQueryError = ErrorType<unknown>
+
+
+export function useListarCobrancasDoAluno<TData = Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCobrancasDoAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarCobrancasDoAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCobrancasDoAluno<TData = Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarCobrancasDoAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarCobrancasDoAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarCobrancasDoAluno<TData = Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Cobranças de um aluno, com o total em aberto e o vencido
+ */
+
+export function useListarCobrancasDoAluno<TData = Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError = ErrorType<unknown>>(
+ alunoId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarCobrancasDoAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarCobrancasDoAlunoQueryOptions(alunoId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getListarTotaisEmAbertoPorAlunoUrl = () => {
+
+
+
+
+  return `/api/cobrancas/totais/por-aluno`
+}
+
+/**
+ * @summary Total em aberto e vencido de cada aluno com cobrança aberta
+ */
+export const listarTotaisEmAbertoPorAluno = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDeTotaisPorAlunoDto> => {
+
+  return clienteHttp<ListaDeTotaisPorAlunoDto>(getListarTotaisEmAbertoPorAlunoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarTotaisEmAbertoPorAlunoQueryKey = () => {
+    return [
+    `/api/cobrancas/totais/por-aluno`
+    ] as const;
+    }
+
+
+export const getListarTotaisEmAbertoPorAlunoQueryOptions = <TData = Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarTotaisEmAbertoPorAlunoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>> = ({ signal }) => listarTotaisEmAbertoPorAluno({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarTotaisEmAbertoPorAlunoQueryResult = NonNullable<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>>
+export type ListarTotaisEmAbertoPorAlunoQueryError = ErrorType<unknown>
+
+
+export function useListarTotaisEmAbertoPorAluno<TData = Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTotaisEmAbertoPorAluno<TData = Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>,
+          TError,
+          Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTotaisEmAbertoPorAluno<TData = Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Total em aberto e vencido de cada aluno com cobrança aberta
+ */
+
+export function useListarTotaisEmAbertoPorAluno<TData = Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTotaisEmAbertoPorAluno>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarTotaisEmAbertoPorAlunoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getListarExecucoesDaGeracaoUrl = () => {
 
 
 
