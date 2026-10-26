@@ -17,7 +17,8 @@ export type OperacaoAuditada =
   | 'REATIVACAO'
   | 'EXCLUSAO'
   | 'ESTORNO'
-  | 'BLOQUEIO_AUTENTICACAO';
+  | 'BLOQUEIO_AUTENTICACAO'
+  | 'OBTENCAO_DE_BOLETO';
 
 export type EntidadeAuditada =
   | 'USUARIO'

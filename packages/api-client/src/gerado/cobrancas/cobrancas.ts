@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BoletoDto,
   CobrancaDetalheDto,
   CobrancaDto,
   EmitirCobrancaAvulsaDto,
@@ -557,7 +558,80 @@ export function useBuscarCobranca<TData = Awaited<ReturnType<typeof buscarCobran
 
 
 
-export const getListarExecucoesDaGeracaoUrl = () => {
+export const getObterBoletoUrl = (id: string,) => {
+
+
+
+
+  return `/api/cobrancas/${id}/boleto`
+}
+
+/**
+ * @summary Link do boleto de uma cobrança aberta
+ */
+export const obterBoleto = async (id: string, options?: Parameters<typeof clienteHttp>[1]): Promise<BoletoDto> => {
+
+  return clienteHttp<BoletoDto>(getObterBoletoUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getObterBoletoMutationKey = () => ['obterBoleto'] as const;
+
+export const getObterBoletoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof obterBoleto>>, TError,ObterBoletoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof obterBoleto>>, TError,ObterBoletoMutationVariables, TContext> => {
+
+const mutationKey = getObterBoletoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof obterBoleto>>, ObterBoletoMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  obterBoleto(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ObterBoletoMutationResult = NonNullable<Awaited<ReturnType<typeof obterBoleto>>>
+
+    export type ObterBoletoMutationError = ErrorType<unknown>
+    export type ObterBoletoMutationVariables = {id: string}
+
+    /**
+ * @summary Link do boleto de uma cobrança aberta
+ */
+export const useObterBoleto = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof obterBoleto>>, TError,ObterBoletoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof obterBoleto>>,
+        TError,
+        ObterBoletoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getObterBoletoMutationOptions(options), queryClient);
+    }
+    export const getListarExecucoesDaGeracaoUrl = () => {
 
 
 

@@ -112,3 +112,7 @@ export class CobrancaDetalheDto extends CobrancaListaItemDto {
   @ApiProperty({ description: 'Só cobrança aberta ou vencida aceita pagamento manual' }) podeRegistrarPagamentoManual!: boolean;
   @ApiProperty({ type: [EventoCobrancaDto], description: 'Do mais recente para o mais antigo' }) eventos!: EventoCobrancaDto[];
 }
+
+export class BoletoDto {
+  @ApiProperty({ description: 'Arquivo do boleto no Asaas' }) url!: string;
+}

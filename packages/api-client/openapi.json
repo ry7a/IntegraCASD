@@ -969,6 +969,42 @@
         ]
       }
     },
+    "/api/cobrancas/{id}/boleto": {
+      "post": {
+        "operationId": "obterBoleto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BoletoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Link do boleto de uma cobrança aberta",
+        "tags": [
+          "cobrancas"
+        ]
+      }
+    },
     "/api/cobrancas/geracao-recorrente/execucoes": {
       "get": {
         "operationId": "listarExecucoesDaGeracao",
@@ -2242,6 +2278,18 @@
           "podeCancelar",
           "podeRegistrarPagamentoManual",
           "eventos"
+        ]
+      },
+      "BoletoDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Arquivo do boleto no Asaas"
+          }
+        },
+        "required": [
+          "url"
         ]
       },
       "EmitirCobrancaAvulsaDto": {

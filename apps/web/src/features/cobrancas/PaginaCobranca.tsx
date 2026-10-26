@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
-import { useBuscarCobranca } from '@integracasd/api-client'
+import { getBuscarCobrancaQueryKey, useBuscarCobranca, useObterBoleto } from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
@@ -15,6 +16,18 @@ function PaginaCobranca() {
   const consulta = useBuscarCobranca(id, { query: { retry: false } })
   const [dialogo, definirDialogo] = useState<DialogoDaCobranca | null>(null)
   const cobranca = consulta.data
+  const boleto = useObterBoleto()
+  const queryClient = useQueryClient()
+
+  // [Cobranças.RF003] A API devolve o link e registra no histórico quem obteve o boleto.
+  async function obterBoleto() {
+    try {
+      await boleto.mutateAsync({ id })
+      await queryClient.invalidateQueries({ queryKey: getBuscarCobrancaQueryKey(id) })
+    } catch {
+      // Mensagem da API (ex.: cobrança já paga) abaixo das ações.
+    }
+  }
 
   return (
     <>
@@ -52,12 +65,24 @@ function PaginaCobranca() {
                   <Icone nome="sincronizar" />
                   Sincronizar esta cobrança
                 </button>
-                {/* TODO [Cobranças.RF005]: baixar o boleto e reenviar por e-mail. */}
-                <button type="button" className="botao">
-                  <Icone nome="baixar" />
-                  Baixar boleto
-                </button>
-                <button type="button" className="botao">
+                {boleto.data ? (
+                  <a className="botao" href={boleto.data.url} target="_blank" rel="noreferrer">
+                    <Icone nome="baixar" />
+                    Abrir o boleto
+                  </a>
+                ) : (
+                  <button type="button" className="botao" disabled={boleto.isPending} onClick={() => void obterBoleto()}>
+                    <Icone nome="baixar" />
+                    {boleto.isPending ? 'Obtendo…' : 'Baixar boleto'}
+                  </button>
+                )}
+                {/* TODO [Cobranças.RF003]: o Asaas não oferece reenvio da notificação pela API (issue #29). */}
+                <button
+                  type="button"
+                  className="botao"
+                  disabled
+                  data-dica="O Asaas não permite reenviar o e-mail pela integração. Baixe o boleto e envie ao aluno."
+                >
                   <Icone nome="email" />
                   Reenviar boleto por e-mail
                 </button>
@@ -80,6 +105,11 @@ function PaginaCobranca() {
                   Cancelar / renegociar
                 </button>
               </div>
+              {boleto.error && (
+                <p className="erro-formulario" role="alert">
+                  {boleto.error.message}
+                </p>
+              )}
             </section>
 
             <div className="grade grade-2-1">

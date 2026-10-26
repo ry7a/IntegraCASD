@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiCookieAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import {
@@ -8,6 +8,7 @@ import {
 import { ConsultarCobrancas, type ItemDaLista } from '../aplicacao/consultar-cobrancas.js';
 import { DetalharCobranca } from '../aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from '../aplicacao/emitir-cobranca-avulsa.js';
+import { ObterBoleto } from '../aplicacao/obter-boleto.js';
 import { ResumirCobrancas } from '../aplicacao/resumir-cobrancas.js';
 import { SugerirNovaCobranca } from '../aplicacao/sugerir-nova-cobranca.js';
 import { situacaoExibida } from '../dominio/cobranca.js';
@@ -15,6 +16,7 @@ import {
   CobrancaDetalheDto,
   CobrancaDto,
   CobrancaListaItemDto,
+  BoletoDto,
   EmitirCobrancaAvulsaDto,
   ListaDeCobrancasDto,
   ResumoCobrancasDto,
@@ -55,6 +57,7 @@ export class CobrancasController {
     private readonly consultarCobrancas: ConsultarCobrancas,
     private readonly resumirCobrancas: ResumirCobrancas,
     private readonly detalharCobranca: DetalharCobranca,
+    private readonly obterBoleto: ObterBoleto,
   ) {}
 
   // [Cobranças.RF008] Os filtros vêm na URL; situações separadas por vírgula (ex.: ABERTA,VENCIDA).
@@ -120,6 +123,15 @@ export class CobrancasController {
       podeRegistrarPagamentoManual: cobranca.podeRegistrarPagamentoManual,
       eventos: cobranca.eventos.map((evento) => ({ ...evento, ocorridoEm: evento.ocorridoEm.toISOString() })),
     };
+  }
+
+  // [Cobranças.RF003] POST porque registra no histórico quem obteve o boleto.
+  @Post(':id/boleto')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'obterBoleto', summary: 'Link do boleto de uma cobrança aberta' })
+  @ApiOkResponse({ type: BoletoDto })
+  boleto(@Param('id', ID_DA_COBRANCA) id: string, @UsuarioAutenticado() autor: IdentidadeDoUsuario): Promise<BoletoDto> {
+    return this.obterBoleto.executar(id, autor.id);
   }
 
   // [Cobranças.RF002]

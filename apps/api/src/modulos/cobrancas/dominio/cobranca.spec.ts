@@ -1,6 +1,7 @@
 import {
   CobrancaInvalida,
   aceitaOperacoes,
+  conferirBoletoDisponivel,
   conferirAlunoCobravel,
   diasDeAtraso,
   lerFiltrosDaConsulta,
@@ -86,5 +87,13 @@ describe('consulta [Cobranças.RF008]', () => {
   it('só cobrança aberta aceita cancelar e pagamento manual', () => {
     expect(aceitaOperacoes('ABERTA')).toBe(true);
     expect(aceitaOperacoes('PAGA')).toBe(false);
+  });
+});
+
+describe('boleto [Cobranças.RF003]', () => {
+  it('só cobrança aberta tem boleto; paga ou cancelada informa a situação (fluxo E1)', () => {
+    expect(() => conferirBoletoDisponivel('ABERTA')).not.toThrow();
+    expect(() => conferirBoletoDisponivel('PAGA')).toThrow(/está paga/);
+    expect(() => conferirBoletoDisponivel('CANCELADA')).toThrow(/está cancelada/);
   });
 });

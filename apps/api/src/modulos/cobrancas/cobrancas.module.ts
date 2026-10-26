@@ -10,6 +10,7 @@ import { ConsultarCobrancas } from './aplicacao/consultar-cobrancas.js';
 import { DetalharCobranca } from './aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from './aplicacao/emitir-cobranca-avulsa.js';
 import { GarantirClienteAsaas } from './aplicacao/garantir-cliente-asaas.js';
+import { ObterBoleto } from './aplicacao/obter-boleto.js';
 import { GerarCobrancasRecorrentes } from './aplicacao/gerar-cobrancas-recorrentes.js';
 import { ListarExecucoesDaGeracao } from './aplicacao/listar-execucoes-da-geracao.js';
 import { PedirGeracaoAgora } from './aplicacao/pedir-geracao-agora.js';
@@ -41,6 +42,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     ConsultarCobrancas,
     ResumirCobrancas,
     DetalharCobranca,
+    ObterBoleto,
     ExecucoesRepositorio,
     RitmoDoAsaas,
     GerarCobrancasRecorrentes,

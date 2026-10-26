@@ -120,6 +120,19 @@ export class CobrancasRepositorio {
     });
   }
 
+  // [Cobranças.RF003] Registra no histórico da cobrança quem obteve o boleto, e quando.
+  async registrarObtencaoDoBoleto(cobrancaId: string, autorId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await registrarNaTrilha(tx, {
+        usuarioId: autorId,
+        operacao: 'OBTENCAO_DE_BOLETO',
+        entidade: 'COBRANCA',
+        registroId: cobrancaId,
+        detalhe: 'Boleto obtido para entrega por outro meio.',
+      });
+    });
+  }
+
   // [Cobranças.RF008] Lista filtrada, por vencimento. "Vencida" é aberta com vencimento antes de hoje.
   async listar(filtros: FiltrosDaConsulta, hoje: string): Promise<{ itens: CobrancaRegistrada[]; total: number }> {
     const onde = condicoesDaConsulta(filtros, hoje);
