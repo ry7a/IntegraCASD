@@ -9,5 +9,8 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // Alguns testes são lentos de propósito (hash Argon2) ou leem todos os arquivos versionados (B11).
+    // Com os testes rodando em paralelo, os 5 s padrão às vezes não bastavam e o teste falhava à toa.
+    testTimeout: 20_000,
   },
 });

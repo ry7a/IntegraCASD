@@ -155,3 +155,19 @@ export function lerFiltrosDaConsulta(consulta: Record<string, unknown>): Filtros
     tamanhoPagina: Math.min(Math.max(1, tamanho), TAMANHO_MAXIMO),
   };
 }
+
+const NOME_DA_SITUACAO: Record<SituacaoGuardada, string> = {
+  ABERTA: 'aberta',
+  PAGA: 'paga',
+  PAGA_COM_REGISTRO_MANUAL: 'paga com registro manual',
+  CANCELADA: 'cancelada',
+  ESTORNADA: 'estornada',
+};
+
+// [Cobranças.RF003] fluxo E1: boleto só de cobrança aberta (vencida ou não). Paga ou cancelada não tem
+// boleto válido, e um documento sem validade não deve circular.
+export function conferirBoletoDisponivel(situacao: SituacaoGuardada): void {
+  if (situacao !== 'ABERTA') {
+    throw new CobrancaInvalida(`Esta cobrança está ${NOME_DA_SITUACAO[situacao]}: o boleto não vale mais e não é disponibilizado.`);
+  }
+}

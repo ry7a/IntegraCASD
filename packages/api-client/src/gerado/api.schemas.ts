@@ -497,6 +497,11 @@ export interface CobrancaDetalheDto {
   eventos: EventoCobrancaDto[];
 }
 
+export interface BoletoDto {
+  /** Arquivo do boleto no Asaas */
+  url: string;
+}
+
 export interface EmitirCobrancaAvulsaDto {
   alunoId: string;
   valorCentavos: number;
