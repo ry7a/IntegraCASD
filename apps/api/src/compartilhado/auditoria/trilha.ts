@@ -10,28 +10,33 @@ import type { Prisma } from '../../generated/prisma/client.js';
 // A trilha é só de inclusão: o banco recusa UPDATE e DELETE em registros_auditoria (gatilho da
 // migração 20261026060000), e a função de aptidão B13 barra gravação fora deste arquivo.
 
-export type OperacaoAuditada =
-  | 'INCLUSAO'
-  | 'ALTERACAO'
-  | 'INATIVACAO'
-  | 'REATIVACAO'
-  | 'EXCLUSAO'
-  | 'ESTORNO'
-  | 'BLOQUEIO_AUTENTICACAO'
-  | 'OBTENCAO_DE_BOLETO'
-  | 'CANCELAMENTO';
+// As listas são a fonte única: os tipos saem delas, e a consulta da trilha valida os filtros com elas.
+export const OPERACOES_AUDITADAS = [
+  'INCLUSAO',
+  'ALTERACAO',
+  'INATIVACAO',
+  'REATIVACAO',
+  'EXCLUSAO',
+  'ESTORNO',
+  'BLOQUEIO_AUTENTICACAO',
+  'OBTENCAO_DE_BOLETO',
+  'CANCELAMENTO',
+] as const;
+export type OperacaoAuditada = (typeof OPERACOES_AUDITADAS)[number];
 
-export type EntidadeAuditada =
-  | 'USUARIO'
-  | 'CATEGORIA'
-  | 'ALUNO'
-  | 'FUNCIONARIO'
-  | 'CONTRATO'
-  | 'PROJETO'
-  | 'COBRANCA'
-  | 'MOVIMENTACAO'
-  | 'CONFIGURACAO'
-  | 'PENDENCIA';
+export const ENTIDADES_AUDITADAS = [
+  'USUARIO',
+  'CATEGORIA',
+  'ALUNO',
+  'FUNCIONARIO',
+  'CONTRATO',
+  'PROJETO',
+  'COBRANCA',
+  'MOVIMENTACAO',
+  'CONFIGURACAO',
+  'PENDENCIA',
+] as const;
+export type EntidadeAuditada = (typeof ENTIDADES_AUDITADAS)[number];
 
 export type RegistroNaTrilha = {
   // Nulo = rotina automática (geração recorrente, conciliação, sincronização).

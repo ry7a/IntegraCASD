@@ -34,8 +34,10 @@ import type {
   CriarCategoriaDto,
   CriarUsuarioDto,
   IntegracaoAsaasDto,
+  ListaDaTrilhaDto,
   ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
+  ListarTrilhaDeAuditoriaParams,
   OpcoesDeDestinoDto,
   ParametrosDeCobrancaDto,
   PrazoDoAlertaDto,
@@ -1430,6 +1432,113 @@ export function useBuscarAmbienteDaIntegracao<TData = Awaited<ReturnType<typeof 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getBuscarAmbienteDaIntegracaoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getListarTrilhaDeAuditoriaUrl = (params?: ListarTrilhaDeAuditoriaParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/trilha-auditoria?${stringifiedParams}` : `/api/admin/trilha-auditoria`
+}
+
+/**
+ * @summary Operações registradas na trilha (padrão: o mês corrente)
+ */
+export const listarTrilhaDeAuditoria = async (params?: ListarTrilhaDeAuditoriaParams, options?: Parameters<typeof clienteHttp>[1]): Promise<ListaDaTrilhaDto> => {
+
+  return clienteHttp<ListaDaTrilhaDto>(getListarTrilhaDeAuditoriaUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarTrilhaDeAuditoriaQueryKey = (params?: ListarTrilhaDeAuditoriaParams,) => {
+    return [
+    `/api/admin/trilha-auditoria`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListarTrilhaDeAuditoriaQueryOptions = <TData = Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError = ErrorType<unknown>>(params?: ListarTrilhaDeAuditoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarTrilhaDeAuditoriaQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>> = ({ signal }) => listarTrilhaDeAuditoria(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarTrilhaDeAuditoriaQueryResult = NonNullable<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>>
+export type ListarTrilhaDeAuditoriaQueryError = ErrorType<unknown>
+
+
+export function useListarTrilhaDeAuditoria<TData = Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListarTrilhaDeAuditoriaParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>,
+          TError,
+          Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTrilhaDeAuditoria<TData = Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError = ErrorType<unknown>>(
+ params?: ListarTrilhaDeAuditoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>,
+          TError,
+          Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarTrilhaDeAuditoria<TData = Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError = ErrorType<unknown>>(
+ params?: ListarTrilhaDeAuditoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Operações registradas na trilha (padrão: o mês corrente)
+ */
+
+export function useListarTrilhaDeAuditoria<TData = Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError = ErrorType<unknown>>(
+ params?: ListarTrilhaDeAuditoriaParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarTrilhaDeAuditoria>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarTrilhaDeAuditoriaQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

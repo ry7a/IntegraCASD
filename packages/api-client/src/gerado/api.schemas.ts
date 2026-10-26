@@ -314,6 +314,60 @@ export interface AmbienteDaIntegracaoDto {
   ambiente: AmbienteAsaas | null;
 }
 
+export type EntidadeAuditoria = typeof EntidadeAuditoria[keyof typeof EntidadeAuditoria];
+
+
+export const EntidadeAuditoria = {
+  USUARIO: 'USUARIO',
+  CATEGORIA: 'CATEGORIA',
+  ALUNO: 'ALUNO',
+  FUNCIONARIO: 'FUNCIONARIO',
+  CONTRATO: 'CONTRATO',
+  PROJETO: 'PROJETO',
+  COBRANCA: 'COBRANCA',
+  MOVIMENTACAO: 'MOVIMENTACAO',
+  CONFIGURACAO: 'CONFIGURACAO',
+  PENDENCIA: 'PENDENCIA',
+} as const;
+
+export type OperacaoAuditoria = typeof OperacaoAuditoria[keyof typeof OperacaoAuditoria];
+
+
+export const OperacaoAuditoria = {
+  INCLUSAO: 'INCLUSAO',
+  ALTERACAO: 'ALTERACAO',
+  INATIVACAO: 'INATIVACAO',
+  REATIVACAO: 'REATIVACAO',
+  EXCLUSAO: 'EXCLUSAO',
+  ESTORNO: 'ESTORNO',
+  BLOQUEIO_AUTENTICACAO: 'BLOQUEIO_AUTENTICACAO',
+  OBTENCAO_DE_BOLETO: 'OBTENCAO_DE_BOLETO',
+  CANCELAMENTO: 'CANCELAMENTO',
+} as const;
+
+export interface RegistroAuditoriaDto {
+  id: string;
+  ocorridoEm: string;
+  /**
+     * Nulo = rotina automática
+     * @nullable
+     */
+  usuarioNome: string | null;
+  operacao: OperacaoAuditoria;
+  entidade: EntidadeAuditoria;
+  /** @nullable */
+  registroId: string | null;
+  /** Nunca contém segredos, como a chave do Asaas */
+  detalhe: string;
+}
+
+export interface ListaDaTrilhaDto {
+  /** Do mais recente para o mais antigo */
+  itens: RegistroAuditoriaDto[];
+  /** Total do filtro, de todas as páginas */
+  total: number;
+}
+
 export type CursoAluno = typeof CursoAluno[keyof typeof CursoAluno];
 
 
@@ -1259,6 +1313,29 @@ export interface InadimplenciaDto {
   /** Os 10 maiores, por valor */
   maioresDevedores: DevedorDto[];
 }
+
+export type ListarTrilhaDeAuditoriaParams = {
+tamanhoPagina?: number;
+pagina?: number;
+/**
+ * Um registro específico (fluxo A1)
+ */
+registroId?: unknown;
+entidade?: EntidadeAuditoria;
+operacao?: OperacaoAuditoria;
+/**
+ * Id do usuário, ou ROTINA_AUTOMATICA
+ */
+usuario?: unknown;
+/**
+ * AAAA-MM-DD
+ */
+ate?: unknown;
+/**
+ * AAAA-MM-DD
+ */
+de?: unknown;
+};
 
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
