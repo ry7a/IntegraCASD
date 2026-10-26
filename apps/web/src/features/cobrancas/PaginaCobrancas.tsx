@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useListarCobrancas, useResumirCobrancas, type ResumoSituacaoDto } from '@integracasd/api-client'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
@@ -34,11 +34,21 @@ function legendaDoResumo(item: ResumoSituacaoDto, mes: string): string {
   }
 }
 
+const TODAS_AS_SITUACOES: SituacaoCobranca[] = ['ABERTA', 'VENCIDA', 'PAGA', 'PAGA_COM_REGISTRO_MANUAL', 'CANCELADA', 'ESTORNADA']
+
+// "VENCIDA,ABERTA" -> só os valores conhecidos; sem nada válido, o padrão (abertas e vencidas).
+function situacoesDaUrl(texto: string | null): SituacaoCobranca[] {
+  const lidas = (texto ?? '').split(',').flatMap((parte) => TODAS_AS_SITUACOES.filter((situacao) => situacao === parte))
+  return lidas.length > 0 ? lidas : ['ABERTA', 'VENCIDA']
+}
+
 // Lista de cobranças. [Cobranças.RF002 a RF008]
 // A lista abre só com abertas e vencidas, por vencimento; as demais situações se ligam pelos cartões de resumo.
 function PaginaCobrancas() {
   const { abrirNovaCobranca } = useAcoesGlobais()
-  const [situacoes, definirSituacoes] = useState<SituacaoCobranca[]>(['ABERTA', 'VENCIDA'])
+  // As situações podem chegar pela URL (ex.: "Ver todas as cobranças vencidas", nos Indicadores).
+  const [parametros] = useSearchParams()
+  const [situacoes, definirSituacoes] = useState<SituacaoCobranca[]>(() => situacoesDaUrl(parametros.get('situacoes')))
   const [busca, definirBusca] = useState('')
   const [vencimentoDe, definirVencimentoDe] = useState('')
   const [vencimentoAte, definirVencimentoAte] = useState('')

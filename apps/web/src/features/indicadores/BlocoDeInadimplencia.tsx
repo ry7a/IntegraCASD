@@ -1,12 +1,12 @@
 import { Link } from 'react-router'
+import { useConsultarInadimplencia } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import { formatarMoeda } from '@/compartilhado/formatacao'
-import { useInadimplencia } from './consultas'
 
 // [Indicadores.RF002] Valores originais, sem multa e juros.
 function BlocoDeInadimplencia() {
-  const consulta = useInadimplencia()
+  const consulta = useConsultarInadimplencia()
   const dados = consulta.data
 
   return (
@@ -52,20 +52,20 @@ function BlocoDeInadimplencia() {
                       </span>
                     </span>
                     <span className="numero">{formatarMoeda(devedor.valorCentavos)}</span>
-                    {/* TODO [Cobranças.RF005]: reenviar o boleto da cobrança vencida (POST na cobrança). */}
-                    <button
-                      type="button"
+                    {/* Fluxo A1: o boleto se obtém no detalhe da cobrança; o reenvio por e-mail depende da issue #29. */}
+                    <Link
                       className="botao botao-pequeno botao-fantasma"
-                      aria-label={`Reenviar boleto da cobrança vencida de ${devedor.alunoNome} por e-mail`}
-                      data-dica="Reenviar boleto da cobrança vencida por e-mail"
+                      to={`/cadastros/alunos/${devedor.alunoId}?aba=cobrancas`}
+                      aria-label={`Ver as cobranças de ${devedor.alunoNome} para obter o boleto`}
+                      data-dica="Ver as cobranças e obter o boleto"
                     >
-                      <Icone nome="email" />
-                    </button>
+                      <Icone nome="baixar" />
+                    </Link>
                   </li>
                 ))}
               </ul>
             )}
-            <Link className="botao botao-pequeno" to="/cobrancas" style={{ marginTop: 10 }}>
+            <Link className="botao botao-pequeno" to="/cobrancas?situacoes=VENCIDA" style={{ marginTop: 10 }}>
               Ver todas as cobranças vencidas
             </Link>
           </>

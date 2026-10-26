@@ -1979,6 +1979,33 @@
           "cobrancas"
         ]
       }
+    },
+    "/api/indicadores/inadimplencia": {
+      "get": {
+        "operationId": "consultarInadimplencia",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InadimplenciaDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Alunos com cobranças vencidas, por atraso e maiores devedores",
+        "tags": [
+          "indicadores"
+        ]
+      }
     }
   },
   "info": {
@@ -4897,6 +4924,88 @@
         },
         "required": [
           "resolucao"
+        ]
+      },
+      "FaixasDeAtrasoDto": {
+        "type": "object",
+        "properties": {
+          "ate30Dias": {
+            "type": "number"
+          },
+          "de31a60Dias": {
+            "type": "number"
+          },
+          "acimaDe60Dias": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ate30Dias",
+          "de31a60Dias",
+          "acimaDe60Dias"
+        ]
+      },
+      "DevedorDto": {
+        "type": "object",
+        "properties": {
+          "alunoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alunoNome": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number",
+            "description": "Cobranças vencidas"
+          },
+          "valorCentavos": {
+            "type": "number",
+            "description": "Soma dos valores originais vencidos, sem multa e juros"
+          },
+          "diasDeAtrasoMaisAntigo": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "alunoId",
+          "alunoNome",
+          "quantidade",
+          "valorCentavos",
+          "diasDeAtrasoMaisAntigo"
+        ]
+      },
+      "InadimplenciaDto": {
+        "type": "object",
+        "properties": {
+          "alunosInadimplentes": {
+            "type": "number"
+          },
+          "valorEmAbertoCentavos": {
+            "type": "number",
+            "description": "Valores originais, sem multa e juros"
+          },
+          "alunosPorFaixa": {
+            "description": "Pelo atraso da cobrança mais antiga de cada aluno",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FaixasDeAtrasoDto"
+              }
+            ]
+          },
+          "maioresDevedores": {
+            "description": "Os 10 maiores, por valor",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DevedorDto"
+            }
+          }
+        },
+        "required": [
+          "alunosInadimplentes",
+          "valorEmAbertoCentavos",
+          "alunosPorFaixa",
+          "maioresDevedores"
         ]
       }
     }

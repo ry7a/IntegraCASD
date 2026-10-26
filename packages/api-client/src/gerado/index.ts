@@ -5,5 +5,6 @@ export * from './autenticacao/autenticacao';
 export * from './cobrancas/cobrancas';
 export * from './contratos/contratos';
 export * from './funcionarios/funcionarios';
+export * from './indicadores/indicadores';
 export * from './movimentacoes/movimentacoes';
 export * from './projetos/projetos';
