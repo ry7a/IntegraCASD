@@ -4,7 +4,6 @@
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type { MovimentacaoDto } from '@/compartilhado/dominio'
 import type {
-  ContratoDto,
   ProjetoDto,
 } from './contrato'
 
@@ -35,12 +34,6 @@ export const movimentacoesDoLucas: MovimentacaoDto[] = [
   entradaDeMensalidade('mov-lucas-0726', '2026-07-08', '07'),
   entradaDeMensalidade('mov-lucas-0626', '2026-06-09', '06'),
   entradaDeMensalidade('mov-lucas-0526', '2026-05-11', '05'),
-]
-
-export const contratos: ContratoDto[] = [
-  { id: 'contrato-lavanderia', contraparte: 'Lavanderia Bem Lavado', objeto: 'Manutenção das máquinas', valorCentavos: 120000, periodicidade: 'MENSAL', dataInicio: '2026-01-01', dataFim: '2026-12-31', situacao: 'VIGENTE', diasParaVencer: 73, pagoNoAnoCentavos: 1080000 },
-  { id: 'contrato-grafica', contraparte: 'Gráfica Pontual', objeto: 'Impressões e banners', valorCentavos: 45000, periodicidade: 'POR_DEMANDA', dataInicio: '2026-03-15', dataFim: '2026-12-15', situacao: 'VENCE_EM_BREVE', diasParaVencer: 57, pagoNoAnoCentavos: 270000 },
-  { id: 'contrato-som-e-luz', contraparte: 'Som & Luz Eventos', objeto: 'Sonorização da Semana de Integração', valorCentavos: 600000, periodicidade: 'UNICA', dataInicio: '2026-03-01', dataFim: '2026-03-31', situacao: 'ENCERRADO', diasParaVencer: -202, pagoNoAnoCentavos: 600000 },
 ]
 
 export const projetos: ProjetoDto[] = [
