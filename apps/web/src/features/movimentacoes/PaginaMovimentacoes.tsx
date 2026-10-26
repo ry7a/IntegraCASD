@@ -1,25 +1,32 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useListarMovimentacoes, useListarOpcoesDaMovimentacao } from '@integracasd/api-client'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import { CelulaDeOrigem } from '@/compartilhado/componentes/CelulasDeMovimentacao'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
 import { ROTULO_DA_FORMA, type FormaPagamento, type MovimentacaoDto, type TipoMovimentacao } from '@/compartilhado/dominio'
-import { formatarData, formatarMes, formatarMoeda, formatarMoedaComSinal } from '@/compartilhado/formatacao'
-import { useListarMovimentacoes, useOpcoesDaMovimentacao } from './consultas'
+import { formatarData, formatarMes, formatarMoeda, formatarMoedaComSinal, hojeIso } from '@/compartilhado/formatacao'
 import DialogoEstornar from './DialogoEstornar'
 
-// Os meses que têm dados fictícios. TODO [Movimentações.RF003]: período personalizado.
-const MESES_PARA_ESCOLHER = ['2026-10', '2026-09']
+// Os últimos 12 meses, do corrente para trás ("AAAA-MM").
+function ultimosMeses(): string[] {
+  const [ano, mes] = hojeIso().split('-').map(Number)
+  return Array.from({ length: 12 }, (_, atras) => {
+    const total = ano * 12 + (mes - 1) - atras
+    return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`
+  })
+}
+const MESES_PARA_ESCOLHER = ultimosMeses()
 
 function rotuloDoVinculo(movimentacao: MovimentacaoDto): string | null {
   const vinculo = movimentacao.vinculo
   if (!vinculo) return null
   if (vinculo.tipo === 'CONTRATO') return `Contrato · ${vinculo.nome ?? ''}`
   if (vinculo.tipo === 'PROJETO') return `Projeto · ${vinculo.nome ?? ''}`
-  if (vinculo.tipo === 'FUNCIONARIO') return 'Funcionário'
-  return 'Cobrança'
+  if (vinculo.tipo === 'FUNCIONARIO') return `Funcionário · ${vinculo.nome ?? ''}`
+  return `Cobrança · ${vinculo.nome ?? ''}`
 }
 
 // Entradas e saídas. [Movimentações.RF001 a RF003]
@@ -33,15 +40,20 @@ function PaginaMovimentacoes() {
   const [categoriaId, definirCategoriaId] = useState(parametros.get('categoriaId') ?? '')
   const [forma, definirForma] = useState<FormaPagamento | ''>('')
   const [ocultarEstornos, definirOcultarEstornos] = useState(false)
+  // "contrato:<id>" ou "projeto:<id>"; vazio = todos.
+  const [vinculoFiltro, definirVinculoFiltro] = useState('')
+  const [tipoDoVinculo, idDoVinculo] = vinculoFiltro.split(':')
   const [paraEstornar, definirParaEstornar] = useState<MovimentacaoDto | null>(null)
 
-  const opcoes = useOpcoesDaMovimentacao()
+  const opcoes = useListarOpcoesDaMovimentacao()
   const movimentacoes = useListarMovimentacoes({
     mes,
     tipo: tipo || undefined,
     categoriaId: categoriaId || undefined,
     forma: forma || undefined,
     ocultarEstornos: ocultarEstornos || undefined,
+    contratoId: tipoDoVinculo === 'contrato' ? idDoVinculo : undefined,
+    projetoId: tipoDoVinculo === 'projeto' ? idDoVinculo : undefined,
   })
   const dados = movimentacoes.data
   const itens = dados?.itens ?? []
@@ -137,8 +149,23 @@ function PaginaMovimentacoes() {
         </div>
         <div className="campo" style={{ flex: 1, maxWidth: 260 }}>
           <label htmlFor="mv-vinculo">Projeto ou contrato</label>
-          {/* TODO [Movimentações.RF003]: filtro por projeto ou contrato (a API ainda não aceita este parâmetro). */}
-          <input id="mv-vinculo" type="search" placeholder="Ex.: Reforma da sala" disabled />
+          <select
+            id="mv-vinculo"
+            value={vinculoFiltro}
+            onChange={(evento) => definirVinculoFiltro(evento.target.value)}
+          >
+            <option value="">Todos</option>
+            {opcoes.data?.contratos.map((contrato) => (
+              <option key={contrato.id} value={`contrato:${contrato.id}`}>
+                Contrato · {contrato.nome}
+              </option>
+            ))}
+            {opcoes.data?.projetos.map((projeto) => (
+              <option key={projeto.id} value={`projeto:${projeto.id}`}>
+                Projeto · {projeto.nome}
+              </option>
+            ))}
+          </select>
         </div>
         <label className="campo-check">
           <input
@@ -199,7 +226,10 @@ function PaginaMovimentacoes() {
                         </span>
                       )}
                     </td>
-                    <td>{movimentacao.categoriaNome ?? 'Sem categoria'}</td>
+                    <td>
+                      {movimentacao.categoriaNome}
+                      <span className="secundario">{movimentacao.contaNome}</span>
+                    </td>
                     <td>{ROTULO_DA_FORMA[movimentacao.forma]}</td>
                     <td>
                       <CelulaDeOrigem movimentacao={movimentacao} />

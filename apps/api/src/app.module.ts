@@ -9,6 +9,7 @@ import { AcessoModule } from './modulos/acesso/index.js';
 import { AdministracaoModule } from './modulos/administracao/index.js';
 import { CadastrosModule } from './modulos/cadastros/index.js';
 import { CobrancasModule } from './modulos/cobrancas/index.js';
+import { MovimentacoesModule } from './modulos/movimentacoes/index.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -28,6 +29,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AdministracaoModule,
     CadastrosModule,
     CobrancasModule,
+    MovimentacoesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -112,6 +112,7 @@ export class ConciliacaoRepositorio {
             data: deDia(acao.pagoEm),
             formaPagamento: 'ASAAS',
             origem: 'CONCILIACAO_AUTOMATICA',
+            registradaPorId: autorId,
             descricao: `Cobrança ${rotulo} paga`,
           },
         });
@@ -175,6 +176,7 @@ export class ConciliacaoRepositorio {
             data: deDia(hojeEmSaoPaulo()),
             formaPagamento: 'ASAAS',
             origem: 'ESTORNO',
+            registradaPorId: autorId,
             estornoDeId: original.id,
             motivoEstorno: `Pagamento estornado no Asaas, informado ${fonte}.`,
             descricao: `Estorno da cobrança ${rotulo}`,

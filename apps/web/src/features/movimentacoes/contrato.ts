@@ -1,34 +1,6 @@
 // Contrato planejado da API de Movimentações [Movimentações.RF001 a RF003].
-// Dinheiro em centavos; dias em "AAAA-MM-DD". O MovimentacaoDto fica em compartilhado/dominio.ts
-// porque a aba "Movimentações" do aluno também o usa.
-import type { FormaPagamento, MovimentacaoDto, TipoMovimentacao } from '@/compartilhado/dominio'
-
-export interface TotaisDto {
-  // Estornos não entram: o estorno e a original se anulam.
-  entradasCentavos: number
-  quantidadeEntradas: number
-  saidasCentavos: number
-  quantidadeSaidas: number
-  saldoCentavos: number
-}
-
-// GET /api/movimentacoes?mes=AAAA-MM&tipo=&categoriaId=&forma=&ocultarEstornos=
-// TODO [Movimentações.RF003]: a API de verdade também recebe pagina e tamanhoPagina e filtra por projeto ou contrato.
-export interface ListaDeMovimentacoesDto {
-  itens: MovimentacaoDto[]
-  total: number
-  // Totais do mesmo recorte da lista, de todas as páginas.
-  totais: TotaisDto
-}
-
-// Os filtros da lista, iguais aos parâmetros da rota acima.
-export interface FiltrosDeMovimentacoes {
-  mes: string
-  tipo?: TipoMovimentacao
-  categoriaId?: string
-  forma?: FormaPagamento
-  ocultarEstornos?: boolean
-}
+// Dinheiro em centavos; dias em "AAAA-MM-DD". A lista já vem da API (hooks do orval); falta o diálogo
+// "Nova movimentação" (Movimentações.RF001).
 
 export interface CategoriaDto {
   id: string

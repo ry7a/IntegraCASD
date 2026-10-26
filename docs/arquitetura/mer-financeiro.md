@@ -150,3 +150,7 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
     sincronização vão para `pendencias_conciliacao` e aparecem em Cobranças › Pendências, junto com as falhas
     da última geração recorrente de cada mês recente. A pendência não é apagada: é resolvida com um texto de
     quem conferiu, que vai para a trilha.
+17. **Autor da movimentação** ([Movimentações.RF001]): `movimentacoes.registrada_por_id` (nulo = rotina
+    automática). A trilha continua registrando a operação; a coluna existe para a lista mostrar quem lançou
+    sem consultar a trilha. Os totais da consulta ([Movimentações.RF003]) deixam de fora o par estornada +
+    espelho e as transferências entre contas.
