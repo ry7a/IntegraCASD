@@ -12,5 +12,7 @@ export default defineConfig({
     // Alguns testes são lentos de propósito (hash Argon2) ou leem todos os arquivos versionados (B11).
     // Com os testes rodando em paralelo, os 5 s padrão às vezes não bastavam e o teste falhava à toa.
     testTimeout: 20_000,
+    // O mesmo para os `beforeEach` que montam um módulo do Nest: sob carga, passavam dos 10 s padrão.
+    hookTimeout: 20_000,
   },
 });
