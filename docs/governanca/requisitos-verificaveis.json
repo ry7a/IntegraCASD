@@ -2,6 +2,11 @@
   "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md e ADRs. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex.",
   "requisitos": [
     {
+      "id": "Confiabilidade.NF002",
+      "titulo": "Alerta de interrupção da conciliação",
+      "situacao": "coberto"
+    },
+    {
       "id": "Confiabilidade.NF003",
       "titulo": "Idempotência no processamento de notificações",
       "situacao": "coberto"

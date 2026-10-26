@@ -33,6 +33,7 @@ const ROTULO_DA_ENTIDADE: Record<EntidadeAuditoria, string> = {
   MOVIMENTACAO: 'Movimentação',
   CONFIGURACAO: 'Configuração',
   PENDENCIA: 'Pendência de conciliação',
+  ALERTA_DE_CONCILIACAO: 'Alerta de webhook parado',
 }
 const ROTINA_AUTOMATICA = 'ROTINA_AUTOMATICA'
 const TAMANHO_DA_PAGINA = 200

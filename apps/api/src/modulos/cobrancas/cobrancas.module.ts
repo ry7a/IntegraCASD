@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AsaasModule } from '../../compartilhado/asaas/asaas.module.js';
 import { FilaModule } from '../../compartilhado/fila/fila.module.js';
+import { NotificacaoModule } from '../../compartilhado/notificacao/notificacao.module.js';
 import { AdministracaoModule } from '../administracao/index.js';
 import { CadastrosModule } from '../cadastros/index.js';
 import { CobrancasController } from './api/cobrancas.controller.js';
@@ -33,6 +34,9 @@ import { ConsumidorDaGeracaoRecorrente } from './infra/consumidor-da-geracao-rec
 import { ConsumidorDeEventosWebhook } from './infra/consumidor-de-eventos-webhook.js';
 import { ConsumidorDoReprocessamento } from './infra/consumidor-do-reprocessamento.js';
 import { ConsumidorDaSincronizacao } from './infra/consumidor-da-sincronizacao.js';
+import { ConsumidorDaVigilancia } from './infra/consumidor-da-vigilancia.js';
+import { AlertasDeConciliacaoRepositorio } from './infra/alertas-de-conciliacao.repositorio.js';
+import { VerificarSilencioDoAsaas } from './aplicacao/verificar-silencio-do-asaas.js';
 import { PendenciasRepositorio } from './infra/pendencias.repositorio.js';
 import { SincronizacaoRepositorio } from './infra/sincronizacao.repositorio.js';
 import { EventosWebhookRepositorio } from './infra/eventos-webhook.repositorio.js';
@@ -43,7 +47,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
 // Módulo Cobranças: emissão no Asaas, consulta, geração recorrente e webhook. Exporta os
 // consumidores (webhook e geração recorrente), que o worker liga ao iniciar.
 @Module({
-  imports: [FilaModule, AsaasModule, CadastrosModule, AdministracaoModule],
+  imports: [FilaModule, AsaasModule, NotificacaoModule, CadastrosModule, AdministracaoModule],
   controllers: [CobrancasController, CobrancasDoAlunoController, GeracaoRecorrenteController, PendenciasController, WebhookAsaasController],
   providers: [
     ReceberEventoWebhook,
@@ -59,6 +63,9 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     ResolverPendencia,
     SincronizarCobrancas,
     ConsumidorDaSincronizacao,
+    AlertasDeConciliacaoRepositorio,
+    VerificarSilencioDoAsaas,
+    ConsumidorDaVigilancia,
     CobrancasRepositorio,
     GarantirClienteAsaas,
     EmitirCobrancaAvulsa,
@@ -80,6 +87,13 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     AtualizarClienteAsaas,
     ReacaoAAlunoAlterado,
   ],
-  exports: [ConsumidorDeEventosWebhook, ConsumidorDaGeracaoRecorrente, ReacaoAAlunoAlterado, ConsumidorDoReprocessamento, ConsumidorDaSincronizacao],
+  exports: [
+    ConsumidorDeEventosWebhook,
+    ConsumidorDaGeracaoRecorrente,
+    ReacaoAAlunoAlterado,
+    ConsumidorDoReprocessamento,
+    ConsumidorDaSincronizacao,
+    ConsumidorDaVigilancia,
+  ],
 })
 export class CobrancasModule {}

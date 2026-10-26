@@ -2896,7 +2896,8 @@
           "COBRANCA",
           "MOVIMENTACAO",
           "CONFIGURACAO",
-          "PENDENCIA"
+          "PENDENCIA",
+          "ALERTA_DE_CONCILIACAO"
         ]
       },
       "OperacaoAuditoria": {

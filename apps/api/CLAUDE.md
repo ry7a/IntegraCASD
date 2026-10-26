@@ -83,6 +83,16 @@ src/modulos/cobrancas/
   Use o `AgendadorDeRotinas` (`src/compartilhado/fila/`): o nome da rotina entra em `ROTINAS` (vira uma fila
   "singleton", no máximo uma execução por vez) e o consumidor é ligado no `main-worker.ts`.
 - Toda rotina deve ser segura para rodar duas vezes (ex.: não gerar mensalidade se já existir uma para o aluno no período).
+- **Notificador de alertas** (`src/compartilhado/notificacao/`): único ponto que envia e-mail, como o cliente do Asaas é o
+  único que fala com o Asaas. Os casos de uso dependem da classe abstrata `NotificadorDeAlertas`; o envio real usa a API
+  HTTP de um provedor (Resend), sem dependência nova (a Railway bloqueia SMTP nos planos baratos). Lê `EMAIL_API_KEY` e
+  `EMAIL_REMETENTE` do `.env` a cada envio (sem eles o alerta não sai e o motivo vai para o log) e nunca lança: devolve
+  `enviado: false` com o motivo. A chave nunca vai para código, log ou trilha. Em testes, use `NotificadorDeAlertasFalso`.
+- **Alerta de webhook parado** ([Confiabilidade.NF002]): a rotina `vigilancia-do-asaas` roda a cada 30 minutos no worker,
+  mede há quanto tempo o Asaas não envia notificações (desde a última recebida ou do cadastro da chave) e, passado o prazo
+  configurado (12, 24 ou 48 h), avisa a diretoria por e-mail. Um registro em `alertas_conciliacao` por interrupção evita
+  repetir o e-mail a cada verificação: lembra a cada 24 h e encerra quando as notificações voltam. Se o e-mail não sai,
+  a próxima verificação tenta de novo. As regras ficam em `cobrancas/dominio/silencio-do-asaas.ts`.
 
 ## Segurança e auditoria
 

@@ -35,6 +35,7 @@ export const ENTIDADES_AUDITADAS = [
   'MOVIMENTACAO',
   'CONFIGURACAO',
   'PENDENCIA',
+  'ALERTA_DE_CONCILIACAO',
 ] as const;
 export type EntidadeAuditada = (typeof ENTIDADES_AUDITADAS)[number];
 

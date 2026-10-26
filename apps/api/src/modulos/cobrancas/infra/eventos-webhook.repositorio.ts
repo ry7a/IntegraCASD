@@ -31,6 +31,13 @@ export class EventosWebhookRepositorio {
     return eventos.map((evento) => evento.id);
   }
 
+  // Quando chegou a notificação mais recente do Asaas (qualquer tipo de evento); nulo se nunca chegou
+  // nenhuma. É a base do alerta de interrupção [Confiabilidade.NF002].
+  async ultimaRecebidaEm(): Promise<Date | null> {
+    const resultado = await this.prisma.eventoWebhook.aggregate({ _max: { dataCriacao: true } });
+    return resultado._max.dataCriacao;
+  }
+
   buscarPorId(id: string): Promise<EventoWebhook | null> {
     return this.prisma.eventoWebhook.findUnique({ where: { id } });
   }
