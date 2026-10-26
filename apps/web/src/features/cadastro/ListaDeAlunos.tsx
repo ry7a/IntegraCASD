@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { useListarAlunos, type ListarAlunosSituacao } from '@integracasd/api-client'
+import { useListarAlunos, useListarTotaisEmAbertoPorAluno, type ListarAlunosSituacao } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import RodapeDaTabela from '@/compartilhado/componentes/RodapeDaTabela'
-import { formatarCpf } from '@/compartilhado/formatacao'
+import { formatarCpf, formatarMoeda } from '@/compartilhado/formatacao'
 import DialogoNovoAluno from './DialogoNovoAluno'
 
 const ROTULO_DO_FILTRO: Record<ListarAlunosSituacao, string> = {
@@ -25,6 +25,9 @@ function ListaDeAlunos() {
   // Hook gerado pelo orval: busca GET /api/alunos?situacao=... e guarda no cache do TanStack Query.
   const { data, error, isPending, refetch } = useListarAlunos({ situacao })
   const [novoAlunoAberto, definirNovoAlunoAberto] = useState(false)
+  // Coluna "Em aberto": vem de Cobranças, só com os alunos que têm cobrança aberta.
+  const totais = useListarTotaisEmAbertoPorAluno()
+  const totaisPorAluno = new Map((totais.data?.itens ?? []).map((item) => [item.alunoId, item]))
 
   function mudarSituacao(nova: ListarAlunosSituacao) {
     const novos = new URLSearchParams(parametros)
@@ -41,7 +44,6 @@ function ListaDeAlunos() {
   }
 
   // A busca por nome, apelido ou CPF é feita aqui, na lista que já veio (são cerca de mil alunos).
-  // TODO [Cobranças.RF008]: coluna "Em aberto", quando o módulo de Cobranças entregar o total por aluno.
   const texto = busca.trim().toLowerCase()
   const textoSoDigitos = texto.replace(/\D/g, '')
   const itens = (data?.itens ?? []).filter(
@@ -102,6 +104,7 @@ function ListaDeAlunos() {
                 <th>CPF</th>
                 <th>E-mail</th>
                 <th>Situação</th>
+                <th className="numero">Em aberto</th>
                 <th>
                   <span hidden>Ações</span>
                 </th>
@@ -129,6 +132,7 @@ function ListaDeAlunos() {
                   <td>
                     <span className={aluno.ativo ? 'selo selo-paga' : 'selo'}>{aluno.ativo ? 'Ativo' : 'Inativo'}</span>
                   </td>
+                  <ColunaEmAberto totais={totaisPorAluno.get(aluno.id)} />
                   <td className="acoes">
                     <Link className="botao botao-pequeno botao-fantasma" to={`/cadastros/alunos/${aluno.id}`}>
                       <Icone nome="editar" />
@@ -148,6 +152,25 @@ function ListaDeAlunos() {
 
       {novoAlunoAberto && <DialogoNovoAluno aoFechar={() => definirNovoAlunoAberto(false)} />}
     </>
+  )
+}
+
+interface TotaisDoAluno {
+  totalEmAbertoCentavos: number
+  quantidadeVencidas: number
+}
+
+function ColunaEmAberto({ totais }: { totais: TotaisDoAluno | undefined }) {
+  if (!totais) return <td className="numero">—</td>
+  return (
+    <td className="numero">
+      {formatarMoeda(totais.totalEmAbertoCentavos)}
+      {totais.quantidadeVencidas > 0 && (
+        <span className="secundario">
+          {totais.quantidadeVencidas === 1 ? '1 vencida' : `${totais.quantidadeVencidas} vencidas`}
+        </span>
+      )}
+    </td>
   )
 }
 

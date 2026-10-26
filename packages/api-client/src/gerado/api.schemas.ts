@@ -703,6 +703,40 @@ export interface CobrancaDto {
   urlFatura: string | null;
 }
 
+export interface CobrancaDoAlunoDto {
+  id: string;
+  descricao: string;
+  origem: OrigemCobranca;
+  valorCentavos: number;
+  vencimento: string;
+  situacao: SituacaoCobranca;
+  /** @nullable */
+  diasDeAtraso: number | null;
+  /** @nullable */
+  pagaEm: string | null;
+}
+
+export interface CobrancasDoAlunoDto {
+  /** Das mais recentes para as mais antigas */
+  itens: CobrancaDoAlunoDto[];
+  /** Abertas, vencidas ou não */
+  totalEmAbertoCentavos: number;
+  quantidadeVencidas: number;
+  totalVencidoCentavos: number;
+}
+
+export interface TotaisDoAlunoDto {
+  alunoId: string;
+  totalEmAbertoCentavos: number;
+  quantidadeVencidas: number;
+  totalVencidoCentavos: number;
+}
+
+export interface ListaDeTotaisPorAlunoDto {
+  /** Só alunos com alguma cobrança aberta */
+  itens: TotaisDoAlunoDto[];
+}
+
 export interface FalhaDaGeracaoDto {
   /** Vazio quando a falha é da rotina inteira (ex.: Asaas fora do ar) */
   alunoId: string;

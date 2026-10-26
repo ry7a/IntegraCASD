@@ -258,6 +258,39 @@ export class CobrancasRepositorio {
     ];
   }
 
+  // [Cadastros.RF001] Todas as cobranças de um aluno, das mais recentes para as mais antigas.
+  async listarDoAluno(alunoId: string): Promise<CobrancaRegistrada[]> {
+    const registros = await this.prisma.cobranca.findMany({
+      where: { alunoId },
+      include: INCLUSAO,
+      orderBy: [{ vencimento: 'desc' }, { dataCriacao: 'desc' }],
+    });
+    return registros.map(paraCobranca);
+  }
+
+  // Por aluno com cobrança aberta: quanto está em aberto (vencida ou não) e quanto já venceu.
+  async totaisEmAbertoPorAluno(hoje: string): Promise<TotaisDoAluno[]> {
+    const [abertas, vencidas] = await Promise.all([
+      this.prisma.cobranca.groupBy({ by: ['alunoId'], where: { situacao: 'ABERTA' }, _sum: { valorCentavos: true } }),
+      this.prisma.cobranca.groupBy({
+        by: ['alunoId'],
+        where: { situacao: 'ABERTA', vencimento: { lt: deDia(hoje) } },
+        _sum: { valorCentavos: true },
+        _count: { _all: true },
+      }),
+    ]);
+    const vencidasPorAluno = new Map(vencidas.map((grupo) => [grupo.alunoId, grupo]));
+    return abertas.map((grupo) => {
+      const vencida = vencidasPorAluno.get(grupo.alunoId);
+      return {
+        alunoId: grupo.alunoId,
+        totalEmAbertoCentavos: grupo._sum.valorCentavos ?? 0,
+        quantidadeVencidas: vencida?._count._all ?? 0,
+        totalVencidoCentavos: vencida?._sum.valorCentavos ?? 0,
+      };
+    });
+  }
+
   // Quando chegou a última notificação do Asaas (qualquer evento do webhook).
   async ultimaNotificacaoEm(): Promise<Date | null> {
     const ultima = await this.prisma.eventoWebhook.findFirst({ orderBy: { dataCriacao: 'desc' }, select: { dataCriacao: true } });
@@ -295,6 +328,14 @@ export class CobrancasRepositorio {
     return eventos.sort((a, b) => b.ocorridoEm.getTime() - a.ocorridoEm.getTime());
   }
 }
+
+export type TotaisDoAluno = {
+  alunoId: string;
+  // Abertas, vencidas ou não.
+  totalEmAbertoCentavos: number;
+  quantidadeVencidas: number;
+  totalVencidoCentavos: number;
+};
 
 export type EventoDaCobranca = { id: string; ocorridoEm: Date; descricao: string; origem: 'ASAAS' | 'USUARIO' };
 

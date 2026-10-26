@@ -1,9 +1,9 @@
 import { Link } from 'react-router'
+import { useListarCobrancasDoAluno } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
 import { formatarData, formatarMoeda } from '@/compartilhado/formatacao'
-import { useListarCobrancasDoAluno } from './consultas'
 
 // Aba "Cobranças" da tela do aluno. Os dados são de Cobranças: a API os entrega em /alunos/:id/cobrancas.
 function CobrancasDoAluno({ alunoId }: { alunoId: string }) {
@@ -24,9 +24,9 @@ function CobrancasDoAluno({ alunoId }: { alunoId: string }) {
             <div className="alerta" role="status">
               <Icone nome="alerta" />
               <p>
-                <strong>Total em aberto: {formatarMoeda(dados.totalEmAbertoCentavos)}.</strong> São{' '}
-                {dados.quantidadeVencidas} cobranças vencidas. Abra uma cobrança para sincronizar, reenviar o boleto ou
-                registrar pagamento.
+                <strong>Total vencido: {formatarMoeda(dados.totalVencidoCentavos)}.</strong>{' '}
+                {dados.quantidadeVencidas === 1 ? 'É 1 cobrança vencida' : `São ${dados.quantidadeVencidas} cobranças vencidas`}. Abra
+                uma cobrança para sincronizar, obter o boleto ou registrar pagamento.
               </p>
             </div>
           )}

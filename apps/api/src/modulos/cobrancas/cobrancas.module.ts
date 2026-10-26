@@ -4,11 +4,13 @@ import { FilaModule } from '../../compartilhado/fila/fila.module.js';
 import { AdministracaoModule } from '../administracao/index.js';
 import { CadastrosModule } from '../cadastros/index.js';
 import { CobrancasController } from './api/cobrancas.controller.js';
+import { CobrancasDoAlunoController } from './api/cobrancas-do-aluno.controller.js';
 import { GeracaoRecorrenteController } from './api/geracao-recorrente.controller.js';
 import { PendenciasController } from './api/pendencias.controller.js';
 import { WebhookAsaasController } from './api/webhook-asaas.controller.js';
 import { AtualizarClienteAsaas } from './aplicacao/atualizar-cliente-asaas.js';
 import { CancelarCobranca } from './aplicacao/cancelar-cobranca.js';
+import { ListarCobrancasDoAluno, TotaisEmAbertoPorAluno } from './aplicacao/cobrancas-do-aluno.js';
 import { ConsultarCobrancas } from './aplicacao/consultar-cobrancas.js';
 import { DetalharCobranca } from './aplicacao/detalhar-cobranca.js';
 import { EmitirCobrancaAvulsa } from './aplicacao/emitir-cobranca-avulsa.js';
@@ -42,7 +44,7 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
 // consumidores (webhook e geração recorrente), que o worker liga ao iniciar.
 @Module({
   imports: [FilaModule, AsaasModule, CadastrosModule, AdministracaoModule],
-  controllers: [CobrancasController, GeracaoRecorrenteController, PendenciasController, WebhookAsaasController],
+  controllers: [CobrancasController, CobrancasDoAlunoController, GeracaoRecorrenteController, PendenciasController, WebhookAsaasController],
   providers: [
     ReceberEventoWebhook,
     ProcessarEventoWebhook,
@@ -66,6 +68,8 @@ import { RitmoDoAsaas } from './infra/ritmo-do-asaas.js';
     DetalharCobranca,
     ObterBoleto,
     CancelarCobranca,
+    ListarCobrancasDoAluno,
+    TotaisEmAbertoPorAluno,
     RegistrarPagamentoManual,
     ExecucoesRepositorio,
     RitmoDoAsaas,
