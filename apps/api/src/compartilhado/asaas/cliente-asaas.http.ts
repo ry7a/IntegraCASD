@@ -68,15 +68,21 @@ export class ClienteAsaasHttp extends ClienteAsaas {
       throw new Error('valorEmCentavos deve ser um inteiro positivo.');
     }
 
-    const resposta = await this.enviar<{ id: string; bankSlipUrl?: string | null }>('/payments', {
-      customer: dados.clienteIdAsaas,
-      billingType: 'BOLETO',
-      // O Asaas espera reais com casas decimais; o sistema guarda centavos inteiros.
-      value: dados.valorEmCentavos / 100,
-      dueDate: dados.vencimento,
-      description: dados.descricao,
-    });
-    return { idAsaas: resposta.id, urlBoleto: resposta.bankSlipUrl ?? null };
+    const resposta = await this.enviar<{ id: string; bankSlipUrl?: string | null; invoiceUrl?: string | null }>(
+      '/payments',
+      {
+        customer: dados.clienteIdAsaas,
+        billingType: 'BOLETO',
+        // O Asaas espera reais com casas decimais; o sistema guarda centavos inteiros.
+        value: dados.valorEmCentavos / 100,
+        dueDate: dados.vencimento,
+        description: dados.descricao,
+        // Multa e juros em percentual: o Asaas aplica no pagamento em atraso.
+        fine: { value: dados.multaPercentual, type: 'PERCENTAGE' },
+        interest: { value: dados.jurosMensalPercentual },
+      },
+    );
+    return { idAsaas: resposta.id, urlBoleto: resposta.bankSlipUrl ?? null, urlFatura: resposta.invoiceUrl ?? null };
   }
 
   // Envia um POST. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele

@@ -47,6 +47,7 @@ model Usuario {
   sessoes              Sessao[]
   registrosDeAuditoria RegistroAuditoria[]
   parametrosAlterados  ParametrosCobranca[]
+  cobrancasEmitidas    Cobranca[]
 
   @@map("usuarios")
 }
@@ -147,24 +148,26 @@ model Alojamento {
 }
 
 model Aluno {
-  id            String      @id @default(uuid()) @db.Uuid
+  id            String        @id @default(uuid()) @db.Uuid
   nome          String
-  cpf           String      @db.Char(11) // só dígitos, sem pontuação
+  cpf           String        @db.Char(11) // só dígitos, sem pontuação
   email         String
-  matricula     Int?        @unique
+  matricula     Int?          @unique
   posto         PostoAluno?
   curso         CursoAluno?
-  turmaId       String?     @map("turma_id") @db.Uuid
-  turma         Turma?      @relation(fields: [turmaId], references: [id], onDelete: Restrict)
+  turmaId       String?       @map("turma_id") @db.Uuid
+  turma         Turma?        @relation(fields: [turmaId], references: [id], onDelete: Restrict)
   celular       String?
   apelido       String?
-  alojamentoId  String?     @map("alojamento_id") @db.Uuid
-  alojamento    Alojamento? @relation(fields: [alojamentoId], references: [id], onDelete: Restrict)
+  alojamentoId  String?       @map("alojamento_id") @db.Uuid
+  alojamento    Alojamento?   @relation(fields: [alojamentoId], references: [id], onDelete: Restrict)
+  cobrancas     Cobranca[]
+  clienteAsaas  ClienteAsaas?
   // Define quem entra na cobrança recorrente. Inativar = ativo false (nunca excluir).
   // É a "situação" do cadastro (ativo ou inativo) [Cadastros.RF001].
-  ativo         Boolean     @default(true)
-  dataCriacao   DateTime    @default(now()) @map("data_criacao")
-  dataAlteracao DateTime    @updatedAt @map("data_alteracao")
+  ativo         Boolean       @default(true)
+  dataCriacao   DateTime      @default(now()) @map("data_criacao")
+  dataAlteracao DateTime      @updatedAt @map("data_alteracao")
 
   // Obsoletos: substituídos por `ativo` e por `alojamentoId`. Ficam até a carga inicial
   // preencher os campos novos; depois saem numa migração própria (expandir e depois contrair).
@@ -440,6 +443,9 @@ model Movimentacao {
   transferenciaPar   Movimentacao? @relation("Transferencia", fields: [transferenciaParId], references: [id], onDelete: Restrict)
   transferenciaParDe Movimentacao? @relation("Transferencia")
 
+  // Cobrança paga que gerou esta entrada (conciliação ou registro manual).
+  cobranca Cobranca?
+
   dataCriacao   DateTime @default(now()) @map("data_criacao")
   dataAlteracao DateTime @updatedAt @map("data_alteracao")
 
@@ -475,4 +481,73 @@ model ParametrosCobranca {
 
   @@index([dataCriacao])
   @@map("parametros_cobranca")
+}
+
+// ---------------------------------------------------------------------------
+// Cobranças (dirigidas ao aluno, sempre criadas no Asaas)
+// ---------------------------------------------------------------------------
+
+// O cliente do Asaas que corresponde a cada aluno. Fica no módulo de Cobranças (e não no aluno)
+// para o Cadastros não depender do Asaas.
+model ClienteAsaas {
+  alunoId     String   @id @map("aluno_id") @db.Uuid
+  aluno       Aluno    @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  idAsaas     String   @unique @map("id_asaas") // ex.: "cus_..."
+  dataCriacao DateTime @default(now()) @map("data_criacao")
+
+  @@map("clientes_asaas")
+}
+
+enum OrigemCobranca {
+  MENSALIDADE
+  AVULSA
+
+  @@map("origem_cobranca")
+}
+
+// "Vencida" não é guardada: é uma cobrança aberta com o vencimento já passado (calculado na leitura).
+enum SituacaoCobranca {
+  ABERTA
+  PAGA
+  PAGA_COM_REGISTRO_MANUAL
+  CANCELADA
+  ESTORNADA
+
+  @@map("situacao_cobranca")
+}
+
+// [Cobranças.RF001 a RF008]. Nenhuma cobrança existe só aqui: ela é gravada depois que o Asaas a
+// criou, com o id dele. Multa e juros são os dos parâmetros no momento da emissão (o Asaas calcula).
+// Regras garantidas por CHECK na migração: valor positivo e percentuais nos limites legais.
+model Cobranca {
+  id                    String           @id @default(uuid()) @db.Uuid
+  idAsaas               String           @unique @map("id_asaas") // ex.: "pay_..."
+  alunoId               String           @map("aluno_id") @db.Uuid
+  aluno                 Aluno            @relation(fields: [alunoId], references: [id], onDelete: Restrict)
+  origem                OrigemCobranca
+  // Mês da mensalidade ("AAAA-MM"); nulo na avulsa. Único por aluno: a geração pode rodar duas vezes.
+  referencia            String?          @db.Char(7)
+  descricao             String
+  valorCentavos         Int              @map("valor_centavos") // valor original, sem multa e juros
+  vencimento            DateTime         @db.Date
+  multaPercentual       Int              @map("multa_percentual")
+  jurosMensalPercentual Int              @map("juros_mensal_percentual")
+  situacao              SituacaoCobranca @default(ABERTA)
+  urlBoleto             String?          @map("url_boleto")
+  urlFatura             String?          @map("url_fatura")
+  // Nulo = gerada por rotina automática.
+  emitidaPorId          String?          @map("emitida_por_id") @db.Uuid
+  emitidaPor            Usuario?         @relation(fields: [emitidaPorId], references: [id], onDelete: Restrict)
+  // Preenchidos na baixa (mesma transação da movimentação de entrada) [Confiabilidade.NF004].
+  pagaEm                DateTime?        @map("paga_em") @db.Date
+  movimentacaoId        String?          @unique @map("movimentacao_id") @db.Uuid
+  movimentacao          Movimentacao?    @relation(fields: [movimentacaoId], references: [id], onDelete: Restrict)
+  canceladaEm           DateTime?        @map("cancelada_em")
+  motivoCancelamento    String?          @map("motivo_cancelamento")
+  dataCriacao           DateTime         @default(now()) @map("data_criacao")
+  dataAlteracao         DateTime         @updatedAt @map("data_alteracao")
+
+  @@unique([alunoId, referencia])
+  @@index([situacao, vencimento])
+  @@map("cobrancas")
 }

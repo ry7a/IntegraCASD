@@ -48,6 +48,9 @@ src/modulos/cobrancas/
 ## Asaas
 
 - Todo acesso ao Asaas passa pelo cliente em `src/compartilhado/asaas/`. Módulos dependem da interface, nunca do cliente HTTP.
+  O módulo importa o `AsaasModule` e injeta `ClienteAsaas`; a chave do `.env` só é lida na primeira chamada,
+  para a API e o gerador do OpenAPI subirem sem ela.
+- Nenhuma cobrança existe só aqui ([Confiabilidade.NF005]): primeiro o Asaas cria, depois o banco grava.
 - Em testes, use um dublê da interface. Nunca chame o Asaas real em teste automatizado.
 - Respostas 429 são tratadas no cliente: aguardar o intervalo informado e repetir.
 - Erros do Asaas são traduzidos para mensagens orientadas à ação antes de chegar à API ([Usabilidade.NF002]). Nunca repasse a mensagem crua da plataforma.

@@ -4,3 +4,4 @@
 export { CadastrosModule } from './cadastros.module.js';
 export { ListarAlunosCobraveis } from './aplicacao/listar-alunos-cobraveis.js';
 export type { AlunoDetalhe } from './aplicacao/aluno-detalhe.js';
+export { BuscarAluno } from './aplicacao/buscar-aluno.js';
