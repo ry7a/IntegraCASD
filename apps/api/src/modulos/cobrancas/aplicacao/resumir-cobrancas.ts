@@ -24,10 +24,11 @@ export class ResumirCobrancas {
 
   async executar(hoje = hojeEmSaoPaulo()): Promise<ResumoDasCobrancas> {
     const mes = hoje.slice(0, 7);
-    const [situacoes, ultimaNotificacaoEm] = await Promise.all([
+    const [situacoes, ultimaNotificacaoEm, ativa] = await Promise.all([
       this.cobrancas.resumir(hoje, `${mes}-01`),
       this.cobrancas.ultimaNotificacaoEm(),
+      this.asaas.estaConfigurado(),
     ]);
-    return { mes, situacoes, conciliacao: { ativa: this.asaas.estaConfigurado(), ultimaNotificacaoEm } };
+    return { mes, situacoes, conciliacao: { ativa, ultimaNotificacaoEm } };
   }
 }

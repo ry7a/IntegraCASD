@@ -5,6 +5,8 @@
 // nome da classe em tempo de execução, e interfaces do TypeScript somem depois da compilação.
 // Uma classe abstrata serve como tipo e como "etiqueta" de injeção ao mesmo tempo.
 
+export type AmbienteAsaas = 'SANDBOX' | 'PRODUCAO';
+
 export interface NovoClienteAsaas {
   nome: string;
   cpf: string; // só dígitos, sem pontuação
@@ -55,8 +57,10 @@ export class ErroAsaas extends Error {
 }
 
 export abstract class ClienteAsaas {
-  // Se a chave e o ambiente estão configurados. Não chama o Asaas.
-  abstract estaConfigurado(): boolean;
+  // Se há chave e ambiente configurados. Não chama o Asaas.
+  abstract estaConfigurado(): Promise<boolean>;
+  // Testa uma chave candidata (antes de salvá-la) com uma consulta sem efeito. Falha com ErroAsaas.
+  abstract testarCredenciais(ambiente: AmbienteAsaas, chaveApi: string): Promise<void>;
   abstract criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }>;
   // Atualiza nome, CPF e e-mail do cliente (quando o cadastro do aluno muda).
   abstract atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void>;

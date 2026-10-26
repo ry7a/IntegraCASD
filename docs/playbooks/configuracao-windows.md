@@ -10,7 +10,7 @@ Reserve cerca de uma hora e tenha à mão três coisas:
 
 - **Permissão de administrador** no computador. Vários passos pedem o PowerShell aberto como administrador.
 - **Acesso ao repositório** no GitHub. Peça o convite a quem administra o projeto.
-- **Os valores do `.env`**: a chave do sandbox do Asaas (`ASAAS_API_KEY`) e o token do webhook (`ASAAS_WEBHOOK_TOKEN`). Peça a quem administra; eles nunca ficam no repositório. O `SESSION_SECRET` você mesmo gera, na etapa 2.3.
+- **Os valores do `.env`**: a chave do sandbox do Asaas (`ASAAS_API_KEY`) e o token do webhook (`ASAAS_WEBHOOK_TOKEN`). Peça a quem administra; eles nunca ficam no repositório. O `SESSION_SECRET` e a `CHAVE_DE_CIFRAGEM` você mesmo gera, na etapa 2.3.
 
 Confira também se a **virtualização está ativa**, porque o Docker depende dela: abra o Gerenciador de Tarefas, vá em **Desempenho › CPU** e veja, no canto inferior direito, se aparece **Virtualização: Habilitado**. Se aparecer "Desabilitado", ela precisa ser ligada na BIOS do computador antes de seguir.
 
@@ -120,6 +120,14 @@ O `SESSION_SECRET` é um valor aleatório longo que você inventa. Para gerar um
 ```powershell
 $b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
 ```
+
+A `CHAVE_DE_CIFRAGEM` protege a chave do Asaas que a diretoria cadastra na tela de Administração: ela é guardada cifrada no banco, e só esta chave a decifra. Precisa ter exatamente 32 bytes; gere com:
+
+```powershell
+$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+Se você trocar a `CHAVE_DE_CIFRAGEM` depois de cadastrar uma chave do Asaas na tela, a chave guardada deixa de ser lida e precisa ser cadastrada de novo. Enquanto não houver chave cadastrada na tela, o sistema usa a `ASAAS_API_KEY` do `.env` (é o normal no desenvolvimento).
 
 ### 2.4 Subir o banco de dados
 

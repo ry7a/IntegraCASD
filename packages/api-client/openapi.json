@@ -447,6 +447,123 @@
         "x-perfil": "DIRETORIA"
       }
     },
+    "/api/admin/integracao-asaas": {
+      "get": {
+        "operationId": "buscarIntegracaoAsaas",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegracaoAsaasDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Situação da integração (nunca inclui a chave)",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/admin/integracao-asaas/chave": {
+      "put": {
+        "operationId": "substituirChaveAsaas",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubstituirChaveAsaasDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Testa a nova chave no Asaas e, se funcionar, guarda cifrada",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/admin/integracao-asaas/prazo-alerta": {
+      "put": {
+        "operationId": "alterarPrazoDoAlertaAsaas",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrazoDoAlertaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Muda o prazo do alerta sem notificações",
+        "tags": [
+          "administracao"
+        ],
+        "x-perfil": "DIRETORIA"
+      }
+    },
+    "/api/integracao/ambiente": {
+      "get": {
+        "operationId": "buscarAmbienteDaIntegracao",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AmbienteDaIntegracaoDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Ambiente do Asaas em uso (testes ou produção)",
+        "tags": [
+          "administracao"
+        ]
+      }
+    },
     "/api/alunos": {
       "get": {
         "operationId": "listarAlunos",
@@ -1518,6 +1635,150 @@
           "diaGeracao",
           "multaPercentual",
           "jurosMensalPercentual"
+        ]
+      },
+      "AmbienteAsaas": {
+        "type": "string",
+        "enum": [
+          "SANDBOX",
+          "PRODUCAO"
+        ],
+        "description": "Nulo quando não há chave"
+      },
+      "OrigemDaChaveAsaas": {
+        "type": "string",
+        "enum": [
+          "TELA",
+          "ARQUIVO_ENV"
+        ],
+        "description": "TELA: cadastrada pela diretoria; ARQUIVO_ENV: lida do .env (desenvolvimento)"
+      },
+      "PrazoDoAlertaHoras": {
+        "type": "number",
+        "enum": [
+          12,
+          24,
+          48
+        ],
+        "description": "Alerta a diretoria após este tempo sem notificações"
+      },
+      "IntegracaoAsaasDto": {
+        "type": "object",
+        "properties": {
+          "ambiente": {
+            "nullable": true,
+            "description": "Nulo quando não há chave",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AmbienteAsaas"
+              }
+            ]
+          },
+          "conectada": {
+            "type": "boolean",
+            "description": "Há uma chave utilizável pelo sistema"
+          },
+          "origemDaChave": {
+            "nullable": true,
+            "description": "TELA: cadastrada pela diretoria; ARQUIVO_ENV: lida do .env (desenvolvimento)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrigemDaChaveAsaas"
+              }
+            ]
+          },
+          "chaveCadastradaEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ultimoTesteEm": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "alteradoPor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome de quem fez a última alteração"
+          },
+          "prazoAlertaHoras": {
+            "description": "Alerta a diretoria após este tempo sem notificações",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrazoDoAlertaHoras"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ambiente",
+          "conectada",
+          "origemDaChave",
+          "chaveCadastradaEm",
+          "ultimoTesteEm",
+          "alteradoPor",
+          "prazoAlertaHoras"
+        ]
+      },
+      "SubstituirChaveAsaasDto": {
+        "type": "object",
+        "properties": {
+          "ambiente": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AmbienteAsaas"
+              }
+            ]
+          },
+          "chave": {
+            "type": "string",
+            "description": "Chave da API, como aparece no painel do Asaas. Nunca é devolvida."
+          },
+          "prazoAlertaHoras": {
+            "description": "Se omitido, mantém o prazo atual",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrazoDoAlertaHoras"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ambiente",
+          "chave"
+        ]
+      },
+      "PrazoDoAlertaDto": {
+        "type": "object",
+        "properties": {
+          "prazoAlertaHoras": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PrazoDoAlertaHoras"
+              }
+            ]
+          }
+        },
+        "required": [
+          "prazoAlertaHoras"
+        ]
+      },
+      "AmbienteDaIntegracaoDto": {
+        "type": "object",
+        "properties": {
+          "ambiente": {
+            "nullable": true,
+            "description": "Nulo quando não há chave",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AmbienteAsaas"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ambiente"
         ]
       },
       "CursoAluno": {

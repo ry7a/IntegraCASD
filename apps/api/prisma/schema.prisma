@@ -48,6 +48,7 @@ model Usuario {
   registrosDeAuditoria RegistroAuditoria[]
   parametrosAlterados  ParametrosCobranca[]
   cobrancasEmitidas    Cobranca[]
+  configuracoesAsaas   ConfiguracaoAsaas[]
 
   @@map("usuarios")
 }
@@ -581,4 +582,30 @@ model ExecucaoGeracao {
 
   @@index([referencia, iniciadaEm])
   @@map("execucoes_geracao")
+}
+
+enum AmbienteAsaas {
+  SANDBOX
+  PRODUCAO
+
+  @@map("ambiente_asaas")
+}
+
+// Configuração da integração com o Asaas [Administração.RF004]. Uma linha por alteração, nunca
+// alterada; a vigente é a mais recente. A chave fica cifrada (AES-256-GCM, com a CHAVE_DE_CIFRAGEM do
+// .env) e nunca volta para a tela, o log ou a trilha [Segurança.NF003].
+model ConfiguracaoAsaas {
+  id               String        @id @default(uuid()) @db.Uuid
+  ambiente         AmbienteAsaas
+  chaveCifrada     String        @map("chave_cifrada")
+  // Após quantas horas sem notificações a diretoria é alertada (12, 24 ou 48) [Confiabilidade.NF002].
+  prazoAlertaHoras Int           @map("prazo_alerta_horas")
+  // Quando a comunicação com o Asaas foi testada com esta chave (antes de salvar).
+  testadaEm        DateTime      @map("testada_em")
+  alteradoPorId    String        @map("alterado_por_id") @db.Uuid
+  alteradoPor      Usuario       @relation(fields: [alteradoPorId], references: [id], onDelete: Restrict)
+  dataCriacao      DateTime      @default(now()) @map("data_criacao")
+
+  @@index([dataCriacao])
+  @@map("configuracoes_asaas")
 }

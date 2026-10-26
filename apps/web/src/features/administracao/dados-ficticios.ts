@@ -2,7 +2,6 @@
 // Usuários e endereço são inventados (LGPD). Não há chave do Asaas aqui, nem poderia haver.
 import { marcarDadosFicticios } from '@/compartilhado/dados-ficticios-marcador'
 import type {
-  IntegracaoAsaasDto,
   ListaDeUsuariosDto,
   RegistroAuditoriaDto,
 } from './contrato'
@@ -17,18 +16,6 @@ export const usuarios: ListaDeUsuariosDto = {
     { id: 'usuario-thiago', nome: 'Thiago Rezende', email: 'thiago.rezende@exemplo.com', perfil: 'DIRETORIA', ativo: true, observacao: null, ultimoAcessoEm: '2026-10-14T21:10:00-03:00' },
     { id: 'usuario-gabriela', nome: 'Gabriela Sato', email: 'gabriela.sato@exemplo.com', perfil: 'DIRETORIA', ativo: false, observacao: 'Gestão 2025', ultimoAcessoEm: '2025-12-20T18:30:00-03:00' },
   ],
-}
-
-export const integracao: IntegracaoAsaasDto = {
-  ambiente: 'SANDBOX',
-  conectada: true,
-  ultimoTesteEm: '2026-10-19T06:00:00-03:00',
-  ultimaNotificacaoEm: '2026-10-19T08:48:00-03:00',
-  falhasSeguidas: 0,
-  limiteFalhas: 15,
-  chaveCadastradaEm: '2026-10-02',
-  enderecoNotificacao: 'https://integracasd.exemplo.org/webhooks/asaas',
-  horasAlertaSemNotificacao: 24,
 }
 
 export const trilha: RegistroAuditoriaDto[] = [

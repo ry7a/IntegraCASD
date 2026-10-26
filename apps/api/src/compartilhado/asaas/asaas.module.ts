@@ -1,66 +1,78 @@
-import { Logger, Module } from '@nestjs/common';
+import { Injectable, Module } from '@nestjs/common';
 import {
   ClienteAsaas,
   ErroAsaas,
+  type AmbienteAsaas,
   type CobrancaAsaas,
   type NovaCobrancaAsaas,
   type NovoClienteAsaas,
 } from './cliente-asaas.js';
-import { ClienteAsaasHttp, configuracaoAsaasDoAmbiente } from './cliente-asaas.http.js';
+import { ClienteAsaasHttp } from './cliente-asaas.http.js';
+import { ConfiguracaoAsaasRepositorio } from './configuracao-asaas.repositorio.js';
+import { FonteDaConfiguracaoAsaas } from './fonte-da-configuracao.js';
 
-// Cliente Asaas "sob demanda": a chave e o ambiente (do .env) só são lidos na primeira chamada.
-// Assim a API, o worker e o script que gera o OpenAPI sobem mesmo sem a chave configurada (no CI,
-// por exemplo); só a operação que precisa do Asaas falha, com mensagem orientada à ação.
+// Cliente Asaas "sob demanda": a cada operação, usa a configuração vigente (a cadastrada na tela ou,
+// sem ela, a do .env). Assim a API, o worker e o gerador do OpenAPI sobem mesmo sem chave (no CI, por
+// exemplo), e uma chave substituída na tela passa a valer na operação seguinte, sem reiniciar nada.
+@Injectable()
 export class ClienteAsaasSobDemanda extends ClienteAsaas {
-  private readonly logger = new Logger(ClienteAsaasSobDemanda.name);
-  private real: ClienteAsaasHttp | null = null;
+  // O cliente HTTP é reaproveitado enquanto a configuração não muda.
+  private emCache: { urlBase: string; chaveApi: string; cliente: ClienteAsaasHttp } | null = null;
+  // Só para testar uma chave candidata (sem configuração própria).
+  private readonly testador = new ClienteAsaasHttp({ urlBase: '', chaveApi: '' });
 
-  private cliente(): ClienteAsaasHttp {
-    if (this.real === null) {
-      try {
-        this.real = new ClienteAsaasHttp(configuracaoAsaasDoAmbiente());
-      } catch (erro) {
-        // O detalhe (qual variável falta) vai para o log; a chave nunca.
-        this.logger.error(erro instanceof Error ? erro.message : 'Configuração do Asaas inválida.');
-        throw new ErroAsaas(
-          'A integração com o Asaas não está configurada. Peça à diretoria para conferir a configuração.',
-          'NAO_CONFIGURADO',
-        );
-      }
+  constructor(private readonly fonte: FonteDaConfiguracaoAsaas) {
+    super();
+  }
+
+  private async cliente(): Promise<ClienteAsaasHttp> {
+    const configuracao = await this.fonte.emUso();
+    if (configuracao === null) {
+      throw new ErroAsaas(
+        'A integração com o Asaas não está configurada. Peça à diretoria para cadastrar a chave em Administração.',
+        'NAO_CONFIGURADO',
+      );
     }
-    return this.real;
-  }
-
-  estaConfigurado(): boolean {
-    try {
-      configuracaoAsaasDoAmbiente();
-      return true;
-    } catch {
-      return false;
+    if (this.emCache?.urlBase !== configuracao.urlBase || this.emCache.chaveApi !== configuracao.chaveApi) {
+      this.emCache = { urlBase: configuracao.urlBase, chaveApi: configuracao.chaveApi, cliente: new ClienteAsaasHttp(configuracao) };
     }
+    return this.emCache.cliente;
   }
 
-  criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
-    return this.cliente().criarCliente(dados);
+  async estaConfigurado(): Promise<boolean> {
+    return (await this.fonte.emUso()) !== null;
   }
 
-  atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void> {
-    return this.cliente().atualizarCliente(idAsaas, dados);
+  testarCredenciais(ambiente: AmbienteAsaas, chaveApi: string): Promise<void> {
+    return this.testador.testarCredenciais(ambiente, chaveApi);
   }
 
-  criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
-    return this.cliente().criarCobranca(dados);
+  async criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
+    return (await this.cliente()).criarCliente(dados);
   }
 
-  cancelarCobranca(idAsaas: string): Promise<void> {
-    return this.cliente().cancelarCobranca(idAsaas);
+  async atualizarCliente(idAsaas: string, dados: NovoClienteAsaas): Promise<void> {
+    return (await this.cliente()).atualizarCliente(idAsaas, dados);
+  }
+
+  async criarCobranca(dados: NovaCobrancaAsaas): Promise<CobrancaAsaas> {
+    return (await this.cliente()).criarCobranca(dados);
+  }
+
+  async cancelarCobranca(idAsaas: string): Promise<void> {
+    return (await this.cliente()).cancelarCobranca(idAsaas);
   }
 }
 
 // Quem pede `ClienteAsaas` recebe o cliente real (sob demanda). Nos testes, cada teste entrega
-// o dublê (ClienteAsaasFalso) no lugar.
+// o dublê (ClienteAsaasFalso) no lugar. A configuração (repositório e fonte) é exportada para a
+// Administração cadastrar e consultar a integração [Administração.RF004].
 @Module({
-  providers: [{ provide: ClienteAsaas, useClass: ClienteAsaasSobDemanda }],
-  exports: [ClienteAsaas],
+  providers: [
+    ConfiguracaoAsaasRepositorio,
+    FonteDaConfiguracaoAsaas,
+    { provide: ClienteAsaas, useClass: ClienteAsaasSobDemanda },
+  ],
+  exports: [ClienteAsaas, ConfiguracaoAsaasRepositorio, FonteDaConfiguracaoAsaas],
 })
 export class AsaasModule {}

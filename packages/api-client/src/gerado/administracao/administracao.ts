@@ -27,14 +27,18 @@ import type {
 import type {
   AlterarCategoriaDto,
   AlterarUsuarioDto,
+  AmbienteDaIntegracaoDto,
   CategoriaComUsoDto,
   ConferenciaDto,
   ConsultaDosParametrosDto,
   CriarCategoriaDto,
   CriarUsuarioDto,
+  IntegracaoAsaasDto,
   ListaDeCategoriasComUsoDto,
   ListaDeUsuariosDto,
   ParametrosDeCobrancaDto,
+  PrazoDoAlertaDto,
+  SubstituirChaveAsaasDto,
   UsuarioDto
 } from '../api.schemas';
 
@@ -962,3 +966,377 @@ export const useConferirParametrosDeCobranca = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getConferirParametrosDeCobrancaMutationOptions(options), queryClient);
     }
+    export const getBuscarIntegracaoAsaasUrl = () => {
+
+
+
+
+  return `/api/admin/integracao-asaas`
+}
+
+/**
+ * @summary Situação da integração (nunca inclui a chave)
+ */
+export const buscarIntegracaoAsaas = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<IntegracaoAsaasDto> => {
+
+  return clienteHttp<IntegracaoAsaasDto>(getBuscarIntegracaoAsaasUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getBuscarIntegracaoAsaasQueryKey = () => {
+    return [
+    `/api/admin/integracao-asaas`
+    ] as const;
+    }
+
+
+export const getBuscarIntegracaoAsaasQueryOptions = <TData = Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuscarIntegracaoAsaasQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>> = ({ signal }) => buscarIntegracaoAsaas({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuscarIntegracaoAsaasQueryResult = NonNullable<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>>
+export type BuscarIntegracaoAsaasQueryError = ErrorType<unknown>
+
+
+export function useBuscarIntegracaoAsaas<TData = Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarIntegracaoAsaas>>,
+          TError,
+          Awaited<ReturnType<typeof buscarIntegracaoAsaas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarIntegracaoAsaas<TData = Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarIntegracaoAsaas>>,
+          TError,
+          Awaited<ReturnType<typeof buscarIntegracaoAsaas>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarIntegracaoAsaas<TData = Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Situação da integração (nunca inclui a chave)
+ */
+
+export function useBuscarIntegracaoAsaas<TData = Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarIntegracaoAsaas>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuscarIntegracaoAsaasQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getSubstituirChaveAsaasUrl = () => {
+
+
+
+
+  return `/api/admin/integracao-asaas/chave`
+}
+
+/**
+ * @summary Testa a nova chave no Asaas e, se funcionar, guarda cifrada
+ */
+export const substituirChaveAsaas = async (substituirChaveAsaasDto: SubstituirChaveAsaasDto, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<void>(getSubstituirChaveAsaasUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(substituirChaveAsaasDto)
+  }
+);}
+
+
+
+
+
+export const getSubstituirChaveAsaasMutationKey = () => ['substituirChaveAsaas'] as const;
+
+export const getSubstituirChaveAsaasMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof substituirChaveAsaas>>, TError,SubstituirChaveAsaasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof substituirChaveAsaas>>, TError,SubstituirChaveAsaasMutationVariables, TContext> => {
+
+const mutationKey = getSubstituirChaveAsaasMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof substituirChaveAsaas>>, SubstituirChaveAsaasMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  substituirChaveAsaas(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubstituirChaveAsaasMutationResult = NonNullable<Awaited<ReturnType<typeof substituirChaveAsaas>>>
+    export type SubstituirChaveAsaasMutationBody = SubstituirChaveAsaasDto
+    export type SubstituirChaveAsaasMutationError = ErrorType<unknown>
+    export type SubstituirChaveAsaasMutationVariables = {data: SubstituirChaveAsaasDto}
+
+    /**
+ * @summary Testa a nova chave no Asaas e, se funcionar, guarda cifrada
+ */
+export const useSubstituirChaveAsaas = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof substituirChaveAsaas>>, TError,SubstituirChaveAsaasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof substituirChaveAsaas>>,
+        TError,
+        SubstituirChaveAsaasMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSubstituirChaveAsaasMutationOptions(options), queryClient);
+    }
+    export const getAlterarPrazoDoAlertaAsaasUrl = () => {
+
+
+
+
+  return `/api/admin/integracao-asaas/prazo-alerta`
+}
+
+/**
+ * @summary Muda o prazo do alerta sem notificações
+ */
+export const alterarPrazoDoAlertaAsaas = async (prazoDoAlertaDto: PrazoDoAlertaDto, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<void>(getAlterarPrazoDoAlertaAsaasUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(prazoDoAlertaDto)
+  }
+);}
+
+
+
+
+
+export const getAlterarPrazoDoAlertaAsaasMutationKey = () => ['alterarPrazoDoAlertaAsaas'] as const;
+
+export const getAlterarPrazoDoAlertaAsaasMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>, TError,AlterarPrazoDoAlertaAsaasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>, TError,AlterarPrazoDoAlertaAsaasMutationVariables, TContext> => {
+
+const mutationKey = getAlterarPrazoDoAlertaAsaasMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>, AlterarPrazoDoAlertaAsaasMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  alterarPrazoDoAlertaAsaas(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AlterarPrazoDoAlertaAsaasMutationResult = NonNullable<Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>>
+    export type AlterarPrazoDoAlertaAsaasMutationBody = PrazoDoAlertaDto
+    export type AlterarPrazoDoAlertaAsaasMutationError = ErrorType<unknown>
+    export type AlterarPrazoDoAlertaAsaasMutationVariables = {data: PrazoDoAlertaDto}
+
+    /**
+ * @summary Muda o prazo do alerta sem notificações
+ */
+export const useAlterarPrazoDoAlertaAsaas = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>, TError,AlterarPrazoDoAlertaAsaasMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof alterarPrazoDoAlertaAsaas>>,
+        TError,
+        AlterarPrazoDoAlertaAsaasMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAlterarPrazoDoAlertaAsaasMutationOptions(options), queryClient);
+    }
+    export const getBuscarAmbienteDaIntegracaoUrl = () => {
+
+
+
+
+  return `/api/integracao/ambiente`
+}
+
+/**
+ * @summary Ambiente do Asaas em uso (testes ou produção)
+ */
+export const buscarAmbienteDaIntegracao = async ( options?: Parameters<typeof clienteHttp>[1]): Promise<AmbienteDaIntegracaoDto> => {
+
+  return clienteHttp<AmbienteDaIntegracaoDto>(getBuscarAmbienteDaIntegracaoUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getBuscarAmbienteDaIntegracaoQueryKey = () => {
+    return [
+    `/api/integracao/ambiente`
+    ] as const;
+    }
+
+
+export const getBuscarAmbienteDaIntegracaoQueryOptions = <TData = Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getBuscarAmbienteDaIntegracaoQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>> = ({ signal }) => buscarAmbienteDaIntegracao({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type BuscarAmbienteDaIntegracaoQueryResult = NonNullable<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>>
+export type BuscarAmbienteDaIntegracaoQueryError = ErrorType<unknown>
+
+
+export function useBuscarAmbienteDaIntegracao<TData = Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>,
+          TError,
+          Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarAmbienteDaIntegracao<TData = Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>,
+          TError,
+          Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useBuscarAmbienteDaIntegracao<TData = Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Ambiente do Asaas em uso (testes ou produção)
+ */
+
+export function useBuscarAmbienteDaIntegracao<TData = Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof buscarAmbienteDaIntegracao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getBuscarAmbienteDaIntegracaoQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
