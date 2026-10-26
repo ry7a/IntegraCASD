@@ -27,6 +27,7 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 | `execucoes_geracao` | cada execução da geração recorrente ([Confiabilidade.NF007]) | início, fim, criadas, já existentes, falhas (aluno e motivo) e se foi interrompida |
 | `clientes_asaas` | o cliente do Asaas de cada aluno | criado na primeira cobrança; fica em Cobranças para o Cadastros não depender do Asaas |
 | `execucoes_sincronizacao` | cada sincronização com o Asaas ([Cobranças.RF007], [Confiabilidade.NF007]) | período ou cobrança única, quem pediu, início, fim, conferidas, atualizadas, trazidas do Asaas, não identificadas, para conferir e o motivo de uma interrupção |
+| `pendencias_conciliacao` | fila de pendências de conciliação ([Cobranças.RF005] fluxo E1) | tipo (sem cobrança, após registro manual, divergência), origem (webhook ou sincronização), cobrança do Asaas e daqui, e a resolução (quando, quem, o quê); no máximo uma aberta do mesmo tipo por cobrança do Asaas |
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem
 (`MENSALIDADE` ou `AVULSA`), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
@@ -144,3 +145,8 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
 15. **Estorno vindo do Asaas:** a cobrança passa a "Estornada" e a entrada é anulada por uma movimentação
     espelho (origem `ESTORNO`), nunca apagada nem alterada. Cobrança removida no painel do Asaas é
     cancelada aqui.
+16. **Pendências de conciliação numa fila única** (issue #37; responde à questão em aberto do documento de
+    requisitos): avisos do Asaas sem cobrança aqui, pagamentos depois de registro manual e divergências da
+    sincronização vão para `pendencias_conciliacao` e aparecem em Cobranças › Pendências, junto com as falhas
+    da última geração recorrente de cada mês recente. A pendência não é apagada: é resolvida com um texto de
+    quem conferiu, que vai para a trilha.

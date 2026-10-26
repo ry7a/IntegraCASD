@@ -4,6 +4,7 @@ import PaginaAluno from '@/features/cadastro/PaginaAluno'
 import PaginaCadastros from '@/features/cadastro/PaginaCadastros'
 import PaginaCobranca from '@/features/cobrancas/PaginaCobranca'
 import PaginaCobrancas from '@/features/cobrancas/PaginaCobrancas'
+import PaginaPendencias from '@/features/cobrancas/PaginaPendencias'
 import PaginaIndicadores from '@/features/indicadores/PaginaIndicadores'
 import PaginaMovimentacoes from '@/features/movimentacoes/PaginaMovimentacoes'
 import GuardaDiretoria from './GuardaDiretoria'
@@ -22,6 +23,7 @@ export const rotas = createBrowserRouter([
       { path: 'cadastros', element: <PaginaCadastros /> },
       { path: 'cadastros/alunos/:id', element: <PaginaAluno /> },
       { path: 'cobrancas', element: <PaginaCobrancas /> },
+      { path: 'cobrancas/pendencias', element: <PaginaPendencias /> },
       { path: 'cobrancas/:id', element: <PaginaCobranca /> },
       { path: 'movimentacoes', element: <PaginaMovimentacoes /> },
       { path: 'administracao', element: <GuardaDiretoria /> },

@@ -58,8 +58,11 @@ export type AcaoDaConciliacao =
   | { tipo: 'ESTORNAR' }
   // Cobrança removida no painel do Asaas: deixa de valer aqui também.
   | { tipo: 'CANCELAR' }
-  // Fluxo E1 e [Cobranças.RF006] fluxo E2: o evento é guardado para conferência humana.
-  | { tipo: 'PENDENCIA'; motivo: string };
+  // Fluxo E1 e [Cobranças.RF006] fluxo E2: vai para a fila de pendências, para conferência humana.
+  | { tipo: 'PENDENCIA'; tipoDaPendencia: TipoDePendencia; motivo: string; idCobrancaAsaas: string };
+
+// Os tipos da fila de pendências de conciliação.
+export type TipoDePendencia = 'SEM_COBRANCA' | 'APOS_REGISTRO_MANUAL' | 'DIVERGENCIA';
 
 const PAGAMENTO = new Set(['PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED']);
 const ESTORNO = new Set(['PAYMENT_REFUNDED']);
@@ -73,15 +76,22 @@ const SITUACOES_PAGAS: SituacaoGuardada[] = ['PAGA', 'PAGA_COM_REGISTRO_MANUAL']
 // `hoje` entra por parâmetro para o teste.
 export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAConciliar | null, hoje: string): AcaoDaConciliacao {
   const relevante = PAGAMENTO.has(aviso.tipo) || ESTORNO.has(aviso.tipo) || REMOCAO.has(aviso.tipo) || A_CONFERIR.has(aviso.tipo);
-  if (!relevante || aviso.idCobrancaAsaas === null) return { tipo: 'NADA' };
+  const idCobrancaAsaas = aviso.idCobrancaAsaas;
+  if (!relevante || idCobrancaAsaas === null) return { tipo: 'NADA' };
+  const pendencia = (tipoDaPendencia: TipoDePendencia, motivo: string): AcaoDaConciliacao => ({
+    tipo: 'PENDENCIA',
+    tipoDaPendencia,
+    motivo,
+    idCobrancaAsaas,
+  });
 
   if (cobranca === null) {
     // Cobrança apagada que nunca existiu aqui não pede nada; dinheiro sem cobrança, sim (fluxo E1).
     if (REMOCAO.has(aviso.tipo)) return { tipo: 'NADA' };
-    return {
-      tipo: 'PENDENCIA',
-      motivo: `O Asaas avisou ${descreverTipo(aviso.tipo)} de uma cobrança que não existe aqui (${aviso.idCobrancaAsaas}). Sincronize com o Asaas para trazê-la.`,
-    };
+    return pendencia(
+      'SEM_COBRANCA',
+      `O Asaas avisou ${descreverTipo(aviso.tipo)} de uma cobrança que não existe aqui (${idCobrancaAsaas}). Sincronize com o Asaas para trazê-la.`,
+    );
   }
 
   if (PAGAMENTO.has(aviso.tipo)) {
@@ -99,37 +109,31 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     }
     if (cobranca.situacao === 'PAGA_COM_REGISTRO_MANUAL') {
       // [Cobranças.RF006] fluxo E2: não cria segunda entrada; pode ser pagamento em duplicidade.
-      return {
-        tipo: 'PENDENCIA',
-        motivo: 'O Asaas confirmou o pagamento de uma cobrança já registrada manualmente. Confira se o aluno pagou duas vezes.',
-      };
+      return pendencia(
+        'APOS_REGISTRO_MANUAL',
+        'O Asaas confirmou o pagamento de uma cobrança já registrada manualmente. Confira se o aluno pagou duas vezes.',
+      );
     }
     // Estornada só fica a cobrança que o Asaas pagou antes: este é um aviso antigo chegando atrasado.
     if (cobranca.situacao === 'ESTORNADA') return { tipo: 'NADA' };
-    return {
-      tipo: 'PENDENCIA',
-      motivo: 'O Asaas confirmou o pagamento de uma cobrança cancelada. Confira com o aluno e com o Asaas.',
-    };
+    return pendencia('DIVERGENCIA', 'O Asaas confirmou o pagamento de uma cobrança cancelada. Confira com o aluno e com o Asaas.');
   }
 
   if (ESTORNO.has(aviso.tipo)) {
     if (cobranca.situacao === 'PAGA') return { tipo: 'ESTORNAR' };
     if (cobranca.situacao === 'ESTORNADA') return { tipo: 'NADA' };
-    return {
-      tipo: 'PENDENCIA',
-      motivo: 'O Asaas avisou o estorno de uma cobrança que não estava paga por ele. Confira a situação no Asaas.',
-    };
+    return pendencia('DIVERGENCIA', 'O Asaas avisou o estorno de uma cobrança que não estava paga por ele. Confira a situação no Asaas.');
   }
 
   if (REMOCAO.has(aviso.tipo)) {
     if (cobranca.situacao === 'ABERTA') return { tipo: 'CANCELAR' };
     if (cobranca.situacao === 'CANCELADA') return { tipo: 'NADA' };
-    return { tipo: 'PENDENCIA', motivo: 'O Asaas removeu uma cobrança que está paga aqui. Confira a situação no Asaas.' };
+    return pendencia('DIVERGENCIA', 'O Asaas removeu uma cobrança que está paga aqui. Confira a situação no Asaas.');
   }
 
   // A_CONFERIR: só pede atenção se a cobrança estava paga ou cancelada.
   if (SITUACOES_PAGAS.includes(cobranca.situacao) || cobranca.situacao === 'CANCELADA') {
-    return { tipo: 'PENDENCIA', motivo: `O Asaas avisou ${descreverTipo(aviso.tipo)}. Confira a cobrança no Asaas.` };
+    return pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}. Confira a cobrança no Asaas.`);
   }
   return { tipo: 'NADA' };
 }

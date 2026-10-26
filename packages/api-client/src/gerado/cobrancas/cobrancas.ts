@@ -30,12 +30,15 @@ import type {
   CobrancaDetalheDto,
   CobrancaDto,
   EmitirCobrancaAvulsaDto,
+  FilaDePendenciasDto,
   ListaDeCobrancasDto,
   ListaDeExecucoesDto,
   ListarCobrancasParams,
+  ListarPendenciasDeConciliacaoParams,
   PagamentoManualDto,
   PedidoDeGeracaoDto,
   PeriodoDeSincronizacaoDto,
+  ResolucaoDto,
   ResumoCobrancasDto,
   SincronizacaoDto,
   SugestaoDeNovaCobrancaDto
@@ -1143,4 +1146,199 @@ export const usePedirGeracaoAgora = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getPedirGeracaoAgoraMutationOptions(options), queryClient);
+    }
+    export const getListarPendenciasDeConciliacaoUrl = (params?: ListarPendenciasDeConciliacaoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/cobrancas/conciliacao/pendencias?${stringifiedParams}` : `/api/cobrancas/conciliacao/pendencias`
+}
+
+/**
+ * @summary Fila de pendências de conciliação
+ */
+export const listarPendenciasDeConciliacao = async (params?: ListarPendenciasDeConciliacaoParams, options?: Parameters<typeof clienteHttp>[1]): Promise<FilaDePendenciasDto> => {
+
+  return clienteHttp<FilaDePendenciasDto>(getListarPendenciasDeConciliacaoUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListarPendenciasDeConciliacaoQueryKey = (params?: ListarPendenciasDeConciliacaoParams,) => {
+    return [
+    `/api/cobrancas/conciliacao/pendencias`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListarPendenciasDeConciliacaoQueryOptions = <TData = Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError = ErrorType<unknown>>(params?: ListarPendenciasDeConciliacaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListarPendenciasDeConciliacaoQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>> = ({ signal }) => listarPendenciasDeConciliacao(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListarPendenciasDeConciliacaoQueryResult = NonNullable<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>>
+export type ListarPendenciasDeConciliacaoQueryError = ErrorType<unknown>
+
+
+export function useListarPendenciasDeConciliacao<TData = Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListarPendenciasDeConciliacaoParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>,
+          TError,
+          Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarPendenciasDeConciliacao<TData = Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError = ErrorType<unknown>>(
+ params?: ListarPendenciasDeConciliacaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>,
+          TError,
+          Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListarPendenciasDeConciliacao<TData = Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError = ErrorType<unknown>>(
+ params?: ListarPendenciasDeConciliacaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Fila de pendências de conciliação
+ */
+
+export function useListarPendenciasDeConciliacao<TData = Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError = ErrorType<unknown>>(
+ params?: ListarPendenciasDeConciliacaoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listarPendenciasDeConciliacao>>, TError, TData>>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListarPendenciasDeConciliacaoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export const getResolverPendenciaDeConciliacaoUrl = (id: string,) => {
+
+
+
+
+  return `/api/cobrancas/conciliacao/pendencias/${id}/resolver`
+}
+
+/**
+ * @summary Marca a pendência como resolvida, com o que foi feito
+ */
+export const resolverPendenciaDeConciliacao = async (id: string,
+    resolucaoDto: ResolucaoDto, options?: Parameters<typeof clienteHttp>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return clienteHttp<void>(getResolverPendenciaDeConciliacaoUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(resolucaoDto)
+  }
+);}
+
+
+
+
+
+export const getResolverPendenciaDeConciliacaoMutationKey = () => ['resolverPendenciaDeConciliacao'] as const;
+
+export const getResolverPendenciaDeConciliacaoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>, TError,ResolverPendenciaDeConciliacaoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+): UseMutationOptions<Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>, TError,ResolverPendenciaDeConciliacaoMutationVariables, TContext> => {
+
+const mutationKey = getResolverPendenciaDeConciliacaoMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>, ResolverPendenciaDeConciliacaoMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  resolverPendenciaDeConciliacao(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResolverPendenciaDeConciliacaoMutationResult = NonNullable<Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>>
+    export type ResolverPendenciaDeConciliacaoMutationBody = ResolucaoDto
+    export type ResolverPendenciaDeConciliacaoMutationError = ErrorType<unknown>
+    export type ResolverPendenciaDeConciliacaoMutationVariables = {id: string;data: ResolucaoDto}
+
+    /**
+ * @summary Marca a pendência como resolvida, com o que foi feito
+ */
+export const useResolverPendenciaDeConciliacao = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>, TError,ResolverPendenciaDeConciliacaoMutationVariables, TContext>, request?: SecondParameter<typeof clienteHttp>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof resolverPendenciaDeConciliacao>>,
+        TError,
+        ResolverPendenciaDeConciliacaoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getResolverPendenciaDeConciliacaoMutationOptions(options), queryClient);
     }

@@ -121,6 +121,7 @@ export class CobrancasController {
         ultimaNotificacaoEm: resumo.conciliacao.ultimaNotificacaoEm?.toISOString() ?? null,
         ultimaSincronizacao:
           resumo.conciliacao.ultimaSincronizacao === null ? null : paraSincronizacaoDto(resumo.conciliacao.ultimaSincronizacao),
+        pendenciasAbertas: resumo.conciliacao.pendenciasAbertas,
       },
     };
   }

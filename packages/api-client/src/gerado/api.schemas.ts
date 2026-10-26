@@ -539,6 +539,8 @@ export interface ConciliacaoDto {
   ultimaNotificacaoEm: string | null;
   /** @nullable */
   ultimaSincronizacao: SincronizacaoDto | null;
+  /** Itens abertos na fila de pendências de conciliação */
+  pendenciasAbertas: number;
 }
 
 export interface ResumoCobrancasDto {
@@ -743,6 +745,65 @@ export interface PedidoDeGeracaoDto {
   referencia: string;
 }
 
+export type TipoPendencia = typeof TipoPendencia[keyof typeof TipoPendencia];
+
+
+export const TipoPendencia = {
+  SEM_COBRANCA: 'SEM_COBRANCA',
+  APOS_REGISTRO_MANUAL: 'APOS_REGISTRO_MANUAL',
+  DIVERGENCIA: 'DIVERGENCIA',
+} as const;
+
+export type OrigemPendencia = typeof OrigemPendencia[keyof typeof OrigemPendencia];
+
+
+export const OrigemPendencia = {
+  WEBHOOK: 'WEBHOOK',
+  SINCRONIZACAO: 'SINCRONIZACAO',
+} as const;
+
+export interface PendenciaDto {
+  id: string;
+  tipo: TipoPendencia;
+  origem: OrigemPendencia;
+  /** Id da cobrança no Asaas */
+  idAsaas: string;
+  /**
+     * A cobrança daqui, quando existe
+     * @nullable
+     */
+  cobrancaId: string | null;
+  /** @nullable */
+  alunoNome: string | null;
+  descricao: string;
+  criadaEm: string;
+  /** @nullable */
+  resolvidaEm: string | null;
+  /** @nullable */
+  resolvidaPor: string | null;
+  /** @nullable */
+  resolucao: string | null;
+}
+
+export interface FalhaDaGeracaoNaFilaDto {
+  referencia: string;
+  /** Vazio quando a falha é da rotina inteira (ex.: Asaas fora do ar) */
+  alunoId: string;
+  alunoNome: string;
+  motivo: string;
+  ocorridaEm: string;
+}
+
+export interface FilaDePendenciasDto {
+  itens: PendenciaDto[];
+  /** Só na lista de abertas */
+  falhasDaGeracao: FalhaDaGeracaoNaFilaDto[];
+}
+
+export interface ResolucaoDto {
+  resolucao: string;
+}
+
 export type ListarAlunosParams = {
 situacao?: ListarAlunosSituacao;
 };
@@ -785,5 +846,12 @@ busca?: unknown;
  * Separadas por vírgula
  */
 situacoes?: unknown;
+};
+
+export type ListarPendenciasDeConciliacaoParams = {
+/**
+ * true: as já resolvidas
+ */
+resolvidas?: boolean;
 };
 
