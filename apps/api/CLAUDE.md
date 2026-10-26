@@ -26,9 +26,19 @@ src/modulos/cobrancas/
 - Valores monetários: campos `Int` em centavos.
 - Mudança de esquema sempre por migração: `pnpm prisma migrate dev --name descricao-curta`. Nunca edite uma migração já aplicada; crie outra.
 - Migrações devem ser compatíveis com a versão anterior do código (permite voltar a versão em caso de falha).
+  Remover ou renomear coluna é "expandir e depois contrair": primeiro uma migração que só acrescenta,
+  depois outra que remove (`scripts/arquitetura/verificar-migracoes.mjs` barra `DROP COLUMN` e `RENAME`).
+- O `migrate dev` recusa rodar fora de um terminal interativo quando há avisos (ex.: índice único novo).
+  Nesse caso, gere o SQL com
+  `pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
+  grave em `prisma/migrations/<AAAAMMDDHHMMSS>_<nome>/migration.sql` e aplique com `pnpm exec prisma migrate deploy`.
+- O Prisma não descreve `CHECK`: escreva-os à mão no fim do `migration.sql` e cite a regra num
+  comentário do modelo no `schema.prisma`, para quem lê o schema saber que ela existe.
 - Operações que mexem em mais de uma tabela usam `prisma.$transaction(async (tx) => ...)`, passando `tx` adiante.
 - Exclusão física é proibida: use o campo de situação (inativação) ou estorno.
 - CPF de cadastro ativo é único por índice parcial no banco, não só por validação no código.
+- Todo ponto de entrada que monta a aplicação (`main.ts`, `main-worker.ts`, `gerar-openapi.ts`) carrega
+  o `.env` da raiz: alguns providers leem variáveis já no construtor (o `PgBossService` exige `DATABASE_URL`).
 
 ## Asaas
 
