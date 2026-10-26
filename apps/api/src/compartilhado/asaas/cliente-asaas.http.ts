@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import {
+  type AmbienteAsaas,
   ClienteAsaas,
   CobrancaAsaas,
   ErroAsaas,
@@ -11,6 +12,10 @@ const URLS_BASE = {
   sandbox: 'https://api-sandbox.asaas.com/v3',
   producao: 'https://api.asaas.com/v3',
 };
+
+export function urlBaseDoAmbiente(ambiente: AmbienteAsaas): string {
+  return ambiente === 'SANDBOX' ? URLS_BASE.sandbox : URLS_BASE.producao;
+}
 
 const MAXIMO_DE_TENTATIVAS = 3;
 const ESPERA_PADRAO_EM_SEGUNDOS = 5;
@@ -54,8 +59,17 @@ export class ClienteAsaasHttp extends ClienteAsaas {
     super();
   }
 
-  estaConfigurado(): boolean {
-    return true;
+  estaConfigurado(): Promise<boolean> {
+    return Promise.resolve(true);
+  }
+
+  async testarCredenciais(ambiente: AmbienteAsaas, chaveApi: string): Promise<void> {
+    await new ClienteAsaasHttp({ urlBase: urlBaseDoAmbiente(ambiente), chaveApi }, this.chamarHttp, this.esperar).testarComunicacao();
+  }
+
+  // Consulta sem efeito: só confere se a chave é aceita.
+  async testarComunicacao(): Promise<void> {
+    await this.enviar<object>('GET', '/customers?limit=1');
   }
 
   async criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {
@@ -107,7 +121,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
 
   // Envia a requisição. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
   // informou e tenta de novo, até o limite de tentativas.
-  private async enviar<T>(metodo: 'POST' | 'PUT' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
+  private async enviar<T>(metodo: 'GET' | 'POST' | 'PUT' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
     for (let tentativa = 1; ; tentativa++) {
       let resposta: Response;
       try {

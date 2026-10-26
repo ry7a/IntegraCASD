@@ -51,8 +51,12 @@ src/modulos/cobrancas/
 ## Asaas
 
 - Todo acesso ao Asaas passa pelo cliente em `src/compartilhado/asaas/`. Módulos dependem da interface, nunca do cliente HTTP.
-  O módulo importa o `AsaasModule` e injeta `ClienteAsaas`; a chave do `.env` só é lida na primeira chamada,
+  O módulo importa o `AsaasModule` e injeta `ClienteAsaas`; a configuração só é lida a cada chamada,
   para a API e o gerador do OpenAPI subirem sem ela.
+- A chave em uso vem da tabela `configuracoes_asaas` (cadastrada pela diretoria na tela, cifrada com AES-256-GCM
+  pela `CHAVE_DE_CIFRAGEM` do `.env`, ver `src/compartilhado/seguranca/cifra.ts`); sem linha nessa tabela, vem do
+  `.env` (`ASAAS_AMBIENTE`, `ASAAS_API_KEY`). Quem decide é a `FonteDaConfiguracaoAsaas`. Uma chave nova é
+  testada no Asaas antes de ser guardada; a trilha registra a troca sem a chave.
 - Nenhuma cobrança existe só aqui ([Confiabilidade.NF005]): primeiro o Asaas cria, depois o banco grava.
 - Em testes, use um dublê da interface. Nunca chame o Asaas real em teste automatizado.
 - Respostas 429 são tratadas no cliente: aguardar o intervalo informado e repetir.

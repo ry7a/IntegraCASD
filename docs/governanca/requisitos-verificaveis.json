@@ -48,6 +48,11 @@
       "situacao": "coberto"
     },
     {
+      "id": "Segurança.NF003",
+      "titulo": "Guarda da chave de acesso à plataforma",
+      "situacao": "coberto"
+    },
+    {
       "id": "Segurança.NF005",
       "titulo": "Proteção das credenciais dos usuários",
       "situacao": "coberto"

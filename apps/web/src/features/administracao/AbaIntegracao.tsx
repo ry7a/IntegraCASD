@@ -1,20 +1,35 @@
 import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import {
+  getBuscarAmbienteDaIntegracaoQueryKey,
+  getBuscarIntegracaoAsaasQueryKey,
+  useAlterarPrazoDoAlertaAsaas,
+  useBuscarIntegracaoAsaas,
+  useSubstituirChaveAsaas,
+  PrazoDoAlertaHoras,
+  type IntegracaoAsaasDto,
+} from '@integracasd/api-client'
+import { useQueryClient } from '@tanstack/react-query'
 import Dialogo from '@/compartilhado/componentes/Dialogo'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
-import { formatarData, formatarDataHora, haQuantoTempo } from '@/compartilhado/formatacao'
-import { useBuscarIntegracaoComOAsaas } from './consultas'
+import { formatarData, formatarDataHora } from '@/compartilhado/formatacao'
+
+// Endereço que o Asaas chama a cada pagamento. É o mesmo servidor que entrega esta tela.
+const ENDERECO_DE_NOTIFICACAO = `${window.location.origin}/api/webhooks/asaas`
 
 // Integração com o Asaas. [Administração.RF004]
-// A chave de acesso nunca é exibida: a API só informa quando ela foi cadastrada.
+// A chave de acesso nunca é exibida: a API só informa quando ela foi cadastrada e por quem.
 function AbaIntegracao() {
-  const consulta = useBuscarIntegracaoComOAsaas()
+  const consulta = useBuscarIntegracaoAsaas()
   const [chaveAberta, definirChaveAberta] = useState(false)
   const integracao = consulta.data
 
-  async function copiarEndereco(endereco: string) {
+  async function copiarEndereco() {
     try {
-      await navigator.clipboard.writeText(endereco)
+      await navigator.clipboard.writeText(ENDERECO_DE_NOTIFICACAO)
     } catch {
       // Sem permissão para copiar (ex.: página sem HTTPS): o usuário ainda pode selecionar o texto.
     }
@@ -30,8 +45,8 @@ function AbaIntegracao() {
                 <h2>Situação da integração</h2>
                 <p>
                   {integracao.ultimoTesteEm
-                    ? `Testada pela última vez em ${formatarDataHora(integracao.ultimoTesteEm).replace(' ', ' às ')}`
-                    : 'Ainda não testada'}
+                    ? `Chave testada em ${formatarDataHora(integracao.ultimoTesteEm).replace(' ', ' às ')}`
+                    : 'Nenhuma chave cadastrada nesta tela'}
                 </p>
               </div>
               {integracao.conectada ? (
@@ -49,38 +64,16 @@ function AbaIntegracao() {
             <ul className="lista-linhas">
               <li>
                 <span>Ambiente</span>
-                {integracao.ambiente === 'SANDBOX' ? (
-                  <span className="selo selo-alerta">
-                    <Icone nome="alerta" />
-                    Testes (sandbox)
-                  </span>
-                ) : (
-                  <span className="selo selo-paga">Produção</span>
-                )}
-              </li>
-              <li>
-                <span>Última notificação recebida</span>
-                <span className="numero">
-                  {integracao.ultimaNotificacaoEm ? haQuantoTempo(integracao.ultimaNotificacaoEm) : 'nenhuma ainda'}
-                </span>
-              </li>
-              <li>
-                <span>Falhas de entrega seguidas</span>
-                <span className="numero">
-                  {integracao.falhasSeguidas} de {integracao.limiteFalhas}
-                </span>
+                <SeloDoAmbiente ambiente={integracao.ambiente} />
               </li>
               <li>
                 <span>
                   Chave de acesso
-                  <span className="secundario">
-                    {integracao.chaveCadastradaEm ? `Cadastrada em ${formatarData(integracao.chaveCadastradaEm)}. ` : ''}
-                    Por segurança, nunca é exibida.
-                  </span>
+                  <span className="secundario">{descreverChave(integracao)} Por segurança, nunca é exibida.</span>
                 </span>
                 <button type="button" className="botao botao-pequeno" onClick={() => definirChaveAberta(true)}>
                   <Icone nome="cadeado" />
-                  Substituir chave
+                  {integracao.origemDaChave === 'TELA' ? 'Substituir chave' : 'Cadastrar chave'}
                 </button>
               </li>
             </ul>
@@ -91,63 +84,170 @@ function AbaIntegracao() {
               Cadastre este endereço no painel do Asaas, em Integrações › Webhooks.
             </p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <input readOnly value={integracao.enderecoNotificacao} aria-label="Endereço de notificação" />
+              <input readOnly value={ENDERECO_DE_NOTIFICACAO} aria-label="Endereço de notificação" />
               <button
                 type="button"
                 className="botao"
                 aria-label="Copiar endereço"
                 data-dica="Copiar endereço"
-                onClick={() => void copiarEndereco(integracao.enderecoNotificacao)}
+                onClick={() => void copiarEndereco()}
               >
                 <Icone nome="copiar" />
               </button>
             </div>
-            <div className="campo" style={{ marginTop: 18 }}>
-              <label htmlFor="in-alerta">Alertar a diretoria se ficar sem notificações por</label>
-              {/* TODO [Administração.RF004]: salvar o tempo de alerta. */}
-              <select id="in-alerta" defaultValue={integracao.horasAlertaSemNotificacao}>
-                <option value={12}>12 horas</option>
-                <option value={24}>24 horas</option>
-                <option value={48}>48 horas</option>
-              </select>
-              <span className="dica">No máximo 48 horas. Depois de 14 dias o Asaas descarta os eventos não entregues.</span>
-            </div>
+            <PrazoDoAlerta integracao={integracao} />
           </div>
         </div>
       )}
 
-      <Dialogo
-        aberto={chaveAberta}
-        aoFechar={() => definirChaveAberta(false)}
-        titulo="Substituir chave do Asaas"
-        descricao="O sistema testa a nova chave antes de salvar. Se o teste falhar, a chave atual continua valendo."
-        // TODO [Administração.RF004]: PUT /api/administracao/integracao-asaas/chave. A chave vai cifrada para o
-        // banco e nunca aparece em tela, resposta, log nem trilha de auditoria.
-        rodape={
-          <>
-            <button type="button" className="botao" onClick={() => definirChaveAberta(false)}>
-              Cancelar
-            </button>
-            <button type="submit" className="botao botao-principal">
-              Testar e salvar
-            </button>
-          </>
-        }
-      >
-        <div className="campo">
-          <label htmlFor="ch-chave">Nova chave de acesso</label>
-          <input id="ch-chave" type="password" autoComplete="off" />
-        </div>
-        <div className="campo">
-          <label htmlFor="ch-ambiente">Ambiente</label>
-          <select id="ch-ambiente">
-            <option>Testes (sandbox)</option>
-            <option>Produção</option>
-          </select>
-          <span className="dica">Em testes, uma faixa no topo avisa que as cobranças não são reais.</span>
-        </div>
-      </Dialogo>
+      {/* Montado só enquanto aberto: cada abertura começa com o formulário limpo. */}
+      {chaveAberta && integracao && (
+        <DialogoSubstituirChave ambienteAtual={integracao.ambiente} aoFechar={() => definirChaveAberta(false)} />
+      )}
     </EstadoDaConsulta>
+  )
+}
+
+function descreverChave(integracao: IntegracaoAsaasDto): string {
+  if (integracao.origemDaChave === 'TELA' && integracao.chaveCadastradaEm) {
+    return `Cadastrada em ${formatarData(integracao.chaveCadastradaEm)} por ${integracao.alteradoPor ?? '—'}.`
+  }
+  if (integracao.origemDaChave === 'ARQUIVO_ENV') {
+    return 'Lida do arquivo de configuração do servidor (desenvolvimento). Cadastre aqui para valer em produção.'
+  }
+  return 'Nenhuma chave: as cobranças não podem ser emitidas.'
+}
+
+function SeloDoAmbiente({ ambiente }: { ambiente: IntegracaoAsaasDto['ambiente'] }) {
+  if (ambiente === 'SANDBOX') {
+    return (
+      <span className="selo selo-alerta">
+        <Icone nome="alerta" />
+        Testes (sandbox)
+      </span>
+    )
+  }
+  if (ambiente === 'PRODUCAO') return <span className="selo selo-paga">Produção</span>
+  return <span className="secundario">—</span>
+}
+
+// Fluxo A2: o prazo é salvo assim que escolhido. Só existe depois de haver chave cadastrada na tela.
+function PrazoDoAlerta({ integracao }: { integracao: IntegracaoAsaasDto }) {
+  const alterar = useAlterarPrazoDoAlertaAsaas()
+  const queryClient = useQueryClient()
+  const semChaveNaTela = integracao.origemDaChave !== 'TELA'
+
+  async function salvar(valor: string) {
+    // O <select> devolve texto; só os prazos que a API aceita (12, 24 ou 48) seguem adiante.
+    const prazoAlertaHoras = Object.values(PrazoDoAlertaHoras).find((prazo) => String(prazo) === valor)
+    if (prazoAlertaHoras === undefined) return
+    try {
+      await alterar.mutateAsync({ data: { prazoAlertaHoras } })
+      await queryClient.invalidateQueries({ queryKey: getBuscarIntegracaoAsaasQueryKey() })
+    } catch {
+      // A mensagem da API aparece abaixo do campo.
+    }
+  }
+
+  return (
+    <div className="campo" style={{ marginTop: 18 }}>
+      <label htmlFor="in-alerta">Alertar a diretoria se ficar sem notificações por</label>
+      <select
+        id="in-alerta"
+        value={integracao.prazoAlertaHoras}
+        disabled={semChaveNaTela || alterar.isPending}
+        onChange={(evento) => void salvar(evento.target.value)}
+      >
+        <option value={12}>12 horas</option>
+        <option value={24}>24 horas</option>
+        <option value={48}>48 horas</option>
+      </select>
+      <span className="dica" role={alterar.error ? 'alert' : undefined}>
+        {alterar.error?.message ??
+          (semChaveNaTela
+            ? 'Disponível depois de cadastrar a chave nesta tela.'
+            : 'No máximo 48 horas. Depois de 14 dias o Asaas descarta os eventos não entregues.')}
+      </span>
+    </div>
+  )
+}
+
+// Validação só para retorno rápido; quem decide é a API, que testa a chave no Asaas antes de salvar.
+const esquema = z.object({
+  chave: z.string().trim().min(20, 'Cole a chave completa, como aparece no painel do Asaas.'),
+  ambiente: z.enum(['SANDBOX', 'PRODUCAO']),
+})
+type Formulario = z.infer<typeof esquema>
+
+interface PropsDoDialogo {
+  ambienteAtual: IntegracaoAsaasDto['ambiente']
+  aoFechar: () => void
+}
+
+function DialogoSubstituirChave({ ambienteAtual, aoFechar }: PropsDoDialogo) {
+  const { register, handleSubmit, formState } = useForm<Formulario>({
+    resolver: zodResolver(esquema),
+    defaultValues: { chave: '', ambiente: ambienteAtual ?? 'SANDBOX' },
+  })
+  const substituir = useSubstituirChaveAsaas()
+  const queryClient = useQueryClient()
+  const erros = formState.errors
+
+  async function testarESalvar(formulario: Formulario) {
+    try {
+      await substituir.mutateAsync({ data: formulario })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getBuscarIntegracaoAsaasQueryKey() }),
+        // A faixa "ambiente de testes" muda junto.
+        queryClient.invalidateQueries({ queryKey: getBuscarAmbienteDaIntegracaoQueryKey() }),
+      ])
+      aoFechar()
+    } catch {
+      // A mensagem da API (ex.: chave recusada) aparece no diálogo.
+    }
+  }
+
+  return (
+    <Dialogo
+      aberto
+      aoFechar={aoFechar}
+      titulo="Substituir chave do Asaas"
+      descricao="O sistema testa a nova chave antes de salvar. Se o teste falhar, a chave atual continua valendo."
+      aoEnviar={(evento) => void handleSubmit(testarESalvar)(evento)}
+      rodape={
+        <>
+          <button type="button" className="botao" onClick={aoFechar}>
+            Cancelar
+          </button>
+          <button type="submit" className="botao botao-principal" disabled={substituir.isPending}>
+            {substituir.isPending ? 'Testando…' : 'Testar e salvar'}
+          </button>
+        </>
+      }
+    >
+      <div className="campo">
+        <label htmlFor="ch-chave">Nova chave de acesso</label>
+        <input id="ch-chave" type="password" autoComplete="off" aria-invalid={!!erros.chave} {...register('chave')} />
+        {erros.chave && (
+          <span className="dica" role="alert">
+            {erros.chave.message}
+          </span>
+        )}
+      </div>
+      <div className="campo">
+        <label htmlFor="ch-ambiente">Ambiente</label>
+        <select id="ch-ambiente" {...register('ambiente')}>
+          <option value="SANDBOX">Testes (sandbox)</option>
+          <option value="PRODUCAO">Produção</option>
+        </select>
+        <span className="dica">Em testes, uma faixa no topo avisa que as cobranças não são reais.</span>
+      </div>
+      {substituir.error && (
+        <p className="erro-formulario" role="alert">
+          {substituir.error.message}
+        </p>
+      )}
+    </Dialogo>
   )
 }
 

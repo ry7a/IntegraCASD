@@ -201,6 +201,77 @@ export interface ParametrosDeCobrancaDto {
   jurosMensalPercentual: number;
 }
 
+/**
+ * Nulo quando não há chave
+ */
+export type AmbienteAsaas = typeof AmbienteAsaas[keyof typeof AmbienteAsaas];
+
+
+export const AmbienteAsaas = {
+  SANDBOX: 'SANDBOX',
+  PRODUCAO: 'PRODUCAO',
+} as const;
+
+/**
+ * TELA: cadastrada pela diretoria; ARQUIVO_ENV: lida do .env (desenvolvimento)
+ */
+export type OrigemDaChaveAsaas = typeof OrigemDaChaveAsaas[keyof typeof OrigemDaChaveAsaas];
+
+
+export const OrigemDaChaveAsaas = {
+  TELA: 'TELA',
+  ARQUIVO_ENV: 'ARQUIVO_ENV',
+} as const;
+
+/**
+ * Alerta a diretoria após este tempo sem notificações
+ */
+export type PrazoDoAlertaHoras = typeof PrazoDoAlertaHoras[keyof typeof PrazoDoAlertaHoras];
+
+
+export const PrazoDoAlertaHoras = {
+  NUMBER_12: 12,
+  NUMBER_24: 24,
+  NUMBER_48: 48,
+} as const;
+
+export interface IntegracaoAsaasDto {
+  /** Nulo quando não há chave */
+  ambiente: AmbienteAsaas | null;
+  /** Há uma chave utilizável pelo sistema */
+  conectada: boolean;
+  /** TELA: cadastrada pela diretoria; ARQUIVO_ENV: lida do .env (desenvolvimento) */
+  origemDaChave: OrigemDaChaveAsaas | null;
+  /** @nullable */
+  chaveCadastradaEm: string | null;
+  /** @nullable */
+  ultimoTesteEm: string | null;
+  /**
+     * Nome de quem fez a última alteração
+     * @nullable
+     */
+  alteradoPor: string | null;
+  /** Alerta a diretoria após este tempo sem notificações */
+  prazoAlertaHoras: PrazoDoAlertaHoras;
+}
+
+export interface SubstituirChaveAsaasDto {
+  ambiente: AmbienteAsaas;
+  /** Chave da API, como aparece no painel do Asaas. Nunca é devolvida. */
+  chave: string;
+  /** Se omitido, mantém o prazo atual */
+  prazoAlertaHoras?: PrazoDoAlertaHoras;
+}
+
+export interface PrazoDoAlertaDto {
+  prazoAlertaHoras: PrazoDoAlertaHoras;
+}
+
+export interface AmbienteDaIntegracaoDto {
+  /** Nulo quando não há chave */
+  ambiente: AmbienteAsaas | null;
+}
+
 export type CursoAluno = typeof CursoAluno[keyof typeof CursoAluno];
 
 

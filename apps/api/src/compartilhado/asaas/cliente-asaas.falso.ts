@@ -22,8 +22,23 @@ export class ClienteAsaasFalso extends ClienteAsaas {
   // Ligue para simular a integração sem chave configurada.
   semConfiguracao = false;
 
-  estaConfigurado(): boolean {
-    return !this.semConfiguracao;
+  estaConfigurado(): Promise<boolean> {
+    return Promise.resolve(!this.semConfiguracao);
+  }
+
+  // Chaves que o Asaas recusa no teste de comunicação.
+  readonly chavesRecusadas = new Set<string>(['chave-invalida']);
+  readonly credenciaisTestadas: Array<{ ambiente: string; chaveApi: string }> = [];
+
+  testarCredenciais(ambiente: string, chaveApi: string): Promise<void> {
+    this.verificarDisponibilidade();
+    this.credenciaisTestadas.push({ ambiente, chaveApi });
+    if (this.chavesRecusadas.has(chaveApi)) {
+      return Promise.reject(
+        new ErroAsaas('O Asaas recusou a chave de acesso. Confira a chave e o ambiente (testes ou produção).', 'CHAVE_RECUSADA'),
+      );
+    }
+    return Promise.resolve();
   }
 
   criarCliente(dados: NovoClienteAsaas): Promise<{ idAsaas: string }> {

@@ -19,24 +19,6 @@ export interface ListaDeUsuariosDto {
   itens: UsuarioDto[]
 }
 
-// GET /api/administracao/integracao-asaas
-// A chave de acesso NUNCA aparece aqui: a API só informa quando ela foi cadastrada.
-export interface IntegracaoAsaasDto {
-  ambiente: 'SANDBOX' | 'PRODUCAO'
-  conectada: boolean
-  ultimoTesteEm: string | null
-  ultimaNotificacaoEm: string | null
-  // Falhas de entrega seguidas.
-  falhasSeguidas: number
-  // Quantas falhas seguidas o Asaas tolera antes de pausar a fila.
-  limiteFalhas: number
-  chaveCadastradaEm: string | null
-  // Endereço a cadastrar no painel do Asaas, em Integrações > Webhooks.
-  enderecoNotificacao: string
-  // Alerta a diretoria se ficar este tempo sem notificações.
-  horasAlertaSemNotificacao: number
-}
-
 export type OperacaoAuditoria =
   | 'INCLUSAO'
   | 'ALTERACAO'
