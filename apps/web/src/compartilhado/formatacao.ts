@@ -127,7 +127,10 @@ export function haQuantoTempo(instanteIso: string, agora: Date = new Date()): st
   return `há ${dias} ${dias === 1 ? 'dia' : 'dias'}`
 }
 
-// "2026-10-19" no formato do <input type="date">.
+// "2026-10-19" no formato do <input type="date">. O dia é o de São Paulo, o mesmo que a API usa: com
+// toISOString (UTC) o dia viraria às 21h de Brasília e o formulário sugeriria uma data "futura".
+// O locale en-CA escreve exatamente AAAA-MM-DD.
+const formatadorDoDiaDeHoje = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' })
 export function hojeIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return formatadorDoDiaDeHoje.format(new Date())
 }

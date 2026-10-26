@@ -40,6 +40,10 @@ src/modulos/cobrancas/
 - Operações que mexem em mais de uma tabela usam `prisma.$transaction(async (tx) => ...)`, passando `tx` adiante.
 - Exclusão física é proibida: use o campo de situação (inativação) ou estorno.
 - CPF de cadastro ativo é único por índice parcial no banco, não só por validação no código.
+- Código de contrato e de projeto (24C002, 25P013): gerado no repositório, na mesma transação da inclusão,
+  depois de `reservarSequenciaDoCodigo` (lock `pg_advisory_xact_lock`, em `cadastros/infra/codigo-sequencial.ts`).
+  Sem o lock, criações simultâneas leem o mesmo último número e a maioria falha. Todo código sequencial novo
+  (calculado a partir do último existente) deve usar o mesmo padrão, com uma chave de lock própria.
 - Colunas obsoletas do aluno (`situacao`, `alojamentoTexto`, `apto`, `vaga`): não use em código novo.
   Ficam até a carga inicial preencher `ativo` e `alojamentoId`; depois saem numa migração própria.
 - Regras do MER nas movimentações, em `modulos/movimentacoes/dominio/movimentacao.ts`: categoria compatível com o
