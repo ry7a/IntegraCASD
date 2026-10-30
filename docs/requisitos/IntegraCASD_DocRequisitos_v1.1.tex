@@ -97,7 +97,7 @@
 \newcommand{\fluxoprincipal}{\par\textbf{Fluxo de eventos principal}\par}
 \newcommand{\fluxossecundarios}{\par\textbf{Fluxos secundários (alternativos e de exceção)}\par}
 \newcommand{\fluxo}[2]{\par\smallskip\textit{#1 -- #2}\par}
-\newcommand{\casos}[1]{\par\textbf{Caso(s) de uso associado(s):} #1\par}
+\newcommand{\casos}[1]{\par{\raggedright\textbf{Caso(s) de uso associado(s):} #1\par}}
 
 % Figura de tela: \tela[altura relativa]{arquivo}{legenda}{rótulo}
 \newcommand{\tela}[4][0.42]{%
@@ -178,10 +178,10 @@
 reaproveitados, para que as referências já feitas no código, no protótipo e no quadro de tarefas
 continuem válidas. Cada um aparece no Capítulo~2 apenas com a indicação da retirada.
 \begin{itemize}
-  \item [Cadastros.RF003] Manter cadastro de fornecedores e parceiros. O contrato passa a guardar
+  \item {[Cadastros.RF003]} Manter cadastro de fornecedores e parceiros. O contrato passa a guardar
         apenas o nome da contraparte, em texto.
-  \item [Movimentações.RF004] Anexar comprovante a uma movimentação.
-  \item [Indicadores.RF004] Exportar relatório.
+  \item {[Movimentações.RF004]} Anexar comprovante a uma movimentação.
+  \item {[Indicadores.RF004]} Exportar relatório.
 \end{itemize}
 
 \textbf{Outros itens retirados do escopo.} O cadastro de assinaturas internas (por exemplo, a
@@ -190,22 +190,22 @@ movimentações de entrada classificadas por categoria.
 
 \textbf{Requisitos alterados.}
 \begin{itemize}
-  \item [Cadastros.RF001]: as entradas do cadastro de alunos seguem o modelo de dados definido pela
+  \item {[Cadastros.RF001]}: as entradas do cadastro de alunos seguem o modelo de dados definido pela
         equipe (turma, curso, posto, matrícula, alojamento, celular e apelido); a data de
         nascimento deixa de ser coletada, por não ser exigida pelo Asaas
         ([Padrões.NF001]). Foi incluído o fluxo de cadastro incompleto vindo da carga inicial.
-  \item [Cadastros.RF002]: inclusão do salário de referência do funcionário.
-  \item [Cadastros.RF004]: o contrato deixa de depender do cadastro de fornecedores e passa a
+  \item {[Cadastros.RF002]}: inclusão do salário de referência do funcionário.
+  \item {[Cadastros.RF004]}: o contrato deixa de depender do cadastro de fornecedores e passa a
         apresentar o total pago no ano.
-  \item [Cobranças.RF006]: o caso de uso passa a se chamar ``Registrar pagamento manualmente'' e
+  \item {[Cobranças.RF006]}: o caso de uso passa a se chamar ``Registrar pagamento manualmente'' e
         cobre também o pagamento combinado diretamente com a área administrativa.
-  \item [Cobranças.RF007]: inclusão da sincronização de uma única cobrança e da execução periódica
+  \item {[Cobranças.RF007]}: inclusão da sincronização de uma única cobrança e da execução periódica
         automática.
-  \item [Movimentações.RF001]: o vínculo com fornecedor é substituído pelo vínculo com contrato;
+  \item {[Movimentações.RF001]}: o vínculo com fornecedor é substituído pelo vínculo com contrato;
         inclusão da forma de pagamento ``Transferência''.
-  \item [Administração.RF003] e [Administração.RF004]: inclusão do histórico de execuções da
+  \item {[Administração.RF003]} e [Administração.RF004]: inclusão do histórico de execuções da
         geração recorrente e da configuração do prazo de alerta de interrupção da conciliação.
-  \item [Desempenho.NF002], [Padrões.NF001], [Padrões.NF003], [Hardware e software.NF001] e
+  \item {[Desempenho.NF002]}, [Padrões.NF001], [Padrões.NF003], [Hardware e software.NF001] e
         [Hardware e software.NF005]: atualização conforme as decisões de arquitetura já
         registradas.
 \end{itemize}
@@ -269,7 +269,7 @@ sistema IntegraCASD e estão organizadas como descrito abaixo.
 A correta interpretação deste documento exige o conhecimento de algumas convenções e termos
 específicos, que são descritos a seguir.
 
-\begin{longtable}{@{}>{\bfseries}p{0.24\linewidth} p{0.70\linewidth}@{}}
+\begin{longtable}{@{}>{\bfseries\raggedright\arraybackslash}p{0.24\linewidth} p{0.70\linewidth}@{}}
   \toprule
   \textmd{\textbf{Termo}} & \textbf{Definição} \\
   \midrule
@@ -340,7 +340,7 @@ Para estabelecer a prioridade dos requisitos foram adotadas as denominações ``
 \section*{Referências}
 \addcontentsline{toc}{section}{Referências}
 
-\begin{enumerate}
+\begin{enumerate}[before=\raggedright]
   \item Lei nº 13.709, de 14 de agosto de 2018 (Lei Geral de Proteção de Dados Pessoais);
         Presidência da República, Casa Civil;
         \url{https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm}
@@ -2105,7 +2105,7 @@ e senha; os requisitos que a regem são [Segurança.NF001], [Segurança.NF005] e
 
 \section{Correspondência entre telas e casos de uso}
 
-\begin{longtable}{@{}p{0.2\linewidth} p{0.46\linewidth} p{0.26\linewidth}@{}}
+\begin{longtable}{@{}p{0.2\linewidth} p{0.46\linewidth} >{\raggedright\arraybackslash}p{0.26\linewidth}@{}}
   \toprule
   \textbf{Tela} & \textbf{O que mostra} & \textbf{Requisitos e figuras} \\
   \midrule
