@@ -14,5 +14,13 @@ export default defineConfig({
     testTimeout: 20_000,
     // O mesmo para os `beforeEach` que montam um módulo do Nest: sob carga, passavam dos 10 s padrão.
     hookTimeout: 20_000,
+    // Usado só com `--coverage` (`pnpm cobertura`). O `include` conta todos os arquivos de src/, inclusive
+    // os que nenhum teste carrega; sem ele a porcentagem sairia maior do que a real.
+    coverage: {
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/generated/**'],
+      reporter: ['text-summary', 'html'],
+      reportOnFailure: true,
+    },
   },
 });
