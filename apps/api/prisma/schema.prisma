@@ -524,6 +524,9 @@ model ClienteAsaas {
 enum OrigemCobranca {
   MENSALIDADE
   AVULSA
+  // Débito em aberto trazido da planilha pela carga inicial, de antes da implantação (ADR-0005).
+  // Não existe no Asaas: não tem boleto. Só a carga cria; nenhuma rota da API emite uma.
+  HERDADA
 
   @@map("origem_cobranca")
 }
@@ -541,11 +544,13 @@ enum SituacaoCobranca {
 
 // [Cobranças.RF001 a RF008]. Nenhuma cobrança existe só aqui: ela é gravada depois que o Asaas a
 // criou, com o id dele. Multa e juros são os dos parâmetros no momento da emissão (o Asaas calcula).
+// Única exceção: a HERDADA (débito da planilha, ADR-0005), que nunca tem idAsaas.
 // Regras garantidas por CHECK na migração: valor positivo, percentuais nos limites legais e cobrança
-// paga sempre com data do pagamento e movimentação de entrada; paga à mão sempre com justificativa.
+// paga sempre com data do pagamento e movimentação de entrada; paga à mão sempre com justificativa;
+// idAsaas preenchido se e somente se a origem não é HERDADA.
 model Cobranca {
   id                    String                  @id @default(uuid()) @db.Uuid
-  idAsaas               String                  @unique @map("id_asaas") // ex.: "pay_..."
+  idAsaas               String?                 @unique @map("id_asaas") // ex.: "pay_..."; nulo só na HERDADA
   alunoId               String                  @map("aluno_id") @db.Uuid
   aluno                 Aluno                   @relation(fields: [alunoId], references: [id], onDelete: Restrict)
   origem                OrigemCobranca

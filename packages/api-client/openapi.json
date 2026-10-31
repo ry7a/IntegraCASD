@@ -4270,7 +4270,8 @@
         "type": "string",
         "enum": [
           "MENSALIDADE",
-          "AVULSA"
+          "AVULSA",
+          "HERDADA"
         ]
       },
       "SituacaoCobranca": {

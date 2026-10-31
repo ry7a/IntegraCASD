@@ -2,6 +2,8 @@ import {
   CobrancaInvalida,
   aceitaOperacoes,
   conferirBoletoDisponivel,
+  conferirCobrancaNoAsaas,
+  existeNoAsaas,
   conferirCancelamento,
   lerMotivoDoCancelamento,
   conferirAlunoCobravel,
@@ -97,6 +99,19 @@ describe('boleto [Cobranças.RF003]', () => {
     expect(() => conferirBoletoDisponivel('ABERTA')).not.toThrow();
     expect(() => conferirBoletoDisponivel('PAGA')).toThrow(/está paga/);
     expect(() => conferirBoletoDisponivel('CANCELADA')).toThrow(/está cancelada/);
+  });
+});
+
+describe('cobrança herdada da planilha (ADR-0005)', () => {
+  it('só a herdada não existe no Asaas', () => {
+    expect(existeNoAsaas('HERDADA')).toBe(false);
+    expect(existeNoAsaas('MENSALIDADE')).toBe(true);
+    expect(existeNoAsaas('AVULSA')).toBe(true);
+  });
+
+  it('herdada não tem boleto nem sincronização, e a mensagem diz o que fazer', () => {
+    expect(() => conferirCobrancaNoAsaas('HERDADA')).toThrow(/renegociação/);
+    expect(() => conferirCobrancaNoAsaas('MENSALIDADE')).not.toThrow();
   });
 });
 

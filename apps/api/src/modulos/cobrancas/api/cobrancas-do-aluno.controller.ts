@@ -5,7 +5,7 @@ import { ListarCobrancasDoAluno, TotaisEmAbertoPorAluno } from '../aplicacao/cob
 export class CobrancaDoAlunoDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() descricao!: string;
-  @ApiProperty({ enum: ['MENSALIDADE', 'AVULSA'], enumName: 'OrigemCobranca' }) origem!: 'MENSALIDADE' | 'AVULSA';
+  @ApiProperty({ enum: ['MENSALIDADE', 'AVULSA', 'HERDADA'], enumName: 'OrigemCobranca' }) origem!: 'MENSALIDADE' | 'AVULSA' | 'HERDADA';
   @ApiProperty() valorCentavos!: number;
   @ApiProperty({ format: 'date' }) vencimento!: string;
   @ApiProperty({ enum: ['ABERTA', 'VENCIDA', 'PAGA', 'PAGA_COM_REGISTRO_MANUAL', 'CANCELADA', 'ESTORNADA'], enumName: 'SituacaoCobranca' })

@@ -1,5 +1,5 @@
 import type { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import { ConciliacaoConcorrente, ConciliacaoRepositorio, type CobrancaParaConciliar } from './conciliacao.repositorio.js';
+import { ConciliacaoConcorrente, ConciliacaoRepositorio, paraConciliar, type CobrancaParaConciliar } from './conciliacao.repositorio.js';
 
 // Dublê do Prisma que anota cada operação feita dentro da transação, na ordem.
 // `eventoJaMarcado`: outro processamento marcou o evento antes. `cobrancaMudou`: a atualização
@@ -103,5 +103,28 @@ describe('ConciliacaoRepositorio [Confiabilidade.NF004]', () => {
       null,
     );
     expect(operacoes).toEqual(['marca evento', 'pendência SEM_COBRANCA de pay_x (WEBHOOK)']);
+  });
+});
+
+describe('paraConciliar (ADR-0005)', () => {
+  const registro = {
+    id: 'cob-1',
+    descricao: 'Mensalidade de setembro/2026',
+    situacao: 'ABERTA' as const,
+    valorCentavos: 12000,
+    movimentacaoId: null,
+    disponivelEm: new Date('2026-10-07T00:00:00Z'),
+  };
+
+  it('cobrança do Asaas segue para a conciliação, com a data em AAAA-MM-DD', () => {
+    expect(paraConciliar({ ...registro, idAsaas: 'pay_1', origem: 'MENSALIDADE' })).toMatchObject({
+      idAsaas: 'pay_1',
+      origem: 'MENSALIDADE',
+      disponivelEm: '2026-10-07',
+    });
+  });
+
+  it('herdada da planilha fica de fora: não existe no Asaas', () => {
+    expect(paraConciliar({ ...registro, idAsaas: null, origem: 'HERDADA' })).toBeNull();
   });
 });

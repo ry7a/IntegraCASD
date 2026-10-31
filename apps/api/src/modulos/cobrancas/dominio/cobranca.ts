@@ -6,6 +6,28 @@ export type SituacaoGuardada = 'ABERTA' | 'PAGA' | 'PAGA_COM_REGISTRO_MANUAL' | 
 // O que a tela mostra: a guardada, ou VENCIDA quando está aberta e o vencimento já passou.
 export type SituacaoExibida = SituacaoGuardada | 'VENCIDA';
 
+// HERDADA (ADR-0005): débito em aberto da planilha, trazido pela carga inicial. Não existe no Asaas,
+// então não tem boleto, não é sincronizada nem conciliada. Paga-se por registro manual, ou cancela-se
+// e emite-se uma renegociação, que aí sim passa pelo Asaas.
+export type OrigemDaCobranca = 'MENSALIDADE' | 'AVULSA' | 'HERDADA';
+// O que a aplicação pode emitir. A herdada fica de fora de propósito: só a carga inicial a cria.
+export type OrigemEmitida = Exclude<OrigemDaCobranca, 'HERDADA'>;
+
+// A cobrança existe no Asaas? Só a herdada não existe.
+export function existeNoAsaas(origem: OrigemDaCobranca): boolean {
+  return origem !== 'HERDADA';
+}
+
+// Boleto e sincronização dependem do Asaas: a herdada não tem nenhum dos dois.
+export function conferirCobrancaNoAsaas(origem: OrigemDaCobranca): void {
+  if (!existeNoAsaas(origem)) {
+    throw new CobrancaInvalida(
+      'Esta cobrança foi herdada da planilha e não existe no Asaas: não tem boleto nem o que sincronizar. ' +
+        'Para cobrar pelo Asaas, cancele-a e emita uma renegociação; se o aluno já pagou, registre o pagamento manual.',
+    );
+  }
+}
+
 export type NovaCobrancaAvulsa = {
   alunoId: string;
   valorCentavos: number;

@@ -47,11 +47,13 @@ export class IndicadoresRepositorio {
   }
 
   // [Indicadores.RF002] fluxo A2: vencidas cuja última sincronização (ou, sem ela, o vencimento) tem
-  // mais de `dias` dias.
+  // mais de `dias` dias. A herdada da planilha (ADR-0005) não existe no Asaas e nunca é sincronizada:
+  // fica de fora, senão o aviso nunca sumiria.
   async vencidasSemSincronizar(hoje: string, dias: number): Promise<number> {
     const limite = new Date(deDia(hoje).getTime() - dias * 86_400_000);
     return this.prisma.cobranca.count({
       where: {
+        idAsaas: { not: null },
         situacao: 'ABERTA',
         vencimento: { lt: deDia(hoje) },
         OR: [{ sincronizadaEm: null, vencimento: { lt: limite } }, { sincronizadaEm: { lt: limite } }],

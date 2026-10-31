@@ -3,19 +3,39 @@ import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { deDia, hojeEmSaoPaulo, paraDia } from '../../../compartilhado/datas.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { AcaoDaConciliacao } from '../dominio/conciliacao.js';
-import type { SituacaoGuardada } from '../dominio/cobranca.js';
+import type { OrigemDaCobranca, OrigemEmitida, SituacaoGuardada } from '../dominio/cobranca.js';
 import { registrarPendenciaNa } from './pendencias.repositorio.js';
 
+// Só cobranças que existem no Asaas são conciliadas e sincronizadas: a herdada (ADR-0005) fica de fora.
 export type CobrancaParaConciliar = {
   id: string;
   idAsaas: string;
-  origem: 'MENSALIDADE' | 'AVULSA';
+  origem: OrigemEmitida;
   descricao: string;
   situacao: SituacaoGuardada;
   valorCentavos: number;
   disponivelEm: string | null;
   movimentacaoId: string | null;
 };
+
+// A cobrança como vem do banco, com os campos de CobrancaParaConciliar.
+export type RegistroParaConciliar = Omit<CobrancaParaConciliar, 'idAsaas' | 'origem' | 'disponivelEm'> & {
+  idAsaas: string | null;
+  origem: OrigemDaCobranca;
+  disponivelEm: Date | null;
+};
+
+// Converte o registro do banco; nulo para a herdada, que não existe no Asaas.
+export function paraConciliar(registro: RegistroParaConciliar): CobrancaParaConciliar | null {
+  if (registro.idAsaas === null || registro.origem === 'HERDADA') return null;
+  return {
+    ...registro,
+    // Repetidos depois do `...registro`: aqui o TypeScript já sabe que não são nulo nem HERDADA.
+    idAsaas: registro.idAsaas,
+    origem: registro.origem,
+    disponivelEm: registro.disponivelEm === null ? null : paraDia(registro.disponivelEm),
+  };
+}
 
 // Onde entra o dinheiro da baixa: conta e categoria escolhidas nos parâmetros de cobrança.
 export type DestinoDaBaixa = { contaId: string; categoriaId: string };
@@ -54,13 +74,18 @@ export class ConciliacaoRepositorio {
         movimentacaoId: true,
       },
     });
-    if (registro === null) return null;
-    return { ...registro, disponivelEm: registro.disponivelEm === null ? null : paraDia(registro.disponivelEm) };
+    return registro === null ? null : paraConciliar(registro);
   }
 
+  // Nulo se a cobrança não existe ou é herdada (não existe no Asaas).
   async buscarCobrancaPorId(id: string): Promise<CobrancaParaConciliar | null> {
     const registro = await this.prisma.cobranca.findUnique({ where: { id }, select: { idAsaas: true } });
-    return registro === null ? null : this.buscarCobranca(registro.idAsaas);
+    return registro?.idAsaas ? this.buscarCobranca(registro.idAsaas) : null;
+  }
+
+  async origemDaCobranca(id: string): Promise<OrigemDaCobranca | null> {
+    const registro = await this.prisma.cobranca.findUnique({ where: { id }, select: { origem: true } });
+    return registro?.origem ?? null;
   }
 
   // `evento`: o aviso do webhook que originou a ação; nulo quando quem pede é a sincronização

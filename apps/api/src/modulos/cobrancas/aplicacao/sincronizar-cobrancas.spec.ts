@@ -49,7 +49,9 @@ function noAsaas(idAsaas: string, mudancas: Partial<CobrancaNoAsaas> = {}): Cobr
   };
 }
 
-function montar(opcoes: { locais?: Local[]; destino?: boolean; clientes?: Record<string, string> } = {}) {
+function montar(
+  opcoes: { locais?: Local[]; destino?: boolean; clientes?: Record<string, string>; herdadas?: string[] } = {},
+) {
   const asaas = new ClienteAsaasFalso();
   const locais = new Map((opcoes.locais ?? []).map((cobranca) => [cobranca.idAsaas, cobranca]));
   const aplicadas: Array<{ idAsaas: string; acao: AcaoDaConciliacao; destino: DestinoDaBaixa | null }> = [];
@@ -61,6 +63,9 @@ function montar(opcoes: { locais?: Local[]; destino?: boolean; clientes?: Record
   const conciliacao = {
     buscarCobranca: async (idAsaas: string) => locais.get(idAsaas) ?? null,
     buscarCobrancaPorId: async (id: string) => [...locais.values()].find((cobranca) => cobranca.id === id) ?? null,
+    // As herdadas (ADR-0005) existem só aqui: o repositório real não as devolve para conciliar.
+    origemDaCobranca: async (id: string) =>
+      opcoes.herdadas?.includes(id) ? 'HERDADA' : ([...locais.values()].find((cobranca) => cobranca.id === id)?.origem ?? null),
     aplicar: async (_evento: null, cobranca: Local, acao: AcaoDaConciliacao, destino: DestinoDaBaixa | null) => {
       aplicadas.push({ idAsaas: cobranca.idAsaas, acao, destino });
       return 'aplicado';
@@ -199,6 +204,14 @@ describe('SincronizarCobrancas [Cobranças.RF007]', () => {
 
     expect(await casoDeUso.cobranca('id-pay_1', 'usuario-1', HOJE)).toMatchObject({ conferidas: 1, atualizadas: 1 });
     expect(aplicadas.map((aplicada) => aplicada.acao.tipo)).toEqual(['BAIXAR']);
+  });
+
+  it('cobrança herdada da planilha não é sincronizada: 400, sem consultar o Asaas (ADR-0005)', async () => {
+    const { casoDeUso, finalizadas } = montar({ herdadas: ['id-herdada'] });
+    const pedido = casoDeUso.cobranca('id-herdada', 'usuario-1', HOJE);
+    await expect(pedido).rejects.toBeInstanceOf(BadRequestException);
+    await expect(pedido).rejects.toThrow(/herdada da planilha/);
+    expect(finalizadas).toEqual([]);
   });
 
   it('período inválido: 400, sem consultar o Asaas', async () => {

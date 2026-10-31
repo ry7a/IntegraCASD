@@ -863,6 +863,7 @@ export type OrigemCobranca = typeof OrigemCobranca[keyof typeof OrigemCobranca];
 export const OrigemCobranca = {
   MENSALIDADE: 'MENSALIDADE',
   AVULSA: 'AVULSA',
+  HERDADA: 'HERDADA',
 } as const;
 
 export type SituacaoCobranca = typeof SituacaoCobranca[keyof typeof SituacaoCobranca];

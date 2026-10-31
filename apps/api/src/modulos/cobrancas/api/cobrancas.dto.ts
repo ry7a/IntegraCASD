@@ -3,7 +3,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // DTOs da API de cobranças. Dinheiro em centavos; dias em "AAAA-MM-DD".
 
 const SITUACOES = ['ABERTA', 'VENCIDA', 'PAGA', 'PAGA_COM_REGISTRO_MANUAL', 'CANCELADA', 'ESTORNADA'] as const;
-const ORIGENS = ['MENSALIDADE', 'AVULSA'] as const;
+// HERDADA: débito da planilha trazido pela carga inicial, sem boleto no Asaas (ADR-0005).
+const ORIGENS = ['MENSALIDADE', 'AVULSA', 'HERDADA'] as const;
 
 export class CobrancaDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
