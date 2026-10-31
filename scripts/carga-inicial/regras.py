@@ -1,4 +1,4 @@
-"""Regras de normalização da carga inicial dos alunos ([Distribuição.NF002]).
+"""Regras de normalização da carga inicial dos alunos e dos débitos deles ([Distribuição.NF002]).
 
 Cada função recebe o valor como veio da planilha (texto, número ou None) e devolve
 o valor no formato do banco. Quando não dá para aproveitar o valor, a função lança
@@ -13,6 +13,7 @@ Só funções puras: sem planilha e sem banco, para poderem ser testadas sozinha
 
 import re
 import unicodedata
+from decimal import Decimal, InvalidOperation
 
 
 class ValorInvalido(Exception):
@@ -219,3 +220,65 @@ def ativo(situacao) -> bool:
     if bruto is None:
         return True
     return sem_acento(bruto).lower() in SITUACOES_ATIVAS
+
+
+# ---------------------------------------------------------------------------
+# Meses do Fundo de Manutenção (colunas VALOR, DATA, SITUAÇÃO de cada mês)
+# ---------------------------------------------------------------------------
+
+NOMES_DOS_MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
+                   "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+
+
+def mes_da_planilha(rotulo) -> tuple[int, int]:
+    """'SETEMBRO 2026' -> (2026, 9). É o mês como a planilha o chama, não o do vencimento."""
+    bruto = sem_acento(texto(rotulo) or "").lower()
+    achado = re.fullmatch(r"([a-z]+)\s+(\d{4})", bruto)
+    nomes = [sem_acento(nome) for nome in NOMES_DOS_MESES]
+    if achado is None or achado.group(1) not in nomes:
+        raise ValorInvalido("cabeçalho do mês fora do formato 'SETEMBRO 2026'")
+    return int(achado.group(2)), nomes.index(achado.group(1)) + 1
+
+
+def descricao_do_mes(ano: int, mes: int) -> str:
+    """Mesmo texto da geração recorrente do sistema: 'Mensalidade de setembro/2026'."""
+    return f"Mensalidade de {NOMES_DOS_MESES[mes - 1]}/{ano}"
+
+
+# Situações do mês que não são débito: o aluno não morava, não pagava ou não estava no H8.
+SEM_DEBITO = {"pago", "antes da moradia", "bolsista", "isento", "fora do h8", "intercambio",
+              "trancado", "desligado", "vaga disponivel"}
+
+
+def mes_em_aberto(situacao) -> bool:
+    """True só para 'NÃO PAGO'. Vazio e as situações de SEM_DEBITO não são débito.
+
+    Qualquer outro texto (ex.: '#REF!', fórmula quebrada) não dá para interpretar: ValorInvalido.
+    """
+    bruto = texto(situacao)
+    if bruto is None:
+        return False
+    chave = sem_acento(bruto).lower()
+    if chave == "nao pago":
+        return True
+    if chave in SEM_DEBITO:
+        return False
+    raise ValorInvalido("situação do mês desconhecida")
+
+
+def centavos(valor) -> int:
+    """Valor em reais da planilha (120.0 ou '120,00') -> 12000 centavos, sem conta com float."""
+    bruto = texto(valor)
+    if bruto is None:
+        raise ValorInvalido("valor do mês vazio")
+    numero = bruto.replace("R$", "").strip()
+    if "," in numero:
+        numero = numero.replace(".", "").replace(",", ".")
+    try:
+        reais = Decimal(numero)
+    except InvalidOperation:
+        raise ValorInvalido("valor do mês não é um número") from None
+    resultado = reais * 100
+    if resultado <= 0 or resultado != resultado.to_integral_value():
+        raise ValorInvalido("valor do mês não é positivo ou tem fração de centavo")
+    return int(resultado)
