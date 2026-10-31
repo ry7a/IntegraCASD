@@ -15,7 +15,7 @@ import {
   nomeDoMes,
   paraCentavos,
 } from '@/compartilhado/formatacao'
-import type { SituacaoCobranca } from '@/compartilhado/dominio'
+import { MARCA_DA_ORIGEM, type SituacaoCobranca } from '@/compartilhado/dominio'
 import DialogoSincronizarCobrancas from './DialogoSincronizarCobrancas'
 
 // Texto pequeno sob o número de cada cartão de resumo. `mes` é "AAAA-MM", o mês dos totais finais.
@@ -204,7 +204,7 @@ function PaginaCobrancas() {
                   </td>
                   <td>
                     {cobranca.descricao}
-                    {cobranca.origem === 'AVULSA' && <span className="secundario">Cobrança avulsa</span>}
+                    {MARCA_DA_ORIGEM[cobranca.origem] && <span className="secundario">{MARCA_DA_ORIGEM[cobranca.origem]}</span>}
                   </td>
                   <td className="numero">{formatarMoeda(cobranca.valorCentavos)}</td>
                   <td>{formatarData(cobranca.vencimento)}</td>

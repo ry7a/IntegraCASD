@@ -199,21 +199,28 @@ function DialogoDePagamentoManual({
         </>
       }
     >
-      <div className="aviso">
-        <Icone nome="relogio" />
-        <span>
-          Última sincronização desta cobrança com o Asaas: <strong>{textoDaUltimaSincronizacao}</strong>.{' '}
-          {/* Botão com cara de link: leva ao diálogo de sincronização sem sair deste. */}
-          <button
-            type="button"
-            onClick={aoSincronizarPrimeiro}
-            style={{ all: 'unset', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
-          >
-            Sincronize primeiro
-          </button>
-          {': o pagamento pode já estar lá.'}
-        </span>
-      </div>
+      {cobranca.existeNoAsaas ? (
+        <div className="aviso">
+          <Icone nome="relogio" />
+          <span>
+            Última sincronização desta cobrança com o Asaas: <strong>{textoDaUltimaSincronizacao}</strong>.{' '}
+            {/* Botão com cara de link: leva ao diálogo de sincronização sem sair deste. */}
+            <button
+              type="button"
+              onClick={aoSincronizarPrimeiro}
+              style={{ all: 'unset', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
+            >
+              Sincronize primeiro
+            </button>
+            {': o pagamento pode já estar lá.'}
+          </span>
+        </div>
+      ) : (
+        <div className="aviso">
+          <Icone nome="relogio" />
+          <span>Débito herdado da planilha: registre aqui o pagamento que o CASD recebeu diretamente do aluno.</span>
+        </div>
+      )}
       <div className="resumo-efeito">
         <dl>
           <dt>Aluno</dt>
@@ -258,8 +265,9 @@ function DialogoDePagamentoManual({
       <div className="aviso aviso-perigo">
         <Icone nome="alerta" />
         <span>
-          A cobrança ficará como <strong>Paga com registro manual</strong> e o IntegraCASD passará a divergir do Asaas.
-          A entrada do valor pago será criada em Movimentações.
+          A cobrança ficará como <strong>Paga com registro manual</strong>
+          {cobranca.existeNoAsaas && ' e o IntegraCASD passará a divergir do Asaas'}. A entrada do valor pago será criada
+          em Movimentações.
         </span>
       </div>
       {registrarPagamento.error && (
@@ -325,7 +333,7 @@ function DialogoDeCancelamento({ cobranca, aoFechar, resumoDaCobranca }: PropsDo
             Voltar
           </button>
           <button type="submit" className="botao botao-destrutivo" disabled={cancelar.isPending}>
-            {cancelar.isPending ? 'Cancelando no Asaas…' : 'Cancelar cobrança'}
+            {cancelar.isPending ? (cobranca.existeNoAsaas ? 'Cancelando no Asaas…' : 'Cancelando…') : 'Cancelar cobrança'}
           </button>
         </>
       }
@@ -342,10 +350,17 @@ function DialogoDeCancelamento({ cobranca, aoFechar, resumoDaCobranca }: PropsDo
             {cobranca.diasDeAtraso !== null && ` (vencida há ${cobranca.diasDeAtraso} dias)`}
           </dd>
         </dl>
-        <p>
-          A cobrança será cancelada <strong>no Asaas e no IntegraCASD</strong>. O boleto perde a validade e a cobrança
-          deixa de contar na inadimplência.
-        </p>
+        {cobranca.existeNoAsaas ? (
+          <p>
+            A cobrança será cancelada <strong>no Asaas e no IntegraCASD</strong>. O boleto perde a validade e a cobrança
+            deixa de contar na inadimplência.
+          </p>
+        ) : (
+          <p>
+            O débito herdado da planilha será cancelado <strong>no IntegraCASD</strong> (ele não existe no Asaas) e deixa
+            de contar na inadimplência. Para cobrar com boleto, mantenha a renegociação marcada.
+          </p>
+        )}
       </div>
       <div className="campo">
         <label htmlFor="ca-motivo">Motivo do cancelamento</label>

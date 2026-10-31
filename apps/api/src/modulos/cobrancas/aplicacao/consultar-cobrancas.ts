@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
-import {
-  diasDeAtraso,
-  lerFiltrosDaConsulta,
-  situacaoExibida,
-  type SituacaoExibida,
-} from '../dominio/cobranca.js';
+import { diasDeAtraso, existeNoAsaas, lerFiltrosDaConsulta, situacaoExibida, type SituacaoExibida } from '../dominio/cobranca.js';
 import { semSincronizarHaDias } from '../dominio/sincronizacao.js';
 import { CobrancasRepositorio, type CobrancaRegistrada } from '../infra/cobrancas.repositorio.js';
 import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
@@ -25,7 +20,10 @@ export function paraItemDaLista(cobranca: CobrancaRegistrada, hoje: string): Ite
     ...cobranca,
     situacao,
     diasDeAtraso: diasDeAtraso(situacao, cobranca.vencimento, hoje),
-    semSincronizarHaDias: semSincronizarHaDias(situacao, cobranca.vencimento, sincronizadaEm, hoje),
+    // A herdada da planilha (ADR-0005) não existe no Asaas: não há sincronização para cobrar.
+    semSincronizarHaDias: existeNoAsaas(cobranca.origem)
+      ? semSincronizarHaDias(situacao, cobranca.vencimento, sincronizadaEm, hoje)
+      : null,
   };
 }
 

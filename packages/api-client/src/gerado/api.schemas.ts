@@ -1033,6 +1033,8 @@ export interface CobrancaDetalheDto {
   /** @nullable */
   diasDesdeUltimaSincronizacao: number | null;
   sincronizacaoAntiga: boolean;
+  /** Falso só na cobrança herdada da planilha, que não tem boleto nem sincronização */
+  existeNoAsaas: boolean;
   /** Só cobrança aberta ou vencida pode ser cancelada */
   podeCancelar: boolean;
   /** Só cobrança aberta ou vencida aceita pagamento manual */

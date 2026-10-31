@@ -4664,6 +4664,10 @@
           "sincronizacaoAntiga": {
             "type": "boolean"
           },
+          "existeNoAsaas": {
+            "type": "boolean",
+            "description": "Falso só na cobrança herdada da planilha, que não tem boleto nem sincronização"
+          },
           "podeCancelar": {
             "type": "boolean",
             "description": "Só cobrança aberta ou vencida pode ser cancelada"
@@ -4705,6 +4709,7 @@
           "ultimaSincronizacaoEm",
           "diasDesdeUltimaSincronizacao",
           "sincronizacaoAntiga",
+          "existeNoAsaas",
           "podeCancelar",
           "podeRegistrarPagamentoManual",
           "eventos"

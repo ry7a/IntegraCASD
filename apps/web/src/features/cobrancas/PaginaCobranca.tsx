@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
+import { MARCA_DA_ORIGEM } from '@/compartilhado/dominio'
 import { formatarData, formatarDataHora, formatarMoeda } from '@/compartilhado/formatacao'
 import { useUsuarioAtual } from '@/compartilhado/use-usuario-atual'
 import { DialogosDaCobranca, type DialogoDaCobranca } from './DialogosDaCobranca'
@@ -59,35 +60,47 @@ function PaginaCobranca() {
               <div className="cartao-cabecalho">
                 <div>
                   <h2 id="titulo-acoes">Ações</h2>
-                  <p>Sincronize antes de cobrar o aluno ou registrar pagamento: o pagamento pode já estar no Asaas.</p>
+                  {cobranca.existeNoAsaas ? (
+                    <p>Sincronize antes de cobrar o aluno ou registrar pagamento: o pagamento pode já estar no Asaas.</p>
+                  ) : (
+                    <p>
+                      Débito herdado da planilha: não existe no Asaas e não tem boleto. Se o aluno já pagou, registre o
+                      pagamento; para cobrar com boleto, cancele e renegocie.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="bloco-acoes">
-                <button type="button" className="botao botao-principal" onClick={() => definirDialogo('sincronizar')}>
-                  <Icone nome="sincronizar" />
-                  Sincronizar esta cobrança
-                </button>
-                {boleto.data ? (
-                  <a className="botao" href={boleto.data.url} target="_blank" rel="noreferrer">
-                    <Icone nome="baixar" />
-                    Abrir o boleto
-                  </a>
-                ) : (
-                  <button type="button" className="botao" disabled={boleto.isPending} onClick={() => void obterBoleto()}>
-                    <Icone nome="baixar" />
-                    {boleto.isPending ? 'Obtendo…' : 'Baixar boleto'}
-                  </button>
+                {/* A herdada (ADR-0005) não existe no Asaas: sem sincronização nem boleto. A API também recusa. */}
+                {cobranca.existeNoAsaas && (
+                  <>
+                    <button type="button" className="botao botao-principal" onClick={() => definirDialogo('sincronizar')}>
+                      <Icone nome="sincronizar" />
+                      Sincronizar esta cobrança
+                    </button>
+                    {boleto.data ? (
+                      <a className="botao" href={boleto.data.url} target="_blank" rel="noreferrer">
+                        <Icone nome="baixar" />
+                        Abrir o boleto
+                      </a>
+                    ) : (
+                      <button type="button" className="botao" disabled={boleto.isPending} onClick={() => void obterBoleto()}>
+                        <Icone nome="baixar" />
+                        {boleto.isPending ? 'Obtendo…' : 'Baixar boleto'}
+                      </button>
+                    )}
+                    {/* TODO [Cobranças.RF003]: o Asaas não oferece reenvio da notificação pela API (issue #29). */}
+                    <button
+                      type="button"
+                      className="botao"
+                      disabled
+                      data-dica="O Asaas não permite reenviar o e-mail pela integração. Baixe o boleto e envie ao aluno."
+                    >
+                      <Icone nome="email" />
+                      Reenviar boleto por e-mail
+                    </button>
+                  </>
                 )}
-                {/* TODO [Cobranças.RF003]: o Asaas não oferece reenvio da notificação pela API (issue #29). */}
-                <button
-                  type="button"
-                  className="botao"
-                  disabled
-                  data-dica="O Asaas não permite reenviar o e-mail pela integração. Baixe o boleto e envie ao aluno."
-                >
-                  <Icone nome="email" />
-                  Reenviar boleto por e-mail
-                </button>
                 <button
                   type="button"
                   className="botao"
@@ -118,7 +131,10 @@ function PaginaCobranca() {
               <section className="cartao" aria-labelledby="titulo-dados">
                 <div className="cartao-cabecalho">
                   <h2 id="titulo-dados">Dados da cobrança</h2>
-                  <SeloDaCobranca situacao={cobranca.situacao} />
+                  <div className="acoes">
+                    {MARCA_DA_ORIGEM[cobranca.origem] && <span className="selo">{MARCA_DA_ORIGEM[cobranca.origem]}</span>}
+                    <SeloDaCobranca situacao={cobranca.situacao} />
+                  </div>
                 </div>
                 <dl className="dados-lista">
                   <dt>Aluno</dt>
@@ -150,7 +166,7 @@ function PaginaCobranca() {
                     </>
                   )}
                   <dt>Identificação no Asaas</dt>
-                  <dd>{cobranca.asaasId ?? '—'}</dd>
+                  <dd>{cobranca.existeNoAsaas ? (cobranca.asaasId ?? '—') : 'Nenhuma: herdada da planilha'}</dd>
                   {cobranca.canceladaEm && (
                     <>
                       <dt>Cancelamento</dt>
@@ -178,11 +194,17 @@ function PaginaCobranca() {
                 </dl>
                 <div className="aviso" style={{ marginTop: 16 }}>
                   <Icone nome="relogio" />
-                  <span>
-                    Multa de {cobranca.multaPercentual}% e juros de {cobranca.jurosMensalPercentual}% ao mês são aplicados pelo
-                    Asaas no boleto. O IntegraCASD mostra sempre o{' '}
-                    <strong>valor original</strong>, sem multa e juros.
-                  </span>
+                  {cobranca.existeNoAsaas ? (
+                    <span>
+                      Multa de {cobranca.multaPercentual}% e juros de {cobranca.jurosMensalPercentual}% ao mês são aplicados
+                      pelo Asaas no boleto. O IntegraCASD mostra sempre o <strong>valor original</strong>, sem multa e juros.
+                    </span>
+                  ) : (
+                    <span>
+                      Valor e vencimento como estavam na planilha, sem multa e juros. Na renegociação, a nova cobrança
+                      segue os parâmetros de cobrança atuais.
+                    </span>
+                  )}
                 </div>
               </section>
 
@@ -190,17 +212,21 @@ function PaginaCobranca() {
                 <div className="cartao-cabecalho">
                   <h2 id="titulo-sincronizacao">Sincronização com o Asaas</h2>
                 </div>
-                <p style={{ margin: '0 0 12px' }}>
-                  Última sincronização desta cobrança:{' '}
-                  {cobranca.ultimaSincronizacaoEm ? (
-                    <strong>
-                      {formatarData(cobranca.ultimaSincronizacaoEm)}, há {cobranca.diasDesdeUltimaSincronizacao} dias
-                    </strong>
-                  ) : (
-                    <strong>nunca sincronizada</strong>
-                  )}
-                  .
-                </p>
+                {cobranca.existeNoAsaas ? (
+                  <p style={{ margin: '0 0 12px' }}>
+                    Última sincronização desta cobrança:{' '}
+                    {cobranca.ultimaSincronizacaoEm ? (
+                      <strong>
+                        {formatarData(cobranca.ultimaSincronizacaoEm)}, há {cobranca.diasDesdeUltimaSincronizacao} dias
+                      </strong>
+                    ) : (
+                      <strong>nunca sincronizada</strong>
+                    )}
+                    .
+                  </p>
+                ) : (
+                  <p style={{ margin: 0 }}>Esta cobrança veio da planilha e não existe no Asaas: não há o que sincronizar.</p>
+                )}
                 {cobranca.sincronizacaoAntiga && (
                   <div className="alerta" role="status" style={{ marginBottom: 0 }}>
                     <Icone nome="alerta" />

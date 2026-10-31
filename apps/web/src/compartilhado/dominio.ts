@@ -10,6 +10,16 @@ export type TipoMovimentacao = 'ENTRADA' | 'SAIDA'
 
 export type OrigemMovimentacao = 'MANUAL' | 'CONCILIACAO_AUTOMATICA' | 'REGISTRO_MANUAL_DE_COBRANCA' | 'ESTORNO'
 
+export type OrigemCobranca = 'MENSALIDADE' | 'AVULSA' | 'HERDADA'
+
+// Marca exibida ao lado da descrição. A mensalidade é o caso comum e não ganha marca. HERDADA: débito
+// em aberto trazido da planilha pela carga inicial, sem boleto no Asaas (ADR-0005).
+export const MARCA_DA_ORIGEM: Record<OrigemCobranca, string | null> = {
+  MENSALIDADE: null,
+  AVULSA: 'Cobrança avulsa',
+  HERDADA: 'Herdada da planilha',
+}
+
 export interface VinculoDto {
   tipo: 'COBRANCA' | 'CONTRATO' | 'PROJETO' | 'FUNCIONARIO'
   // Nome do contrato, projeto ou funcionário.
