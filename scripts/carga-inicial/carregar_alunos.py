@@ -1,10 +1,11 @@
-"""Carga inicial dos alunos: planilha do H8 -> SQL para o banco ([Distribuição.NF002]).
+"""Carga inicial dos alunos e dos débitos deles: planilha do H8 -> SQL ([Distribuição.NF002]).
 
 Lê a aba H8 de data/SIRLEYDE NOVA.xlsx, normaliza cada linha com as regras de
 regras.py e grava, na pasta dados/ (fora do git, LGPD):
 
-- alunos.sql: turmas, vagas de alojamento e alunos, numa transação só, cada aluno
-  com o seu registro na trilha de auditoria;
+- carga.sql: turmas, vagas de alojamento, alunos e, para cada mês "NÃO PAGO", uma
+  cobrança herdada (ADR-0005), numa transação só, cada inclusão com o seu registro
+  na trilha de auditoria;
 - pendencias-alunos.csv: o que a carga não conseguiu aproveitar, linha a linha,
   para a área administrativa conferir e digitar à mão.
 
@@ -17,6 +18,7 @@ Uso, na raiz do repositório:
 
 import argparse
 import csv
+import datetime
 import sys
 import warnings
 from collections import Counter
@@ -33,10 +35,29 @@ PLANILHA_PADRAO = RAIZ / "data" / "SIRLEYDE NOVA.xlsx"
 PASTA_DE_SAIDA = PASTA_DO_SCRIPT / "dados"
 ABA = "H8"
 
-# Colunas usadas, com o nome do cabeçalho da planilha. STATUS, BOLETO, NEG e DEVENDO
-# ficam de fora: são da cobrança, e nenhuma cobrança pode existir só no banco local.
+# Colunas usadas, com o nome do cabeçalho da planilha. DEVENDO (quantos meses o aluno deve)
+# serve só para conferir a contagem dos meses "NÃO PAGO". STATUS, BOLETO e NEG ficam de fora.
 COLUNAS = ["SITUAC", "POSTO", "CURSO", "CELULAR", "ALOJ", "APTO", "VAGA",
-           "MATRIC", "CPF", "ALUNOS", "TURMA", "EMAIL", "APELIDO"]
+           "MATRIC", "CPF", "ALUNOS", "TURMA", "EMAIL", "APELIDO", "DEVENDO"]
+
+
+@dataclass
+class MesDaPlanilha:
+    """Um mês do Fundo de Manutenção: três colunas (VALOR, DATA, SITUAÇÃO) por aluno."""
+    coluna_situacao: int
+    rotulo: str  # como a planilha chama: "setembro/2026"
+    descricao: str  # "Mensalidade de setembro/2026", o mesmo texto da geração do sistema
+    vencimento: str  # "AAAA-MM-DD", da linha de cima da planilha
+    valor_centavos: int  # valor do mês, da linha de cima: a célula do aluno em aberto fica vazia
+
+
+@dataclass
+class Debito:
+    """Um mês em aberto, que vira cobrança HERDADA (ADR-0005)."""
+    referencia: str  # "AAAA-MM" do vencimento, como na geração recorrente
+    descricao: str
+    vencimento: str
+    valor_centavos: int
 
 
 @dataclass
@@ -53,6 +74,14 @@ class Aluno:
     posto: str | None
     alojamento: tuple[str, str, str] | None
     ativo: bool
+    debitos: list[Debito] = field(default_factory=list)
+
+
+@dataclass
+class Planilha:
+    meses: list[MesDaPlanilha]
+    # (número da linha no Excel, {coluna: valor}, situação de cada mês, na ordem de `meses`)
+    linhas: list[tuple[int, dict, list]]
 
 
 @dataclass
@@ -72,28 +101,75 @@ class Resultado:
 # ---------------------------------------------------------------------------
 
 
-def ler_linhas(caminho: Path):
-    """Devolve (número da linha no Excel, {coluna: valor}) para cada linha de dados."""
+def ler_planilha(caminho: Path) -> Planilha:
     # O openpyxl avisa de células com data impossível em outras colunas; não usamos essas colunas.
     warnings.filterwarnings("ignore", category=UserWarning, module="openpyxl")
     planilha = openpyxl.load_workbook(caminho, read_only=True, data_only=True)
     linhas = planilha[ABA].iter_rows(values_only=True)
 
     # O cabeçalho não está na primeira linha: procuramos a linha que tem STATUS e CPF.
-    indices = None
+    # As linhas de cima guardam o nome, o valor e o vencimento de cada mês.
+    acima: list[tuple] = []
+    cabecalho = None
+    numero = 0
     for numero, valores in enumerate(linhas, start=1):
         textos = [str(v).strip() if v is not None else "" for v in valores]
         if "STATUS" in textos and "CPF" in textos:
-            faltando = [nome for nome in COLUNAS if nome not in textos]
-            if faltando:
-                sys.exit(f"A aba {ABA} não tem as colunas {faltando}. A planilha mudou de formato?")
-            indices = {nome: textos.index(nome) for nome in COLUNAS}
+            cabecalho = textos
             break
-    if indices is None:
+        acima.append(valores)
+    if cabecalho is None:
         sys.exit(f"Não achei o cabeçalho (STATUS, CPF...) na aba {ABA}.")
+    faltando = [nome for nome in COLUNAS if nome not in cabecalho]
+    if faltando:
+        sys.exit(f"A aba {ABA} não tem as colunas {faltando}. A planilha mudou de formato?")
+    indices = {nome: cabecalho.index(nome) for nome in COLUNAS}
+    meses = ler_meses(cabecalho, acima)
 
+    dados = []
     for numero, valores in enumerate(linhas, start=numero + 1):
-        yield numero, {nome: valores[i] if i < len(valores) else None for nome, i in indices.items()}
+        def celula(i: int):
+            return valores[i] if i < len(valores) else None
+        dados.append((numero, {nome: celula(i) for nome, i in indices.items()},
+                      [celula(mes.coluna_situacao) for mes in meses]))
+    return Planilha(meses=meses, linhas=dados)
+
+
+def ler_meses(cabecalho: list[str], acima: list[tuple]) -> list[MesDaPlanilha]:
+    """Cada mês ocupa três colunas: VALOR, DATA e SITUAÇÃO. Nas linhas de cima ficam o nome do
+    mês (na coluna VALOR), o valor do mês (VALOR) e o vencimento (DATA)."""
+    meses = []
+    for c in range(len(cabecalho) - 2):
+        if cabecalho[c] != "VALOR" or cabecalho[c + 1] != "DATA":
+            continue
+        if not regras.sem_acento(cabecalho[c + 2]).upper().startswith("SITUA"):
+            continue
+        rotulo = None
+        for linha in acima:
+            try:
+                rotulo = regras.mes_da_planilha(linha[c] if c < len(linha) else None)
+                break
+            except regras.ValorInvalido:
+                continue
+        valores = next((linha for linha in acima
+                        if c + 1 < len(linha) and isinstance(linha[c + 1], datetime.datetime)), None)
+        if rotulo is None or valores is None:
+            sys.exit(f"O mês da coluna {c + 1} não tem nome ou vencimento nas linhas de cima. A planilha mudou de formato?")
+        try:
+            valor = regras.centavos(valores[c])
+        except regras.ValorInvalido as erro:
+            sys.exit(f"O mês da coluna {c + 1} tem um valor que não dá para ler: {erro}.")
+        ano, mes = rotulo
+        meses.append(MesDaPlanilha(
+            coluna_situacao=c + 2,
+            rotulo=f"{regras.NOMES_DOS_MESES[mes - 1]}/{ano}",
+            descricao=regras.descricao_do_mes(ano, mes),
+            vencimento=valores[c + 1].date().isoformat(),
+            valor_centavos=valor,
+        ))
+    if not meses:
+        sys.exit(f"Não achei as colunas dos meses (VALOR, DATA, SITUAÇÃO) na aba {ABA}.")
+    return meses
 
 
 # ---------------------------------------------------------------------------
@@ -110,9 +186,9 @@ def campo_opcional(resultado: Resultado, linha: int, campo: str, regra, valor):
         return None
 
 
-def normalizar(linhas) -> Resultado:
+def normalizar(planilha: Planilha) -> Resultado:
     resultado = Resultado()
-    for linha, valores in linhas:
+    for linha, valores, situacoes in planilha.linhas:
         nome_bruto, cpf_bruto = valores["ALUNOS"], valores["CPF"]
         if regras.texto(nome_bruto) is None and regras.texto(cpf_bruto) is None:
             # Linha toda em branco (o Excel guarda muitas no fim da aba): ignorada.
@@ -159,16 +235,48 @@ def normalizar(linhas) -> Resultado:
             posto=campo_opcional(resultado, linha, "POSTO", regras.posto, valores["POSTO"]),
             alojamento=vaga,
             ativo=regras.ativo(valores["SITUAC"]),
+            debitos=ler_debitos(resultado, linha, planilha.meses, situacoes, valores["DEVENDO"]),
         ))
 
     resolver_repeticoes(resultado)
     return resultado
 
 
+def ler_debitos(resultado: Resultado, linha: int, meses: list[MesDaPlanilha], situacoes: list, devendo) -> list[Debito]:
+    """Cada mês "NÃO PAGO" vira um débito. Situação que não dá para ler vira pendência."""
+    debitos: list[Debito] = []
+    referencias: set[str] = set()
+    for mes, situacao in zip(meses, situacoes):
+        try:
+            em_aberto = regras.mes_em_aberto(situacao)
+        except regras.ValorInvalido as erro:
+            resultado.anotar(linha, f"SITUAÇÃO de {mes.rotulo}", situacao, str(erro),
+                             "débito do mês NÃO carregado: confira na planilha")
+            continue
+        if not em_aberto:
+            continue
+        referencia = mes.vencimento[:7]
+        if referencia in referencias:
+            resultado.anotar(linha, f"SITUAÇÃO de {mes.rotulo}", situacao,
+                             f"dois meses da planilha vencem em {referencia}", "só o primeiro foi carregado")
+            continue
+        referencias.add(referencia)
+        debitos.append(Debito(referencia=referencia, descricao=mes.descricao,
+                              vencimento=mes.vencimento, valor_centavos=mes.valor_centavos))
+
+    # Conferência com a coluna DEVENDO, que a planilha calcula.
+    if isinstance(devendo, (int, float)) and int(devendo) != len(debitos):
+        resultado.anotar(linha, "DEVENDO", devendo,
+                         f"a planilha diz {int(devendo)} meses em aberto; a carga achou {len(debitos)}",
+                         f"carregados os {len(debitos)} meses encontrados")
+    return debitos
+
+
 def resolver_repeticoes(resultado: Resultado) -> None:
     """O banco recusa repetições; a primeira linha da planilha fica, as outras viram pendência.
 
-    - CPF: o SQL só insere aluno cujo CPF ainda não existe. O repetido não é carregado.
+    - CPF: o SQL só insere aluno cujo CPF ainda não existe. O repetido não é carregado
+      (nem os débitos dele).
     - Matrícula: única entre todos os alunos. A repetida fica em branco.
     - Vaga: no máximo um aluno ativo por vaga. A repetida fica em branco.
     """
@@ -222,11 +330,61 @@ def sql_texto(valor) -> str:
     return "'" + str(valor).replace("'", "''") + "'"
 
 
+def sql_do_aluno(a: Aluno) -> str:
+    """Insere se o CPF ainda não existe e, no mesmo comando, grava a inclusão na trilha
+    (usuario_id nulo = rotina automática, como no backend)."""
+    turma_id = "NULL" if a.turma is None else f"(SELECT id FROM turmas WHERE nome = {sql_texto(a.turma)})"
+    if a.alojamento is None:
+        alojamento_id = "NULL"
+    else:
+        b, ap, v = (sql_texto(parte) for parte in a.alojamento)
+        alojamento_id = f"(SELECT id FROM alojamentos WHERE bloco = {b} AND apto = {ap} AND vaga = {v})"
+    posto = "NULL" if a.posto is None else f"{sql_texto(a.posto)}::posto_aluno"
+    curso = "NULL" if a.curso is None else f"{sql_texto(a.curso)}::curso_aluno"
+    return (
+        f"-- linha {a.linha}\n"
+        "WITH novo AS (\n"
+        "  INSERT INTO alunos (id, nome, cpf, email, matricula, posto, curso, turma_id, celular, apelido,\n"
+        "                      alojamento_id, ativo, data_alteracao)\n"
+        f"  SELECT gen_random_uuid(), {sql_texto(a.nome)}, {sql_texto(a.cpf)}, {sql_texto(a.email)},\n"
+        f"         {sql_texto(a.matricula)}, {posto}, {curso}, {turma_id},\n"
+        f"         {sql_texto(a.celular)}, {sql_texto(a.apelido)}, {alojamento_id}, {sql_texto(a.ativo)}, now()\n"
+        f"  WHERE NOT EXISTS (SELECT 1 FROM alunos WHERE cpf = {sql_texto(a.cpf)})\n"
+        "  RETURNING id, nome\n"
+        ")\n"
+        "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
+        "SELECT gen_random_uuid(), NULL, 'INCLUSAO', 'ALUNO', id::text,\n"
+        "       'Aluno \"' || nome || '\" incluído pela carga inicial.'\n"
+        "FROM novo;\n"
+    )
+
+
+def sql_do_debito(a: Aluno, d: Debito) -> str:
+    """Cobrança HERDADA (ADR-0005): aberta, sem id do Asaas, multa e juros zerados. O mês de
+    referência é único por aluno: rodar de novo não duplica (ON CONFLICT)."""
+    return (
+        f"-- linha {a.linha}, {d.descricao}\n"
+        "WITH nova AS (\n"
+        "  INSERT INTO cobrancas (id, aluno_id, origem, referencia, descricao, valor_centavos, vencimento,\n"
+        "                         multa_percentual, juros_mensal_percentual, data_alteracao)\n"
+        f"  SELECT gen_random_uuid(), id, 'HERDADA', {sql_texto(d.referencia)}, {sql_texto(d.descricao)},\n"
+        f"         {d.valor_centavos}, DATE {sql_texto(d.vencimento)}, 0, 0, now()\n"
+        f"  FROM alunos WHERE cpf = {sql_texto(a.cpf)} ORDER BY ativo DESC, data_criacao LIMIT 1\n"
+        "  ON CONFLICT (aluno_id, referencia) DO NOTHING\n"
+        "  RETURNING id, descricao\n"
+        ")\n"
+        "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
+        "SELECT gen_random_uuid(), NULL, 'INCLUSAO', 'COBRANCA', id::text,\n"
+        "       'Cobrança \"' || descricao || '\" herdada da planilha pela carga inicial (não existe no Asaas).'\n"
+        "FROM nova;\n"
+    )
+
+
 def gerar_sql(alunos: list[Aluno]) -> str:
     partes = [
-        "-- Carga inicial dos alunos, gerada por scripts/carga-inicial/carregar_alunos.py.",
+        "-- Carga inicial dos alunos e dos débitos deles, gerada por scripts/carga-inicial/carregar_alunos.py.",
         "-- CONTÉM DADOS REAIS (LGPD): não versionar, não enviar, não usar em ambiente exposto.",
-        "-- Pode rodar de novo: turma, vaga e aluno (pelo CPF) que já existem não são duplicados.",
+        "-- Pode rodar de novo: turma, vaga, aluno (pelo CPF) e débito (aluno + mês) que já existem não são duplicados.",
         "BEGIN;",
         "",
     ]
@@ -247,34 +405,8 @@ def gerar_sql(alunos: list[Aluno]) -> str:
             "",
         ]
 
-    # Um comando por aluno: insere se o CPF ainda não existe e, no mesmo comando, grava a
-    # inclusão na trilha de auditoria (usuario_id nulo = rotina automática, como no backend).
-    for a in alunos:
-        turma_id = "NULL" if a.turma is None else f"(SELECT id FROM turmas WHERE nome = {sql_texto(a.turma)})"
-        if a.alojamento is None:
-            alojamento_id = "NULL"
-        else:
-            b, ap, v = (sql_texto(parte) for parte in a.alojamento)
-            alojamento_id = f"(SELECT id FROM alojamentos WHERE bloco = {b} AND apto = {ap} AND vaga = {v})"
-        posto = "NULL" if a.posto is None else f"{sql_texto(a.posto)}::posto_aluno"
-        curso = "NULL" if a.curso is None else f"{sql_texto(a.curso)}::curso_aluno"
-        partes.append(
-            f"-- linha {a.linha}\n"
-            "WITH novo AS (\n"
-            "  INSERT INTO alunos (id, nome, cpf, email, matricula, posto, curso, turma_id, celular, apelido,\n"
-            "                      alojamento_id, ativo, data_alteracao)\n"
-            f"  SELECT gen_random_uuid(), {sql_texto(a.nome)}, {sql_texto(a.cpf)}, {sql_texto(a.email)},\n"
-            f"         {sql_texto(a.matricula)}, {posto}, {curso}, {turma_id},\n"
-            f"         {sql_texto(a.celular)}, {sql_texto(a.apelido)}, {alojamento_id}, {sql_texto(a.ativo)}, now()\n"
-            f"  WHERE NOT EXISTS (SELECT 1 FROM alunos WHERE cpf = {sql_texto(a.cpf)})\n"
-            "  RETURNING id, nome\n"
-            ")\n"
-            "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
-            "SELECT gen_random_uuid(), NULL, 'INCLUSAO', 'ALUNO', id::text,\n"
-            "       'Aluno \"' || nome || '\" incluído pela carga inicial.'\n"
-            "FROM novo;\n"
-        )
-
+    partes += [sql_do_aluno(a) for a in alunos]
+    partes += [sql_do_debito(a, d) for a in alunos for d in a.debitos]
     partes.append("COMMIT;")
     return "\n".join(partes) + "\n"
 
@@ -287,18 +419,28 @@ def gravar_pendencias(caminho: Path, pendencias) -> None:
         escritor.writerows(sorted(pendencias))
 
 
-def resumir(resultado: Resultado) -> None:
+def reais(centavos: int) -> str:
+    """131760 -> 'R$ 1.317,60', só com inteiros."""
+    milhares = f"{centavos // 100:,}".replace(",", ".")
+    return f"R$ {milhares},{centavos % 100:02d}"
+
+
+def resumir(resultado: Resultado, meses: list[MesDaPlanilha]) -> None:
     alunos = resultado.alunos
     ativos = sum(1 for a in alunos if a.ativo)
     incompletos = sum(1 for a in alunos if a.email == "" or not regras.cpf_valido(a.cpf))
     nao_carregados = sum(1 for p in resultado.pendencias if p[4] == "aluno NÃO carregado")
-    por_campo = Counter(p[1] for p in resultado.pendencias)
+    por_campo = Counter(p[1].split(" de ")[0] for p in resultado.pendencias)
+    debitos = [d for a in alunos for d in a.debitos]
     print(f"Alunos para carregar: {len(alunos)} ({ativos} ativos, {len(alunos) - ativos} inativos)")
     print(f"  cadastros incompletos (sem e-mail válido ou CPF inválido): {incompletos}")
     print(f"  com turma: {sum(1 for a in alunos if a.turma)}, com curso: {sum(1 for a in alunos if a.curso)}, "
           f"com posto: {sum(1 for a in alunos if a.posto)}, com vaga: {sum(1 for a in alunos if a.alojamento)}")
     print(f"Linhas da planilha sem aluno (vaga vazia): {resultado.linhas_vazias}")
     print(f"Linhas NÃO carregadas: {nao_carregados}")
+    print(f"Meses lidos da planilha: {len(meses)} ({meses[-1].rotulo} a {meses[0].rotulo})")
+    print(f"Débitos herdados (meses NÃO PAGO): {len(debitos)} de {sum(1 for a in alunos if a.debitos)} alunos, "
+          f"total {reais(sum(d.valor_centavos for d in debitos))}")
     print(f"Pendências para conferir: {len(resultado.pendencias)}"
           + ("" if not por_campo else " (" + ", ".join(f"{c}: {n}" for c, n in sorted(por_campo.items())) + ")"))
 
@@ -310,17 +452,18 @@ def main() -> None:
     if not argumentos.planilha.exists():
         sys.exit(f"Planilha não encontrada: {argumentos.planilha}. Ela fica em data/, fora do git: peça à equipe.")
 
-    resultado = normalizar(ler_linhas(argumentos.planilha))
+    planilha = ler_planilha(argumentos.planilha)
+    resultado = normalizar(planilha)
 
     PASTA_DE_SAIDA.mkdir(exist_ok=True)
-    arquivo_sql = PASTA_DE_SAIDA / "alunos.sql"
+    arquivo_sql = PASTA_DE_SAIDA / "carga.sql"
     arquivo_pendencias = PASTA_DE_SAIDA / "pendencias-alunos.csv"
     arquivo_sql.write_text(gerar_sql(resultado.alunos), encoding="utf-8")
     gravar_pendencias(arquivo_pendencias, resultado.pendencias)
 
-    resumir(resultado)
+    resumir(resultado, planilha.meses)
     print(f"\nGerados (fora do git): {arquivo_sql.relative_to(RAIZ)} e {arquivo_pendencias.relative_to(RAIZ)}")
-    print("Para aplicar no banco local: pnpm --filter api exec prisma db execute --file ../../scripts/carga-inicial/dados/alunos.sql")
+    print("Para aplicar no banco local: pnpm --filter api exec prisma db execute --file ../../scripts/carga-inicial/dados/carga.sql")
 
 
 if __name__ == "__main__":

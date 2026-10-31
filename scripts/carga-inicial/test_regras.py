@@ -103,5 +103,33 @@ class TestCamposDoAluno(unittest.TestCase):
         self.assertFalse(regras.ativo("Fora do H8"))
 
 
+class TestMesesDoFundo(unittest.TestCase):
+    def test_rotulo_do_mes(self):
+        self.assertEqual(regras.mes_da_planilha("SETEMBRO 2026"), (2026, 9))
+        self.assertEqual(regras.mes_da_planilha("MARÇO 2026"), (2026, 3))
+        with self.assertRaises(ValorInvalido):
+            regras.mes_da_planilha("inadimplencia")
+
+    def test_descricao_igual_a_da_geracao_do_sistema(self):
+        self.assertEqual(regras.descricao_do_mes(2026, 3), "Mensalidade de março/2026")
+
+    def test_so_nao_pago_e_debito(self):
+        self.assertTrue(regras.mes_em_aberto("NÃO PAGO"))
+        self.assertTrue(regras.mes_em_aberto("Nao pago "))
+        for sem_debito in ("PAGO", None, "ANTES DA MORADIA", "BOLSISTA", "ISENTO", "FORA DO H8",
+                           "INTERCÂMBIO", "TRANCADO", "DESLIGADO", "VAGA DISPONÍVEL"):
+            self.assertFalse(regras.mes_em_aberto(sem_debito), sem_debito)
+        with self.assertRaises(ValorInvalido):
+            regras.mes_em_aberto("#REF!")
+
+    def test_centavos_sem_float(self):
+        self.assertEqual(regras.centavos(120.0), 12000)
+        self.assertEqual(regras.centavos(122.5), 12250)
+        self.assertEqual(regras.centavos("R$ 1.234,56"), 123456)
+        for invalido in (None, 0, "abc", 1.005):
+            with self.assertRaises(ValorInvalido):
+                regras.centavos(invalido)
+
+
 if __name__ == "__main__":
     unittest.main()
