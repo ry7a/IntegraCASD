@@ -8,7 +8,8 @@ Cada módulo de domínio fica em `src/modulos/<nome>/` e segue estas camadas:
 
 ```
 src/modulos/cobrancas/
-  cobrancas.module.ts   declara o que o módulo exporta
+  index.ts              entrada pública: outro módulo só importa daqui (regra B1)
+  cobrancas.module.ts   módulo do Nest (providers, controllers, exports)
   api/                  controllers e DTOs (só recebe e responde)
   aplicacao/            casos de uso (orquestra, controla a transação)
   dominio/              entidades e regras de negócio
@@ -18,8 +19,12 @@ src/modulos/cobrancas/
 - Nomes de domínio em português sem acento (`cobranca`, `movimentacao`, `aluno`); termos do framework em inglês (`Controller`, `Service`, `Module`).
 - Controllers não contêm regra de negócio: convertem a requisição e chamam um caso de uso.
 - Um caso de uso por arquivo, com nome de ação: `emitir-cobranca-avulsa.ts`.
+- Módulos: `acesso` (login e sessão), `administracao`, `cadastros`, `cobrancas`, `indicadores`, `movimentacoes`.
 - O Cadastros é o módulo de referência: na dúvida sobre estrutura, siga o que ele faz.
-- Código compartilhado entre módulos (auditoria, autenticação, eventos internos, cliente Asaas) fica em `src/compartilhado/`.
+- Camadas conferidas por teste (B2, B3): `dominio/` não importa Nest nem Prisma; `api/` não importa `infra/`;
+  Prisma e `$transaction` nunca aparecem em `api/` nem em `dominio/`.
+- Código compartilhado entre módulos fica em `src/compartilhado/`: `asaas/`, `auditoria/`, `autenticacao/`,
+  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
 - Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
   (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
   enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
@@ -96,8 +101,11 @@ src/modulos/cobrancas/
 
 ## Segurança e auditoria
 
-- Toda rota exige sessão autenticada, exceto login e webhook (que usa o token próprio).
-- Rotas de Administração exigem perfil de diretoria; o perfil é verificado no backend, sempre.
+- Toda rota exige sessão autenticada (guarda global), exceto login e webhook (que usa o token próprio), marcadas com `@Publico()`.
+- Rotas de Administração ficam em `/api/admin/...` e exigem perfil de diretoria; o perfil é verificado no backend, sempre.
+- No controller, declare também para o contrato (regra B8): `@ApiCookieAuth('cookie')` em toda rota autenticada e,
+  nas de Administração, `@ApiExtension('x-perfil', 'DIRETORIA')` com `@Perfis(PerfilUsuario.DIRETORIA)`.
+  Siga `administracao/api/usuarios.controller.ts`. Todo endpoint tem `@ApiOperation({ operationId })`: é o nome do hook gerado no frontend.
 - Senhas com argon2. A chave do Asaas é guardada cifrada e nunca é logada.
 - Auditoria: toda alteração chama `registrarNaTrilha(tx, {...})` (`src/compartilhado/auditoria/trilha.ts`)
   dentro da mesma transação, nunca `tx.registroAuditoria.create` direto. A trilha é só de inclusão: o banco
@@ -105,5 +113,13 @@ src/modulos/cobrancas/
 
 ## Testes
 
-- Vitest. Regras de domínio e casos de uso têm teste unitário.
+- Vitest. Regras de domínio e casos de uso têm teste unitário, no arquivo `*.spec.ts` ao lado do código.
+- Os testes não usam banco nem rede: rodam sem o Docker. Dependências externas são trocadas por dublês
+  (`cliente-asaas.falso.ts`, `agendador-de-rotinas.falso.ts`, `fila-de-eventos.falsa.ts`,
+  `notificador-de-alertas.falso.ts`); repositórios são testados com um Prisma falso que anota as operações.
+- `test/arquitetura/` guarda as funções de aptidão do backend (fronteiras, camadas, dinheiro, exclusão física,
+  segredos, rotas autenticadas, trilha, dependências, requisitos); estão descritas em `docs/governanca/README.md`.
+- Teste que cobre um requisito não funcional cita o id entre colchetes (`[Confiabilidade.NF003]`) e o requisito é
+  marcado `coberto` em `docs/governanca/requisitos-verificaveis.json` (regra G5).
 - O fluxo de conciliação (webhook → worker → baixa) tem teste cobrindo o evento repetido e a falha no meio da transação.
+- Cobertura: `pnpm cobertura` na raiz (relatório em `coverage/index.html`).
