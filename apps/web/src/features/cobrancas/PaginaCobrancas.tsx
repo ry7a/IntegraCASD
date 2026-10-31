@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useListarCobrancas, useResumirCobrancas, type ResumoSituacaoDto } from '@integracasd/api-client'
+import { keepPreviousData } from '@tanstack/react-query'
 import { useAcoesGlobais } from '@/compartilhado/acoes-globais'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
@@ -34,6 +35,9 @@ function legendaDoResumo(item: ResumoSituacaoDto, mes: string): string {
   }
 }
 
+// Cobranças por página. O mesmo valor vai para a API, que também limita o tamanho (máximo 200).
+const POR_PAGINA = 50
+
 const TODAS_AS_SITUACOES: SituacaoCobranca[] = ['ABERTA', 'VENCIDA', 'PAGA', 'PAGA_COM_REGISTRO_MANUAL', 'CANCELADA', 'ESTORNADA']
 
 // "VENCIDA,ABERTA" -> só os valores conhecidos; sem nada válido, o padrão (abertas e vencidas).
@@ -55,6 +59,9 @@ function PaginaCobrancas() {
   const [valorMinimo, definirValorMinimo] = useState('')
   const [valorMaximo, definirValorMaximo] = useState('')
   const [sincronizarAberto, definirSincronizarAberto] = useState(false)
+  // Página atual da lista. Todo filtro novo volta para a página 1: a página 3 de um filtro
+  // não tem relação com a página 3 de outro.
+  const [pagina, definirPagina] = useState(1)
 
   const resumo = useResumirCobrancas()
   const minimo = paraCentavos(valorMinimo)
@@ -67,17 +74,29 @@ function PaginaCobrancas() {
     vencimentoAte: vencimentoAte || undefined,
     valorMinimoCentavos: Number.isNaN(minimo) ? undefined : minimo,
     valorMaximoCentavos: Number.isNaN(maximo) ? undefined : maximo,
+    pagina,
+    tamanhoPagina: POR_PAGINA,
+  }, {
+    // Ao trocar de página, a tabela continua mostrando a página anterior até a nova chegar,
+    // em vez de piscar o "carregando".
+    query: { placeholderData: keepPreviousData },
   })
   const itens = cobrancas.data?.itens ?? []
+  const total = cobrancas.data?.total ?? 0
+  const totalDePaginas = Math.max(1, Math.ceil(total / POR_PAGINA))
+  const primeiro = total === 0 ? 0 : (pagina - 1) * POR_PAGINA + 1
+  const ultimo = (pagina - 1) * POR_PAGINA + itens.length
   const conciliacao = resumo.data?.conciliacao
 
   function alternarSituacao(situacao: SituacaoCobranca) {
+    definirPagina(1)
     definirSituacoes((atuais) =>
       atuais.includes(situacao) ? atuais.filter((s) => s !== situacao) : [...atuais, situacao],
     )
   }
 
   function limparFiltros() {
+    definirPagina(1)
     definirBusca('')
     definirVencimentoDe('')
     definirVencimentoAte('')
@@ -148,24 +167,24 @@ function PaginaCobrancas() {
             type="search"
             placeholder="Nome ou CPF"
             value={busca}
-            onChange={(evento) => definirBusca(evento.target.value)}
+            onChange={(evento) => { definirBusca(evento.target.value); definirPagina(1) }}
           />
         </div>
         <div className="campo">
           <label htmlFor="cb-venc-de">Vencimento de</label>
-          <input id="cb-venc-de" type="date" value={vencimentoDe} onChange={(evento) => definirVencimentoDe(evento.target.value)} />
+          <input id="cb-venc-de" type="date" value={vencimentoDe} onChange={(evento) => { definirVencimentoDe(evento.target.value); definirPagina(1) }} />
         </div>
         <div className="campo">
           <label htmlFor="cb-venc-ate">até</label>
-          <input id="cb-venc-ate" type="date" value={vencimentoAte} onChange={(evento) => definirVencimentoAte(evento.target.value)} />
+          <input id="cb-venc-ate" type="date" value={vencimentoAte} onChange={(evento) => { definirVencimentoAte(evento.target.value); definirPagina(1) }} />
         </div>
         <div className="campo" style={{ width: 120 }}>
           <label htmlFor="cb-valor-min">Valor mínimo</label>
-          <input id="cb-valor-min" placeholder="R$ 0,00" value={valorMinimo} onChange={(evento) => definirValorMinimo(evento.target.value)} />
+          <input id="cb-valor-min" placeholder="R$ 0,00" value={valorMinimo} onChange={(evento) => { definirValorMinimo(evento.target.value); definirPagina(1) }} />
         </div>
         <div className="campo" style={{ width: 120 }}>
           <label htmlFor="cb-valor-max">Valor máximo</label>
-          <input id="cb-valor-max" placeholder="R$ 0,00" value={valorMaximo} onChange={(evento) => definirValorMaximo(evento.target.value)} />
+          <input id="cb-valor-max" placeholder="R$ 0,00" value={valorMaximo} onChange={(evento) => { definirValorMaximo(evento.target.value); definirPagina(1) }} />
         </div>
         <button type="button" className="botao botao-fantasma" onClick={limparFiltros}>
           Limpar filtros
@@ -230,7 +249,10 @@ function PaginaCobrancas() {
               ))}
             </tbody>
           </table>
-          <RodapeDaTabela texto={`Mostrando ${itens.length} de ${cobrancas.data?.total ?? 0} cobranças`} />
+          <RodapeDaTabela
+            texto={`Mostrando ${formatarInteiro(primeiro)}–${formatarInteiro(ultimo)} de ${formatarInteiro(total)} cobranças`}
+            paginacao={{ pagina, totalDePaginas, aoMudar: definirPagina }}
+          />
         </div>
       </EstadoDaConsulta>
 

@@ -76,6 +76,11 @@ describe('consulta [Cobranças.RF008]', () => {
     expect(() => lerFiltrosDaConsulta({ situacoes: 'QUITADA' })).toThrow(/desconhecida/);
   });
 
+  it('lê a página pedida pela tela; sem ela, a primeira', () => {
+    expect(lerFiltrosDaConsulta({ pagina: '3', tamanhoPagina: '50' })).toMatchObject({ pagina: 3, tamanhoPagina: 50 });
+    expect(lerFiltrosDaConsulta({}).pagina).toBe(1);
+  });
+
   it('limita o tamanho da página e lê valores em centavos', () => {
     const filtros = lerFiltrosDaConsulta({ tamanhoPagina: '1000', valorMinimoCentavos: '5000' });
     expect(filtros.tamanhoPagina).toBe(200);
