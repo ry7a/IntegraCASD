@@ -3,6 +3,7 @@ import { useListarCobrancasDoAluno } from '@integracasd/api-client'
 import EstadoDaConsulta from '@/compartilhado/componentes/EstadoDaConsulta'
 import Icone from '@/compartilhado/componentes/Icone'
 import SeloDaCobranca from '@/compartilhado/componentes/SeloDaCobranca'
+import { MARCA_DA_ORIGEM } from '@/compartilhado/dominio'
 import { formatarData, formatarMoeda } from '@/compartilhado/formatacao'
 
 // Aba "Cobranças" da tela do aluno. Os dados são de Cobranças: a API os entrega em /alunos/:id/cobrancas.
@@ -51,6 +52,7 @@ function CobrancasDoAluno({ alunoId }: { alunoId: string }) {
                       <Link className="nome-principal" to={`/cobrancas/${cobranca.id}`}>
                         {cobranca.descricao}
                       </Link>
+                      {MARCA_DA_ORIGEM[cobranca.origem] && <span className="secundario">{MARCA_DA_ORIGEM[cobranca.origem]}</span>}
                     </td>
                     <td className="numero">{formatarMoeda(cobranca.valorCentavos)}</td>
                     <td>{formatarData(cobranca.vencimento)}</td>
