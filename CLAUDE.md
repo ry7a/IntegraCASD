@@ -29,7 +29,7 @@ apps/web/            SPA React + Vite
 packages/api-client/ cliente da API gerado pelo orval (não editar à mão; só src/cliente-http.ts é escrito à mão)
 scripts/arquitetura/ funções de aptidão que não são testes (migrações, cores, bundle, contrato, relatório)
 scripts/backup/      backup e restauração do banco
-scripts/carga-inicial/ script Python que importa as planilhas, roda uma vez (ainda não implementado)
+scripts/carga-inicial/ script Python que importa as planilhas, roda uma vez (por enquanto só alunos; ver o README)
 docs/requisitos/     documento de requisitos; o .tex da v1.1 é a fonte dos ids ([Cobranças.RF005])
 docs/adr/            registros de decisões de arquitetura (índice em docs/README.MD)
 docs/arquitetura/    diagramas C4, de sequência e o MER (.drawio com o .svg exportado ao lado)
