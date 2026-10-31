@@ -155,13 +155,18 @@ export class CobrancasRepositorio {
   }
 
   // [Cobranças.RF004] Marca como cancelada (o Asaas já confirmou, ou a cobrança é herdada e não
-  // existe lá) e registra motivo e autor.
+  // existe lá) e registra motivo e autor. Como no pagamento manual, a atualização só vale se a cobrança
+  // ainda estiver aberta: se outro usuário registrou o pagamento (ou a conciliação a baixou) nesse
+  // meio-tempo, nada é gravado e o usuário é avisado, em vez de cancelar uma cobrança já paga.
   async cancelar(id: string, motivo: string, autorId: string, herdada = false): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
-      await tx.cobranca.update({
-        where: { id },
+      const atualizada = await tx.cobranca.updateMany({
+        where: { id, situacao: 'ABERTA' },
         data: { situacao: 'CANCELADA', canceladaEm: new Date(), motivoCancelamento: motivo },
       });
+      if (atualizada.count === 0) {
+        throw new CobrancaInvalida('A situação desta cobrança mudou enquanto você cancelava (por exemplo, o pagamento foi registrado). Atualize a página e confira.');
+      }
       await registrarNaTrilha(tx, {
         usuarioId: autorId,
         operacao: 'CANCELAMENTO',
