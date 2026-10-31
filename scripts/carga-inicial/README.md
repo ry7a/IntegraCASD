@@ -77,7 +77,9 @@ de edição depois.
 | `CELULAR`, `MATRIC`, `APELIDO` | Normalizados; valor que não serve fica em branco e vai para as pendências     |
 
 Repetições: CPF repetido não é carregado; matrícula repetida fica em branco; vaga já ocupada por
-outro aluno ativo fica em branco. Em todos os casos a primeira linha da planilha vence.
+outro aluno ativo fica em branco. Em todos os casos a primeira linha da planilha vence. Se a matrícula
+ou a vaga já estiverem em uso por um aluno que estava no banco antes da carga, também ficam em
+branco, sem derrubar a transação.
 
 `STATUS`, `BOLETO` e `NEG` não são carregados.
 
@@ -88,10 +90,10 @@ nome do mês, o valor e o vencimento.
 
 | O que                  | Regra                                                                              |
 | ---------------------- | ---------------------------------------------------------------------------------- |
-| Débito                 | Só a situação `NÃO PAGO`. `PAGO`, vazio, Antes da moradia, Bolsista, Isento, Fora do H8, Intercâmbio, Trancado, Desligado e Vaga disponível não são débito |
+| Débito                 | Só a situação `NÃO PAGO` de um mês **já vencido** na data da carga (`--hoje`, padrão: hoje). Mês ainda a vencer não vira herdada: vai para as pendências e é cobrado pela geração do sistema. Situações sem débito: `PAGO`, vazio, Antes da moradia, Bolsista, Isento, Fora do H8, Intercâmbio, Trancado, Desligado e Vaga disponível |
 | Situação desconhecida  | Texto fora dessa lista (ex.: `#REF!`, fórmula quebrada) vira pendência; o débito do mês não é carregado |
 | Valor e vencimento     | Os do mês, das linhas de cima (a célula do aluno em aberto fica vazia). Multa e juros zerados |
-| Descrição              | O mês como a planilha chama, no texto da geração do sistema: `Mensalidade de setembro/2026` |
+| Descrição              | O mês da referência, no texto da geração do sistema, e o mês como a planilha o chama: `Mensalidade de outubro/2026 (planilha: setembro/2026)` |
 | Mês de referência      | O do **vencimento**, como na geração recorrente: "setembro/2026" vence em 05/10/2026 e tem referência `2026-10` |
 | Conferência            | O total de meses em aberto de cada aluno é comparado com a coluna `DEVENDO`; diferença vira pendência |
 

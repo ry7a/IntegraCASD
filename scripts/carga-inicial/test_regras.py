@@ -59,6 +59,8 @@ class TestCamposDoAluno(unittest.TestCase):
         self.assertEqual(regras.matricula(12345.0), 12345)
         self.assertEqual(regras.matricula("12345"), 12345)
         self.assertIsNone(regras.matricula(None))
+        with self.assertRaises(ValorInvalido):
+            regras.matricula(3_000_000_000)  # não cabe na coluna do banco
 
     def test_turma_vem_do_ano_de_formatura(self):
         self.assertEqual(regras.turma(2028.0), "T28")
@@ -81,6 +83,7 @@ class TestCamposDoAluno(unittest.TestCase):
         self.assertEqual(regras.posto("Al Mil"), "ALUNO_MILITAR")
         self.assertEqual(regras.posto("Asp OF"), "ASP_OF")
         self.assertEqual(regras.posto("ASP"), "ASP_OF")
+        self.assertEqual(regras.posto("Civil"), "CIVIL")
         self.assertIsNone(regras.posto(None))
         with self.assertRaises(ValorInvalido):
             regras.posto("Tenente")
@@ -110,8 +113,12 @@ class TestMesesDoFundo(unittest.TestCase):
         with self.assertRaises(ValorInvalido):
             regras.mes_da_planilha("inadimplencia")
 
-    def test_descricao_igual_a_da_geracao_do_sistema(self):
-        self.assertEqual(regras.descricao_do_mes(2026, 3), "Mensalidade de março/2026")
+    def test_descricao_usa_o_mes_da_referencia_e_cita_o_da_planilha(self):
+        # "setembro/2026" da planilha vence em 05/10/2026: referência 2026-10, como na geração do sistema.
+        self.assertEqual(regras.descricao_do_debito("2026-10", 2026, 9),
+                         "Mensalidade de outubro/2026 (planilha: setembro/2026)")
+        self.assertEqual(regras.descricao_do_debito("2027-01", 2026, 12),
+                         "Mensalidade de janeiro/2027 (planilha: dezembro/2026)")
 
     def test_so_nao_pago_e_debito(self):
         self.assertTrue(regras.mes_em_aberto("NÃO PAGO"))
@@ -129,6 +136,34 @@ class TestMesesDoFundo(unittest.TestCase):
         for invalido in (None, 0, "abc", 1.005):
             with self.assertRaises(ValorInvalido):
                 regras.centavos(invalido)
+
+
+class TestDebitosDoAluno(unittest.TestCase):
+    """ler_debitos, com meses fictícios montados à mão."""
+
+    def setUp(self):
+        import carregar_alunos
+        self.carga = carregar_alunos
+        self.meses = [
+            carregar_alunos.MesDaPlanilha(coluna_situacao=2, rotulo="outubro/2026",
+                                          descricao="Mensalidade de novembro/2026 (planilha: outubro/2026)",
+                                          vencimento="2026-11-05", valor_centavos=12000),
+            carregar_alunos.MesDaPlanilha(coluna_situacao=5, rotulo="setembro/2026",
+                                          descricao="Mensalidade de outubro/2026 (planilha: setembro/2026)",
+                                          vencimento="2026-10-05", valor_centavos=12000),
+        ]
+
+    def test_so_mes_vencido_vira_herdada(self):
+        resultado = self.carga.Resultado()
+        debitos = self.carga.ler_debitos(resultado, 10, self.meses, ["NÃO PAGO", "NÃO PAGO"], 2, "2026-10-31")
+        self.assertEqual([d.referencia for d in debitos], ["2026-10"])
+        # O mês a vencer fica nas pendências, e a conferência com DEVENDO continua batendo.
+        self.assertEqual([p[1] for p in resultado.pendencias], ["SITUAÇÃO de outubro/2026"])
+
+    def test_divergencia_com_devendo_vira_pendencia(self):
+        resultado = self.carga.Resultado()
+        self.carga.ler_debitos(resultado, 10, self.meses, ["PAGO", "NÃO PAGO"], 3, "2026-12-01")
+        self.assertEqual([p[1] for p in resultado.pendencias], ["DEVENDO"])
 
 
 if __name__ == "__main__":

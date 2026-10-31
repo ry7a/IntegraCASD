@@ -19,8 +19,9 @@ decisão de cobrança, não de migração de dados.
 
 ## Decisão
 
-Vamos trazer cada mês "não pago" da planilha como uma cobrança aberta de origem nova, `HERDADA`, sem
-id do Asaas, e manter a regra para todas as outras origens.
+Vamos trazer cada mês "não pago" e já vencido da planilha como uma cobrança aberta de origem nova,
+`HERDADA`, sem id do Asaas, e manter a regra para todas as outras origens. Mês "não pago" que ainda
+não venceu não vira herdada: pode ser cobrado pelo Asaas, pela geração recorrente.
 
 - **No banco:** `id_asaas` passa a aceitar nulo, e um `CHECK` exige que ele seja nulo se e somente se a
   origem é `HERDADA`. Mensalidade e avulsa continuam sempre com id do Asaas.
@@ -35,7 +36,9 @@ id do Asaas, e manter a regra para todas as outras origens.
   - é renegociada pelo fluxo que já existe: cancela-se a herdada e emite-se uma avulsa no Asaas, com
     vencimento futuro;
   - entra na inadimplência como qualquer cobrança aberta vencida.
-- **Mês de referência:** guardado, para a geração recorrente não cobrar de novo um mês que veio da planilha.
+- **Mês de referência:** o do vencimento, como na geração recorrente, obrigatório na herdada (CHECK).
+  Impede a geração de cobrar de novo um mês que veio da planilha. A descrição usa o mesmo mês e cita o
+  da planilha: "Mensalidade de outubro/2026 (planilha: setembro/2026)".
 
 ## Alternativas consideradas
 
@@ -73,6 +76,9 @@ id do Asaas, e manter a regra para todas as outras origens.
 - O código que lê cobranças precisa lidar com `idAsaas` nulo. O TypeScript aponta os lugares, mas uma
   consulta nova à tabela pode esquecer de excluir a herdada do que depende do Asaas.
 - Multa e juros da herdada ficam zerados: o valor é o da planilha.
+- **Voltar para a versão anterior** ([Distribuição.NF003]) deixa de ser seguro depois que houver
+  herdadas no banco: o código anterior não filtra `id_asaas` nulo, e a sincronização diária falharia
+  ao consultar o Asaas sem id. Antes de voltar, desligue o worker ou cancele as herdadas abertas.
 
 **Quando revisitar:**
 

@@ -158,7 +158,8 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
 18. **Débitos em aberto da planilha** (ADR-0005, decisão de 31/10/2026): cada mês "não pago" da planilha do
     H8 entra pela carga inicial como cobrança aberta de origem `HERDADA`, com o vencimento e o valor da
     planilha e o mês de referência (o mês do vencimento, como na geração recorrente: "setembro/2026" da
-    planilha vence em 05/10/2026 e tem referência 2026-10). É a única cobrança sem `id_asaas`: o Asaas não aceita vencimento no
+    planilha vence em 05/10/2026, tem referência 2026-10 e a descrição "Mensalidade de outubro/2026
+    (planilha: setembro/2026)"). Só entram meses já vencidos na data da carga. É a única cobrança sem `id_asaas`: o Asaas não aceita vencimento no
     passado. O banco garante que só a `HERDADA` não tem `id_asaas` (CHECK), e nenhuma rota da API cria uma.
     Ela não tem boleto e fica fora da conciliação e da sincronização; é paga por registro manual (entra na
     categoria das mensalidades) ou cancelada (só aqui) e renegociada, e a renegociação passa pelo Asaas. O mês
