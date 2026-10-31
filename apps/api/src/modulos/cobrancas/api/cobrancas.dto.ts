@@ -127,6 +127,8 @@ export class CobrancaDetalheDto extends CobrancaListaItemDto {
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) ultimaSincronizacaoEm!: string | null;
   @ApiProperty({ type: Number, nullable: true }) diasDesdeUltimaSincronizacao!: number | null;
   @ApiProperty() sincronizacaoAntiga!: boolean;
+  @ApiProperty({ description: 'Falso só na cobrança herdada da planilha, que não tem boleto nem sincronização' })
+  existeNoAsaas!: boolean;
   @ApiProperty({ description: 'Só cobrança aberta ou vencida pode ser cancelada' }) podeCancelar!: boolean;
   @ApiProperty({ description: 'Só cobrança aberta ou vencida aceita pagamento manual' }) podeRegistrarPagamentoManual!: boolean;
   @ApiProperty({ type: [EventoCobrancaDto], description: 'Do mais recente para o mais antigo' }) eventos!: EventoCobrancaDto[];

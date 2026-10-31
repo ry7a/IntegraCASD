@@ -44,6 +44,17 @@ describe('ConsultarCobrancas [Cobranças.RF008]', () => {
     expect(filtrosRecebidos[0]).toMatchObject({ situacoes: ['ABERTA', 'VENCIDA'], pagina: 1 });
   });
 
+  it('vencida há muito tempo pede sincronização, mas a herdada da planilha não (ADR-0005)', async () => {
+    const antiga = { ...cobranca, vencimento: '2026-09-01' };
+    const herdada = { ...antiga, id: 'cob-2', idAsaas: null, origem: 'HERDADA' as const };
+    const repositorio = { listar: async () => ({ itens: [antiga, herdada], total: 2 }) } as unknown as CobrancasRepositorio;
+
+    const { itens } = await new ConsultarCobrancas(repositorio).executar({}, HOJE);
+
+    expect(itens[0]).toMatchObject({ situacao: 'VENCIDA', semSincronizarHaDias: 55 });
+    expect(itens[1]).toMatchObject({ situacao: 'VENCIDA', diasDeAtraso: 55, semSincronizarHaDias: null });
+  });
+
   it('filtro inválido responde 400 com o que fazer', async () => {
     const repositorio = { listar: async () => ({ itens: [], total: 0 }) } as unknown as CobrancasRepositorio;
     await expect(new ConsultarCobrancas(repositorio).executar({ situacoes: 'QUITADA' }, HOJE)).rejects.toBeInstanceOf(

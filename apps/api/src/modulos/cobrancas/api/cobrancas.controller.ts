@@ -154,6 +154,7 @@ export class CobrancasController {
       ultimaSincronizacaoEm: cobranca.sincronizadaEm?.toISOString() ?? null,
       diasDesdeUltimaSincronizacao: cobranca.diasDesdeUltimaSincronizacao,
       sincronizacaoAntiga: cobranca.sincronizacaoAntiga,
+      existeNoAsaas: cobranca.existeNoAsaas,
       podeCancelar: cobranca.podeCancelar,
       podeRegistrarPagamentoManual: cobranca.podeRegistrarPagamentoManual,
       eventos: cobranca.eventos.map((evento) => ({ ...evento, ocorridoEm: evento.ocorridoEm.toISOString() })),
