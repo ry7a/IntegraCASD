@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
-import { deDia, paraDia } from '../../../compartilhado/datas.js';
+import { deDia } from '../../../compartilhado/datas.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import type { CobrancaParaConciliar } from './conciliacao.repositorio.js';
+import { paraConciliar, type CobrancaParaConciliar } from './conciliacao.repositorio.js';
 
 export type ResumoDaSincronizacao = {
   conferidas: number;
@@ -88,14 +88,12 @@ export class SincronizacaoRepositorio {
   }
 
   async cobrancasDoPeriodo(vencimentoDe: string, vencimentoAte: string): Promise<CobrancaParaConciliar[]> {
+    // A herdada (ADR-0005) não existe no Asaas: fica fora da sincronização.
     const registros = await this.prisma.cobranca.findMany({
-      where: { vencimento: { gte: deDia(vencimentoDe), lte: deDia(vencimentoAte) } },
+      where: { vencimento: { gte: deDia(vencimentoDe), lte: deDia(vencimentoAte) }, idAsaas: { not: null } },
       select: SELECAO_PARA_CONCILIAR,
     });
-    return registros.map((registro) => ({
-      ...registro,
-      disponivelEm: registro.disponivelEm === null ? null : paraDia(registro.disponivelEm),
-    }));
+    return registros.map(paraConciliar).filter((cobranca) => cobranca !== null);
   }
 
   async marcarSincronizadas(ids: string[], quando: Date): Promise<void> {
@@ -132,7 +130,8 @@ export class SincronizacaoRepositorio {
           registroId: criada.id,
           detalhe: `Cobrança "${dados.descricao}" (${dados.idAsaas}) encontrada no Asaas e registrada aqui pela sincronização.`,
         });
-        return { ...criada, disponivelEm: null };
+        // Acabou de vir do Asaas: tem idAsaas e não é herdada.
+        return paraConciliar(criada);
       });
     } catch (erro) {
       if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002') return null;

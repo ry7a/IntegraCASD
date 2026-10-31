@@ -7,6 +7,7 @@ import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
 // Caso de uso [Cobranças.RF004]: cancela uma cobrança aberta no Asaas e aqui.
 // Ordem: primeiro o Asaas. Se ele recusar ou não responder (fluxo E2), nada muda aqui: cancelar só
 // localmente deixaria um boleto válido circulando, que o aluno poderia pagar.
+// Exceção: a herdada da planilha (ADR-0005) não existe no Asaas nem tem boleto: é cancelada só aqui.
 @Injectable()
 export class CancelarCobranca {
   constructor(
@@ -21,6 +22,10 @@ export class CancelarCobranca {
       conferirCancelamento(cobranca.situacao);
       const motivo = lerMotivoDoCancelamento(entrada.motivo);
 
+      if (cobranca.idAsaas === null) {
+        await this.cobrancas.cancelar(cobranca.id, motivo, autorId, true);
+        return;
+      }
       await this.asaas.cancelarCobranca(cobranca.idAsaas);
       await this.cobrancas.cancelar(cobranca.id, motivo, autorId);
     });

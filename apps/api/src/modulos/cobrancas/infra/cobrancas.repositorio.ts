@@ -3,14 +3,23 @@ import type { Prisma } from '../../../generated/prisma/client.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import { CobrancaInvalida, type FiltrosDaConsulta, type PagamentoManual, type SituacaoExibida, type SituacaoGuardada } from '../dominio/cobranca.js';
+import {
+  CobrancaInvalida,
+  type FiltrosDaConsulta,
+  type OrigemDaCobranca,
+  type OrigemEmitida,
+  type PagamentoManual,
+  type SituacaoExibida,
+  type SituacaoGuardada,
+} from '../dominio/cobranca.js';
 
-export type OrigemDaCobranca = 'MENSALIDADE' | 'AVULSA';
+export type { OrigemDaCobranca };
 
 // A cobrança como a aplicação a enxerga: datas em "AAAA-MM-DD".
 export type CobrancaRegistrada = {
   id: string;
-  idAsaas: string;
+  // Nulo só na HERDADA (o banco garante com CHECK).
+  idAsaas: string | null;
   alunoId: string;
   alunoNome: string;
   origem: OrigemDaCobranca;
@@ -34,10 +43,12 @@ export type CobrancaRegistrada = {
   renegociadaPorId: string | null;
 };
 
+// O tipo da origem (OrigemEmitida) impede que um caso de uso grave por aqui uma cobrança herdada,
+// que não passou pelo Asaas.
 export type DadosDaNovaCobranca = {
   idAsaas: string;
   alunoId: string;
-  origem: OrigemDaCobranca;
+  origem: OrigemEmitida;
   referencia: string | null;
   descricao: string;
   valorCentavos: number;
@@ -53,7 +64,7 @@ const INCLUSAO = { aluno: { select: { nome: true } }, renegociadaPor: { select: 
 
 type RegistroDoBanco = {
   id: string;
-  idAsaas: string;
+  idAsaas: string | null;
   alunoId: string;
   aluno: { nome: string };
   origem: OrigemDaCobranca;
@@ -143,8 +154,9 @@ export class CobrancasRepositorio {
     });
   }
 
-  // [Cobranças.RF004] Marca como cancelada (o Asaas já confirmou) e registra motivo e autor.
-  async cancelar(id: string, motivo: string, autorId: string): Promise<void> {
+  // [Cobranças.RF004] Marca como cancelada (o Asaas já confirmou, ou a cobrança é herdada e não
+  // existe lá) e registra motivo e autor.
+  async cancelar(id: string, motivo: string, autorId: string, herdada = false): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       await tx.cobranca.update({
         where: { id },
@@ -155,7 +167,9 @@ export class CobrancasRepositorio {
         operacao: 'CANCELAMENTO',
         entidade: 'COBRANCA',
         registroId: id,
-        detalhe: `Cobrança cancelada no Asaas e aqui. Motivo: ${motivo}`,
+        detalhe: herdada
+          ? `Cobrança herdada da planilha cancelada (não existe no Asaas). Motivo: ${motivo}`
+          : `Cobrança cancelada no Asaas e aqui. Motivo: ${motivo}`,
       });
     });
   }
@@ -164,11 +178,12 @@ export class CobrancasRepositorio {
   // [Confiabilidade.NF004]. A atualização só vale se a cobrança ainda estiver aberta; se a
   // conciliação a baixou nesse meio-tempo, nada é gravado e o usuário é avisado.
   async registrarPagamentoManual(
-    cobranca: { id: string; idAsaas: string; descricao: string },
+    cobranca: { id: string; idAsaas: string | null; descricao: string },
     pagamento: PagamentoManual,
     destino: { contaId: string; categoriaId: string },
     autorId: string,
   ): Promise<void> {
+    const identificacao = cobranca.idAsaas ?? 'herdada da planilha';
     await this.prisma.$transaction(async (tx) => {
       const entrada = await tx.movimentacao.create({
         data: {
@@ -180,7 +195,7 @@ export class CobrancasRepositorio {
           formaPagamento: pagamento.formaPagamento,
           origem: 'REGISTRO_MANUAL_DE_COBRANCA',
           registradaPorId: autorId,
-          descricao: `Cobrança "${cobranca.descricao}" (${cobranca.idAsaas}) paga fora do Asaas`,
+          descricao: `Cobrança "${cobranca.descricao}" (${identificacao}) paga fora do Asaas`,
         },
       });
       const atualizada = await tx.cobranca.updateMany({
@@ -207,7 +222,7 @@ export class CobrancasRepositorio {
         operacao: 'INCLUSAO',
         entidade: 'MOVIMENTACAO',
         registroId: entrada.id,
-        detalhe: `Entrada do pagamento manual da cobrança "${cobranca.descricao}" (${cobranca.idAsaas}).`,
+        detalhe: `Entrada do pagamento manual da cobrança "${cobranca.descricao}" (${identificacao}).`,
       });
     });
   }
@@ -304,13 +319,17 @@ export class CobrancasRepositorio {
   }
 
   // Histórico da cobrança: o que os usuários e rotinas fizeram (trilha) e o que o Asaas avisou (webhook).
-  async historico(cobranca: { id: string; idAsaas: string }): Promise<EventoDaCobranca[]> {
+  // A herdada não existe no Asaas: não tem avisos do webhook.
+  async historico(cobranca: { id: string; idAsaas: string | null }): Promise<EventoDaCobranca[]> {
+    const { idAsaas } = cobranca;
     const [trilha, avisos] = await Promise.all([
       this.prisma.registroAuditoria.findMany({
         where: { entidade: 'COBRANCA', registroId: cobranca.id },
         include: { usuario: { select: { nome: true } } },
       }),
-      this.prisma.eventoWebhook.findMany({ where: { payload: { path: ['payment', 'id'], equals: cobranca.idAsaas } } }),
+      idAsaas === null
+        ? Promise.resolve([])
+        : this.prisma.eventoWebhook.findMany({ where: { payload: { path: ['payment', 'id'], equals: idAsaas } } }),
     ]);
     const eventos: EventoDaCobranca[] = [
       ...trilha.map((registro) => ({

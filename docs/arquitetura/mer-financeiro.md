@@ -30,7 +30,8 @@ Ficam fora do desenho para ele continuar legível; o `schema.prisma` é a refer�
 | `pendencias_conciliacao` | fila de pendências de conciliação ([Cobranças.RF005] fluxo E1) | tipo (sem cobrança, após registro manual, divergência), origem (webhook ou sincronização), cobrança do Asaas e daqui, e a resolução (quando, quem, o quê); no máximo uma aberta do mesmo tipo por cobrança do Asaas |
 
 A `COBRANCA` do diagrama mostra só as ligações. A tabela `cobrancas` também guarda: origem
-(`MENSALIDADE` ou `AVULSA`), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
+(`MENSALIDADE`, `AVULSA` ou `HERDADA`, decisão 18), o id da cobrança no Asaas (`id_asaas`, único; nulo só na
+`HERDADA`, CHECK no banco), mês de referência da mensalidade (único por aluno), multa e juros enviados ao
 Asaas na emissão, links do boleto e da fatura, os dados de cancelamento e, na renegociação, o vínculo com a
 cobrança cancelada que ela substitui (`renegociacao_de_id`, único), e a data em que o valor ficou disponível
 no Asaas (`disponivel_em`, [Cobranças.RF005] fluxo A1), a justificativa do pagamento registrado à mão
@@ -154,3 +155,11 @@ ainda o trata como obrigatório) e para os itens 5 e 6, que diferem do texto dos
     automática). A trilha continua registrando a operação; a coluna existe para a lista mostrar quem lançou
     sem consultar a trilha. Os totais da consulta ([Movimentações.RF003]) deixam de fora o par estornada +
     espelho e as transferências entre contas.
+18. **Débitos em aberto da planilha** (ADR-0005, decisão de 31/10/2026): cada mês "não pago" da planilha do
+    H8 entra pela carga inicial como cobrança aberta de origem `HERDADA`, com o vencimento e o valor da
+    planilha e o mês de referência. É a única cobrança sem `id_asaas`: o Asaas não aceita vencimento no
+    passado. O banco garante que só a `HERDADA` não tem `id_asaas` (CHECK), e nenhuma rota da API cria uma.
+    Ela não tem boleto e fica fora da conciliação e da sincronização; é paga por registro manual (entra na
+    categoria das mensalidades) ou cancelada (só aqui) e renegociada, e a renegociação passa pelo Asaas. O mês
+    de referência impede a geração recorrente de cobrar de novo um mês que veio da planilha. Aparece como
+    vencida na inadimplência ([Indicadores.RF002]).

@@ -67,6 +67,15 @@ describe('registrar pagamento manualmente [Cobranças.RF006]', () => {
     ]);
   });
 
+  it('herdada da planilha: paga à mão, entra na categoria da mensalidade (ADR-0005)', async () => {
+    const herdada: CobrancaRegistrada = { ...cobranca, idAsaas: null, origem: 'HERDADA' };
+    const { casoDeUso, registros } = montar({ cobranca: herdada });
+    await casoDeUso.executar('uuid-da-cobranca', valido, 'usuario-1', HOJE);
+    expect(registros).toEqual([
+      { pagamento: valido, destino: { contaId: 'uuid-da-conta', categoriaId: 'uuid-cat-mensalidade' }, autorId: 'usuario-1' },
+    ]);
+  });
+
   it('sem conta ou categoria nos parâmetros, avisa o que fazer e não grava', async () => {
     const { casoDeUso, registros } = montar({ parametros: { ...parametros, contaRecebimentoId: null } });
     await expect(casoDeUso.executar('uuid-da-cobranca', valido, 'usuario-1', HOJE)).rejects.toThrow(/Administração > Parâmetros/);

@@ -1,4 +1,5 @@
 import type { BuscarParametrosVigentes } from '../../administracao/index.js';
+import type { OrigemDaCobranca } from '../dominio/cobranca.js';
 import type { DestinoDaBaixa } from '../infra/conciliacao.repositorio.js';
 
 // Conta e categoria onde entra o pagamento de uma cobrança, conforme a origem dela, escolhidas nos
@@ -6,10 +7,11 @@ import type { DestinoDaBaixa } from '../infra/conciliacao.repositorio.js';
 // (a conciliação espera; o registro manual avisa o usuário).
 export async function buscarDestinoDaBaixa(
   parametros: BuscarParametrosVigentes,
-  origem: 'MENSALIDADE' | 'AVULSA',
+  origem: OrigemDaCobranca,
 ): Promise<DestinoDaBaixa | null> {
   const vigentes = await parametros.executar();
-  const categoriaId = origem === 'MENSALIDADE' ? vigentes?.categoriaMensalidadeId : vigentes?.categoriaAvulsaId;
+  // A herdada (ADR-0005) é mensalidade de antes da implantação: entra na mesma categoria.
+  const categoriaId = origem === 'AVULSA' ? vigentes?.categoriaAvulsaId : vigentes?.categoriaMensalidadeId;
   if (!vigentes?.contaRecebimentoId || !categoriaId) return null;
   return { contaId: vigentes.contaRecebimentoId, categoriaId };
 }

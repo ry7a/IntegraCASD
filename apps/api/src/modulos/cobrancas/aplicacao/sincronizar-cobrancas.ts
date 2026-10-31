@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ClienteAsaas, ErroAsaas, type CobrancaNoAsaas } from '../../../compartilhado/asaas/cliente-asaas.js';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import { BuscarParametrosVigentes } from '../../administracao/index.js';
+import { conferirCobrancaNoAsaas } from '../dominio/cobranca.js';
 import { decidirConciliacao } from '../dominio/conciliacao.js';
 import {
   avisoDaSituacaoNoAsaas,
@@ -84,6 +85,9 @@ export class SincronizarCobrancas {
   // Fluxo A1: só uma cobrança, a partir do detalhe dela.
   cobranca(id: string, autorId: string, hoje = hojeEmSaoPaulo()): Promise<ExecucaoDaSincronizacao> {
     return traduzirErrosDaCobranca(async () => {
+      const origem = await this.conciliacao.origemDaCobranca(id);
+      if (origem === null) throw new NotFoundException('Cobrança não encontrada. Volte à lista e escolha outra cobrança.');
+      conferirCobrancaNoAsaas(origem);
       const local = await this.conciliacao.buscarCobrancaPorId(id);
       if (local === null) throw new NotFoundException('Cobrança não encontrada. Volte à lista e escolha outra cobrança.');
       return this.executar({ origem: 'MANUAL', cobrancaId: id, pedidaPorId: autorId }, hoje, async (andamento) => {

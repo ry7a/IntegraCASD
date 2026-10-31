@@ -68,6 +68,10 @@ src/modulos/cobrancas/
   `.env` (`ASAAS_AMBIENTE`, `ASAAS_API_KEY`). Quem decide é a `FonteDaConfiguracaoAsaas`. Uma chave nova é
   testada no Asaas antes de ser guardada; a trilha registra a troca sem a chave.
 - Nenhuma cobrança existe só aqui ([Confiabilidade.NF005]): primeiro o Asaas cria, depois o banco grava.
+  Exceção (ADR-0005): a origem `HERDADA`, débito da planilha trazido pela carga inicial, sem `idAsaas`.
+  Nenhuma rota cria herdada (`DadosDaNovaCobranca` só aceita `OrigemEmitida`). Consulta nova que dependa
+  do Asaas (conciliação, sincronização, boleto) precisa deixar a herdada de fora (`idAsaas: { not: null }`
+  ou `paraConciliar`); `existeNoAsaas` e `conferirCobrancaNoAsaas` ficam em `dominio/cobranca.ts`.
 - Em testes, use um dublê da interface. Nunca chame o Asaas real em teste automatizado.
 - Respostas 429 são tratadas no cliente: aguardar o intervalo informado e repetir.
 - Erros do Asaas são traduzidos para mensagens orientadas à ação antes de chegar à API ([Usabilidade.NF002]). Nunca repasse a mensagem crua da plataforma.

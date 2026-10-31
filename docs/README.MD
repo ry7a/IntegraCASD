@@ -30,3 +30,4 @@ Não precisa de ADR: escolha de nome de variável, biblioteca pequena e fácil d
 | [0001](0001-monolito-modular.md) | Monólito modular como estilo arquitetural   | Aceita     |
 | 0002                             | PostgreSQL como banco e como fila (pg-boss) | A escrever |
 | [0004](adr/0004-trilha-de-auditoria-na-transacao.md) | Trilha de auditoria na transação, só de inclusão | Aceita |
+| [0005](adr/0005-cobranca-herdada-da-planilha.md) | Débitos da planilha como cobranças herdadas, sem Asaas | Proposta |

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CobrancaInvalida, conferirBoletoDisponivel } from '../dominio/cobranca.js';
+import { CobrancaInvalida, conferirBoletoDisponivel, conferirCobrancaNoAsaas } from '../dominio/cobranca.js';
 import { CobrancasRepositorio } from '../infra/cobrancas.repositorio.js';
 import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
 
@@ -14,6 +14,7 @@ export class ObterBoleto {
       const cobranca = await this.cobrancas.buscarPorId(cobrancaId);
       if (cobranca === null) throw new NotFoundException('Cobrança não encontrada. Volte à lista e escolha outra cobrança.');
       conferirBoletoDisponivel(cobranca.situacao);
+      conferirCobrancaNoAsaas(cobranca.origem);
       const url = cobranca.urlBoleto ?? cobranca.urlFatura;
       if (url === null) {
         throw new CobrancaInvalida('O Asaas não informou o boleto desta cobrança. Sincronize a cobrança e tente de novo.');
