@@ -155,7 +155,16 @@ pnpm --filter api exec prisma migrate deploy
 pnpm --filter api dados-ficticios
 ```
 
-O primeiro comando lê o `DATABASE_URL` do `.env` e aplica as migrações de `apps/api/prisma/migrations`. O segundo pode ser repetido à vontade: o que já existe não é duplicado. Quando alguém adicionar uma migração nova, rode o primeiro de novo.
+O primeiro comando lê o `DATABASE_URL` do `.env` e aplica as migrações de `apps/api/prisma/migrations`. O segundo pode ser repetido à vontade: o que já existe não é duplicado.
+
+Quando alguém mudar o `schema.prisma` (toda migração nova vem com essa mudança), rode estes dois depois do `git pull`:
+
+```powershell
+pnpm --filter api exec prisma generate
+pnpm --filter api exec prisma migrate deploy
+```
+
+O `generate` atualiza o cliente do Prisma em `apps/api/src/generated/`, que fica fora do git e é diferente em cada máquina. Sem ele, a API não compila. O `migrate deploy` cria no seu banco as tabelas novas. Sem ele, a API compila mas falha ao usá-las.
 
 ### 2.6 Rodar a API e o frontend
 
@@ -208,37 +217,38 @@ Se algo deu errado e não está na próxima seção, anote o erro completo e a s
 
 ## 5. Problemas comuns
 
-Todos estes aconteceram de verdade na primeira configuração do projeto.
+Todos estes aconteceram de verdade com a equipe.
 
-| Sintoma                                                               | Causa                                                               | Solução                                                                                                                   |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `winget` diz "Nenhuma versão correspondente foi encontrada"           | O catálogo do winget ainda não tem a versão pedida                  | Rode `winget show --id OpenJS.NodeJS.LTS --versions` e avise a equipe; todos devem usar a mesma versão                    |
-| `node --version` mostra a versão antiga depois de atualizar           | O terminal ainda carrega o caminho antigo                           | Feche e abra o PowerShell                                                                                                 |
-| `Get-Command node` aponta para `anaconda3`                            | O Node do Anaconda está na frente do oficial                        | Rode `conda remove nodejs` no ambiente `base` e reabra o terminal                                                         |
-| `corepack enable` dá erro `EPERM`                                     | Falta permissão para criar arquivos na pasta do Node                | Rode o comando num PowerShell como administrador                                                                          |
-| `pnpm` não é reconhecido depois do Corepack                           | Terminal aberto antes da ativação                                   | Feche e abra o PowerShell                                                                                                 |
-| Docker: `error during connect` ou menção a `dockerDesktopLinuxEngine` | O Docker Desktop não está aberto                                    | Abra o Docker Desktop e espere a baleia parar de se mexer                                                                 |
-| Docker não inicia ou fala de WSL ou virtualização                     | WSL 2 desatualizado ou virtualização desligada                      | `wsl --update` como administrador, reiniciar e conferir a virtualização (etapa 0)                                         |
-| PostgreSQL: erro dizendo que há dados em `/var/lib/postgresql/data`   | Volume no caminho antigo; o PostgreSQL 18 usa `/var/lib/postgresql` | Corrija o volume no `docker-compose.yml` e rode `docker compose down -v` (apaga os dados locais) e `docker compose up -d` |
-| `port is already allocated` na porta 5434                             | Outro programa já usa a porta 5434                                  | Troque a porta da esquerda em `"5434:5432"` no `docker-compose.yml` e ajuste a porta no `DATABASE_URL` do `.env`          |
-| Prisma: `P1000 Authentication failed`                                 | Um PostgreSQL instalado no Windows responde na porta do `.env`      | O projeto usa a 5434 para fugir de 5432/5433; confira com `Get-NetTCPConnection -LocalPort 5434 -State Listen`            |
-| pnpm diz que o manifesto deve se chamar `pnpm-workspace.yaml`         | Arquivo criado com a extensão `.yml`                                | Renomeie para `.yaml`                                                                                                     |
-| Git mostra alterações em arquivos que ninguém mexeu                   | Quebras de linha do Windows (CRLF)                                  | Confira se o `.gitattributes` está na raiz e rode `git add --renormalize .`                                               |
+| Sintoma                                                                 | Causa                                                               | Solução                                                                                                                   |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `winget` diz "Nenhuma versão correspondente foi encontrada"             | O catálogo do winget ainda não tem a versão pedida                  | Rode `winget show --id OpenJS.NodeJS.LTS --versions` e avise a equipe; todos devem usar a mesma versão                    |
+| `node --version` mostra a versão antiga depois de atualizar             | O terminal ainda carrega o caminho antigo                           | Feche e abra o PowerShell                                                                                                 |
+| `Get-Command node` aponta para `anaconda3`                              | O Node do Anaconda está na frente do oficial                        | Rode `conda remove nodejs` no ambiente `base` e reabra o terminal                                                         |
+| `corepack enable` dá erro `EPERM`                                       | Falta permissão para criar arquivos na pasta do Node                | Rode o comando num PowerShell como administrador                                                                          |
+| `pnpm` não é reconhecido depois do Corepack                             | Terminal aberto antes da ativação                                   | Feche e abra o PowerShell                                                                                                 |
+| Docker: `error during connect` ou menção a `dockerDesktopLinuxEngine`   | O Docker Desktop não está aberto                                    | Abra o Docker Desktop e espere a baleia parar de se mexer                                                                 |
+| Docker não inicia ou fala de WSL ou virtualização                       | WSL 2 desatualizado ou virtualização desligada                      | `wsl --update` como administrador, reiniciar e conferir a virtualização (etapa 0)                                         |
+| PostgreSQL: erro dizendo que há dados em `/var/lib/postgresql/data`     | Volume no caminho antigo; o PostgreSQL 18 usa `/var/lib/postgresql` | Corrija o volume no `docker-compose.yml` e rode `docker compose down -v` (apaga os dados locais) e `docker compose up -d` |
+| `port is already allocated` na porta 5434                               | Outro programa já usa a porta 5434                                  | Troque a porta da esquerda em `"5434:5432"` no `docker-compose.yml` e ajuste a porta no `DATABASE_URL` do `.env`          |
+| Prisma: `P1000 Authentication failed`                                   | Um PostgreSQL instalado no Windows responde na porta do `.env`      | O projeto usa a 5434 para fugir de 5432/5433; confira com `Get-NetTCPConnection -LocalPort 5434 -State Listen`            |
+| pnpm diz que o manifesto deve se chamar `pnpm-workspace.yaml`           | Arquivo criado com a extensão `.yml`                                | Renomeie para `.yaml`                                                                                                     |
+| Git mostra alterações em arquivos que ninguém mexeu                     | Quebras de linha do Windows (CRLF)                                  | Confira se o `.gitattributes` está na raiz e rode `git add --renormalize .`                                               |
+| `pnpm dev:api`: `Property 'xxx' does not exist on type 'PrismaService'` | Cliente do Prisma gerado antes de uma mudança no `schema.prisma`    | `pnpm --filter api exec prisma generate` e depois `pnpm --filter api exec prisma migrate deploy` (etapa 2.5)              |
 
 ## 6. Comandos do dia a dia
 
 Todos na raiz do projeto.
 
-| Quando                            | Comando                                        |
-| --------------------------------- | ---------------------------------------------- |
-| Começar o dia: atualizar a `main` | `git switch main`, `git pull` e `pnpm install` |
-| Alguém adicionou uma biblioteca   | `pnpm install`                                 |
-| Alguém adicionou uma migração     | `pnpm --filter api exec prisma migrate deploy` |
-| Subir o banco                     | `docker compose up -d`                         |
-| Rodar a API                       | `pnpm dev:api`                                 |
-| Rodar o frontend                  | `pnpm dev:web`                                 |
-| Começar uma tarefa                | `git switch -c feat/descricao-curta`           |
-| Antes do merge na `main`          | `pnpm lint`, `pnpm test` e `pnpm build`        |
-| Desligar o banco no fim do dia    | `docker compose stop`                          |
+| Quando                                   | Comando                                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Começar o dia: atualizar a `main`        | `git switch main`, `git pull` e `pnpm install`                                            |
+| Alguém adicionou uma biblioteca          | `pnpm install`                                                                            |
+| Alguém mudou o `schema.prisma` ou migrou | `pnpm --filter api exec prisma generate` e `pnpm --filter api exec prisma migrate deploy` |
+| Subir o banco                            | `docker compose up -d`                                                                    |
+| Rodar a API                              | `pnpm dev:api`                                                                            |
+| Rodar o frontend                         | `pnpm dev:web`                                                                            |
+| Começar uma tarefa                       | `git switch -c feat/descricao-curta`                                                      |
+| Antes do merge na `main`                 | `pnpm lint`, `pnpm test` e `pnpm build`                                                   |
+| Desligar o banco no fim do dia           | `docker compose stop`                                                                     |
 
 O fluxo completo de branches, commits e merge na `main` está no [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
