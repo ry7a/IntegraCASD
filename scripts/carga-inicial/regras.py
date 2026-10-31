@@ -124,12 +124,18 @@ def apelido(valor) -> str | None:
     return resultado
 
 
+MAIOR_INTEIRO_DO_BANCO = 2_147_483_647
+
+
 def matricula(valor) -> int | None:
     if texto(valor) is None:
         return None
     numeros = digitos(valor)
     if numeros == "" or int(numeros) <= 0:
         raise ValorInvalido("matrícula não é um número inteiro positivo")
+    # A coluna do banco é um inteiro de 32 bits: um número maior derrubaria a carga inteira.
+    if int(numeros) > MAIOR_INTEIRO_DO_BANCO:
+        raise ValorInvalido("matrícula grande demais")
     return int(numeros)
 
 
@@ -171,6 +177,7 @@ def curso(valor) -> str | None:
 
 # Posto sem espaços, pontos e caixa: "Asp OF" -> "aspof".
 POSTOS = {
+    "civil": "CIVIL",
     "almil": "ALUNO_MILITAR",
     "aspof": "ASP_OF",
     "asp": "ASP_OF",
@@ -240,9 +247,17 @@ def mes_da_planilha(rotulo) -> tuple[int, int]:
     return int(achado.group(2)), nomes.index(achado.group(1)) + 1
 
 
-def descricao_do_mes(ano: int, mes: int) -> str:
-    """Mesmo texto da geração recorrente do sistema: 'Mensalidade de setembro/2026'."""
-    return f"Mensalidade de {NOMES_DOS_MESES[mes - 1]}/{ano}"
+def descricao_do_debito(referencia: str, ano_da_planilha: int, mes_da_planilha: int) -> str:
+    """Descrição da herdada: o mês da referência (o do vencimento), no texto da geração recorrente,
+    e o mês como a planilha o chama, para achar na planilha.
+
+    ('2026-10', 2026, 9) -> 'Mensalidade de outubro/2026 (planilha: setembro/2026)'. Assim a aba do
+    aluno segue em ordem com as mensalidades que o sistema gera depois ("novembro/2026"...).
+    """
+    ano, mes = int(referencia[:4]), int(referencia[5:7])
+    sistema = f"{NOMES_DOS_MESES[mes - 1]}/{ano}"
+    planilha = f"{NOMES_DOS_MESES[mes_da_planilha - 1]}/{ano_da_planilha}"
+    return f"Mensalidade de {sistema} (planilha: {planilha})"
 
 
 # Situações do mês que não são débito: o aluno não morava, não pagava ou não estava no H8.

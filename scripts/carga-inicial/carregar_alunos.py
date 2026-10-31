@@ -46,7 +46,7 @@ class MesDaPlanilha:
     """Um mês do Fundo de Manutenção: três colunas (VALOR, DATA, SITUAÇÃO) por aluno."""
     coluna_situacao: int
     rotulo: str  # como a planilha chama: "setembro/2026"
-    descricao: str  # "Mensalidade de setembro/2026", o mesmo texto da geração do sistema
+    descricao: str  # "Mensalidade de outubro/2026 (planilha: setembro/2026)": ver regras.descricao_do_debito
     vencimento: str  # "AAAA-MM-DD", da linha de cima da planilha
     valor_centavos: int  # valor do mês, da linha de cima: a célula do aluno em aberto fica vazia
 
@@ -160,11 +160,12 @@ def ler_meses(cabecalho: list[str], acima: list[tuple]) -> list[MesDaPlanilha]:
         except regras.ValorInvalido as erro:
             sys.exit(f"O mês da coluna {c + 1} tem um valor que não dá para ler: {erro}.")
         ano, mes = rotulo
+        vencimento = valores[c + 1].date().isoformat()
         meses.append(MesDaPlanilha(
             coluna_situacao=c + 2,
             rotulo=f"{regras.NOMES_DOS_MESES[mes - 1]}/{ano}",
-            descricao=regras.descricao_do_mes(ano, mes),
-            vencimento=valores[c + 1].date().isoformat(),
+            descricao=regras.descricao_do_debito(vencimento[:7], ano, mes),
+            vencimento=vencimento,
             valor_centavos=valor,
         ))
     if not meses:
@@ -186,7 +187,7 @@ def campo_opcional(resultado: Resultado, linha: int, campo: str, regra, valor):
         return None
 
 
-def normalizar(planilha: Planilha) -> Resultado:
+def normalizar(planilha: Planilha, hoje: str) -> Resultado:
     resultado = Resultado()
     for linha, valores, situacoes in planilha.linhas:
         nome_bruto, cpf_bruto = valores["ALUNOS"], valores["CPF"]
@@ -235,17 +236,25 @@ def normalizar(planilha: Planilha) -> Resultado:
             posto=campo_opcional(resultado, linha, "POSTO", regras.posto, valores["POSTO"]),
             alojamento=vaga,
             ativo=regras.ativo(valores["SITUAC"]),
-            debitos=ler_debitos(resultado, linha, planilha.meses, situacoes, valores["DEVENDO"]),
+            debitos=ler_debitos(resultado, linha, planilha.meses, situacoes, valores["DEVENDO"], hoje),
         ))
 
     resolver_repeticoes(resultado)
     return resultado
 
 
-def ler_debitos(resultado: Resultado, linha: int, meses: list[MesDaPlanilha], situacoes: list, devendo) -> list[Debito]:
-    """Cada mês "NÃO PAGO" vira um débito. Situação que não dá para ler vira pendência."""
+def ler_debitos(
+    resultado: Resultado, linha: int, meses: list[MesDaPlanilha], situacoes: list, devendo, hoje: str
+) -> list[Debito]:
+    """Cada mês "NÃO PAGO" já vencido vira um débito. Situação que não dá para ler vira pendência.
+
+    Mês "NÃO PAGO" que ainda não venceu não vira herdada: ele pode ser cobrado pelo Asaas (a herdada
+    existe só porque o Asaas não aceita vencimento no passado, ADR-0005), e uma herdada com a
+    referência do mês faria a geração recorrente pular o aluno, que ficaria sem boleto.
+    """
     debitos: list[Debito] = []
     referencias: set[str] = set()
+    a_vencer = 0
     for mes, situacao in zip(meses, situacoes):
         try:
             em_aberto = regras.mes_em_aberto(situacao)
@@ -254,6 +263,12 @@ def ler_debitos(resultado: Resultado, linha: int, meses: list[MesDaPlanilha], si
                              "débito do mês NÃO carregado: confira na planilha")
             continue
         if not em_aberto:
+            continue
+        if mes.vencimento >= hoje:
+            a_vencer += 1
+            resultado.anotar(linha, f"SITUAÇÃO de {mes.rotulo}", situacao,
+                             f"mês ainda não venceu (vence em {mes.vencimento})",
+                             "NÃO carregado como herdada: cobre pela geração do sistema")
             continue
         referencia = mes.vencimento[:7]
         if referencia in referencias:
@@ -265,10 +280,10 @@ def ler_debitos(resultado: Resultado, linha: int, meses: list[MesDaPlanilha], si
                               vencimento=mes.vencimento, valor_centavos=mes.valor_centavos))
 
     # Conferência com a coluna DEVENDO, que a planilha calcula.
-    if isinstance(devendo, (int, float)) and int(devendo) != len(debitos):
+    if isinstance(devendo, (int, float)) and int(devendo) != len(debitos) + a_vencer:
         resultado.anotar(linha, "DEVENDO", devendo,
-                         f"a planilha diz {int(devendo)} meses em aberto; a carga achou {len(debitos)}",
-                         f"carregados os {len(debitos)} meses encontrados")
+                         f"a planilha diz {int(devendo)} meses em aberto; a carga achou {len(debitos) + a_vencer}",
+                         f"carregados os {len(debitos)} meses vencidos encontrados")
     return debitos
 
 
@@ -338,7 +353,13 @@ def sql_do_aluno(a: Aluno) -> str:
         alojamento_id = "NULL"
     else:
         b, ap, v = (sql_texto(parte) for parte in a.alojamento)
-        alojamento_id = f"(SELECT id FROM alojamentos WHERE bloco = {b} AND apto = {ap} AND vaga = {v})"
+        # Vaga já ocupada por um aluno ativo que estava no banco: fica em branco (como na planilha).
+        ocupada = "" if not a.ativo else " AND NOT EXISTS (SELECT 1 FROM alunos o WHERE o.alojamento_id = al.id AND o.ativo)"
+        alojamento_id = f"(SELECT al.id FROM alojamentos al WHERE al.bloco = {b} AND al.apto = {ap} AND al.vaga = {v}{ocupada})"
+    # Matrícula já usada por outro aluno do banco: fica em branco.
+    matricula = "NULL" if a.matricula is None else (
+        f"(SELECT {a.matricula} WHERE NOT EXISTS (SELECT 1 FROM alunos WHERE matricula = {a.matricula}))"
+    )
     posto = "NULL" if a.posto is None else f"{sql_texto(a.posto)}::posto_aluno"
     curso = "NULL" if a.curso is None else f"{sql_texto(a.curso)}::curso_aluno"
     return (
@@ -347,7 +368,7 @@ def sql_do_aluno(a: Aluno) -> str:
         "  INSERT INTO alunos (id, nome, cpf, email, matricula, posto, curso, turma_id, celular, apelido,\n"
         "                      alojamento_id, ativo, data_alteracao)\n"
         f"  SELECT gen_random_uuid(), {sql_texto(a.nome)}, {sql_texto(a.cpf)}, {sql_texto(a.email)},\n"
-        f"         {sql_texto(a.matricula)}, {posto}, {curso}, {turma_id},\n"
+        f"         {matricula}, {posto}, {curso}, {turma_id},\n"
         f"         {sql_texto(a.celular)}, {sql_texto(a.apelido)}, {alojamento_id}, {sql_texto(a.ativo)}, now()\n"
         f"  WHERE NOT EXISTS (SELECT 1 FROM alunos WHERE cpf = {sql_texto(a.cpf)})\n"
         "  RETURNING id, nome\n"
@@ -448,12 +469,14 @@ def resumir(resultado: Resultado, meses: list[MesDaPlanilha]) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Gera o SQL da carga inicial dos alunos a partir da planilha do H8.")
     parser.add_argument("--planilha", type=Path, default=PLANILHA_PADRAO, help="caminho do .xlsx")
+    parser.add_argument("--hoje", default=datetime.date.today().isoformat(),
+                        help="data da carga (AAAA-MM-DD); mês que vence a partir dela não vira herdada")
     argumentos = parser.parse_args()
     if not argumentos.planilha.exists():
         sys.exit(f"Planilha não encontrada: {argumentos.planilha}. Ela fica em data/, fora do git: peça à equipe.")
 
     planilha = ler_planilha(argumentos.planilha)
-    resultado = normalizar(planilha)
+    resultado = normalizar(planilha, argumentos.hoje)
 
     PASTA_DE_SAIDA.mkdir(exist_ok=True)
     arquivo_sql = PASTA_DE_SAIDA / "carga.sql"
