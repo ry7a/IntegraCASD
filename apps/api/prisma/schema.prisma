@@ -554,7 +554,8 @@ model Cobranca {
   alunoId               String                  @map("aluno_id") @db.Uuid
   aluno                 Aluno                   @relation(fields: [alunoId], references: [id], onDelete: Restrict)
   origem                OrigemCobranca
-  // Mês da mensalidade ("AAAA-MM"); nulo na avulsa. Único por aluno: a geração pode rodar duas vezes.
+  // Mês da mensalidade ("AAAA-MM"), o do vencimento; nulo só na avulsa (CHECK). Único por aluno: a geração
+  // pode rodar duas vezes, e a herdada (ADR-0005) impede a geração de cobrar de novo um mês da planilha.
   referencia            String?                 @db.Char(7)
   descricao             String
   valorCentavos         Int                     @map("valor_centavos") // valor original, sem multa e juros
