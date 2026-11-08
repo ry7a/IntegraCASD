@@ -83,7 +83,7 @@ Quando uma regra é violada por um motivo legítimo, **não se enfraquece a regr
 - **Rota autenticada:** declarar o esquema de segurança do Swagger no controller, por exemplo `@ApiCookieAuth()`. No `openapi.json` vira `"security": [{ "cookie": [] }]`.
 - **Rotas públicas permitidas:** apenas `/api/auth/login`, `/api/webhooks/asaas`, `/api/saude` e `/api/saude/completa`. O webhook e a saúde ficam fora do contrato (`@ApiExcludeController`), por isso o teste também confere que `@Publico()` só aparece nos três controllers da lista fixa em `rotas-autenticadas.spec.ts`, que ninguém usa a chave de metadados da rota pública fora do decorator (`publico.decorator.ts`) e da guarda (`autenticacao.guard.ts`), e que cada controller público tem um único `@Publico()`. Na saúde e no webhook o `@Publico()` vale para a classe inteira, então o número de handlers fica fixado (2 e 1): uma rota nova ali nasceria pública e invisível no contrato. Se for de propósito, atualize `CONTROLLERS_PUBLICOS` no teste e esta seção.
 - **Rotas de Administração** (caminho começa com `/api/admin`): além da segurança, declarar `@ApiExtension('x-perfil', 'DIRETORIA')`. O perfil é verificado de verdade no backend; a extensão só torna o requisito visível e testável no contrato.
-- Hoje a autenticação não existe: `GET /api` e `GET /api/alunos` são exceções registradas. Ao implementar a autenticação, remova as exceções.
+- A autenticação existe (guarda global com sessão por cookie; `@Publico()` libera as rotas da lista acima) e não há exceção de B8 registrada. Uma rota que precise ficar sem `security` no contrato vira exceção em `excecoes.json`, com justificativa.
 
 ## Dependências (G3)
 

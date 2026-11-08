@@ -1,14 +1,14 @@
 // B8: toda rota é autenticada, exceto login, webhook e saúde ([Segurança.NF001]).
 // Lê o contrato gerado (packages/api-client/openapi.json), que o CI mantém em dia (F3).
 //
-// Convenções para quem for implementar a autenticação:
-// - Rota autenticada: declarar o esquema de segurança, por exemplo @ApiCookieAuth()
-//   no controller. No openapi.json isso vira "security": [{ "cookie": [] }].
+// Convenções (a guarda global exige sessão; o contrato precisa dizer o mesmo):
+// - Rota autenticada: declarar o esquema de segurança, @ApiCookieAuth('cookie') no controller.
+//   No openapi.json isso vira "security": [{ "cookie": [] }].
 // - Rota de Administração (path começa com /api/admin): além da segurança, declarar
 //   @ApiExtension('x-perfil', 'DIRETORIA'). O perfil é verificado de verdade no backend;
 //   a extensão só deixa o requisito visível (e testável) no contrato.
-// Rotas cuja autenticação ainda não existe ficam em docs/governanca/excecoes.json (regra B8),
-// com o alvo no formato "GET /api/alunos".
+// Uma exceção legítima vai para docs/governanca/excecoes.json (regra B8), com o alvo no formato
+// "GET /api/caminho"; hoje não há nenhuma.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';

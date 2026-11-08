@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
 import { EventosInternosModule } from './compartilhado/eventos/eventos-internos.js';
 import { PrismaModule } from './compartilhado/prisma/prisma.module.js';
 import { AutenticacaoModule } from './compartilhado/autenticacao/autenticacao.module.js';
@@ -25,7 +23,5 @@ import { MovimentacoesModule } from './modulos/movimentacoes/index.js';
     MovimentacoesModule,
     IndicadoresModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
