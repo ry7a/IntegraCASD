@@ -36,6 +36,9 @@ python -m pip install -r scripts/carga-inicial/requirements.txt
    python scripts/carga-inicial/carregar_alunos.py
    ```
 
+   A data da carga vem de `--hoje` (ex.: `--hoje 2027-01-06`); sem ele, vale a de hoje. Na carga
+   real, ela tem de ser 06/01/2027 ou depois: veja "Na implantação", abaixo.
+
 3. Com o banco no ar (`docker compose up -d`) e as migrações aplicadas, carregue:
 
    ```powershell
@@ -96,13 +99,33 @@ nome do mês, o valor e o vencimento.
 | Valor e vencimento     | Os do mês, das linhas de cima (a célula do aluno em aberto fica vazia). Multa e juros zerados |
 | Descrição              | O mês da referência, no texto da geração do sistema, e o mês como a planilha o chama: `Mensalidade de outubro/2026 (planilha: setembro/2026)` |
 | Mês de referência      | O do **vencimento**, como na geração recorrente: "setembro/2026" vence em 05/10/2026 e tem referência `2026-10` |
+| Data da carga          | `--hoje AAAA-MM-DD`. Mês que vence nesse dia ou depois não vira herdada            |
 | Conferência            | O total de meses em aberto de cada aluno é comparado com a coluna `DEVENDO`; diferença vira pendência |
 
 Aluno inativo também leva os débitos dele. Aluno não carregado (CPF repetido) não leva nenhum.
 
-**Na implantação:** a planilha já cobrou o vencimento de outubro/2026 ("setembro/2026"). A primeira
-geração recorrente do sistema deve ser a de **novembro/2026**. Se o sistema gerar outubro, quem
-pagou "setembro/2026" na planilha recebe uma segunda cobrança com vencimento em outubro.
+### Na implantação: o mês de virada
+
+Decisão da equipe (item 1.13 do [playbook de implantação](../../docs/playbooks/implantacao.md)):
+
+| Quem cobra    | Último ou primeiro mês                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| A planilha    | Até a que ela chama de **"dezembro/2026"**, que vence em 05/01/2027. No sistema: referência `2027-01`, `Mensalidade de janeiro/2027 (planilha: dezembro/2026)` |
+| O sistema     | A partir da **`Mensalidade de fevereiro/2027`** (referência `2027-02`, vence em fevereiro/2027) |
+
+A planilha **não cobra** o mês que ela chamaria de "janeiro/2027": esse é o fevereiro do sistema.
+
+- **Quando rodar:** em janeiro/2027, com `--hoje 2027-01-06` ou depois. O script só leva como
+  herdada o mês que vence **antes** do `--hoje`. Com `--hoje 2027-01-05` ou antes, a "dezembro/2026"
+  não paga vai para as pendências como "cobre pela geração do sistema", e o sistema não vai cobrá-la:
+  o débito se perde. Sem `--hoje`, vale a data do dia.
+- **Antes de gerar o SQL:** a planilha precisa estar com todos os pagamentos recebidos até ali.
+- **Trava no sistema:** a variável `GERACAO_A_PARTIR_DE=2027-02`, no `app` e no `worker`, impede a
+  geração recorrente de cobrar qualquer mês anterior a fevereiro/2027, inclusive pelo "gerar agora".
+  Assim, o sistema não cobra de novo um mês que a planilha já cobrou.
+- **Depois da carga:** pagamento de um mês antigo (até "dezembro/2026") é registrado **no sistema**,
+  como pagamento manual da cobrança herdada (ADR-0005), e não só na planilha. A planilha deixa de ser
+  a fonte dos débitos no dia da carga.
 
 ## Testes
 
