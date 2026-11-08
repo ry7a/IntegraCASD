@@ -18,6 +18,9 @@ const MUDANCA_NA_TRILHA = /registroAuditoria\s*\.\s*(update|updateMany|upsert|de
 const CAMPOS_PESSOAIS = /\b(nome|email|cpf|telefone|celular|apelido|matricula|contraparte)\b/g;
 // Nome de categoria e de projeto não é dado pessoal ("Categoria "Zeladoria" incluída").
 const ENTIDADES_COM_NOME_LIVRE = ['CATEGORIA', 'PROJETO'];
+// JSON.stringify de um objeto inteiro leva todos os campos dele (nome, e-mail...) sem que nenhum
+// apareça escrito na chamada, e a varredura dos campos não veria nada.
+const SERIALIZACAO = /\bJSON\s*\.\s*stringify\b/;
 
 // Texto de cada chamada `registrarNaTrilha(...)`, do parêntese de abertura ao de fechamento.
 // Conta os parênteses em vez de procurar o "});" para não depender da formatação.
@@ -94,11 +97,21 @@ describe('B14: detalhe da trilha sem dados pessoais', () => {
     expect(violacoes).toEqual([]);
   });
 
+  it('nenhuma chamada serializa um objeto inteiro com JSON.stringify', () => {
+    const violacoes = chamadas.filter(({ texto }) => SERIALIZACAO.test(soOCodigo(texto))).map(({ arquivo }) => arquivo);
+    expect(violacoes).toEqual([]);
+  });
+
   it('a regra pega o jeito errado (confere a própria varredura)', () => {
     const errado = "registrarNaTrilha(tx, { entidade: 'ALUNO', detalhe: `Aluno \"${criado.nome}\" incluído.` })";
     const certo = "registrarNaTrilha(tx, { entidade: 'ALUNO', detalhe: `Aluno alterado: ${campos}.` })";
     const achar = (codigo: string) => [...soOCodigo(chamadasDaTrilha(codigo)[0]).matchAll(CAMPOS_PESSOAIS)].map((m) => m[1]);
     expect(achar(errado)).toEqual(['nome']);
     expect(achar(certo)).toEqual([]);
+
+    const serializa = (codigo: string) => SERIALIZACAO.test(soOCodigo(chamadasDaTrilha(codigo)[0]));
+    expect(serializa("registrarNaTrilha(tx, { entidade: 'ALUNO', detalhe: JSON.stringify(dados) })")).toBe(true);
+    expect(serializa("registrarNaTrilha(tx, { entidade: 'ALUNO', detalhe: `Alterado: ${JSON.stringify(dados)}` })")).toBe(true);
+    expect(serializa("registrarNaTrilha(tx, { entidade: 'ALUNO', detalhe: 'Formato JSON.stringify citado no texto.' })")).toBe(false);
   });
 });
