@@ -87,31 +87,31 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
 
 ### Ajustes da API e do worker
 
-- [ ] **1.1 API pronta para rodar atrás do proxy da Railway** (`apps/api/src/main.ts`):
+- [x] **1.1 API pronta para rodar atrás do proxy da Railway** (`apps/api/src/main.ts`):
   - `app.enableShutdownHooks()`;
   - Swagger só quando `NODE_ENV !== 'production'`;
   - `trust proxy` ligado e `x-powered-by` desligado.
-- [ ] **1.2 Duas rotas públicas de saúde**, com `@Publico()`:
+- [x] **1.2 Duas rotas públicas de saúde**, com `@Publico()`:
   - **`GET /api/saude`:** 200 se o banco responde (`SELECT 1`). A Railway usa essa rota para liberar
     cada implantação. Por isso ela não pode depender do worker: na primeira subida da produção o worker
     ainda está desligado.
   - **`GET /api/saude/completa`:** 200 se o banco responde **e** a rotina `vigilancia-do-asaas` rodou na
     última hora; 503 caso contrário. É a que o UptimeRobot vigia, porque revela um worker parado.
-- [ ] **1.3 Validar a configuração na subida:** a API e o worker se recusam a subir sem `DATABASE_URL`,
+- [x] **1.3 Validar a configuração na subida:** a API e o worker se recusam a subir sem `DATABASE_URL`,
   `CHAVE_DE_CIFRAGEM` com 32 bytes e, na API, `ASAAS_WEBHOOK_TOKEN`.
-- [ ] **1.4 pg-boss sem agendamento na API:** cron e manutenção da fila ficam só no worker.
-- [ ] **1.5 Timeout nas chamadas ao Asaas**, com teste.
-- [ ] **1.6 Trocar o perfil de um usuário revoga as sessões dele**, com teste.
-- [ ] **1.7 Decisão: remover `@nestjs/observe` e `@nestjs/mau`.** Hoje o Observe manda telemetria para um
+- [x] **1.4 pg-boss sem agendamento na API:** cron e manutenção da fila ficam só no worker.
+- [x] **1.5 Timeout nas chamadas ao Asaas**, com teste.
+- [x] **1.6 Trocar o perfil de um usuário revoga as sessões dele**, com teste.
+- [x] **1.7 Decisão: remover `@nestjs/observe` e `@nestjs/mau`.** Hoje o Observe manda telemetria para um
   serviço externo, com credenciais de exemplo fixas no código. Recomendação: remover os dois, o script
   `deploy` e as entradas em `dependencias.json`.
-- [ ] **1.8 Decisão LGPD: nada de nomes e e-mails no `detalhe` da trilha.** A trilha é imutável
+- [x] **1.8 Decisão LGPD: nada de nomes e e-mails no `detalhe` da trilha.** A trilha é imutável
   (ADR-0004). A decisão vale para o backend e para `scripts/carga-inicial/carregar_alunos.py`.
-- [ ] **1.9 `.env.example`:** incluir `NODE_ENV`, `PORT` e `EMAIL_API_URL`; remover `SESSION_SECRET`.
+- [x] **1.9 `.env.example`:** incluir `NODE_ENV`, `PORT` e `EMAIL_API_URL`; remover `SESSION_SECRET`.
 
 ### O `app` serve o site
 
-- [ ] **1.10 A API serve o build do Vite no mesmo endereço.** Usa `useStaticAssets` do
+- [x] **1.10 A API serve o build do Vite no mesmo endereço.** Usa `useStaticAssets` do
   `@nestjs/platform-express`, que já é dependência:
   - qualquer `GET` fora de `/api` que não seja arquivo devolve o `index.html`, para as rotas do React
     Router funcionarem ao recarregar;
@@ -125,7 +125,7 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
 
 ### Imagem e backup
 
-- [ ] **1.11 `Dockerfile` e `.dockerignore` na raiz.** A Railway usa o `Dockerfile` da raiz sozinha.
+- [x] **1.11 `Dockerfile` e `.dockerignore` na raiz.** A Railway usa o `Dockerfile` da raiz sozinha.
   - **`Dockerfile`:**
     - `node:24.20.0-bookworm-slim`, mais o pacote `openssl` (sem ele o Prisma baixa o schema engine
       errado);
@@ -144,7 +144,7 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
     `backups/`, `*.dump`, `*.xlsx`, `*.xls`, `*.csv`, `*.tsbuildinfo`, `apps/api/src/generated`,
     `coverage`, `.git`, `.claude`, `docs/` e o `dados-ficticios.sql`.
   - Para testar na sua máquina: `docker build -t integracasd .`
-- [ ] **1.12 Serviço de backup:**
+- [x] **1.12 Serviço de backup:**
   - **`scripts/backup/Dockerfile`:** a partir de `postgres:18.6`, com `rclone` (1.60, do Debian; o
     provider `Cloudflare` existe desde a 1.59) e `curl` instalados. O contexto do build é a raiz:
     `docker build -f scripts/backup/Dockerfile .`

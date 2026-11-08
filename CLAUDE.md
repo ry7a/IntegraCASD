@@ -37,7 +37,7 @@ scripts/carga-inicial/ script Python que importa as planilhas, roda uma vez (por
 docs/requisitos/     documento de requisitos; o .tex da v1.1 é a fonte dos ids ([Cobranças.RF005])
 docs/adr/            registros de decisões de arquitetura (índice em docs/README.MD)
 docs/arquitetura/    diagramas C4, de sequência e o MER (.drawio com o .svg exportado ao lado)
-docs/governanca/     regras verificáveis (B1..B13, F1..F8, G3..G6), exceções e dependências permitidas
+docs/governanca/     regras verificáveis (B1..B14, F1..F8, G3..G6), exceções e dependências permitidas
 docs/playbooks/      configuração da máquina, backup e restauração
 docs/telas/          protótipo HTML das telas (referência visual, dados fictícios)
 .github/workflows/   CI no GitHub Actions
