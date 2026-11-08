@@ -6,6 +6,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { validarConfiguracaoNaSubida } from './compartilhado/configuracao.js';
 import { configurarApp, criarDocumentoOpenApi } from './openapi.js';
+import { pastaDoSite, servirOSite } from './site.js';
 
 // Em desenvolvimento, carrega o .env da raiz do monorepo (recurso nativo do Node).
 // Em produção não há .env: as variáveis vêm do ambiente do contêiner.
@@ -34,7 +35,10 @@ async function bootstrap() {
   // Não anuncia "X-Powered-By: Express" nas respostas: é informação de graça para quem procura falhas.
   app.disable('x-powered-by');
 
-  if (!emProducao) {
+  if (emProducao) {
+    // Em produção a API também serve o site, no mesmo endereço (veja site.ts).
+    servirOSite(app, pastaDoSite(process.env, import.meta.dirname));
+  } else {
     // Documentação navegável da API em http://localhost:3000/api/docs. Fica fechada em produção.
     SwaggerModule.setup('api/docs', app, criarDocumentoOpenApi(app));
   }

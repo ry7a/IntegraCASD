@@ -2,6 +2,10 @@
 
 NestJS 12 + Prisma 7.10.0 + PostgreSQL 18 + pg-boss 12. O mesmo código roda em dois processos: `src/main.ts` (API HTTP) e `src/main-worker.ts` (worker, sem porta HTTP).
 
+Em produção (`NODE_ENV=production`) a API também serve o site no mesmo endereço (`src/site.ts`): o build do
+Vite em `apps/web/dist` (ou `CAMINHO_DO_SITE`), com `index.html` para toda página fora de `/api`, cache longo
+só em `/assets` e cabeçalhos de segurança (CSP, HSTS...). Em desenvolvimento nada muda: o Vite serve o site.
+
 ## Organização de um módulo
 
 Cada módulo de domínio fica em `src/modulos/<nome>/` e segue estas camadas:
