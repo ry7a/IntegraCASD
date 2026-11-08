@@ -91,6 +91,8 @@ src/modulos/cobrancas/
 - Rotinas agendadas (geração recorrente, sincronização, alerta de webhook parado) são jobs do pg-boss registrados no worker e devem gravar início, fim, total processado e falhas.
   Use o `AgendadorDeRotinas` (`src/compartilhado/fila/`): o nome da rotina entra em `ROTINAS` (vira uma fila
   "singleton", no máximo uma execução por vez) e o consumidor é ligado no `main-worker.ts`.
+  O cron e a manutenção do pg-boss rodam só no worker: o `main-worker.ts` chama `definirProcessoDaFila('worker')`
+  antes de montar a aplicação; a API (padrão) só envia jobs e cria filas (`opcoesDoPgBoss`).
 - Toda rotina deve ser segura para rodar duas vezes (ex.: não gerar mensalidade se já existir uma para o aluno no período).
 - **Notificador de alertas** (`src/compartilhado/notificacao/`): único ponto que envia e-mail, como o cliente do Asaas é o
   único que fala com o Asaas. Os casos de uso dependem da classe abstrata `NotificadorDeAlertas`; o envio real usa a API
