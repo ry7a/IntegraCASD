@@ -9,9 +9,12 @@ export class AgendadorDeRotinasFalso extends AgendadorDeRotinas {
   readonly concluidasEm = new Map<string, Date>();
   // Ligue para simular a fila fora do ar na consulta das execuções.
   indisponivel = false;
+  // Quantas vezes ultimaExecucaoConcluida foi chamada (o teste do cache da saúde confere).
+  consultasDaUltimaExecucao = 0;
   private readonly executores = new Map<string, (dados: DadosDaRotina) => Promise<void>>();
 
   ultimaExecucaoConcluida(rotina: string): Promise<Date | null> {
+    this.consultasDaUltimaExecucao++;
     if (this.indisponivel) return Promise.reject(new Error('Fila indisponível.'));
     return Promise.resolve(this.concluidasEm.get(rotina) ?? null);
   }

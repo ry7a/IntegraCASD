@@ -40,9 +40,14 @@ export function cacheDoArquivo(caminhoNoSite: string): string {
 // Pedido que o site responde com o index.html quando não é um arquivo: GET ou HEAD fora de /api.
 // Assim, recarregar /cobrancas abre a tela (o React Router resolve a rota no navegador), e um /api/...
 // desconhecido continua chegando ao Nest, que responde 404 em JSON.
+// /assets também fica de fora: um arquivo que não existe mais (aba aberta antes de uma implantação pede o
+// index-antigo.js) precisa dar 404. Com o index.html e 200, o navegador recusaria o "script" com um erro de
+// tipo (MIME) confuso, por causa do nosniff.
 export function ehPaginaDoSite(metodo: string, caminho: string): boolean {
   if (metodo !== 'GET' && metodo !== 'HEAD') return false;
-  return caminho !== '/api' && !caminho.startsWith('/api/');
+  const ehDaApi = caminho === '/api' || caminho.startsWith('/api/');
+  const ehArquivoDoBuild = caminho === '/assets' || caminho.startsWith('/assets/');
+  return !ehDaApi && !ehArquivoDoBuild;
 }
 
 // Liga tudo no app. Chamada só em produção (main.ts), antes do app.listen: os middlewares do Express

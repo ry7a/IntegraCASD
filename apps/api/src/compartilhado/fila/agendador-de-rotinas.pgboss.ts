@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AgendadorDeRotinas, type DadosDaRotina } from './agendador-de-rotinas.js';
-import { PgBossService } from './pg-boss.service.js';
+import { PgBossService, SCHEMA_DO_PGBOSS } from './pg-boss.service.js';
 
 const FUSO = 'America/Sao_Paulo';
 
@@ -36,17 +36,25 @@ export class AgendadorDeRotinasPgBoss extends AgendadorDeRotinas {
   }
 
   async ultimaExecucaoConcluida(rotina: string): Promise<Date | null> {
-    // O pg-boss guarda cada execução como um job na própria tabela e só apaga os concluídos depois de
-    // 7 dias (deleteAfterSeconds padrão). Uma rotina a cada 30 minutos deixa uns 340 jobs ali; o limite
-    // abaixo cobre isso com folga. findJobs devolve do mais antigo para o mais novo, por isso o laço.
-    const jobs = await this.pgBoss.boss.findJobs(rotina, { limit: 5000 });
-    let ultima: Date | null = null;
-    for (const job of jobs) {
-      if (job.state === 'completed' && job.completedOn !== null) {
-        const concluidaEm = new Date(job.completedOn);
-        if (ultima === null || concluidaEm > ultima) ultima = concluidaEm;
-      }
-    }
-    return ultima;
+    // Uma consulta só, que devolve uma linha: a maior data de conclusão entre os jobs concluídos da
+    // rotina. Chamada a cada GET /api/saude/completa, por isso não traz os jobs (nem depende da ordem ou de
+    // um limite, como o findJobs, que lista do mais antigo para o mais novo). getDb() é a API pública do
+    // pg-boss para rodar SQL na conexão dele; a tabela `job` e as colunas são as do schema do pg-boss 12.
+    const { rows } = await this.pgBoss.boss.getDb().executeSql(SQL_ULTIMA_CONCLUSAO, [rotina]);
+    return lerUltimaConclusao(rows);
   }
+}
+
+// O estado é conferido porque o pg-boss também preenche completed_on em job que falhou ou foi cancelado.
+// Há um índice do próprio pg-boss em (name, completed_on), por isso a consulta é barata.
+export const SQL_ULTIMA_CONCLUSAO = `SELECT max(completed_on) AS ultima FROM ${SCHEMA_DO_PGBOSS}.job WHERE name = $1 AND state = 'completed'`;
+
+// Converte a linha devolvida pelo banco. O driver do PostgreSQL entrega timestamptz como Date, mas aceitar
+// texto também não custa; sem nenhum job concluído, max() devolve uma linha com null.
+export function lerUltimaConclusao(linhas: Array<{ ultima?: unknown }>): Date | null {
+  const valor = linhas[0]?.ultima;
+  if (valor === null || valor === undefined) return null;
+  if (!(valor instanceof Date) && typeof valor !== 'string') return null;
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) ? null : data;
 }

@@ -39,6 +39,12 @@ describe('ehPaginaDoSite', () => {
     expect(ehPaginaDoSite('GET', '/api/alunos')).toBe(false);
     expect(ehPaginaDoSite('POST', '/cobrancas')).toBe(false);
   });
+
+  it('/assets não é página: arquivo do build que não existe dá 404, não o index.html', () => {
+    expect(ehPaginaDoSite('GET', '/assets/index-antigo.js')).toBe(false);
+    expect(ehPaginaDoSite('GET', '/assets')).toBe(false);
+    expect(ehPaginaDoSite('GET', '/assetsx')).toBe(true);
+  });
 });
 
 // Controller de mentira, só para ter uma rota do Nest sob /api no teste.
@@ -109,6 +115,12 @@ describe('servirOSite (Express de verdade, sem banco)', () => {
       expect(desconhecida.status).toBe(404);
       expect(desconhecida.headers['content-type']).toContain('application/json');
     }
+  });
+
+  it('arquivo de /assets que não existe (aba antiga depois de implantar) dá 404, sem o index.html', async () => {
+    const resposta = await request(app.getHttpServer()).get('/assets/index-antigo.js');
+    expect(resposta.status).toBe(404);
+    expect(resposta.text).not.toContain('<title>IntegraCASD</title>');
   });
 
   it('POST fora de /api não recebe o index.html', async () => {

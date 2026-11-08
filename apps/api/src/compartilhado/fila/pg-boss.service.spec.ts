@@ -7,6 +7,7 @@ describe('opcoesDoPgBoss', () => {
   it('a API não roda agendamento (cron) nem supervisão, mas migra o schema para poder enfileirar', () => {
     expect(opcoesDoPgBoss(URL_FICTICIA, 'api')).toEqual({
       connectionString: URL_FICTICIA,
+      schema: 'pgboss',
       schedule: false,
       supervise: false,
       migrate: true,
