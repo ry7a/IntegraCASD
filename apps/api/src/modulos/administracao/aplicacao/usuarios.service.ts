@@ -95,14 +95,18 @@ export class UsuariosService {
     if (passaAInativo) operacao = 'INATIVACAO';
     if (reativa) operacao = 'REATIVACAO';
 
+    // Grava só o que mudou (o Prisma ignora campo `undefined`). Assim o banco recebe exatamente o que a
+    // trilha registra, e um formulário aberto há tempos não desfaz, sem deixar rastro, a mudança que outra
+    // pessoa fez num campo que ele nem alterou (ex.: devolver o perfil de diretoria de quem foi rebaixado).
+    const mudou = (campo: string) => camposAlterados.includes(campo);
     return this.prisma.$transaction(async (tx) => {
       const alterado = await tx.usuario.update({
         where: { id },
         data: {
-          nome: dados.nome,
-          email: dados.email,
-          perfil: dados.perfil,
-          ativo: dados.ativo,
+          nome: mudou('nome') ? dados.nome : undefined,
+          email: mudou('email') ? dados.email : undefined,
+          perfil: mudou('perfil') ? dados.perfil : undefined,
+          ativo: mudou('ativo') ? dados.ativo : undefined,
           senhaHash,
         },
         select: { id: true, nome: true, email: true, perfil: true, ativo: true, ultimoAcessoEm: true },

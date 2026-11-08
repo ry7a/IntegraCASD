@@ -203,7 +203,7 @@ Sua máquina está pronta quando todos os itens estiverem marcados:
 - [ ] `pnpm --version` mostra `11.28.5`
 - [ ] `docker compose ps` mostra o `db` como `running`
 - [ ] `pnpm --filter api exec prisma migrate deploy` termina sem erro
-- [ ] `http://localhost:3000/api` mostra `Hello World!` e `http://localhost:3000/api/alunos` lista os alunos fictícios em JSON
+- [ ] `http://localhost:3000/api/saude` responde `{"situacao":"OK","banco":"OK"}`, e `http://localhost:3000/api/alunos` responde 401 (a API exige login; os alunos aparecem pelo frontend, depois de entrar)
 - [ ] `http://localhost:5173` abre o frontend e a lista de alunos mostra os alunos fictícios
 - [ ] `pnpm lint`, `pnpm test` e `pnpm build` passam na raiz (hoje só a API tem testes; o frontend ainda não tem)
 - [ ] Você criou uma branch de teste, fez um commit e enviou a branch ao GitHub (`git push -u origin <nome-da-branch>`)

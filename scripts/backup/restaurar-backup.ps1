@@ -34,9 +34,14 @@ docker compose exec -T db createdb -U $Usuario $Banco
 if ($LASTEXITCODE -ne 0) { throw "Não foi possível criar o banco $Banco." }
 
 # --no-owner: o dono dos objetos passa a ser o usuário que restaura (útil ao restaurar em outro servidor).
-docker compose exec -T db pg_restore -U $Usuario -d $Banco --no-owner --exit-on-error "/tmp/$nome"
-if ($LASTEXITCODE -ne 0) { throw "O pg_restore falhou. O banco $Banco ficou incompleto; apague-o antes de tentar de novo." }
-docker compose exec -T db rm "/tmp/$nome" | Out-Null
+# O finally apaga a cópia do dump dentro do contêiner também quando o pg_restore falha: ela tem os dados
+# do banco (de produção, no teste mensal) e não pode ficar esquecida em /tmp.
+try {
+  docker compose exec -T db pg_restore -U $Usuario -d $Banco --no-owner --exit-on-error "/tmp/$nome"
+  if ($LASTEXITCODE -ne 0) { throw "O pg_restore falhou. O banco $Banco ficou incompleto; apague-o antes de tentar de novo." }
+} finally {
+  docker compose exec -T db rm -f "/tmp/$nome" | Out-Null
+}
 
 Write-Output "Restaurado em $Banco. Conferência:"
 $consulta = @"
