@@ -45,6 +45,7 @@ python -m pip install -r scripts/carga-inicial/requirements.txt
 O SQL roda numa transação só: ou entra tudo, ou nada. Pode ser aplicado de novo sem duplicar:
 turma, vaga, aluno (pelo CPF) e débito (aluno + mês) que já existem são pulados. Cada aluno e cada
 cobrança herdada ganham um registro na trilha de auditoria (sem usuário, como as rotinas automáticas).
+O detalhe desse registro não leva nome, CPF nem e-mail: a trilha não pode ser apagada (LGPD, regra B14).
 
 Para começar de um banco vazio: `pnpm --filter api exec prisma migrate reset`. **Apaga todos os
 dados do banco local**, inclusive os usuários; depois rode o `admin-inicial` de novo.
