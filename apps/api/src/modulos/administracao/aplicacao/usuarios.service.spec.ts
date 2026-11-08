@@ -30,6 +30,7 @@ function usuarioDiretor(id = DIRETOR.id) {
 }
 
 // Prisma falso: anota em `operacoes` o que foi feito e se foi dentro da transação.
+// A busca por id devolve `usuarioAtual`; a busca por e-mail (conferência de duplicidade) não acha ninguém.
 function prismaFalso(usuarioAtual: ReturnType<typeof usuarioDiretor>) {
   const operacoes: string[] = [];
   let dentroDaTransacao = false;
@@ -59,7 +60,9 @@ function prismaFalso(usuarioAtual: ReturnType<typeof usuarioDiretor>) {
   };
   const prisma = {
     usuario: {
-      findUnique: vi.fn(async () => usuarioAtual),
+      findUnique: vi.fn(async ({ where }: { where: { id?: string } }) =>
+        where.id === usuarioAtual.id ? usuarioAtual : null,
+      ),
       count: vi.fn(async () => 2),
     },
     $transaction: vi.fn(async (trabalho: (cliente: typeof tx) => Promise<unknown>) => {
@@ -100,41 +103,105 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
     );
   });
 
-  it('a trilha registra os campos alterados, sem o nome e o e-mail (LGPD)', async () => {
-    const trilha: string[] = [];
-    const tx = {
-      usuario: { update: vi.fn(async () => ({ ...usuarioDiretor('diretor-2'), nome: 'Nome Novo', email: 'novo@exemplo.com' })) },
-      sessao: { updateMany: vi.fn() },
-      registroAuditoria: {
-        create: vi.fn(async ({ data }: { data: { detalhe: string } }) => {
-          trilha.push(data.detalhe);
-        }),
-      },
-    };
-    const prisma = {
-      usuario: {
-        findUnique: vi.fn().mockResolvedValueOnce(usuarioDiretor('diretor-2')).mockResolvedValueOnce(null),
-        count: vi.fn(async () => 2),
-      },
-      $transaction: vi.fn(async (operacao: (cliente: typeof tx) => Promise<unknown>) => operacao(tx)),
-    } as unknown as PrismaService;
+  // A tela manda sempre o formulário inteiro: a trilha deve listar só o que mudou de fato.
+  it('com o formulario inteiro, a trilha lista so o e-mail quando so ele mudou, sem revogar sessoes', async () => {
+    const atual = usuarioDiretor('diretor-2');
+    const { prisma, tx, gravarNaTrilha } = prismaFalso(atual);
 
     await new UsuariosService(prisma).alterar(
       'diretor-2',
-      { nome: 'Nome Novo', email: 'novo@exemplo.com', perfil: PerfilUsuario.ADMINISTRATIVO },
+      { nome: atual.nome, email: 'novo@exemplo.com', perfil: atual.perfil, ativo: true },
       DIRETOR,
     );
 
-    expect(trilha).toEqual([
-      'Usuário alterado: nome, email, perfil; perfil DIRETORIA -> ADMINISTRATIVO; sessões abertas revogadas.',
-    ]);
+    expect(tx.sessao.updateMany).not.toHaveBeenCalled();
+    expect(gravarNaTrilha).toHaveBeenCalledWith({
+      data: expect.objectContaining({ operacao: 'ALTERACAO', detalhe: 'Usuário alterado: email.' }),
+    });
+  });
+
+  it('reenviar ativo:false de um usuario ja inativo nao revoga sessoes nem vira INATIVACAO', async () => {
+    const atual = { ...usuarioDiretor('diretor-2'), ativo: false };
+    const { prisma, tx, gravarNaTrilha } = prismaFalso(atual);
+
+    await new UsuariosService(prisma).alterar(
+      'diretor-2',
+      { nome: 'Nome Novo', email: atual.email, perfil: atual.perfil, ativo: false },
+      DIRETOR,
+    );
+
+    expect(tx.sessao.updateMany).not.toHaveBeenCalled();
+    expect(gravarNaTrilha).toHaveBeenCalledWith({
+      data: expect.objectContaining({ operacao: 'ALTERACAO', detalhe: 'Usuário alterado: nome.' }),
+    });
+  });
+
+  it('passar de ativo para inativo revoga as sessoes e registra INATIVACAO', async () => {
+    const atual = usuarioDiretor('diretor-2');
+    const { prisma, tx, gravarNaTrilha } = prismaFalso(atual);
+
+    await new UsuariosService(prisma).alterar(
+      'diretor-2',
+      { nome: atual.nome, email: atual.email, perfil: atual.perfil, ativo: false },
+      DIRETOR,
+    );
+
+    expect(tx.sessao.updateMany).toHaveBeenCalled();
+    expect(gravarNaTrilha).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        operacao: 'INATIVACAO',
+        detalhe: 'Usuário alterado: ativo; sessões abertas revogadas.',
+      }),
+    });
+  });
+
+  it('formulario sem nenhuma mudanca nao grava nada', async () => {
+    const atual = usuarioDiretor('diretor-2');
+    const { prisma, tx, gravarNaTrilha } = prismaFalso(atual);
+
+    const resultado = await new UsuariosService(prisma).alterar(
+      'diretor-2',
+      { nome: atual.nome, email: atual.email, perfil: atual.perfil, ativo: true },
+      DIRETOR,
+    );
+
+    expect(resultado.id).toBe('diretor-2');
+    expect(tx.usuario.update).not.toHaveBeenCalled();
+    expect(gravarNaTrilha).not.toHaveBeenCalled();
+  });
+
+  it('a trilha nunca leva o nome nem o e-mail, antigos ou novos (LGPD)', async () => {
+    const atual = usuarioDiretor('diretor-2');
+    const { prisma, gravarNaTrilha } = prismaFalso(atual);
+
+    await new UsuariosService(prisma).alterar(
+      'diretor-2',
+      { nome: 'Nome Novo', email: 'novo@exemplo.com', perfil: PerfilUsuario.ADMINISTRATIVO, ativo: true },
+      DIRETOR,
+    );
+
+    const detalhes = gravarNaTrilha.mock.calls.map((chamada) => JSON.stringify(chamada));
+    expect(detalhes).toHaveLength(1);
+    for (const dadoPessoal of [atual.nome, atual.email, 'Nome Novo', 'novo@exemplo.com']) {
+      expect(detalhes[0]).not.toContain(dadoPessoal);
+    }
+    expect(gravarNaTrilha).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        detalhe: 'Usuário alterado: nome, email, perfil; perfil DIRETORIA -> ADMINISTRATIVO; sessões abertas revogadas.',
+      }),
+    });
   });
 
   it('trocar o perfil revoga as sessoes abertas do usuario, na mesma transacao, com registro na trilha', async () => {
-    const { prisma, tx, operacoes, gravarNaTrilha } = prismaFalso(usuarioDiretor('diretor-2'));
+    const atual = usuarioDiretor('diretor-2');
+    const { prisma, tx, operacoes, gravarNaTrilha } = prismaFalso(atual);
     const servico = new UsuariosService(prisma);
 
-    const alterado = await servico.alterar('diretor-2', { perfil: PerfilUsuario.ADMINISTRATIVO }, DIRETOR);
+    const alterado = await servico.alterar(
+      'diretor-2',
+      { nome: atual.nome, email: atual.email, perfil: PerfilUsuario.ADMINISTRATIVO, ativo: true },
+      DIRETOR,
+    );
 
     expect(alterado.perfil).toBe(PerfilUsuario.ADMINISTRATIVO);
     expect(tx.sessao.updateMany).toHaveBeenCalledWith({
@@ -162,7 +229,7 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
     expect(tx.usuario.update).toHaveBeenCalled();
     expect(tx.sessao.updateMany).not.toHaveBeenCalled();
     expect(gravarNaTrilha).toHaveBeenCalledWith({
-      data: expect.objectContaining({ detalhe: 'Usuário alterado: nome, perfil.' }),
+      data: expect.objectContaining({ detalhe: 'Usuário alterado: nome.' }),
     });
   });
 });

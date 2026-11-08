@@ -47,6 +47,7 @@ export class Autenticar {
         data: {
           usuarioId: usuario.id,
           tokenHash: resumirToken(token),
+          // Só registro do perfil no login: a guarda usa o perfil atual do usuário (autenticacao.guard.ts).
           perfil: usuario.perfil,
           expiraEm,
         },
