@@ -127,6 +127,8 @@ src/modulos/cobrancas/
 - Auditoria: toda alteração chama `registrarNaTrilha(tx, {...})` (`src/compartilhado/auditoria/trilha.ts`)
   dentro da mesma transação, nunca `tx.registroAuditoria.create` direto. A trilha é só de inclusão: o banco
   recusa `UPDATE`/`DELETE` nela (ADR-0004, regra B13). Rotina automática grava com `usuarioId: null`.
+  Como ela não pode ser apagada, o `detalhe` **nunca leva dado pessoal** (nome, e-mail, CPF, telefone...):
+  o registro já é identificado por `entidade` + `registroId`, e o detalhe diz o que mudou (regra B14).
 
 ## Testes
 
