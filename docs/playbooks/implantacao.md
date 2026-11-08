@@ -145,14 +145,19 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
     `coverage`, `.git`, `.claude`, `docs/` e o `dados-ficticios.sql`.
   - Para testar na sua máquina: `docker build -t integracasd .`
 - [ ] **1.12 Serviço de backup:**
-  - **`scripts/backup/Dockerfile`:** a partir de `postgres:18.6`, com `rclone` e `curl` instalados.
+  - **`scripts/backup/Dockerfile`:** a partir de `postgres:18.6`, com `rclone` (1.60, do Debian; o
+    provider `Cloudflare` existe desde a 1.59) e `curl` instalados. O contexto do build é a raiz:
+    `docker build -f scripts/backup/Dockerfile .`
   - **`scripts/backup/backup-railway.sh`**, commitado com permissão de execução
-    (`git update-index --chmod=+x`). Ele:
-    - roda `pg_dump "$DATABASE_URL" -Fc`;
+    (`git update-index --chmod=+x`) e fim de linha LF (`*.sh text eol=lf` no `.gitattributes`). Ele:
+    - exige `AMBIENTE` (`homologacao` ou `producao`) e `DATABASE_URL`;
+    - roda `pg_dump "$DATABASE_URL" -Fc` para `/tmp/integracasd-<AMBIENTE>-<AAAAMMDD-HHMMSS>.dump`
+      (horário UTC) e confere que o arquivo não está vazio;
     - envia com `rclone copy` para `r2cifrado:$AMBIENTE/`. O rclone é configurado só por variáveis
-      `RCLONE_CONFIG_*` (passo 4.5);
-    - no sucesso, faz `curl "$BACKUP_PING_URL"`;
-    - em qualquer falha, sai com erro e não faz o ping.
+      `RCLONE_CONFIG_*` (passo 4.6). No bucket o arquivo fica com o sufixo `.bin` do rclone crypt; o
+      `rclone copy r2cifrado:...` do 4.8 decifra e tira o sufixo;
+    - no sucesso, faz `curl "$BACKUP_PING_URL"`, se a variável estiver preenchida;
+    - em qualquer falha, sai com erro e não faz o ping. Nunca imprime a URL do banco nem segredos.
 
 ### Decisão da carga
 
