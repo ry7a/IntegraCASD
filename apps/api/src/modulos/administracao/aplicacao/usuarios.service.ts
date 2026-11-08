@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PerfilUsuario } from '../../../compartilhado/autenticacao/perfil.js';
 import { criarHashDaSenha } from '../../../compartilhado/autenticacao/senha.js';
-import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
+import { registrarNaTrilha, type OperacaoAuditada } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { IdentidadeDoUsuario } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import type { EntradaAlterarUsuario, EntradaCriarUsuario, UsuarioResumo } from './usuarios.types.js';
@@ -68,12 +68,33 @@ export class UsuariosService {
       }
     }
 
+    // A tela manda sempre o formulário inteiro (nome, e-mail, perfil, ativo). Por isso o que conta é o
+    // que mudou em relação ao cadastro atual, e não o que veio no pedido.
+    const camposAlterados = camposQueMudaram(dados, atual);
+    if (camposAlterados.length === 0) {
+      return {
+        id: atual.id,
+        nome: atual.nome,
+        email: atual.email,
+        perfil: atual.perfil,
+        ativo: atual.ativo,
+        ultimoAcessoEm: atual.ultimoAcessoEm,
+      };
+    }
+
     const senhaHash = dados.novaSenha ? await criarHashDaSenha(dados.novaSenha) : undefined;
-    // O perfil é copiado para a sessão no login e a guarda confere `sessao.perfil`: sem revogar, o
-    // perfil antigo valeria até a sessão expirar (12 h). Por isso trocar o perfil derruba as sessões
-    // abertas, como já acontece ao inativar ou trocar a senha; a pessoa entra de novo com o perfil novo.
+    // Reenviar `ativo: false` de quem já está inativo não é uma inativação: só conta a passagem.
+    const passaAInativo = dados.ativo === false && atual.ativo;
+    const reativa = dados.ativo === true && !atual.ativo;
+    // Trocar o perfil derruba as sessões abertas, como inativar ou trocar a senha: a pessoa entra
+    // de novo e a tela passa a mostrar o que o perfil novo permite.
     const trocaDePerfil = dados.perfil !== undefined && dados.perfil !== atual.perfil;
-    const revogarSessoes = dados.ativo === false || senhaHash !== undefined || trocaDePerfil;
+    const revogarSessoes = passaAInativo || senhaHash !== undefined || trocaDePerfil;
+
+    let operacao: OperacaoAuditada = 'ALTERACAO';
+    if (passaAInativo) operacao = 'INATIVACAO';
+    if (reativa) operacao = 'REATIVACAO';
+
     return this.prisma.$transaction(async (tx) => {
       const alterado = await tx.usuario.update({
         where: { id },
@@ -94,10 +115,10 @@ export class UsuariosService {
       }
       await registrarNaTrilha(tx, {
         usuarioId: autor.id,
-        operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
+        operacao,
         entidade: 'USUARIO',
         registroId: alterado.id,
-        detalhe: detalheDaAlteracao(dados, atual.perfil, revogarSessoes),
+        detalhe: detalheDaAlteracao(camposAlterados, atual.perfil, dados.perfil, revogarSessoes),
       });
       return alterado;
     });
@@ -132,19 +153,34 @@ function validarAlteracao(entrada: EntradaAlterarUsuario) {
   return dados;
 }
 
+// Campos que de fato mudam em relação ao cadastro atual. A senha entra sempre que informada:
+// não dá para comparar com a guardada (só existe o hash), e trocar a senha é o que se quer auditar.
+function camposQueMudaram(
+  dados: ReturnType<typeof validarAlteracao>,
+  atual: { nome: string; email: string; perfil: PerfilUsuario; ativo: boolean },
+): string[] {
+  const campos: string[] = [];
+  if (dados.nome !== undefined && dados.nome !== atual.nome) campos.push('nome');
+  if (dados.email !== undefined && dados.email !== atual.email) campos.push('email');
+  if (dados.perfil !== undefined && dados.perfil !== atual.perfil) campos.push('perfil');
+  if (dados.ativo !== undefined && dados.ativo !== atual.ativo) campos.push('ativo');
+  if (dados.novaSenha !== undefined) campos.push('senha');
+  return campos;
+}
+
 // Texto da trilha para a alteração: os campos alterados, nunca os valores de nome e e-mail
 // (LGPD: a trilha não pode ser apagada). A troca de perfil entra (de -> para), porque é o que a
 // auditoria de acesso procura, e também se as sessões abertas da pessoa foram revogadas.
 function detalheDaAlteracao(
-  dados: ReturnType<typeof validarAlteracao>,
+  camposAlterados: string[],
   perfilAnterior: PerfilUsuario,
+  perfilNovo: PerfilUsuario | undefined,
   sessoesRevogadas: boolean,
 ): string {
-  const campos = Object.keys(dados).map((campo) => (campo === 'novaSenha' ? 'senha' : campo));
   const perfil =
-    dados.perfil === undefined || dados.perfil === perfilAnterior ? '' : `; perfil ${perfilAnterior} -> ${dados.perfil}`;
+    perfilNovo === undefined || perfilNovo === perfilAnterior ? '' : `; perfil ${perfilAnterior} -> ${perfilNovo}`;
   const sessoes = sessoesRevogadas ? '; sessões abertas revogadas' : '';
-  return `Usuário alterado: ${campos.join(', ')}${perfil}${sessoes}.`;
+  return `Usuário alterado: ${camposAlterados.join(', ')}${perfil}${sessoes}.`;
 }
 
 function validarNome(valor: unknown): string {
