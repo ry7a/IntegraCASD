@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { validarConfiguracaoNaSubida } from './compartilhado/configuracao.js';
 import { configurarApp, criarDocumentoOpenApi } from './openapi.js';
 
 // Em desenvolvimento, carrega o .env da raiz do monorepo (recurso nativo do Node).
@@ -15,6 +16,8 @@ if (existsSync(arquivoEnv)) {
 }
 
 async function bootstrap() {
+  // Em produção, sem DATABASE_URL, CHAVE_DE_CIFRAGEM e ASAAS_WEBHOOK_TOKEN válidos a API nem sobe.
+  validarConfiguracaoNaSubida('api');
   const emProducao = process.env.NODE_ENV === 'production';
 
   // NestExpressApplication: o mesmo app, com os métodos do Express (set, disable...) tipados.
