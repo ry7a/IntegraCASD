@@ -131,7 +131,7 @@ function ListaDePendencias({ resolvidas }: { resolvidas: boolean }) {
           <p className="texto-apoio">
             Corrija o cadastro do aluno e peça a geração de novo em Administração › Parâmetros (Gerar pendentes agora).
           </p>
-          <ul className="lista-linhas">
+          <ul className="lista-linhas limite-leitura">
             {falhas.map((falha) => (
               <li key={`${falha.referencia}-${falha.alunoId}-${falha.motivo}`}>
                 <span>

@@ -28,14 +28,17 @@ function Layout() {
 
   return (
     <AcoesGlobaisContexto.Provider value={acoes}>
-      <FaixaDeAmbiente />
-      <div className="app">
-        <MenuLateral />
-        <div className="conteudo">
-          <BarraDoTopo />
-          <main className="pagina">
-            <Outlet />
-          </main>
+      {/* O casco ocupa ao menos a altura da janela, com ou sem a faixa de ambiente (ver .casco no CSS). */}
+      <div className="casco">
+        <FaixaDeAmbiente />
+        <div className="app">
+          <MenuLateral />
+          <div className="conteudo">
+            <BarraDoTopo />
+            <main className="pagina">
+              <Outlet />
+            </main>
+          </div>
         </div>
       </div>
 

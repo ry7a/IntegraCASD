@@ -38,7 +38,7 @@ function AbaIntegracao() {
   return (
     <EstadoDaConsulta carregando={consulta.isPending} erro={consulta.error} aoTentarDeNovo={() => void consulta.refetch()}>
       {integracao && (
-        <div className="grade grade-1-1">
+        <div className="grade grade-1-1 limite-leitura">
           <div className="cartao">
             <div className="cartao-cabecalho">
               <div>

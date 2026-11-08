@@ -35,28 +35,32 @@ function MenuLateral() {
   }
 
   return (
+    // Duas camadas: o <aside> é a coluna preta, que vai até o fim da página; o .menu-fixo dentro dela
+    // fica preso no topo enquanto a página rola, com o usuário e o "Sair" sempre no fim da janela.
     <aside className="menu">
-      <NavLink className="marca" to="/">
-        <span className="marca-selo">CASD</span>
-        <span className="marca-nome">IntegraCASD</span>
-      </NavLink>
-      <nav aria-label="Menu principal">
-        {ITENS_DO_MENU.filter((item) => item.rota !== '/administracao' || usuario.perfil === 'DIRETORIA').map((item) => (
-          // O NavLink coloca aria-current="page" no item da tela aberta; o CSS pinta o item ativo.
-          // "end" no início evita que "/" fique ativo em todas as telas.
-          <NavLink key={item.rota} className="menu-item" to={item.rota} end={item.rota === '/'}>
-            <Icone nome={item.icone} />
-            {item.titulo}
-            {item.etiqueta && <span className="etiqueta">{item.etiqueta}</span>}
-          </NavLink>
-        ))}
-      </nav>
-      <div className="menu-usuario">
-        <strong>{usuario.nome}</strong>
-        <span>{usuario.perfil === 'DIRETORIA' ? 'Diretoria' : 'Administrativo'}</span>
-        <button type="button" className="menu-sair" onClick={() => void encerrarSessao()} disabled={sair.isPending}>
-          Sair
-        </button>
+      <div className="menu-fixo">
+        <NavLink className="marca" to="/">
+          <span className="marca-selo">CASD</span>
+          <span className="marca-nome">IntegraCASD</span>
+        </NavLink>
+        <nav aria-label="Menu principal">
+          {ITENS_DO_MENU.filter((item) => item.rota !== '/administracao' || usuario.perfil === 'DIRETORIA').map((item) => (
+            // O NavLink coloca aria-current="page" no item da tela aberta; o CSS pinta o item ativo.
+            // "end" no início evita que "/" fique ativo em todas as telas.
+            <NavLink key={item.rota} className="menu-item" to={item.rota} end={item.rota === '/'}>
+              <Icone nome={item.icone} />
+              {item.titulo}
+              {item.etiqueta && <span className="etiqueta">{item.etiqueta}</span>}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="menu-usuario">
+          <strong>{usuario.nome}</strong>
+          <span>{usuario.perfil === 'DIRETORIA' ? 'Diretoria' : 'Administrativo'}</span>
+          <button type="button" className="menu-sair" onClick={() => void encerrarSessao()} disabled={sair.isPending}>
+            Sair
+          </button>
+        </div>
       </div>
     </aside>
   )
