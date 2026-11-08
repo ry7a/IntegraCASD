@@ -68,8 +68,8 @@ export class UsuariosService {
       }
     }
 
-    // A tela manda sempre o formulário inteiro (nome, e-mail, perfil, ativo). Por isso o que conta é o
-    // que mudou em relação ao cadastro atual, e não o que veio no pedido.
+    // O pedido pode trazer campos iguais aos atuais (reenvio, outro cliente da API). Por isso o que conta é
+    // o que mudou em relação ao cadastro atual, e não o que veio no pedido.
     const camposAlterados = camposQueMudaram(dados, atual);
     if (camposAlterados.length === 0) {
       return {

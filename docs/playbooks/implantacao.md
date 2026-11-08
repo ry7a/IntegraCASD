@@ -322,9 +322,12 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
       sem pagamentos. O e-mail de webhook parado tem de chegar ao endereço de `EMAIL_ALERTAS_PARA`. Se não
       chegar, o log do worker diz o motivo.
 - [ ] **3.6 Desligar a homologação entre validações.** O `app` já dorme sozinho (Serverless). Para o
-  worker: [[worker › Deployments › ⋮ › Remove]]. Mantenha o deploy automático dele **ligado**: o próximo
+  worker: [[worker › Deployments › ⋮ › Remove]]. Mantenha o deploy automático dele **ligado**: **cada**
   merge na `main` religa o worker sozinho, já no commit novo, junto com o `app`. É isso que garante que a
-  diretoria valide o app e o worker da mesma versão. Depois da validação, remova a implantação de novo.
+  diretoria valide o app e o worker da mesma versão. Por isso ele não fica desligado sozinho: remova a
+  implantação de novo ao fim de cada validação (ou, no mínimo, uma vez por semana). Para religar sem um
+  merge novo, use [[worker › Deployments]] → **Redeploy** no deployment cujo commit é o mesmo do `app`
+  (confira o hash).
 
 ## Fase 4: backups e teste de restauração
 
