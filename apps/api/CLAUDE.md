@@ -78,6 +78,8 @@ src/modulos/cobrancas/
   ou `paraConciliar`); `existeNoAsaas` e `conferirCobrancaNoAsaas` ficam em `dominio/cobranca.ts`.
 - Em testes, use um dublê da interface. Nunca chame o Asaas real em teste automatizado.
 - Respostas 429 são tratadas no cliente: aguardar o intervalo informado e repetir.
+- Cada chamada ao Asaas tem tempo limite de 15 s (`TEMPO_LIMITE_EM_MS` no cliente HTTP). Estourou, vira o mesmo
+  `ErroAsaas` de Asaas indisponível que a falha de rede: quem chamou reage igual (rotina e webhook repetem).
 - Erros do Asaas são traduzidos para mensagens orientadas à ação antes de chegar à API ([Usabilidade.NF002]). Nunca repasse a mensagem crua da plataforma.
 
 ## Webhook e worker

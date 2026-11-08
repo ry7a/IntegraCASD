@@ -21,6 +21,9 @@ export function urlBaseDoAmbiente(ambiente: AmbienteAsaas): string {
 const MAXIMO_DE_TENTATIVAS = 3;
 const ESPERA_PADRAO_EM_SEGUNDOS = 5;
 const ESPERA_MAXIMA_EM_SEGUNDOS = 60;
+// Tempo máximo de cada tentativa (pedido e leitura da resposta). Sem ele, o `fetch` do Node espera
+// até ~300 s por um Asaas travado, segurando a requisição do usuário e as rotinas por minutos.
+const TEMPO_LIMITE_EM_MS = 15_000;
 
 export interface ConfiguracaoAsaas {
   urlBase: string;
@@ -159,15 +162,21 @@ export class ClienteAsaasHttp extends ClienteAsaas {
             'User-Agent': 'IntegraCASD',
           },
           ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
+          // Cancela a tentativa se o Asaas não responder a tempo (o mesmo sinal vale para ler o corpo).
+          signal: AbortSignal.timeout(TEMPO_LIMITE_EM_MS),
         });
-      } catch {
-        throw new ErroAsaas(
-          'Não foi possível falar com o Asaas. Confira a conexão com a internet e tente novamente.',
-        );
+      } catch (erro) {
+        throw erroDeComunicacao(erro);
       }
 
       if (resposta.ok) {
-        return (await resposta.json()) as T;
+        try {
+          return (await resposta.json()) as T;
+        } catch (erro) {
+          // O tempo pode estourar no meio da leitura do corpo: vira o mesmo erro de Asaas indisponível.
+          if (estourouOTempoLimite(erro)) throw erroDeComunicacao(erro);
+          throw erro;
+        }
       }
       if (resposta.status === 429 && tentativa < MAXIMO_DE_TENTATIVAS) {
         await this.esperar(segundosDeEspera(resposta) * 1000);
@@ -215,6 +224,22 @@ class CobrancaDesconhecida extends ErroAsaas {
   constructor() {
     super('O Asaas não encontrou o registro pedido. Sincronize as cobranças e tente de novo.', 'DADOS_RECUSADOS');
   }
+}
+
+// Falha de rede ou tempo esgotado: o Asaas está indisponível (motivo padrão do ErroAsaas), e os
+// casos de uso reagem igual nos dois casos (a rotina ou o webhook tenta de novo; a geração para).
+function erroDeComunicacao(erro: unknown): ErroAsaas {
+  if (estourouOTempoLimite(erro)) {
+    return new ErroAsaas(
+      `O Asaas não respondeu em ${TEMPO_LIMITE_EM_MS / 1000} segundos. Aguarde alguns minutos e tente novamente.`,
+    );
+  }
+  return new ErroAsaas('Não foi possível falar com o Asaas. Confira a conexão com a internet e tente novamente.');
+}
+
+// O `AbortSignal.timeout` interrompe o `fetch` com um erro de nome "TimeoutError".
+function estourouOTempoLimite(erro: unknown): boolean {
+  return erro instanceof Error && erro.name === 'TimeoutError';
 }
 
 const ITENS_POR_PAGINA = 100;

@@ -170,6 +170,41 @@ describe('ClienteAsaasHttp', () => {
     await expect(cliente.criarCliente({ nome: 'Aluno Teste', cpf: '12345678909', email: 'a@t.com' }))
       .rejects.toBeInstanceOf(ErroAsaas);
   });
+
+  it('limita o tempo de cada chamada com um sinal de cancelamento', async () => {
+    chamarHttp.mockResolvedValueOnce(resposta(200, { id: 'cus_1' }));
+
+    await cliente.criarCliente({ nome: 'Aluno Teste', cpf: '12345678909', email: 'a@t.com' });
+
+    const [, opcoes = {}] = chamarHttp.mock.calls[0];
+    expect(opcoes.signal).toBeInstanceOf(AbortSignal);
+    expect(opcoes.signal?.aborted).toBe(false);
+  });
+
+  // É assim que o `fetch` falha quando o `AbortSignal.timeout` dispara.
+  const tempoEsgotado = () => new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+
+  it('trata o tempo esgotado como Asaas indisponível, sem repetir nem vazar a chave', async () => {
+    chamarHttp.mockRejectedValueOnce(tempoEsgotado());
+
+    const falha = cliente.criarCobranca(novaCobranca);
+
+    await expect(falha).rejects.toBeInstanceOf(ErroAsaas);
+    await expect(falha).rejects.toMatchObject({ motivo: 'INDISPONIVEL' });
+    await expect(falha).rejects.toThrow(/não respondeu em 15 segundos/);
+    await expect(falha).rejects.not.toThrow(/chave-falsa/);
+    expect(chamarHttp).toHaveBeenCalledTimes(1);
+  });
+
+  it('trata o tempo esgotado durante a leitura da resposta como Asaas indisponível', async () => {
+    const respostaQueTrava = { ok: true, status: 200, json: () => Promise.reject(tempoEsgotado()) } as unknown as Response;
+    chamarHttp.mockResolvedValueOnce(respostaQueTrava);
+
+    const falha = cliente.buscarCobranca('pay_1');
+
+    await expect(falha).rejects.toBeInstanceOf(ErroAsaas);
+    await expect(falha).rejects.toMatchObject({ motivo: 'INDISPONIVEL' });
+  });
 });
 
 describe('configuracaoAsaasDoAmbiente', () => {
