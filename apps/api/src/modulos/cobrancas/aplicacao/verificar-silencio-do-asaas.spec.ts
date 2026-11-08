@@ -55,6 +55,34 @@ function montar(cenario: Cenario = {}) {
 }
 
 describe('vigilância do webhook parado [Confiabilidade.NF002]', () => {
+  // Os testes não dependem do .env de quem roda: a lista fixa começa vazia e cada teste que a usa a define.
+  beforeEach(() => {
+    vi.stubEnv('EMAIL_ALERTAS_PARA', '');
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('com EMAIL_ALERTAS_PARA preenchida, o alerta vai só para essa lista, e não para a diretoria', async () => {
+    vi.stubEnv('EMAIL_ALERTAS_PARA', ' dono-da-conta@exemplo.com , plantao@exemplo.com,, ');
+    const { casoDeUso, notificador } = montar({ ultimaNotificacaoEm: horasAtras(30) });
+
+    const resultado = await casoDeUso.executar(agora);
+
+    expect(notificador.enviados).toHaveLength(1);
+    expect(notificador.enviados[0].destinatarios).toEqual(['dono-da-conta@exemplo.com', 'plantao@exemplo.com']);
+    expect(resultado).toMatchObject({ envio: { enviado: true, destinatarios: 2 } });
+  });
+
+  it('EMAIL_ALERTAS_PARA só com espaços vale como vazia: o alerta vai para a diretoria', async () => {
+    vi.stubEnv('EMAIL_ALERTAS_PARA', '  ,  ');
+    const { casoDeUso, notificador } = montar({ ultimaNotificacaoEm: horasAtras(30) });
+
+    await casoDeUso.executar(agora);
+
+    expect(notificador.enviados[0].destinatarios).toEqual(DIRETORIA);
+  });
+
   it('sem integração configurada, não há o que vigiar e ninguém é avisado', async () => {
     const { casoDeUso, notificador, estado } = montar({ conectada: false, ultimaNotificacaoEm: horasAtras(500) });
     await expect(casoDeUso.executar(agora)).resolves.toEqual({ situacao: 'SEM_INTEGRACAO' });

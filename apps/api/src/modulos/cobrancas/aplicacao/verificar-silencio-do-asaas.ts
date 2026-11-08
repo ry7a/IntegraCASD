@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { destinatariosFixosDosAlertas } from '../../../compartilhado/notificacao/destinatarios-dos-alertas.js';
 import { NotificadorDeAlertas } from '../../../compartilhado/notificacao/notificador-de-alertas.js';
 import { ConsultarIntegracaoAsaas, ListarEmailsDaDiretoria } from '../../administracao/index.js';
 import {
@@ -65,7 +66,8 @@ export class VerificarSilencioDoAsaas {
     // ABRIR_E_ENVIAR, ENVIAR ou LEMBRAR: o alerta existe (ou é criado agora) e o e-mail precisa sair.
     const alertaId =
       aberto?.id ?? (await this.alertas.abrir({ abertoEm: agora, ultimaNotificacaoEm, horasSemNotificacao, prazoHoras })).id;
-    const destinatarios = await this.diretoria.executar();
+    // EMAIL_ALERTAS_PARA, se preenchida, substitui a lista da diretoria (ver destinatarios-dos-alertas.ts).
+    const destinatarios = destinatariosFixosDosAlertas() ?? (await this.diretoria.executar());
     const resultado = await this.notificador.enviar({
       ...montarAlerta({ horasSemNotificacao, prazoHoras, ultimaNotificacaoEm, lembrete: acao === 'LEMBRAR' }),
       destinatarios,
