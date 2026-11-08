@@ -31,11 +31,15 @@ export class AutenticacaoGuard implements CanActivate {
       throw new UnauthorizedException('Sua sessao expirou. Entre novamente para continuar.');
     }
 
+    // O perfil vem do usuário, lido agora, e não da cópia gravada na sessão (`sessao.perfil`). O login
+    // lê o usuário, confere a senha (lento) e só então cria a sessão: se o perfil for rebaixado nesse
+    // meio-tempo, a cópia guardaria o perfil antigo por 12 h. `sessao.perfil` fica só como registro do
+    // perfil no momento do login (não é lido aqui; removê-lo exigiria uma migração).
     requisicao.usuarioAutenticado = {
       id: sessao.usuario.id,
       nome: sessao.usuario.nome,
       email: sessao.usuario.email,
-      perfil: sessao.perfil,
+      perfil: sessao.usuario.perfil,
       sessaoId: sessao.id,
     };
     return true;
