@@ -7,6 +7,7 @@ Rodar, na raiz do repositório:
     python -m unittest discover scripts/carga-inicial
 """
 
+import re
 import unittest
 
 import regras
@@ -164,6 +165,44 @@ class TestDebitosDoAluno(unittest.TestCase):
         resultado = self.carga.Resultado()
         self.carga.ler_debitos(resultado, 10, self.meses, ["PAGO", "NÃO PAGO"], 3, "2026-12-01")
         self.assertEqual([p[1] for p in resultado.pendencias], ["DEVENDO"])
+
+
+class TestTrilhaDaCarga(unittest.TestCase):
+    """LGPD: a trilha de auditoria não pode ser apagada, então o detalhe gravado pela carga não
+    leva nome, CPF, e-mail nem outro dado do aluno (mesma regra do backend, B14)."""
+
+    CAMPOS_PESSOAIS = re.compile(r"\b(nome|cpf|email|celular|apelido|matricula)\b")
+
+    def setUp(self):
+        import carregar_alunos
+        self.carga = carregar_alunos
+        self.aluno = carregar_alunos.Aluno(
+            linha=10, nome="Ana Clara Ribeiro", cpf="52601815906", email="ana.ficticia@exemplo.com",
+            celular="12999990000", apelido="Aninha", matricula=12345, turma="T28", curso="COMP",
+            posto=None, alojamento=("A", "105", "C"), ativo=True,
+        )
+
+    def trecho_da_trilha(self, sql: str) -> str:
+        inicio = sql.index("INSERT INTO registros_auditoria")
+        return sql[inicio:]
+
+    def conferir_sem_dados_pessoais(self, sql: str) -> str:
+        trilha = self.trecho_da_trilha(sql)
+        for valor in (self.aluno.nome, self.aluno.cpf, self.aluno.email, self.aluno.celular, self.aluno.apelido):
+            self.assertNotIn(valor, trilha)
+        # Nem as colunas: 'Aluno "' || nome || '"' tiraria o nome do banco sem aparecer no SQL.
+        self.assertIsNone(self.CAMPOS_PESSOAIS.search(trilha), trilha)
+        return trilha
+
+    def test_inclusao_do_aluno(self):
+        trilha = self.conferir_sem_dados_pessoais(self.carga.sql_do_aluno(self.aluno))
+        self.assertIn("'Aluno incluído pela carga inicial.'", trilha)
+
+    def test_inclusao_da_cobranca_herdada(self):
+        debito = self.carga.Debito(referencia="2026-10", vencimento="2026-10-05", valor_centavos=12000,
+                                   descricao="Mensalidade de outubro/2026 (planilha: setembro/2026)")
+        trilha = self.conferir_sem_dados_pessoais(self.carga.sql_do_debito(self.aluno, debito))
+        self.assertIn("herdada da planilha pela carga inicial", trilha)
 
 
 if __name__ == "__main__":

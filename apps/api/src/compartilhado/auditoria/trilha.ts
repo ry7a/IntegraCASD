@@ -45,8 +45,10 @@ export type RegistroNaTrilha = {
   operacao: OperacaoAuditada;
   entidade: EntidadeAuditada;
   registroId: string;
-  // Texto curto para quem lê a trilha. Nunca coloque segredos nem dados pessoais além do
-  // necessário para identificar o registro.
+  // Texto curto para quem lê a trilha. Nunca coloque segredos nem dados pessoais (nome, e-mail,
+  // CPF, telefone...): a trilha não pode ser apagada, então um dado pessoal gravado aqui não sai
+  // mais (LGPD). O registro já fica identificado por `entidade` + `registroId`. Nomes de campos
+  // alterados podem entrar ("Aluno alterado: email, celular."), os valores não. Regra B14.
   detalhe: string;
 };
 

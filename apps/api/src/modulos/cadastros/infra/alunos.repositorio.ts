@@ -121,7 +121,7 @@ export class AlunosRepositorio {
           operacao: 'INCLUSAO',
           entidade: 'ALUNO',
           registroId: criado.id,
-          detalhe: `Aluno "${criado.nome}" incluído.`,
+          detalhe: 'Aluno incluído.',
         });
         return paraAluno(criado);
       });
@@ -149,7 +149,8 @@ export class AlunosRepositorio {
           operacao,
           entidade: 'ALUNO',
           registroId: alterado.id,
-          detalhe: `Aluno "${alterado.nome}": ${Object.keys(dados).join(', ')} alterado(s).`,
+          // Só os nomes dos campos, nunca os valores (LGPD: a trilha não pode ser apagada).
+          detalhe: `Aluno alterado: ${Object.keys(dados).join(', ')}.`,
         });
         return paraAluno(alterado);
       });

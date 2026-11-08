@@ -371,11 +371,13 @@ def sql_do_aluno(a: Aluno) -> str:
         f"         {matricula}, {posto}, {curso}, {turma_id},\n"
         f"         {sql_texto(a.celular)}, {sql_texto(a.apelido)}, {alojamento_id}, {sql_texto(a.ativo)}, now()\n"
         f"  WHERE NOT EXISTS (SELECT 1 FROM alunos WHERE cpf = {sql_texto(a.cpf)})\n"
-        "  RETURNING id, nome\n"
+        "  RETURNING id\n"
         ")\n"
+        # Sem o nome no detalhe (LGPD): a trilha não pode ser apagada, e o registro_id já
+        # identifica o aluno. Mesma regra do backend (B14).
         "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
         "SELECT gen_random_uuid(), NULL, 'INCLUSAO', 'ALUNO', id::text,\n"
-        "       'Aluno \"' || nome || '\" incluído pela carga inicial.'\n"
+        "       'Aluno incluído pela carga inicial.'\n"
         "FROM novo;\n"
     )
 
