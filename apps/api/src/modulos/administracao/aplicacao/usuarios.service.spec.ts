@@ -233,8 +233,8 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
     });
   });
 
-  it('grava so os campos que mudaram: um formulario antigo nao desfaz a mudanca de outra pessoa', async () => {
-    // O formulário ainda mostra DIRETORIA, mas só o nome foi editado: o perfil não pode ir para o banco.
+  it('grava so os campos que mudaram em relacao ao cadastro atual (o banco recebe o mesmo que a trilha)', async () => {
+    // O pedido traz o formulário inteiro, mas só o nome difere do cadastro: só ele pode ir para o banco.
     const { prisma, tx } = prismaFalso(usuarioDiretor('diretor-2'));
     const servico = new UsuariosService(prisma);
 
@@ -249,5 +249,21 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
         data: { nome: 'Diretor Renomeado', email: undefined, perfil: undefined, ativo: undefined, senhaHash: undefined },
       }),
     );
+  });
+
+  it('campo que nao veio no pedido nao e tocado: salvar so o nome nao reativa quem outra pessoa inativou', async () => {
+    // Cenário: alguém inativou o usuário depois que a tela abriu; a tela manda só o que foi editado (o nome).
+    const inativo = { ...usuarioDiretor('diretor-2'), ativo: false };
+    const { prisma, tx } = prismaFalso(inativo);
+    const servico = new UsuariosService(prisma);
+
+    await servico.alterar('diretor-2', { nome: 'Diretor Renomeado' }, DIRETOR);
+
+    expect(tx.usuario.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { nome: 'Diretor Renomeado', email: undefined, perfil: undefined, ativo: undefined, senhaHash: undefined },
+      }),
+    );
+    expect(tx.sessao.updateMany).not.toHaveBeenCalled();
   });
 });

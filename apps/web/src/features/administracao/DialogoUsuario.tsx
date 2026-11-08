@@ -3,6 +3,7 @@ import {
   getListarUsuariosQueryKey,
   useAlterarUsuario,
   useCriarUsuario,
+  type AlterarUsuarioDto,
   type UsuarioDto,
 } from '@integracasd/api-client'
 import { useQueryClient } from '@tanstack/react-query'
@@ -29,10 +30,19 @@ function DialogoUsuario({ aberto, usuario, aoFechar }: Props) {
     evento.preventDefault()
     try {
       if (usuario) {
-        await alterar.mutateAsync({
-          id: usuario.id,
-          data: { nome, email, perfil, ativo, ...(senha ? { novaSenha: senha } : {}) },
-        })
+        // Manda só o que a pessoa mudou neste diálogo, em relação ao que ele mostrava ao abrir. Assim, se
+        // outra pessoa alterou o usuário nesse meio-tempo (ex.: inativou), salvar só o nome não desfaz isso.
+        const alteracoes: AlterarUsuarioDto = {}
+        if (nome !== usuario.nome) alteracoes.nome = nome
+        if (email !== usuario.email) alteracoes.email = email
+        if (perfil !== usuario.perfil) alteracoes.perfil = perfil
+        if (ativo !== usuario.ativo) alteracoes.ativo = ativo
+        if (senha) alteracoes.novaSenha = senha
+        if (Object.keys(alteracoes).length === 0) {
+          aoFechar()
+          return
+        }
+        await alterar.mutateAsync({ id: usuario.id, data: alteracoes })
       } else {
         await criar.mutateAsync({ data: { nome, email, perfil, ativo, senhaInicial: senha } })
       }

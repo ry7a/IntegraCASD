@@ -307,7 +307,8 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      Windows já recusa TLS 1.1), então o teste roda num contêiner. O OpenSSL novo também recusa TLS 1.1 por
      conta própria; o `@SECLEVEL=0` libera o cliente, para quem recusar ser **o servidor**. São dois comandos:
      ```powershell
-     # Controle: TLS 1.2 tem de CONECTAR (aparece "Protocol  : TLSv1.2" e o certificado).
+     # Controle: TLS 1.2 tem de CONECTAR (aparece "Protocol version: TLSv1.2"; um aviso de verificação do
+     # certificado não invalida o controle, porque a imagem pode não trazer as autoridades certificadoras).
      docker run --rm alpine/openssl:3.5.4 s_client -connect <domínio da homologação>:443 -tls1_2 -brief
      # O teste: TLS 1.1 tem de FALHAR com um alerta do servidor ("alert protocol version" ou "handshake failure").
      docker run --rm alpine/openssl:3.5.4 s_client -connect <domínio da homologação>:443 -tls1_1 -cipher 'DEFAULT@SECLEVEL=0' -brief
@@ -321,9 +322,9 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
       sem pagamentos. O e-mail de webhook parado tem de chegar ao endereço de `EMAIL_ALERTAS_PARA`. Se não
       chegar, o log do worker diz o motivo.
 - [ ] **3.6 Desligar a homologação entre validações.** O `app` já dorme sozinho (Serverless). Para o
-  worker: [[worker › Deployments › ⋮ › Remove]]. Para religar: [[Deploy]] no último deployment. O
-  próximo merge na `main` religa o worker sozinho; para evitar, desligue o deploy automático dele em
-  [[worker › Settings › Source]] e implante à mão quando for validar.
+  worker: [[worker › Deployments › ⋮ › Remove]]. Mantenha o deploy automático dele **ligado**: o próximo
+  merge na `main` religa o worker sozinho, já no commit novo, junto com o `app`. É isso que garante que a
+  diretoria valide o app e o worker da mesma versão. Depois da validação, remova a implantação de novo.
 
 ## Fase 4: backups e teste de restauração
 
@@ -534,9 +535,9 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
 
 ### Implantar uma versão nova
 
-1. Integre na `main` como sempre. A homologação implanta sozinha depois do CI verde. Se o deploy
-   automático do worker de homologação estiver desligado (3.6), implante-o à mão **no mesmo commit** antes
-   de validar: senão a diretoria valida o app novo com o worker antigo.
+1. Integre na `main` como sempre. A homologação implanta sozinha, `app` e `worker`, depois do CI verde.
+   Antes de validar, confira em [[Deployments]] que os dois estão no mesmo commit (o hash aparece em cada
+   implantação).
 2. A diretoria valida na homologação.
 3. Promova **o mesmo commit** para a produção:
    ```powershell
