@@ -41,6 +41,8 @@ src/
 
 - **Nenhuma regra de negócio aqui.** Validações com Zod nos formulários são só para retorno rápido ao usuário.
 - Formulários com React Hook Form + Zod.
+- O Zod roda sem `eval` (`z.config({ jitless: true })` em `src/compartilhado/zod-sem-eval.ts`, o primeiro import
+  do `main.tsx`): em produção o site tem CSP sem `'unsafe-eval'`, e o modo padrão do Zod geraria violação.
 - Operações irreversíveis (cancelar cobrança, estornar, registrar pagamento fora do Asaas) passam pelo diálogo de confirmação compartilhado (`compartilhado/componentes/Dialogo.tsx`), que mostra o resumo do efeito ([Usabilidade.NF003]).
 - A guarda de perfil (`app/GuardaDiretoria.tsx`) só esconde o que o usuário não pode usar; a permissão real é verificada na API.
 - Mensagens de erro dizem o que fazer, não só o que falhou ([Usabilidade.NF002]).

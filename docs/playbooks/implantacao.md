@@ -96,7 +96,8 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
     cada implantação. Por isso ela não pode depender do worker: na primeira subida da produção o worker
     ainda está desligado.
   - **`GET /api/saude/completa`:** 200 se o banco responde **e** a rotina `vigilancia-do-asaas` rodou na
-    última hora; 503 caso contrário. É a que o UptimeRobot vigia, porque revela um worker parado.
+    última hora; 503 caso contrário. É a que o UptimeRobot vigia, porque revela um worker parado. A
+    resposta é reaproveitada por 30 s.
 - [x] **1.3 Validar a configuração na subida:** a API e o worker se recusam a subir sem `DATABASE_URL`,
   `CHAVE_DE_CIFRAGEM` com 32 bytes e, na API, `ASAAS_WEBHOOK_TOKEN`.
 - [x] **1.4 pg-boss sem agendamento na API:** cron e manutenção da fila ficam só no worker.
@@ -137,7 +138,7 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
       não tem git, ele segue em frente;
     - `pnpm --filter web build` e `pnpm --filter api build`;
     - `ENV NODE_ENV=production` só depois do install (antes, o pnpm pularia as devDependencies);
-    - `WORKDIR /repo/apps/api` e `CMD ["node", "dist/main.js"]`.
+    - `WORKDIR /repo/apps/api`, `USER node` (o processo não roda como root) e `CMD ["node", "dist/main.js"]`.
 
     É uma imagem "gorda", de propósito: leva a CLI do Prisma para o `migrate deploy`.
   - **`.dockerignore`:** `.env*`, `**/node_modules`, `**/dist`, `data/`, `scripts/carga-inicial/`,
@@ -248,7 +249,9 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)          # CHAVE_DE_CIFRAGEM
   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''   # ASAAS_WEBHOOK_TOKEN
   ```
-  Cada projeto (homologação e produção) tem **seus próprios** segredos. Nunca reaproveite.
+  Cada projeto (homologação e produção) tem **seus próprios** segredos. Nunca reaproveite. Ao colar na
+  Railway, cuidado para não levar espaço nem quebra de linha junto: a API se recusa a subir com o
+  `ASAAS_WEBHOOK_TOKEN` assim, porque o Asaas mandaria o token sem eles e todo webhook seria recusado.
 - [ ] **2.8 Esconder os valores:** em cada variável secreta (`CHAVE_DE_CIFRAGEM`, `ASAAS_WEBHOOK_TOKEN`,
   `EMAIL_API_KEY`), use o menu [[⋮ › Seal]] para que ninguém consiga mais ler o valor no painel. Antes,
   confira que o valor está no cofre. Faça o mesmo com as variáveis secretas do serviço `backup` (4.6 e 5.6).
