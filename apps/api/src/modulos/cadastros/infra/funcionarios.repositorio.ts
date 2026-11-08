@@ -93,7 +93,7 @@ export class FuncionariosRepositorio {
           operacao: 'INCLUSAO',
           entidade: 'FUNCIONARIO',
           registroId: criado.id,
-          detalhe: `Funcionário "${criado.nome}" incluído (${criado.cargo}).`,
+          detalhe: 'Funcionário incluído.',
         });
         return paraFuncionario(criado);
       });
@@ -119,7 +119,8 @@ export class FuncionariosRepositorio {
           operacao,
           entidade: 'FUNCIONARIO',
           registroId: alterado.id,
-          detalhe: `Funcionário "${alterado.nome}": ${Object.keys(dados).join(', ') || 'situação'} alterado(s).`,
+          // Só os nomes dos campos, nunca os valores (LGPD: a trilha não pode ser apagada).
+          detalhe: `Funcionário alterado: ${Object.keys(dados).join(', ') || 'situação'}.`,
         });
         return paraFuncionario(alterado);
       });

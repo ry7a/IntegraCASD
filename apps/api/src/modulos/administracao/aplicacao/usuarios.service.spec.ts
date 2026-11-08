@@ -54,4 +54,32 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
       'Mantenha ao menos um usuario de diretoria ativo.',
     );
   });
+
+  it('a trilha registra os campos alterados, sem o nome e o e-mail (LGPD)', async () => {
+    const trilha: string[] = [];
+    const tx = {
+      usuario: { update: vi.fn(async () => ({ ...usuarioDiretor('diretor-2'), nome: 'Nome Novo', email: 'novo@exemplo.com' })) },
+      sessao: { updateMany: vi.fn() },
+      registroAuditoria: {
+        create: vi.fn(async ({ data }: { data: { detalhe: string } }) => {
+          trilha.push(data.detalhe);
+        }),
+      },
+    };
+    const prisma = {
+      usuario: {
+        findUnique: vi.fn().mockResolvedValueOnce(usuarioDiretor('diretor-2')).mockResolvedValueOnce(null),
+        count: vi.fn(async () => 2),
+      },
+      $transaction: vi.fn(async (operacao: (cliente: typeof tx) => Promise<unknown>) => operacao(tx)),
+    } as unknown as PrismaService;
+
+    await new UsuariosService(prisma).alterar(
+      'diretor-2',
+      { nome: 'Nome Novo', email: 'novo@exemplo.com', perfil: PerfilUsuario.ADMINISTRATIVO },
+      DIRETOR,
+    );
+
+    expect(trilha).toEqual(['Usuário alterado: nome, email, perfil; perfil agora ADMINISTRATIVO.']);
+  });
 });

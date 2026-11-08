@@ -35,7 +35,7 @@ export class UsuariosService {
         operacao: 'INCLUSAO',
         entidade: 'USUARIO',
         registroId: criado.id,
-        detalhe: `Usuario ${criado.email} incluido com perfil ${criado.perfil}.`,
+        detalhe: `Usuário incluído com perfil ${criado.perfil}.`,
       });
       return criado;
     });
@@ -93,7 +93,7 @@ export class UsuariosService {
         operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
         entidade: 'USUARIO',
         registroId: alterado.id,
-        detalhe: `Usuario ${alterado.email} alterado.`,
+        detalhe: detalheDaAlteracao(dados),
       });
       return alterado;
     });
@@ -126,6 +126,14 @@ function validarAlteracao(entrada: EntradaAlterarUsuario) {
   if (entrada.novaSenha !== undefined) dados.novaSenha = validarSenha(entrada.novaSenha);
   if (Object.keys(dados).length === 0) throw new BadRequestException('Informe ao menos um campo para alterar.');
   return dados;
+}
+
+// Texto da trilha para a alteração: os campos alterados, nunca os valores de nome e e-mail
+// (LGPD: a trilha não pode ser apagada). O perfil novo entra, porque é o que a auditoria de acesso procura.
+function detalheDaAlteracao(dados: ReturnType<typeof validarAlteracao>): string {
+  const campos = Object.keys(dados).map((campo) => (campo === 'novaSenha' ? 'senha' : campo));
+  const perfil = dados.perfil === undefined ? '' : `; perfil agora ${dados.perfil}`;
+  return `Usuário alterado: ${campos.join(', ')}${perfil}.`;
 }
 
 function validarNome(valor: unknown): string {

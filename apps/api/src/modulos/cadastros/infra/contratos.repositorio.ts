@@ -96,7 +96,8 @@ export class ContratosRepositorio {
         operacao: 'INCLUSAO',
         entidade: 'CONTRATO',
         registroId: criado.id,
-        detalhe: `Contrato ${codigo} incluído: ${dados.contraparte} (${dados.objeto}).`,
+        // Sem a contraparte: pode ser o nome de uma pessoa (LGPD).
+        detalhe: `Contrato ${codigo} incluído (${dados.objeto}).`,
       });
       return paraContrato(criado);
     });
