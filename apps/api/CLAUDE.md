@@ -2,6 +2,10 @@
 
 NestJS 12 + Prisma 7.10.0 + PostgreSQL 18 + pg-boss 12. O mesmo código roda em dois processos: `src/main.ts` (API HTTP) e `src/main-worker.ts` (worker, sem porta HTTP).
 
+Em produção (`NODE_ENV=production`) a API também serve o site no mesmo endereço (`src/site.ts`): o build do
+Vite em `apps/web/dist` (ou `CAMINHO_DO_SITE`), com `index.html` para toda página fora de `/api`, cache longo
+só em `/assets` e cabeçalhos de segurança (CSP, HSTS...). Em desenvolvimento nada muda: o Vite serve o site.
+
 ## Organização de um módulo
 
 Cada módulo de domínio fica em `src/modulos/<nome>/` e segue estas camadas:
@@ -24,7 +28,7 @@ src/modulos/cobrancas/
 - Camadas conferidas por teste (B2, B3): `dominio/` não importa Nest nem Prisma; `api/` não importa `infra/`;
   Prisma e `$transaction` nunca aparecem em `api/` nem em `dominio/`.
 - Código compartilhado entre módulos fica em `src/compartilhado/`: `asaas/`, `auditoria/`, `autenticacao/`,
-  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
+  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
 - Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
   (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
   enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
@@ -91,6 +95,8 @@ src/modulos/cobrancas/
 - Rotinas agendadas (geração recorrente, sincronização, alerta de webhook parado) são jobs do pg-boss registrados no worker e devem gravar início, fim, total processado e falhas.
   Use o `AgendadorDeRotinas` (`src/compartilhado/fila/`): o nome da rotina entra em `ROTINAS` (vira uma fila
   "singleton", no máximo uma execução por vez) e o consumidor é ligado no `main-worker.ts`.
+  O cron e a manutenção do pg-boss rodam só no worker: o `main-worker.ts` chama `definirProcessoDaFila('worker')`
+  antes de montar a aplicação; a API (padrão) só envia jobs e cria filas (`opcoesDoPgBoss`).
 - Toda rotina deve ser segura para rodar duas vezes (ex.: não gerar mensalidade se já existir uma para o aluno no período).
 - **Notificador de alertas** (`src/compartilhado/notificacao/`): único ponto que envia e-mail, como o cliente do Asaas é o
   único que fala com o Asaas. Os casos de uso dependem da classe abstrata `NotificadorDeAlertas`; o envio real usa a API
@@ -105,7 +111,12 @@ src/modulos/cobrancas/
 
 ## Segurança e auditoria
 
-- Toda rota exige sessão autenticada (guarda global), exceto login e webhook (que usa o token próprio), marcadas com `@Publico()`.
+- Toda rota exige sessão autenticada (guarda global), exceto login, webhook (que usa o token próprio) e saúde,
+  marcadas com `@Publico()`. O teste B8 só aceita `@Publico()` nesses três controllers.
+- **Saúde** (`src/compartilhado/saude/`, fora do OpenAPI): `GET /api/saude` responde 200 se o banco responde
+  (a Railway libera cada implantação por ela; não depende do worker); `GET /api/saude/completa` exige também
+  que a rotina `vigilancia-do-asaas` tenha concluído na última hora (lida da tabela de jobs do pg-boss pelo
+  `AgendadorDeRotinas.ultimaExecucaoConcluida`) e é a que o monitor externo vigia. Falha vira 503, sem detalhes.
 - Rotas de Administração ficam em `/api/admin/...` e exigem perfil de diretoria; o perfil é verificado no backend, sempre.
 - No controller, declare também para o contrato (regra B8): `@ApiCookieAuth('cookie')` em toda rota autenticada e,
   nas de Administração, `@ApiExtension('x-perfil', 'DIRETORIA')` com `@Perfis(PerfilUsuario.DIRETORIA)`.

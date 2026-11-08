@@ -10,7 +10,7 @@ Reserve cerca de uma hora e tenha à mão três coisas:
 
 - **Permissão de administrador** no computador. Vários passos pedem o PowerShell aberto como administrador.
 - **Acesso ao repositório** no GitHub. Peça o convite a quem administra o projeto.
-- **Os valores do `.env`**: a chave do sandbox do Asaas (`ASAAS_API_KEY`) e o token do webhook (`ASAAS_WEBHOOK_TOKEN`). Peça a quem administra; eles nunca ficam no repositório. O `SESSION_SECRET` e a `CHAVE_DE_CIFRAGEM` você mesmo gera, na etapa 2.3.
+- **Os valores do `.env`**: a chave do sandbox do Asaas (`ASAAS_API_KEY`) e o token do webhook (`ASAAS_WEBHOOK_TOKEN`). Peça a quem administra; eles nunca ficam no repositório. A `CHAVE_DE_CIFRAGEM` você mesmo gera, na etapa 2.3.
 
 Confira também se a **virtualização está ativa**, porque o Docker depende dela: abra o Gerenciador de Tarefas, vá em **Desempenho › CPU** e veja, no canto inferior direito, se aparece **Virtualização: Habilitado**. Se aparecer "Desabilitado", ela precisa ser ligada na BIOS do computador antes de seguir.
 
@@ -115,11 +115,8 @@ Copy-Item .env.example .env
 
 Abra o `.env` no VS Code e preencha com os valores que você pediu na etapa 0 (`ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN`). **Nunca faça commit do `.env`**: o `.gitignore` já o protege, mas não force a inclusão.
 
-O `SESSION_SECRET` é um valor aleatório longo que você inventa. Para gerar um, rode isto e cole o resultado no `.env`:
-
-```powershell
-$b = New-Object byte[] 48; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
-```
+Deixe o `NODE_ENV` comentado: em desenvolvimento a API e o worker só avisam no log quando falta alguma
+variável obrigatória (em produção, não sobem).
 
 A `CHAVE_DE_CIFRAGEM` protege a chave do Asaas que a diretoria cadastra na tela de Administração: ela é guardada cifrada no banco, e só esta chave a decifra. Precisa ter exatamente 32 bytes; gere com:
 

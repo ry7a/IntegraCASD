@@ -5,7 +5,16 @@ export class AgendadorDeRotinasFalso extends AgendadorDeRotinas {
   readonly agendadas: Array<{ rotina: string; cron: string }> = [];
   readonly pedidasAgora: Array<{ rotina: string; dados?: DadosDaRotina }> = [];
   readonly pedidasDepois: Array<{ rotina: string; segundos: number; dados?: DadosDaRotina }> = [];
+  // O teste preenche para simular a última execução concluída de cada rotina.
+  readonly concluidasEm = new Map<string, Date>();
+  // Ligue para simular a fila fora do ar na consulta das execuções.
+  indisponivel = false;
   private readonly executores = new Map<string, (dados: DadosDaRotina) => Promise<void>>();
+
+  ultimaExecucaoConcluida(rotina: string): Promise<Date | null> {
+    if (this.indisponivel) return Promise.reject(new Error('Fila indisponível.'));
+    return Promise.resolve(this.concluidasEm.get(rotina) ?? null);
+  }
 
   agendar(rotina: string, cron: string): Promise<void> {
     this.agendadas.push({ rotina, cron });

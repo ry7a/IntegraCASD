@@ -7,7 +7,6 @@
     "dependencies": [
       "@nestjs/common",
       "@nestjs/core",
-      "@nestjs/observe",
       "@nestjs/platform-express",
       "@nestjs/swagger",
       "@prisma/adapter-pg",
@@ -18,7 +17,6 @@
     ],
     "devDependencies": [
       "@nestjs/cli",
-      "@nestjs/mau",
       "@nestjs/schematics",
       "@nestjs/testing",
       "@types/express",
