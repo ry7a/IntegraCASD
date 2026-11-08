@@ -1,5 +1,6 @@
 // Regras da geração recorrente das mensalidades [Cobranças.RF001]. Só TypeScript puro.
 // Datas em "AAAA-MM-DD"; mês de referência em "AAAA-MM".
+import { mesNoFormatoAAAAMM } from '../../../compartilhado/datas.js';
 
 const NOMES_DOS_MESES = [
   'janeiro',
@@ -30,9 +31,35 @@ export function vencimentoDaMensalidade(referencia: string, diaVencimento: numbe
   return vencimento < hoje ? hoje : vencimento;
 }
 
-export function descricaoDaMensalidade(referencia: string): string {
+// "2027-02" -> "fevereiro/2027".
+function mesPorExtenso(referencia: string): string {
   const mes = NOMES_DOS_MESES[Number(referencia.slice(5, 7)) - 1];
-  return `Mensalidade de ${mes}/${referencia.slice(0, 4)}`;
+  return `${mes}/${referencia.slice(0, 4)}`;
+}
+
+export function descricaoDaMensalidade(referencia: string): string {
+  return `Mensalidade de ${mesPorExtenso(referencia)}`;
+}
+
+// Trava do início da geração (variável GERACAO_A_PARTIR_DE, "AAAA-MM"): nenhuma referência anterior a ela é
+// gerada, nem pela rotina agendada nem pelo pedido manual. Na implantação, a planilha do CASD ainda cobra até
+// a referência 2027-01 e a primeira mensalidade do sistema é 2027-02: sem a trava, ligar o worker em
+// janeiro/2027 cobraria em dobro quem já pagou na planilha. Nula (variável vazia): sem trava.
+export function referenciaLiberada(referencia: string, aPartirDe: string | null): boolean {
+  if (aPartirDe === null) return true;
+  // Trava em formato inválido bloqueia tudo: melhor não gerar do que cobrar em dobro.
+  // (Em produção nem chega aqui: a configuração inválida impede a subida, ver configuracao.ts.)
+  if (!mesNoFormatoAAAAMM(aPartirDe)) return false;
+  // "AAAA-MM" com zeros à esquerda se compara como texto, inclusive na virada do ano: "2026-12" < "2027-02".
+  return referencia >= aPartirDe;
+}
+
+// O motivo, para o log da rotina agendada e para a resposta do pedido manual.
+export function motivoDaReferenciaBloqueada(aPartirDe: string): string {
+  if (!mesNoFormatoAAAAMM(aPartirDe)) {
+    return `A geração está parada: GERACAO_A_PARTIR_DE ("${aPartirDe}") não está no formato AAAA-MM (ex.: 2027-02).`;
+  }
+  return `A geração do sistema começa em ${mesPorExtenso(aPartirDe)} (GERACAO_A_PARTIR_DE).`;
 }
 
 // A rotina agendada roda todo dia, mas só gera quando há o que fazer: no dia de geração (ou depois, se

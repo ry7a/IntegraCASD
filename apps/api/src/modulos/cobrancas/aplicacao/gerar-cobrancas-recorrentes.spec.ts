@@ -30,6 +30,7 @@ function montar(opcoes: {
   const gravadas: DadosDaNovaCobranca[] = [];
   const clientes = new Map<string, string>();
   const finalizadas: ResultadoDaExecucao[] = [];
+  const iniciadas: string[] = [];
   const cobrancas = {
     existeMensalidade: async (alunoId: string) =>
       (opcoes.jaTemMensalidade ?? []).includes(alunoId) || gravadas.some((g) => g.alunoId === alunoId),
@@ -39,7 +40,10 @@ function montar(opcoes: {
   } as unknown as CobrancasRepositorio;
   const execucoes = {
     ultimaDoMes: async () => opcoes.ultimaDoMes ?? null,
-    iniciar: async () => 'exec-1',
+    iniciar: async (referencia: string) => {
+      iniciadas.push(referencia);
+      return 'exec-1';
+    },
     finalizar: async (_id: string, resultado: ResultadoDaExecucao) => void finalizadas.push(resultado),
   } as unknown as ExecucoesRepositorio;
   const listarAlunos = { executar: async () => opcoes.alunos } as unknown as ListarAlunos;
@@ -56,7 +60,7 @@ function montar(opcoes: {
     agendador,
     ritmo,
   );
-  return { caso, asaas, agendador, gravadas, finalizadas };
+  return { caso, asaas, agendador, gravadas, finalizadas, iniciadas };
 }
 
 describe('GerarCobrancasRecorrentes [Cobranças.RF001]', () => {
@@ -107,5 +111,30 @@ describe('GerarCobrancasRecorrentes [Cobranças.RF001]', () => {
     const jaGerado = montar({ alunos: [ana], ultimaDoMes: { interrompida: false } });
     expect(await jaGerado.caso.executar('AGENDADA', '2026-11-05')).toBeNull();
     expect(jaGerado.asaas.cobrancasCriadas).toEqual([]);
+  });
+
+  // Trava GERACAO_A_PARTIR_DE: a planilha cobra até a referência 2027-01; o sistema começa em 2027-02.
+  it('com a trava em 2027-02, em 31/01/2027 não gera nada nem grava execução (agendada e manual)', async () => {
+    for (const origem of ['AGENDADA', 'MANUAL'] as const) {
+      const { caso, asaas, gravadas, iniciadas } = montar({ alunos: [ana, bruno] });
+      expect(await caso.executar(origem, '2027-01-31', '2027-02')).toBeNull();
+      expect(asaas.cobrancasCriadas).toEqual([]);
+      expect(gravadas).toEqual([]);
+      // Sem registro de execução de janeiro: nada impede a geração de fevereiro depois.
+      expect(iniciadas).toEqual([]);
+    }
+  });
+
+  it('com a trava em 2027-02, em 01/02/2027 gera a mensalidade de fevereiro', async () => {
+    const { caso, gravadas, iniciadas } = montar({ alunos: [ana] });
+    await caso.executar('AGENDADA', '2027-02-01', '2027-02');
+    expect(iniciadas).toEqual(['2027-02']);
+    expect(gravadas.map((g) => [g.referencia, g.descricao])).toEqual([['2027-02', 'Mensalidade de fevereiro/2027']]);
+  });
+
+  it('trava vazia (null) não muda nada: gera o mês corrente', async () => {
+    const { caso, gravadas } = montar({ alunos: [ana] });
+    await caso.executar('AGENDADA', '2027-01-31', null);
+    expect(gravadas.map((g) => g.referencia)).toEqual(['2027-01']);
   });
 });

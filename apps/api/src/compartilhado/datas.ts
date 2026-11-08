@@ -15,3 +15,8 @@ export function paraDia(data: Date): string {
 export function deDia(dia: string): Date {
   return new Date(`${dia}T00:00:00Z`);
 }
+
+// Mês no formato "AAAA-MM" (o da referência de uma mensalidade), com o mês de 01 a 12.
+export function mesNoFormatoAAAAMM(valor: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(valor);
+}
