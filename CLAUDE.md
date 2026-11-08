@@ -20,8 +20,8 @@ Sistema de gestão financeira do Centro Acadêmico Santos Dumont (CASD): cadastr
 - Testes: Vitest.
 - Produção e homologação: Railway, um projeto para cada (`app` serve o site e a API no mesmo endereço,
   `worker`, `Postgres` e um cron de `backup` para o Cloudflare R2). A produção implanta a branch `producao`,
-  que só recebe commits já validados na homologação. Decisão no ADR-0006; passo a passo em
-  `docs/playbooks/implantacao.md`.
+  que só recebe commits já validados na homologação. Decisão no ADR-0006 (ainda **Proposta**: falta a
+  aprovação da equipe); passo a passo em `docs/playbooks/implantacao.md`.
 
 Atenção: ao instalar o Prisma, use sempre a versão explícita (`prisma@7.10.0`). A tag `latest` do pacote `prisma` aponta para uma versão RC.
 
@@ -38,7 +38,7 @@ docs/requisitos/     documento de requisitos; o .tex da v1.1 é a fonte dos ids 
 docs/adr/            registros de decisões de arquitetura (índice em docs/README.MD)
 docs/arquitetura/    diagramas C4, de sequência e o MER (.drawio com o .svg exportado ao lado)
 docs/governanca/     regras verificáveis (B1..B14, F1..F8, G3..G6), exceções e dependências permitidas
-docs/playbooks/      configuração da máquina, backup e restauração
+docs/playbooks/      configuração da máquina, implantação na Railway, backup e restauração
 docs/telas/          protótipo HTML das telas (referência visual, dados fictícios)
 .github/workflows/   CI no GitHub Actions
 data/                planilhas reais do CASD, fora do git (*.xlsx no .gitignore)

@@ -206,15 +206,17 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      - Restart policy: **Always**;
      - Region: a mesma do Postgres;
      - **Serverless: ligado**, só na homologação. Ele "dorme" quando ninguém usa e economiza.
-  5. [[Variables › Raw Editor]]: cole o bloco abaixo, com os valores do passo 2.7:
+  5. [[Variables › Raw Editor]]: cole o bloco abaixo. **Gere os segredos antes, com os comandos do 2.7.**
      ```
      NODE_ENV=production
      PORT=3000
      DATABASE_URL=${{Postgres.DATABASE_URL}}
      CHAVE_DE_CIFRAGEM=<gerada no 2.7>
      ASAAS_WEBHOOK_TOKEN=<gerado no 2.7>
-     ASAAS_AMBIENTE=sandbox
      ```
+     O ambiente do Asaas (sandbox ou produção) **não** vem daqui: é escolhido na tela de Administração (3.3).
+     A primeira implantação, disparada assim que o serviço é criado, falha por falta destas variáveis. É
+     esperado: depois de colar, aplique as mudanças e use [[Deployments › Deploy]].
   6. [[Settings › Networking › Generate Domain]], porta **3000**. Edite o nome para algo como
      `integracasd-homolog` e anote o endereço `https://integracasd-homolog.up.railway.app`.
 - [ ] **2.6 Serviço `worker`:** [[+ Create › GitHub Repo › ry7a/IntegraCASD]] de novo.
@@ -233,19 +235,23 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      NODE_ENV=production
      DATABASE_URL=${{Postgres.DATABASE_URL}}
      CHAVE_DE_CIFRAGEM=<a MESMA do app>
-     ASAAS_AMBIENTE=sandbox
      EMAIL_API_KEY=<chave do Resend>
      EMAIL_REMETENTE=IntegraCASD <onboarding@resend.dev>
+     EMAIL_ALERTAS_PARA=<o e-mail do 0.2, o mesmo da conta do Resend>
      ```
-     Sem domínio próprio, o remetente é o de testes do Resend. Ao ter domínio, troque (Fase 7).
+     Sem domínio próprio, o remetente é o de testes do Resend, que **só entrega para o e-mail dono da
+     conta** e recusa o envio inteiro se houver outro destinatário. Por isso, enquanto não houver domínio,
+     `EMAIL_ALERTAS_PARA` manda os alertas só para esse e-mail, em vez de para toda a diretoria. Ao ter
+     domínio, troque o remetente e apague `EMAIL_ALERTAS_PARA` (Fase 7).
 - [ ] **2.7 Gerar os segredos** (PowerShell, um valor por vez, direto para o cofre):
   ```powershell
   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)          # CHAVE_DE_CIFRAGEM
   $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''   # ASAAS_WEBHOOK_TOKEN
   ```
   Cada projeto (homologação e produção) tem **seus próprios** segredos. Nunca reaproveite.
-- [ ] **2.8 Esconder os valores:** em cada variável secreta, use o menu [[⋮ › Seal]] para que ninguém
-  consiga mais ler o valor no painel. Antes, confira que o valor está no cofre.
+- [ ] **2.8 Esconder os valores:** em cada variável secreta (`CHAVE_DE_CIFRAGEM`, `ASAAS_WEBHOOK_TOKEN`,
+  `EMAIL_API_KEY`), use o menu [[⋮ › Seal]] para que ninguém consiga mais ler o valor no painel. Antes,
+  confira que o valor está no cofre. Faça o mesmo com as variáveis secretas do serviço `backup` (4.6 e 5.6).
 
 ## Fase 3: homologação no ar e testes
 
@@ -269,6 +275,9 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
   ```
   A variável definida no PowerShell vale mais que o `.env` local, então os comandos vão para o banco da
   Railway. Confirme entrando no site com o usuário criado.
+
+  Depois, **feche o banco para fora**: [[Postgres › Settings › Networking › TCP Proxy]] → remover. O app e
+  o worker usam a rede privada e não precisam dele. Reabra só quando precisar rodar algo direto no banco.
 - [ ] **3.3 Asaas sandbox:**
   1. Em sandbox.asaas.com: [[Integrações › Chaves de API › Gerar chave]].
   2. No sistema: [[Administração › Integração Asaas]], cole a chave e escolha **Sandbox**.
@@ -288,15 +297,21 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      curl.exe -s -o NUL -w "%{http_code}" -X POST https://<domínio da homologação>/api/webhooks/asaas -H "asaas-access-token: errado" -H "content-type: application/json" -d "{}"
      ```
   5. A documentação está fechada: `/api/docs` não abre.
-  6. TLS antigo é recusado ([Segurança.NF004]). O comando abaixo tem de **falhar**:
+  6. TLS antigo é recusado ([Segurança.NF004]). O `curl.exe` do Windows não serve para isso (o próprio
+     Windows já recusa TLS 1.1), então o teste roda num contêiner. O comando tem de **falhar** no handshake:
      ```powershell
-     curl.exe -s -o NUL --tlsv1.0 --tls-max 1.1 https://<domínio da homologação>/
+     docker run --rm alpine/openssl s_client -connect <domínio da homologação>:443 -tls1_1
      ```
   7. Bloqueio da conta depois de 5 senhas erradas, testado com um usuário de teste.
   8. Nenhum erro de CSP no console do navegador.
   9. Simulação do mês de virada (1.13).
+  10. Alerta por e-mail: com o prazo do alerta em 12 h na tela de Administração, deixe a homologação 12 h
+      sem pagamentos. O e-mail de webhook parado tem de chegar ao endereço de `EMAIL_ALERTAS_PARA`. Se não
+      chegar, o log do worker diz o motivo.
 - [ ] **3.6 Desligar a homologação entre validações.** O `app` já dorme sozinho (Serverless). Para o
-  worker: [[worker › Deployments › ⋮ › Remove]]. Para religar: [[Deploy]] no último deployment.
+  worker: [[worker › Deployments › ⋮ › Remove]]. Para religar: [[Deploy]] no último deployment. O
+  próximo merge na `main` religa o worker sozinho; para evitar, desligue o deploy automático dele em
+  [[worker › Settings › Source]] e implante à mão quando for validar.
 
 ## Fase 4: backups e teste de restauração
 
@@ -306,19 +321,29 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
   - Sem acesso público.
 - [ ] **4.2 Apagar o que tiver mais de 35 dias:**
   [[integracasd-backups › Settings › Object lifecycle rules › Add rule]] → Delete objects after 35 days.
-- [ ] **4.3 Credencial:** [[R2 › Manage API tokens › Create API token]].
-  - **Object Read & Write**, só no bucket `integracasd-backups`.
-  - Copie para o cofre: Access Key ID, Secret Access Key e o endpoint
+- [ ] **4.3 Credenciais:** [[R2 › Manage API tokens › Create API token]], duas vezes:
+  - **"backup-railway": Object Read & Write**, só no bucket `integracasd-backups`. Vai só para o serviço
+    `backup` da Railway.
+  - **"restauracao": Object Read only**, só no mesmo bucket. É a que se usa no computador para restaurar
+    (4.8). Assim, uma máquina comprometida não consegue apagar os backups.
+  - Copie para o cofre, de cada uma: Access Key ID e Secret Access Key. Copie também o endpoint
     `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`.
 - [ ] **4.4 Monitores:** no Healthchecks.io, crie os checks "backup homologação" e "backup produção",
   com período de 1 dia e tolerância de 2 h. **Pause** o de produção até o 5.6.
-- [ ] **4.5 Senhas do rclone.** Instale o rclone no Windows (`winget install Rclone.Rclone`). Gere duas
-  senhas, guarde as duas no cofre e tire a versão "obscurecida" de cada uma:
+- [ ] **4.5 Senhas do rclone.** Instale o rclone no Windows (`winget install Rclone.Rclone`). Os comandos
+  abaixo geram a senha e o salt e mostram cada um junto da versão "obscurecida", que é a que vai para a
+  Railway. Os valores ficam só em variáveis da sessão: **nada de senha escrita na linha de comando**, que
+  ficaria gravada no histórico do PowerShell.
   ```powershell
-  $b = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''   # rode 2x: senha e salt
-  rclone obscure <senha>
-  rclone obscure <salt>
+  function NovoSegredo { $b = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join '' }
+  $senha = NovoSegredo; $salt = NovoSegredo
+  "senha (cofre):            $senha"
+  "senha obscurecida (Railway): $($senha | rclone obscure -)"
+  "salt (cofre):             $salt"
+  "salt obscurecido (Railway):  $($salt | rclone obscure -)"
+  Remove-Variable senha, salt
   ```
+  Guarde **a senha e o salt originais** no cofre; as versões obscurecidas vão só para as variáveis do 4.6.
 - [ ] **4.6 Serviço `backup` na homologação:** [[+ Create › GitHub Repo › ry7a/IntegraCASD]].
   1. Nome: **`backup`**.
   2. Build:
@@ -347,18 +372,45 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      RCLONE_CONFIG_R2CIFRADO_PASSWORD=<senha obscurecida, 4.5>
      RCLONE_CONFIG_R2CIFRADO_PASSWORD2=<salt obscurecido, 4.5>
      ```
+     As chaves aqui são as do token **backup-railway** (4.3).
+  5. **Sele** (2.8) `RCLONE_CONFIG_R2_SECRET_ACCESS_KEY`, `RCLONE_CONFIG_R2CIFRADO_PASSWORD`,
+     `RCLONE_CONFIG_R2CIFRADO_PASSWORD2` e `BACKUP_PING_URL`.
 - [ ] **4.7 Testar agora:** rode o cron uma vez à mão com [[backup › Deployments › Deploy]] e confira:
   - o arquivo aparece no bucket, em `homologacao/`;
   - o check do Healthchecks fica verde.
-- [ ] **4.8 Teste de restauração** ([Confiabilidade.NF006], exigido antes da entrega):
-  1. Configure os mesmos remotes no rclone do Windows (`rclone config`).
-  2. Baixe o dump:
+- [ ] **4.8 Teste de restauração** ([Confiabilidade.NF006], exigido antes da entrega). Com o Postgres
+  local no ar (`docker compose up -d`), na raiz do repositório:
+  1. Configure o rclone **só nesta janela do PowerShell**, com o token **só leitura** (4.3). Os valores são
+     digitados sem aparecer e sem ir para o histórico, e nenhum arquivo de configuração é gravado no disco:
      ```powershell
+     function Ler($texto) { $s = Read-Host $texto -AsSecureString; [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($s)) }
+     $env:RCLONE_CONFIG_R2_TYPE = 's3'
+     $env:RCLONE_CONFIG_R2_PROVIDER = 'Cloudflare'
+     $env:RCLONE_CONFIG_R2_NO_CHECK_BUCKET = 'true'
+     $env:RCLONE_CONFIG_R2_ENDPOINT = Read-Host 'Endpoint do R2 (https://<ACCOUNT_ID>.r2.cloudflarestorage.com)'
+     $env:RCLONE_CONFIG_R2_ACCESS_KEY_ID = Read-Host 'Access Key ID do token "restauracao"'
+     $env:RCLONE_CONFIG_R2_SECRET_ACCESS_KEY = Ler 'Secret Access Key do token "restauracao"'
+     $env:RCLONE_CONFIG_R2CIFRADO_TYPE = 'crypt'
+     $env:RCLONE_CONFIG_R2CIFRADO_REMOTE = 'r2:integracasd-backups'
+     $env:RCLONE_CONFIG_R2CIFRADO_FILENAME_ENCRYPTION = 'off'
+     $env:RCLONE_CONFIG_R2CIFRADO_DIRECTORY_NAME_ENCRYPTION = 'false'
+     $env:RCLONE_CONFIG_R2CIFRADO_PASSWORD = (Ler 'Senha do rclone (a ORIGINAL, do cofre)') | rclone obscure -
+     $env:RCLONE_CONFIG_R2CIFRADO_PASSWORD2 = (Ler 'Salt do rclone (o ORIGINAL, do cofre)') | rclone obscure -
+     ```
+  2. Veja os backups e baixe o mais recente. Ele chega decifrado e com o nome original:
+     ```powershell
+     rclone ls r2cifrado:homologacao
      rclone copy r2cifrado:homologacao/<arquivo>.dump .\backups\
      ```
   3. Restaure com `.\scripts\backup\restaurar-backup.ps1 -Arquivo .\backups\<arquivo>.dump`.
   4. Faça as três conferências de [backup-e-restauracao.md](backup-e-restauracao.md) e **registre na
      tabela de lá** (fecha a pendência da #52).
+  5. **Limpe tudo.** O dump decifrado tem os dados do banco:
+     ```powershell
+     Remove-Item .\backups\*.dump
+     docker compose exec -T db dropdb -U integracasd integracasd_restaurado
+     Get-ChildItem Env:RCLONE_CONFIG_* | Remove-Item
+     ```
 
 ## Fase 5: projeto de produção
 
@@ -375,12 +427,12 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
   - Branch **`producao`** no `app` e no `worker`. O Wait for CI pode ficar desligado, porque o commit
     já passou no CI na `main`.
   - **Serverless desligado** no `app`.
-  - `ASAAS_AMBIENTE=producao`, segredos **novos** (2.7) e o domínio `integracasd.up.railway.app` (ou
-    o nome que estiver livre).
+  - Segredos **novos** (2.7) e o domínio `integracasd.up.railway.app` (ou o nome que estiver livre).
   - **Worker criado, mas sem implantação ativa** até o 6.7: depois de criar, use
     [[worker › Deployments › ⋮ › Remove]].
 - [ ] **5.3 Primeiro usuário de produção:** o 3.2 **sem** a linha do `dados-ficticios`, com a
-  `DATABASE_PUBLIC_URL` da produção. Entre no site e **troque a senha pela tela**.
+  `DATABASE_PUBLIC_URL` da produção. Entre no site e **troque a senha pela tela**. Em seguida, feche o
+  banco para fora (5.7).
 - [ ] **5.4 Teste de fumaça:**
   ```powershell
   curl.exe -s -o NUL -w "%{http_code} " https://<domínio da produção>/            # 200
@@ -391,10 +443,16 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
 - [ ] **5.5 Monitor de disponibilidade:** no UptimeRobot, crie um monitor HTTP(s) em
   `https://<domínio da produção>/api/saude/completa`, a cada 5 minutos, com alertas para o e-mail do 0.2
   e para a diretoria. Deixe **pausado** até o 6.7.
-- [ ] **5.6 Backup da produção:** serviço `backup` como no 4.6, com `AMBIENTE=producao` e a URL do check
-  "backup produção" (despause o check). Rode uma vez à mão e confira o arquivo em `producao/`.
-- [ ] **5.7 Fechar o banco para fora.** Depois da carga (Fase 6), remova o acesso público do banco em
-  [[Postgres › Settings › Networking › TCP Proxy]]. Religue só quando precisar.
+- [ ] **5.6 Backup da produção:** serviço `backup` como no 4.6, com estas diferenças:
+  - branch **`producao`** em [[backup › Settings › Source]], para a imagem do backup também só mudar depois
+    de validada;
+  - `AMBIENTE=producao` e a URL do check "backup produção" (despause o check);
+  - selar as variáveis secretas, como no 4.6.
+
+  Rode uma vez à mão e confira o arquivo em `producao/`.
+- [ ] **5.7 Fechar o banco para fora.** Logo depois do 5.3, remova o acesso público do banco em
+  [[Postgres › Settings › Networking › TCP Proxy]]. Ele só é reaberto no 6.4, para a carga, e fechado de
+  novo no 6.9.
 
 ## Fase 6: Asaas real e carga inicial
 
@@ -412,8 +470,16 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
   produção. Teste o token errado (3.5, item 4): tem de dar 401.
 - [ ] **6.3 Gerar o SQL da carga** na sua máquina, conforme o README. O `--hoje` tem de bater com o mês
   de virada.
-- [ ] **6.4 Aplicar a carga** pelo endereço público do banco. O arquivo é montado no contêiner, o que
-  evita problemas de acento no PowerShell:
+- [ ] **6.4 Aplicar a carga** pelo endereço público do banco. Reabra o TCP Proxy (5.7) e copie a
+  `DATABASE_PUBLIC_URL`, que muda a cada reabertura.
+
+  Antes, confira que o `carga.sql` foi gerado **depois** da correção da trilha (item 1.8). Um arquivo
+  antigo grava o nome de cada aluno na trilha, e isso não sai mais. O comando abaixo **não pode
+  encontrar nada**; se encontrar, gere de novo (6.3):
+  ```powershell
+  Select-String -Path .\scripts\carga-inicial\dados\carga.sql -SimpleMatch 'Aluno "'
+  ```
+  O arquivo é montado no contêiner, o que evita problemas de acento no PowerShell:
   ```powershell
   $url = Read-Host "Cole a DATABASE_PUBLIC_URL da produção"
   docker run --rm -v "${PWD}\scripts\carga-inicial\dados:/dados" postgres:18.6 psql $url -v ON_ERROR_STOP=1 -f /dados/carga.sql
@@ -444,8 +510,9 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
   - favoritos da diretoria.
 
   Os usuários precisam entrar de novo, porque o cookie é do endereço antigo.
-- [ ] **7.5 E-mail com o domínio:** verifique o domínio no Resend (registros TXT/MX no registro.br) e
-  troque o `EMAIL_REMETENTE` para `IntegraCASD <alertas@<domínio>>`.
+- [ ] **7.5 E-mail com o domínio:** verifique o domínio no Resend (registros TXT/MX no registro.br),
+  troque o `EMAIL_REMETENTE` do worker para `IntegraCASD <alertas@<domínio>>` e **apague
+  `EMAIL_ALERTAS_PARA`**: a partir daí os alertas vão para todos os usuários ativos da diretoria.
 
 ## Depois do ar
 
@@ -459,7 +526,9 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
    git push origin <sha validado>:refs/heads/producao
    ```
 4. Acompanhe em [[app › Deployments]]: pre-deploy (migrações), saúde verde. Depois confira os logs do
-   worker. Anote a versão na issue da entrega.
+   worker. O worker implanta em paralelo com o app e não roda as migrações: num commit com migração nova,
+   ele pode reiniciar uma ou duas vezes até o app terminar de migrar (a regra B7 garante que a migração
+   só "expande"). Confira que ele estabilizou. Anote a versão na issue da entrega.
 
 ### Voltar para a versão anterior ([Distribuição.NF003]: até 30 min)
 
@@ -480,7 +549,8 @@ B7). Senão, restaure o backup feito antes. Leia também as Consequências do AD
   - o gasto em [[Workspace › Usage]];
   - os logs do worker sem erros repetidos.
 - **Todo mês:**
-  - teste de restauração do último backup de produção (4.8), registrado em backup-e-restauracao.md;
+  - teste de restauração do último backup de produção (4.8, com `producao` no lugar de `homologacao`),
+    registrado em backup-e-restauracao.md, **incluindo a limpeza do passo 5**;
   - relatório do UptimeRobot (meta: 99%).
 - **Nunca:**
   - trocar a `CHAVE_DE_CIFRAGEM` em uso;
@@ -498,8 +568,14 @@ B7). Senão, restaure o backup feito antes. Leia também as Consequências do AD
   3. Rode [[Cobranças › Sincronizar]].
 - **Banco perdido ou corrompido:**
   1. Crie um Postgres novo no projeto.
-  2. Restaure o último dump do R2 com `pg_restore` pelo endereço público dele (o mesmo `docker run` do
-     6.4, com `pg_restore --no-owner -d $url /dados/<arquivo>.dump`).
+  2. Baixe o último dump como no 4.8 (passos 1 e 2, com `producao`) e restaure pelo endereço público do
+     banco novo:
+     ```powershell
+     $url = Read-Host "Cole a DATABASE_PUBLIC_URL do banco novo"
+     docker run --rm -v "${PWD}\backups:/dados" postgres:18.6 pg_restore --no-owner --exit-on-error -d $url /dados/<arquivo>.dump
+     Remove-Variable url
+     ```
+     Depois, faça a limpeza do 4.8 (passo 5) e feche o TCP Proxy do banco novo.
   3. Aponte `DATABASE_URL` do `app`, do `worker` e do `backup` para o novo
      (`${{<NomeDoNovo>.DATABASE_URL}}`).
   4. Reimplante.

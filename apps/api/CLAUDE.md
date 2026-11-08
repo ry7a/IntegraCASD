@@ -28,7 +28,8 @@ src/modulos/cobrancas/
 - Camadas conferidas por teste (B2, B3): `dominio/` não importa Nest nem Prisma; `api/` não importa `infra/`;
   Prisma e `$transaction` nunca aparecem em `api/` nem em `dominio/`.
 - Código compartilhado entre módulos fica em `src/compartilhado/`: `asaas/`, `auditoria/`, `autenticacao/`,
-  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
+  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/`, `datas.ts` (dia de hoje em São Paulo)
+  e `configuracao.ts` (variáveis de ambiente conferidas na subida da API e do worker).
 - Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
   (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
   enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
