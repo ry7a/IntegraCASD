@@ -69,7 +69,11 @@ export class UsuariosService {
     }
 
     const senhaHash = dados.novaSenha ? await criarHashDaSenha(dados.novaSenha) : undefined;
-    const revogarSessoes = dados.ativo === false || senhaHash !== undefined;
+    // O perfil é copiado para a sessão no login e a guarda confere `sessao.perfil`: sem revogar, o
+    // perfil antigo valeria até a sessão expirar (12 h). Por isso trocar o perfil derruba as sessões
+    // abertas, como já acontece ao inativar ou trocar a senha; a pessoa entra de novo com o perfil novo.
+    const trocaDePerfil = dados.perfil !== undefined && dados.perfil !== atual.perfil;
+    const revogarSessoes = dados.ativo === false || senhaHash !== undefined || trocaDePerfil;
     return this.prisma.$transaction(async (tx) => {
       const alterado = await tx.usuario.update({
         where: { id },
@@ -93,7 +97,7 @@ export class UsuariosService {
         operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
         entidade: 'USUARIO',
         registroId: alterado.id,
-        detalhe: detalheDaAlteracao(dados),
+        detalhe: detalheDaAlteracao(dados, atual.perfil, revogarSessoes),
       });
       return alterado;
     });
@@ -129,11 +133,18 @@ function validarAlteracao(entrada: EntradaAlterarUsuario) {
 }
 
 // Texto da trilha para a alteração: os campos alterados, nunca os valores de nome e e-mail
-// (LGPD: a trilha não pode ser apagada). O perfil novo entra, porque é o que a auditoria de acesso procura.
-function detalheDaAlteracao(dados: ReturnType<typeof validarAlteracao>): string {
+// (LGPD: a trilha não pode ser apagada). A troca de perfil entra (de -> para), porque é o que a
+// auditoria de acesso procura, e também se as sessões abertas da pessoa foram revogadas.
+function detalheDaAlteracao(
+  dados: ReturnType<typeof validarAlteracao>,
+  perfilAnterior: PerfilUsuario,
+  sessoesRevogadas: boolean,
+): string {
   const campos = Object.keys(dados).map((campo) => (campo === 'novaSenha' ? 'senha' : campo));
-  const perfil = dados.perfil === undefined ? '' : `; perfil agora ${dados.perfil}`;
-  return `Usuário alterado: ${campos.join(', ')}${perfil}.`;
+  const perfil =
+    dados.perfil === undefined || dados.perfil === perfilAnterior ? '' : `; perfil ${perfilAnterior} -> ${dados.perfil}`;
+  const sessoes = sessoesRevogadas ? '; sessões abertas revogadas' : '';
+  return `Usuário alterado: ${campos.join(', ')}${perfil}${sessoes}.`;
 }
 
 function validarNome(valor: unknown): string {
