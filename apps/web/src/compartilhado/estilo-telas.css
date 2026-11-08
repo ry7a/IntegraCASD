@@ -92,21 +92,47 @@ a {
   border-bottom: 1px solid var(--sidebar-accent);
 }
 
-.app {
-  display: grid;
-  grid-template-columns: 232px 1fr;
-  min-height: calc(100vh - 31px);
+/*
+ * Casco: faixa de ambiente (quando houver) + .app, ocupando ao menos a altura da janela.
+ * O .app cresce para preencher o que a faixa deixa, sem supor a altura dela.
+ * 100dvh acompanha a barra de endereço do celular; o 100vh antes é o fallback de navegador antigo.
+ */
+.casco {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
+.app {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: 232px 1fr;
+}
+
+/* Coluna preta: esticada pela grade até o fim da página, curta ou longa. */
 .menu {
   background: var(--sidebar);
   color: var(--sidebar-foreground);
   display: flex;
   flex-direction: column;
-  padding: 20px 12px;
+}
+
+/*
+ * Conteúdo do menu: preso no topo ao rolar, no máximo da altura da janela (o rodapé do usuário fica no fim
+ * dela) e com rolagem própria se o menu não couber. O flex: 1 faz ele preencher a coluna em página curta.
+ */
+.menu-fixo {
+  flex: 1;
+  min-height: 0;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
   position: sticky;
   top: 0;
-  height: calc(100vh - 31px);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
 }
 
 .marca {
@@ -209,6 +235,7 @@ a {
 .tela-carregando,
 .pagina-login {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -289,9 +316,14 @@ a {
   gap: 8px;
 }
 
+/*
+ * O conteúdo usa a largura disponível, alinhado à esquerda com a barra do topo (mesmo recuo de 32px).
+ * O limite só age em telas maiores que 2560px (ultrawide, 4K sem escala): ali as linhas das tabelas
+ * ficariam longas demais para acompanhar com o olho.
+ */
 .pagina {
   padding: 28px 32px 48px;
-  max-width: 1280px;
+  max-width: 2400px;
 }
 
 .cabecalho-pagina {
@@ -1168,13 +1200,16 @@ a.nome-principal:hover {
 }
 
 @media (max-width: 760px) {
+  /* Menu em cima, conteúdo embaixo; a sobra de altura vai para o conteúdo, não para o menu. */
   .app {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
-  .menu {
+  .menu-fixo {
     position: static;
-    height: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 
   .menu-usuario {
