@@ -1,0 +1,35 @@
+# O que NÃO entra no contexto do `docker build` (e, portanto, nunca chega à imagem).
+# Vale para o Dockerfile da raiz e para o scripts/backup/Dockerfile (os dois usam a raiz como contexto).
+
+# Segredos: nenhum .env entra na imagem. Na Railway as variáveis vêm do painel.
+**/.env
+**/.env.*
+
+# Dados reais do CASD e backups do banco (LGPD): nunca na imagem.
+data/
+scripts/carga-inicial/
+backups/
+**/*.dump
+**/*.xlsx
+**/*.xls
+**/*.csv
+
+# Dados fictícios do banco local: não servem em produção e não devem estar à mão lá.
+apps/api/prisma/dados-ficticios.sql
+
+# Gerados: a imagem instala e builda do zero.
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+apps/api/src/generated
+
+# Repositório, editores e documentação: não fazem parte do build.
+.git
+.githooks
+.github
+.claude
+.vscode
+.idea
+docs/
+**/*.log
