@@ -98,7 +98,7 @@ function AbaParametros() {
       aoTentarDeNovo={() => void Promise.all([consulta.refetch(), destinos.refetch()])}
     >
       {dados && destinos.data && (
-        <div className="grade grade-2-1">
+        <div className="grade grade-2-1 limite-leitura">
           {/* `key` recria o formulário quando os vigentes mudam (depois de salvar). */}
           <FormularioDeParametros key={dados.vigentes?.alteradoEm ?? 'novo'} vigentes={dados.vigentes} destinos={destinos.data} />
           <ConferenciaDosParametros conferencia={dados.conferencia} />

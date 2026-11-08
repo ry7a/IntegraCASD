@@ -452,6 +452,19 @@ a {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+/* Cartões repetidos (projetos): quantas colunas couberem, cada uma com pelo menos 300px. */
+.grade-cartoes {
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+}
+
+/*
+ * Blocos que ficam ruins de ler esticados na tela toda (formulário, listas com o valor na ponta):
+ * voltam à largura do desenho original, alinhados à esquerda.
+ */
+.limite-leitura {
+  max-width: 1200px;
+}
+
 .indicador .rotulo {
   color: var(--muted-foreground);
   font-size: 13px;
@@ -949,9 +962,14 @@ dialog::backdrop {
   display: inline-block;
 }
 
+/*
+ * A altura acompanha a largura; o teto evita que o gráfico (e o texto dele) cresça demais em monitor grande.
+ * Acima do teto o desenho fica centrado no cartão.
+ */
 .grafico svg {
   width: 100%;
   height: auto;
+  max-height: 400px;
   display: block;
 }
 
@@ -1001,10 +1019,12 @@ dialog::backdrop {
 
 /* Barras horizontais (gastos por categoria, orçamento de projeto) */
 
+/* Largura limitada: em tela larga o valor ficaria longe demais do nome da categoria. */
 .lista-barras {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-width: 1100px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1121,13 +1141,16 @@ a.nome-principal:hover {
   align-items: center;
 }
 
+/* Separação fixa (não margin-left: auto): em tela larga o botão iria parar no canto oposto. */
 .bloco-acoes .separador {
-  margin-left: auto;
+  margin-left: 24px;
 }
 
 /* Histórico de eventos: linha do tempo simples, do mais recente para o mais antigo */
+/* Mesmo limite de .limite-leitura: a coluna da direita não se afasta demais da data e do texto. */
 .linha-tempo {
   list-style: none;
+  max-width: 1200px;
   margin: 0;
   padding: 0;
 }

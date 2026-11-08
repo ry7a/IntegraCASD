@@ -45,7 +45,7 @@ function AbaProjetos() {
         vazio={itens.length === 0}
         mensagemVazia="Nenhum projeto encontrado para este filtro."
       >
-        <div className="grade grade-3">
+        <div className="grade grade-cartoes">
           {itens.map((projeto) => {
             const gasto = projeto.saidasCentavos
             const orcamento = projeto.orcamentoPrevistoCentavos
