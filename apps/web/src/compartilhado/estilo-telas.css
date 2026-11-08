@@ -317,13 +317,12 @@ a {
 }
 
 /*
- * O conteúdo usa a largura disponível, alinhado à esquerda com a barra do topo (mesmo recuo de 32px).
- * O limite só age em telas maiores que 2560px (ultrawide, 4K sem escala): ali as linhas das tabelas
- * ficariam longas demais para acompanhar com o olho.
+ * O conteúdo usa toda a largura disponível, alinhado com a barra do topo (mesmo recuo de 32px), em
+ * qualquer monitor. Os blocos que ficam ruins quando esticam (gráfico, listas, histórico, formulário de
+ * parâmetros) têm limite próprio de leitura (.limite-leitura, .lista-barras, .linha-tempo, .grafico svg).
  */
 .pagina {
   padding: 28px 32px 48px;
-  max-width: 2400px;
 }
 
 .cabecalho-pagina {
