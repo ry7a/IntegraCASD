@@ -13,7 +13,7 @@ Não precisa de ADR: escolha de nome de variável, biblioteca pequena e fácil d
 
 ## Como escrever
 
-1. Copie o [`0000-template.md`](0000-template.md) com o próximo número livre: `0005-titulo-em-minusculas.md`.
+1. Copie o [`0000-template.md`](adr/0000-template.md) com o próximo número livre: `NNNN-titulo-em-minusculas.md`.
 2. Preencha com status **Proposta** e avise a equipe no grupo.
 3. A discussão acontece com a equipe. Quando aprovado, mude o status para **Aceita** antes do merge na `main`.
 
@@ -25,9 +25,19 @@ Não precisa de ADR: escolha de nome de variável, biblioteca pequena e fácil d
 
 ## Índice
 
-| Número                           | Decisão                                     | Status     |
-| -------------------------------- | ------------------------------------------- | ---------- |
-| [0001](0001-monolito-modular.md) | Monólito modular como estilo arquitetural   | Aceita     |
-| 0002                             | PostgreSQL como banco e como fila (pg-boss) | A escrever |
+| Número | Decisão | Status |
+| --- | --- | --- |
+| [0001](adr/0001-monolito-modular.md) | Monólito modular como estilo arquitetural | Aceita |
+| [0002](adr/0002-postgresql-banco-e-fila.md) | PostgreSQL como banco e como fila (pg-boss) | Proposta |
+| [0003](adr/0003-funcoes-de-aptidao.md) | Funções de aptidão como guardiãs da arquitetura | Aceita |
 | [0004](adr/0004-trilha-de-auditoria-na-transacao.md) | Trilha de auditoria na transação, só de inclusão | Aceita |
 | [0005](adr/0005-cobranca-herdada-da-planilha.md) | Débitos da planilha como cobranças herdadas, sem Asaas | Proposta |
+| [0006](adr/0006-hospedagem-na-railway.md) | Hospedagem na Railway | Proposta |
+
+## Playbooks
+
+| Playbook | Para quê |
+| --- | --- |
+| [Configuração no Windows](playbooks/configuracao-windows.md) | Preparar a máquina de desenvolvimento |
+| [Implantação](playbooks/implantacao.md) | Colocar no ar na Railway, implantar versões, voltar versão, incidentes |
+| [Backup e restauração](playbooks/backup-e-restauracao.md) | Fazer, testar e usar os backups do banco |
