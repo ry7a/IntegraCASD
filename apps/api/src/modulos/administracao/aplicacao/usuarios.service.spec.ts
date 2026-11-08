@@ -254,7 +254,7 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
   it('campo que nao veio no pedido nao e tocado: salvar so o nome nao reativa quem outra pessoa inativou', async () => {
     // Cenário: alguém inativou o usuário depois que a tela abriu; a tela manda só o que foi editado (o nome).
     const inativo = { ...usuarioDiretor('diretor-2'), ativo: false };
-    const { prisma, tx } = prismaFalso(inativo);
+    const { prisma, tx, gravarNaTrilha } = prismaFalso(inativo);
     const servico = new UsuariosService(prisma);
 
     await servico.alterar('diretor-2', { nome: 'Diretor Renomeado' }, DIRETOR);
@@ -265,5 +265,8 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
       }),
     );
     expect(tx.sessao.updateMany).not.toHaveBeenCalled();
+    expect(gravarNaTrilha).toHaveBeenCalledWith({
+      data: expect.objectContaining({ operacao: 'ALTERACAO', detalhe: 'Usuário alterado: nome.' }),
+    });
   });
 });
