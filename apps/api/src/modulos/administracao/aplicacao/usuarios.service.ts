@@ -95,9 +95,9 @@ export class UsuariosService {
     if (passaAInativo) operacao = 'INATIVACAO';
     if (reativa) operacao = 'REATIVACAO';
 
-    // Grava só o que mudou (o Prisma ignora campo `undefined`). Assim o banco recebe exatamente o que a
-    // trilha registra, e um formulário aberto há tempos não desfaz, sem deixar rastro, a mudança que outra
-    // pessoa fez num campo que ele nem alterou (ex.: devolver o perfil de diretoria de quem foi rebaixado).
+    // Grava só o que mudou em relação ao cadastro atual (o Prisma ignora campo `undefined`): o banco recebe
+    // exatamente o que a trilha registra. A proteção contra um formulário antigo vem da tela, que só manda
+    // os campos que a pessoa editou (DialogoUsuario.tsx): campo que não veio não é tocado aqui.
     const mudou = (campo: string) => camposAlterados.includes(campo);
     return this.prisma.$transaction(async (tx) => {
       const alterado = await tx.usuario.update({

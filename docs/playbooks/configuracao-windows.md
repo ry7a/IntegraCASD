@@ -154,6 +154,17 @@ pnpm --filter api dados-ficticios
 
 O primeiro comando lê o `DATABASE_URL` do `.env` e aplica as migrações de `apps/api/prisma/migrations`. O segundo pode ser repetido à vontade: o que já existe não é duplicado.
 
+Os dados fictícios não criam usuário, e toda tela exige login. Para criar o seu primeiro acesso, preencha no
+`.env` o `ADMIN_INICIAL_NOME`, o `ADMIN_INICIAL_EMAIL` e uma `ADMIN_INICIAL_SENHA` de pelo menos 12 caracteres
+(só no seu `.env` local, nunca em outro lugar) e rode:
+
+```powershell
+pnpm --filter api admin-inicial
+```
+
+O comando só cria o usuário se o banco ainda não tiver nenhum. Depois de entrar, os demais acessos são criados
+pela tela de Administração.
+
 Quando alguém mudar o `schema.prisma` (toda migração nova vem com essa mudança), rode estes dois depois do `git pull`:
 
 ```powershell
