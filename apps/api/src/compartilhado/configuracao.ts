@@ -29,11 +29,18 @@ export function problemasDaConfiguracao(env: NodeJS.ProcessEnv, processo: Proces
 
   // Só a API recebe o webhook do Asaas.
   if (processo === 'api') {
-    const token = (env.ASAAS_WEBHOOK_TOKEN ?? '').trim();
+    const tokenCru = env.ASAAS_WEBHOOK_TOKEN ?? '';
+    const token = tokenCru.trim();
     if (token === '') {
       problemas.push('ASAAS_WEBHOOK_TOKEN não está preenchido.');
     } else if (token.startsWith(PREFIXO_DE_EXEMPLO)) {
       problemas.push('ASAAS_WEBHOOK_TOKEN ainda tem o valor de exemplo do .env.example.');
+    } else if (token !== tokenCru) {
+      // A guarda do webhook compara o valor exatamente como está (sem trim): com um espaço ou uma
+      // quebra de linha nas pontas (comum ao colar, ou num .env salvo com CRLF), todo webhook daria 401.
+      problemas.push(
+        'ASAAS_WEBHOOK_TOKEN tem espaço ou quebra de linha no começo ou no fim; apague-os (o Asaas manda o token sem eles).',
+      );
     }
   }
 

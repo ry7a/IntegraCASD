@@ -42,6 +42,19 @@ describe('problemasDaConfiguracao', () => {
     ]);
   });
 
+  // A guarda do webhook compara o valor cru: espaço ou quebra de linha nas pontas faria todo webhook dar 401.
+  it('a API acusa espaço ou quebra de linha nas pontas do ASAAS_WEBHOOK_TOKEN, sem mostrar o valor', () => {
+    for (const token of [`${TOKEN_VALIDO}
+`, `${TOKEN_VALIDO}
+`, ` ${TOKEN_VALIDO}`, `${TOKEN_VALIDO}	`]) {
+      const problemas = problemasDaConfiguracao(ambiente({ ASAAS_WEBHOOK_TOKEN: token }), 'api');
+      expect(problemas).toEqual([
+        'ASAAS_WEBHOOK_TOKEN tem espaço ou quebra de linha no começo ou no fim; apague-os (o Asaas manda o token sem eles).',
+      ]);
+      expect(problemas.join(' ')).not.toContain(TOKEN_VALIDO);
+    }
+  });
+
   it('o worker não precisa do token do webhook', () => {
     expect(problemasDaConfiguracao(ambiente({ ASAAS_WEBHOOK_TOKEN: undefined }), 'worker')).toEqual([]);
   });
