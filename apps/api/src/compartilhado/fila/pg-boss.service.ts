@@ -6,6 +6,10 @@ import { ROTINAS } from './agendador-de-rotinas.js';
 // Nome da fila dos eventos do webhook. O pg-boss exige criar a fila antes de usá-la.
 export const FILA_EVENTOS_ASAAS = 'eventos-asaas';
 
+// Schema do PostgreSQL onde o pg-boss guarda as filas e os jobs. É o padrão dele, mas fica explícito
+// porque o AgendadorDeRotinasPgBoss consulta a tabela de jobs direto (ultimaExecucaoConcluida).
+export const SCHEMA_DO_PGBOSS = 'pgboss';
+
 // Em qual processo este código está rodando. O padrão é 'api' (vale também para os scripts, como o
 // gerar-openapi); o main-worker.ts chama definirProcessoDaFila('worker') ANTES de montar a aplicação,
 // porque as opções do pg-boss só podem ser dadas no construtor. Uma variável do arquivo, e não do .env,
@@ -25,6 +29,7 @@ export function opcoesDoPgBoss(urlDoBanco: string, processo: Processo): Construc
   const ehWorker = processo === 'worker';
   return {
     connectionString: urlDoBanco,
+    schema: SCHEMA_DO_PGBOSS,
     schedule: ehWorker,
     supervise: ehWorker,
     migrate: true,
