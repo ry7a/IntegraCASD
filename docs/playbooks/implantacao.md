@@ -77,8 +77,9 @@ O plano Hobby cobra US$ 5 por mês, e esse valor já conta como uso. Paga-se o q
   > **Perder a `CHAVE_DE_CIFRAGEM` deixa ilegível a chave do Asaas guardada no banco. Perder as senhas do
   > rclone deixa os backups inúteis.**
 - [ ] **0.5 Aprovar o ADR-0006** com a equipe (status Aceita; fecha a #48).
-- [ ] **0.6 Decisões da Fase 1:** Observe (1.7), trilha de auditoria (1.8) e mês de virada da cobrança
-  (1.13). As duas últimas precisam estar decididas antes da carga real.
+- [x] **0.6 Decisões da Fase 1:** Observe (1.7), trilha de auditoria (1.8) e mês de virada da cobrança
+  (1.13), todas tomadas. Mês de virada: a planilha cobra até "dezembro/2026" (vence em 05/01/2027) e o
+  sistema começa pela Mensalidade de fevereiro/2027.
 
 ## Fase 1: pré-requisitos no código
 
@@ -162,7 +163,7 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
 
 ### Decisão da carga
 
-- [ ] **1.13 Decisão: mês de virada da cobrança.** A geração recorrente cobra sempre o mês corrente,
+- [x] **1.13 Decisão: mês de virada da cobrança.** A geração recorrente cobra sempre o mês corrente,
   quando chega o dia de geração. Ela não volta para meses atrasados nem pula meses. A carga traz da
   planilha os meses não pagos já vencidos.
 
@@ -171,7 +172,29 @@ Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2
   - **cobrança em dobro** para quem pagou na planilha um mês que o sistema também gera;
   - **um mês sem cobrança**, se a implantação escorregar.
 
-  A equipe e a diretoria escolhem o mês de virada e simulam a sequência na homologação.
+  **Decidido:**
+  - A planilha cobra até a que ela chama de "dezembro/2026", que vence em 05/01/2027. No sistema, ela
+    vira a herdada de referência `2027-01`.
+  - A primeira cobrança do sistema é a **Mensalidade de fevereiro/2027** (referência `2027-02`, vence em
+    fevereiro). A planilha não cobra o mês que ela chamaria de "janeiro/2027".
+  - A carga roda em janeiro/2027, com `--hoje` em 06/01/2027 ou depois (6.3).
+  - Depois da carga, pagamento de mês antigo é registrado no sistema, como pagamento manual da herdada
+    (ADR-0005).
+  - **Trava no código:** a variável opcional `GERACAO_A_PARTIR_DE` (`AAAA-MM`), no `app` e no `worker`.
+    Preenchida, a geração recorrente (a automática e o "gerar agora") não gera nenhuma referência
+    anterior a ela; o "gerar agora" mostra um erro claro. Vazia ou ausente, não há trava. Formato
+    inválido impede a subida da API e do worker em produção. Valor na homologação e na produção:
+    `GERACAO_A_PARTIR_DE=2027-02`.
+
+  Simulação na homologação (resultados na issue #49, junto do 3.5), com um dia de geração cadastrado
+  que já passou no mês corrente (antes dele, o "gerar agora" recusa por outro motivo):
+  - [ ] Com `GERACAO_A_PARTIR_DE=2027-02` no `app` e no `worker`, o "gerar agora" mostra o erro da
+    trava e nenhuma mensalidade é criada.
+  - [ ] Com o worker ligado, a geração automática também não cria mensalidade.
+  - [ ] Trocando por um instante, no `app` e no `worker`, para o mês corrente (`AAAA-MM`), o "gerar
+    agora" gera esse mês. Volte para `2027-02` em seguida.
+  - [ ] Um valor fora do formato (ex.: `2027-2`) faz a implantação falhar. Volte para `2027-02` em
+    seguida.
 
 ## Fase 2: projeto de homologação na Railway
 
@@ -214,7 +237,10 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      DATABASE_URL=${{Postgres.DATABASE_URL}}
      CHAVE_DE_CIFRAGEM=<gerada no 2.7>
      ASAAS_WEBHOOK_TOKEN=<gerado no 2.7>
+     GERACAO_A_PARTIR_DE=2027-02
      ```
+     `GERACAO_A_PARTIR_DE` é a trava do mês de virada (1.13): o "gerar agora" recusa qualquer mês antes de
+     fevereiro/2027, que a planilha já cobrou. Use o mesmo valor no `worker`.
      O ambiente do Asaas (sandbox ou produção) **não** vem daqui: é escolhido na tela de Administração (3.3).
      A primeira implantação, disparada assim que o serviço é criado, falha por falta destas variáveis. É
      esperado: depois de colar, aplique as mudanças e use [[Deployments › Deploy]].
@@ -239,7 +265,10 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      EMAIL_API_KEY=<chave do Resend>
      EMAIL_REMETENTE=IntegraCASD HOMOLOGACAO <onboarding@resend.dev>
      EMAIL_ALERTAS_PARA=<o e-mail do 0.2, o mesmo da conta do Resend>
+     GERACAO_A_PARTIR_DE=2027-02
      ```
+     `GERACAO_A_PARTIR_DE` é a mesma trava do `app` (1.13): a geração automática, que roda no worker, não
+     cobra nenhum mês antes de fevereiro/2027.
      O "HOMOLOGACAO" no remetente separa os alertas de teste dos reais, que chegam no mesmo e-mail. A
      homologação costuma passar dias sem pagamentos e vai mandar "webhook parado" de vez em quando: é esperado.
      Na produção (5.2), o remetente é só `IntegraCASD <onboarding@resend.dev>`.
@@ -446,6 +475,9 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
   - **Serverless desligado** no `app`.
   - Segredos **novos** (2.7) e o domínio `integracasd.up.railway.app` (ou o nome que estiver livre).
   - No worker, `EMAIL_REMETENTE=IntegraCASD <onboarding@resend.dev>`, sem o "HOMOLOGACAO".
+  - `GERACAO_A_PARTIR_DE=2027-02` no `app` **e** no `worker`, igual à homologação. É o que impede o
+    sistema de cobrar de novo um mês que a planilha já cobrou (1.13). Sem ela, o worker ligado em janeiro
+    geraria a mensalidade de janeiro no dia de geração.
   - **Worker criado, mas sem implantação ativa** até o 6.7: depois de criar, use
     [[worker › Deployments › ⋮ › Remove]].
 - [ ] **5.3 Primeiro usuário de produção:** o 3.2 **sem** a linha do `dados-ficticios`, com a
@@ -475,7 +507,14 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
 ## Fase 6: Asaas real e carga inicial
 
 Siga junto o [`scripts/carga-inicial/README.md`](../../scripts/carga-inicial/README.md). Pré-requisito:
-as decisões 1.8 e 1.13 tomadas e já implantadas.
+as decisões 1.8 e 1.13 tomadas e já implantadas, com `GERACAO_A_PARTIR_DE=2027-02` no `app` e no
+`worker` (5.2).
+
+Cronograma (1.13):
+- **até 05/01/2027:** a planilha cobra, até a "dezembro/2026";
+- **janeiro/2027, a partir de 06/01:** carga (6.3 e 6.4), conferência (6.5) e worker ligado (6.7);
+- **fevereiro/2027, no dia de geração:** o sistema gera a primeira cobrança, a Mensalidade de
+  fevereiro/2027.
 
 > **Do 6.1 ao 6.7, o worker de produção fica desligado.** Com a chave e os parâmetros cadastrados,
 > ligá-lo dispara cobranças reais antes da conferência. Nesse intervalo, **não avance a branch
@@ -487,8 +526,11 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
   2. No sistema: [[Administração › Integração Asaas]], **Produção**.
 - [ ] **6.2 Webhook de produção:** como no 3.4, com a URL da produção e o `ASAAS_WEBHOOK_TOKEN` de
   produção. Teste o token errado (3.5, item 4): tem de dar 401.
-- [ ] **6.3 Gerar o SQL da carga** na sua máquina, conforme o README. O `--hoje` tem de bater com o mês
-  de virada.
+- [ ] **6.3 Gerar o SQL da carga** na sua máquina, conforme o README, em janeiro/2027:
+  - antes, a planilha precisa estar com todos os pagamentos recebidos até ali;
+  - `--hoje` em **06/01/2027 ou depois** (ex.: `--hoje 2027-01-06`; sem ele, vale a data do dia). Só
+    assim a "dezembro/2026" não paga, que vence em 05/01/2027, entra como herdada. Com uma data anterior,
+    ela vai para as pendências e ninguém a cobra: a trava impede o sistema de gerar janeiro.
 - [ ] **6.4 Aplicar a carga** pelo endereço público do banco. Reabra o TCP Proxy (5.7) e copie a
   `DATABASE_PUBLIC_URL`, que muda a cada reabertura.
 
@@ -507,11 +549,24 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
   O arquivo tem dados reais: apague-o depois da conferência. A carga pode ser repetida sem duplicar.
   Terminada a carga, **feche o TCP Proxy de novo** (5.7).
 - [ ] **6.5 Conferência e aprovação** da área administrativa ([Distribuição.NF002]).
-- [ ] **6.6 Parâmetros de cobrança**, com o dia de geração combinado no 1.13.
+- [ ] **6.6 Parâmetros de cobrança** em [[Administração]]. O sistema exige o dia de geração antes do dia
+  de vencimento, e os dois caem no mesmo mês: a Mensalidade de fevereiro/2027 é gerada e vence em
+  fevereiro. Escolha com a diretoria um dia de vencimento parecido com o da planilha, que vence no dia 5.
+  A primeira cobrança do sistema sai no dia de geração de fevereiro. Se a conferência da tela mostrar
+  uma próxima geração ainda em janeiro, é esperado: com a trava, ela não cobra nada.
 - [ ] **6.7 Ligar o worker:** [[worker › Deployments › Deploy]]. Confira os logs. Em até 30 min,
   `/api/saude/completa` responde 200. Então despause o monitor do UptimeRobot.
+
+  Com a trava (`GERACAO_A_PARTIR_DE=2027-02`), ligar o worker em janeiro **não** gera a mensalidade de
+  janeiro: a geração espera o dia de geração de fevereiro. O aviso do início desta fase continua valendo:
+  o worker só liga depois da conferência (6.5). A trava protege só contra cobrar janeiro; ela não segura
+  a cobrança de fevereiro se a conferência escorregar para depois do dia de geração.
 - [ ] **6.8 Backup logo após a carga:** rode o cron à mão (como no 4.7) e confira no R2.
 - [ ] **6.9 Banco fechado:** confira que o TCP Proxy foi removido depois da carga (5.7).
+- [ ] **6.10 Pagamentos de meses antigos vão para o sistema.** Avise a área administrativa: depois da
+  carga, a planilha deixa de ser a fonte dos débitos. Pagamento de um mês até "dezembro/2026" que não
+  estava na planilha quando o SQL foi gerado (6.3) é registrado **no sistema**, como pagamento manual
+  da cobrança herdada (ADR-0005), e não só na planilha. Sem isso, o aluno continua como inadimplente.
 
 ## Fase 7: domínio próprio (quando o CASD tiver)
 
