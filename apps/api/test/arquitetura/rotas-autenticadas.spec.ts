@@ -36,6 +36,9 @@ const ARQUIVOS_DA_CHAVE = [
   'apps/api/src/compartilhado/autenticacao/publico.decorator.ts', // define a chave
   'apps/api/src/compartilhado/autenticacao/autenticacao.guard.ts', // lê a chave
 ];
+// Quem importa o arquivo do decorator. Pega também o decorator importado com outro nome
+// (`import { Publico as P }` seguido de `@P()`), que a busca por "Publico(" não enxergaria.
+const IMPORTA_O_DECORATOR = /publico\.decorator(\.js)?['"`]/;
 // Decorators de rota do Nest: cada um é um handler (um endpoint).
 const DECORATOR_DE_ROTA = /@(Get|Post|Put|Patch|Delete|Options|Head|All)\s*\(/;
 
@@ -111,6 +114,15 @@ describe('B8: rotas públicas só onde pode', () => {
     expect(violacoes).toEqual([]);
   });
 
+  it('só os controllers públicos e a guarda importam o decorator (pega até o @Publico com outro nome)', () => {
+    const permitidos = [...ARQUIVOS_COM_ROTA_PUBLICA, ...ARQUIVOS_DA_CHAVE];
+    const violacoes = listarArquivos(PASTA_SRC, '.ts')
+      .filter((arquivo) => IMPORTA_O_DECORATOR.test(lerCodigo(arquivo)))
+      .map(caminhoRelativo)
+      .filter((relativo) => !permitidos.includes(relativo));
+    expect(violacoes).toEqual([]);
+  });
+
   it('cada controller público tem só os handlers e o @Publico() conhecidos (rota nova ali nasceria pública)', () => {
     const encontrados = CONTROLLERS_PUBLICOS.map(({ arquivo, handlers }) => {
       const codigo = lerCodigo(path.join(RAIZ_REPO, arquivo));
@@ -130,5 +142,7 @@ describe('B8: rotas públicas só onde pode', () => {
     expect(CHAVE_DA_ROTA_PUBLICA.test("@SetMetadata('rotaPublica', true)")).toBe(true);
     expect(CHAVE_DA_ROTA_PUBLICA.test('@SetMetadata(CHAVE_ROTA_PUBLICA, true)')).toBe(true);
     expect(contar("@Get()\n@Post('x')\n@Patch(':id')\n@ApiOkResponse()", DECORATOR_DE_ROTA)).toBe(3);
+    expect(IMPORTA_O_DECORATOR.test("import { Publico as P } from '../autenticacao/publico.decorator.js';")).toBe(true);
+    expect(IMPORTA_O_DECORATOR.test("import { Perfis } from '../autenticacao/perfis.decorator.js';")).toBe(false);
   });
 });

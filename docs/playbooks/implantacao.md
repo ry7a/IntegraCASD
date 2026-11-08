@@ -237,9 +237,12 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      DATABASE_URL=${{Postgres.DATABASE_URL}}
      CHAVE_DE_CIFRAGEM=<a MESMA do app>
      EMAIL_API_KEY=<chave do Resend>
-     EMAIL_REMETENTE=IntegraCASD <onboarding@resend.dev>
+     EMAIL_REMETENTE=IntegraCASD HOMOLOGACAO <onboarding@resend.dev>
      EMAIL_ALERTAS_PARA=<o e-mail do 0.2, o mesmo da conta do Resend>
      ```
+     O "HOMOLOGACAO" no remetente separa os alertas de teste dos reais, que chegam no mesmo e-mail. A
+     homologação costuma passar dias sem pagamentos e vai mandar "webhook parado" de vez em quando: é esperado.
+     Na produção (5.2), o remetente é só `IntegraCASD <onboarding@resend.dev>`.
      Sem domínio próprio, o remetente é o de testes do Resend, que **só entrega para o e-mail dono da
      conta** e recusa o envio inteiro se houver outro destinatário. Por isso, enquanto não houver domínio,
      `EMAIL_ALERTAS_PARA` manda os alertas só para esse e-mail, em vez de para toda a diretoria. Ao ter
@@ -301,10 +304,16 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      ```
   5. A documentação está fechada: `/api/docs` não abre.
   6. TLS antigo é recusado ([Segurança.NF004]). O `curl.exe` do Windows não serve para isso (o próprio
-     Windows já recusa TLS 1.1), então o teste roda num contêiner. O comando tem de **falhar** no handshake:
+     Windows já recusa TLS 1.1), então o teste roda num contêiner. O OpenSSL novo também recusa TLS 1.1 por
+     conta própria; o `@SECLEVEL=0` libera o cliente, para quem recusar ser **o servidor**. São dois comandos:
      ```powershell
-     docker run --rm alpine/openssl s_client -connect <domínio da homologação>:443 -tls1_1
+     # Controle: TLS 1.2 tem de CONECTAR (aparece "Protocol  : TLSv1.2" e o certificado).
+     docker run --rm alpine/openssl:3.5.4 s_client -connect <domínio da homologação>:443 -tls1_2 -brief
+     # O teste: TLS 1.1 tem de FALHAR com um alerta do servidor ("alert protocol version" ou "handshake failure").
+     docker run --rm alpine/openssl:3.5.4 s_client -connect <domínio da homologação>:443 -tls1_1 -cipher 'DEFAULT@SECLEVEL=0' -brief
      ```
+     Se o segundo falhar com "no protocols available", o problema é do cliente, e o teste não vale: confira
+     o `-cipher`. Se a tag `3.5.4` da imagem não existir mais, use a mais recente de `alpine/openssl`.
   7. Bloqueio da conta depois de 5 senhas erradas, testado com um usuário de teste.
   8. Nenhum erro de CSP no console do navegador.
   9. Simulação do mês de virada (1.13).
@@ -378,7 +387,8 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      As chaves aqui são as do token **backup-railway** (4.3).
   5. **Sele** (2.8) `RCLONE_CONFIG_R2_SECRET_ACCESS_KEY`, `RCLONE_CONFIG_R2CIFRADO_PASSWORD`,
      `RCLONE_CONFIG_R2CIFRADO_PASSWORD2` e `BACKUP_PING_URL`.
-- [ ] **4.7 Testar agora:** rode o cron uma vez à mão com [[backup › Deployments › Deploy]] e confira:
+- [ ] **4.7 Testar agora:** rode o cron uma vez à mão, pelo botão de execução imediata do serviço cron
+  (algo como **Run now**; se não houver, [[backup › Deployments › Deploy]]), e confira:
   - o arquivo aparece no bucket, em `homologacao/`;
   - o check do Healthchecks fica verde.
 - [ ] **4.8 Teste de restauração** ([Confiabilidade.NF006], exigido antes da entrega). Com o Postgres
@@ -410,7 +420,7 @@ A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
      tabela de lá** (fecha a pendência da #52).
   5. **Limpe tudo.** O dump decifrado tem os dados do banco:
      ```powershell
-     Remove-Item .\backups\*.dump
+     Remove-Item .\backups\integracasd-homologacao-*.dump, .\backups\integracasd-producao-*.dump
      docker compose exec -T db dropdb -U integracasd integracasd_restaurado
      Get-ChildItem Env:RCLONE_CONFIG_* | Remove-Item
      ```
@@ -431,6 +441,7 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
     já passou no CI na `main`.
   - **Serverless desligado** no `app`.
   - Segredos **novos** (2.7) e o domínio `integracasd.up.railway.app` (ou o nome que estiver livre).
+  - No worker, `EMAIL_REMETENTE=IntegraCASD <onboarding@resend.dev>`, sem o "HOMOLOGACAO".
   - **Worker criado, mas sem implantação ativa** até o 6.7: depois de criar, use
     [[worker › Deployments › ⋮ › Remove]].
 - [ ] **5.3 Primeiro usuário de produção:** o 3.2 **sem** a linha do `dados-ficticios`, com a
@@ -452,10 +463,10 @@ Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]
   - `AMBIENTE=producao` e a URL do check "backup produção" (despause o check);
   - selar as variáveis secretas, como no 4.6.
 
-  Rode uma vez à mão e confira o arquivo em `producao/`.
+  Rode uma vez à mão (como no 4.7) e confira o arquivo em `producao/`.
 - [ ] **5.7 Fechar o banco para fora.** Logo depois do 5.3, remova o acesso público do banco em
-  [[Postgres › Settings › Networking › TCP Proxy]]. Ele só é reaberto no 6.4, para a carga, e fechado de
-  novo no 6.9.
+  [[Postgres › Settings › Networking › TCP Proxy]]. Ele só é reaberto no 6.4, para a carga, e fechado logo
+  depois dela. Se a conferência (6.5) pedir correção direto no banco, reabra só durante a correção.
 
 ## Fase 6: Asaas real e carga inicial
 
@@ -464,7 +475,8 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
 
 > **Do 6.1 ao 6.7, o worker de produção fica desligado.** Com a chave e os parâmetros cadastrados,
 > ligá-lo dispara cobranças reais antes da conferência. Nesse intervalo, **não avance a branch
-> `producao`.**
+> `producao`, não altere variáveis do `worker` e não clique em Deploy nele**: qualquer uma dessas ações
+> cria uma implantação e liga o worker.
 
 - [ ] **6.1 Chave de produção:**
   1. No Asaas real: [[Integrações › Chaves de API › Gerar chave]].
@@ -489,12 +501,13 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
   Remove-Variable url
   ```
   O arquivo tem dados reais: apague-o depois da conferência. A carga pode ser repetida sem duplicar.
+  Terminada a carga, **feche o TCP Proxy de novo** (5.7).
 - [ ] **6.5 Conferência e aprovação** da área administrativa ([Distribuição.NF002]).
 - [ ] **6.6 Parâmetros de cobrança**, com o dia de geração combinado no 1.13.
 - [ ] **6.7 Ligar o worker:** [[worker › Deployments › Deploy]]. Confira os logs. Em até 30 min,
   `/api/saude/completa` responde 200. Então despause o monitor do UptimeRobot.
-- [ ] **6.8 Backup logo após a carga:** [[backup › Deployments › Deploy]] e confira no R2.
-- [ ] **6.9 Fechar o banco** (5.7).
+- [ ] **6.8 Backup logo após a carga:** rode o cron à mão (como no 4.7) e confira no R2.
+- [ ] **6.9 Banco fechado:** confira que o TCP Proxy foi removido depois da carga (5.7).
 
 ## Fase 7: domínio próprio (quando o CASD tiver)
 
@@ -521,7 +534,9 @@ as decisões 1.8 e 1.13 tomadas e já implantadas.
 
 ### Implantar uma versão nova
 
-1. Integre na `main` como sempre. A homologação implanta sozinha depois do CI verde.
+1. Integre na `main` como sempre. A homologação implanta sozinha depois do CI verde. Se o deploy
+   automático do worker de homologação estiver desligado (3.6), implante-o à mão **no mesmo commit** antes
+   de validar: senão a diretoria valida o app novo com o worker antigo.
 2. A diretoria valida na homologação.
 3. Promova **o mesmo commit** para a produção:
    ```powershell
@@ -578,7 +593,11 @@ B7). Senão, restaure o backup feito antes. Leia também as Consequências do AD
      docker run --rm -v "${PWD}\backups:/dados" postgres:18.6 pg_restore --no-owner --exit-on-error -d $url /dados/<arquivo>.dump
      Remove-Variable url
      ```
-     Depois, faça a limpeza do 4.8 (passo 5) e feche o TCP Proxy do banco novo.
+     Depois, apague o dump e a configuração do rclone, e feche o TCP Proxy do banco novo:
+     ```powershell
+     Remove-Item .\backups\integracasd-producao-*.dump
+     Get-ChildItem Env:RCLONE_CONFIG_* | Remove-Item
+     ```
   3. Aponte `DATABASE_URL` do `app`, do `worker` e do `backup` para o novo
      (`${{<NomeDoNovo>.DATABASE_URL}}`).
   4. Reimplante.

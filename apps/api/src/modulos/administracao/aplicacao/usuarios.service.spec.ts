@@ -232,4 +232,22 @@ describe('manutencao de usuarios [Administracao.RF001]', () => {
       data: expect.objectContaining({ detalhe: 'Usuário alterado: nome.' }),
     });
   });
+
+  it('grava so os campos que mudaram: um formulario antigo nao desfaz a mudanca de outra pessoa', async () => {
+    // O formulário ainda mostra DIRETORIA, mas só o nome foi editado: o perfil não pode ir para o banco.
+    const { prisma, tx } = prismaFalso(usuarioDiretor('diretor-2'));
+    const servico = new UsuariosService(prisma);
+
+    await servico.alterar(
+      'diretor-2',
+      { nome: 'Diretor Renomeado', email: 'diretor-2@exemplo.com', perfil: PerfilUsuario.DIRETORIA, ativo: true },
+      DIRETOR,
+    );
+
+    expect(tx.usuario.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { nome: 'Diretor Renomeado', email: undefined, perfil: undefined, ativo: undefined, senhaHash: undefined },
+      }),
+    );
+  });
 });

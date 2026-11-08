@@ -32,8 +32,9 @@ que roda `scripts/backup/backup-railway.sh`:
 - envia uma cópia cifrada (rclone crypt) para o Cloudflare R2, onde uma regra apaga o que tiver mais de 35 dias;
 - avisa o Healthchecks.io quando termina bem.
 
-Configuração passo a passo em [implantacao.md](implantacao.md), Fase 4. Para restaurar ou testar, baixe o
-dump do R2 com o rclone e use o `.ps1` da seção 2.
+Configuração passo a passo em [implantacao.md](implantacao.md), Fase 4. Para restaurar ou testar, configure
+o rclone e baixe o dump **como em implantacao.md, passo 4.8** (só na sessão do PowerShell, com o token só
+leitura e sem `rclone config`, que gravaria as chaves num arquivo) e use o `.ps1` da seção 2.
 
 **Numa máquina Windows** (desenvolvimento, ou uma máquina do CASD usada em emergência), agende o `.ps1` no
 **Agendador de Tarefas** (uma vez por dia, de madrugada):
