@@ -18,6 +18,10 @@ Sistema de gestão financeira do Centro Acadêmico Santos Dumont (CASD): cadastr
 - Frontend: React 19, Vite 8, React Router 8, TanStack Query 5, React Hook Form + Zod 4, shadcn/ui + Tailwind 4.
 - Contrato: OpenAPI gerado pelo NestJS; cliente do frontend gerado pelo orval.
 - Testes: Vitest.
+- Produção e homologação: Railway, um projeto para cada (`app` serve o site e a API no mesmo endereço,
+  `worker`, `Postgres` e um cron de `backup` para o Cloudflare R2). A produção implanta a branch `producao`,
+  que só recebe commits já validados na homologação. Decisão no ADR-0006; passo a passo em
+  `docs/playbooks/implantacao.md`.
 
 Atenção: ao instalar o Prisma, use sempre a versão explícita (`prisma@7.10.0`). A tag `latest` do pacote `prisma` aponta para uma versão RC.
 

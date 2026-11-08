@@ -24,9 +24,19 @@ pg-boss. Opções:
 
 ### Backup diário
 
-Em produção, a forma de agendar depende do provedor de nuvem, ainda em escolha (issue #48): o mais simples é
-usar o backup automático do PostgreSQL gerenciado, com retenção de 30 dias. Se o banco rodar numa máquina
-própria, agende o script no **Agendador de Tarefas** do Windows (uma vez por dia, de madrugada):
+**Em produção e homologação** ([ADR-0006](../adr/0006-hospedagem-na-railway.md)) o banco é o Postgres da
+Railway. O backup diário é o serviço `backup` de cada projeto, um cron da Railway às 3h (horário de Brasília)
+que roda `scripts/backup/backup-railway.sh`:
+
+- gera o dump no mesmo formato descrito acima;
+- envia uma cópia cifrada (rclone crypt) para o Cloudflare R2, onde uma regra apaga o que tiver mais de 35 dias;
+- avisa o Healthchecks.io quando termina bem.
+
+Configuração passo a passo em [implantacao.md](implantacao.md), Fase 4. Para restaurar ou testar, baixe o
+dump do R2 com o rclone e use o `.ps1` da seção 2.
+
+**Numa máquina Windows** (desenvolvimento, ou uma máquina do CASD usada em emergência), agende o `.ps1` no
+**Agendador de Tarefas** (uma vez por dia, de madrugada):
 
 ```powershell
 $acao = New-ScheduledTaskAction -Execute "powershell.exe" `
@@ -82,5 +92,6 @@ Só em incidente (banco corrompido, dados apagados por engano). Combine com a di
 | --- | --- | --- | --- | --- |
 | 26/10/2026 | Claude (pedido de Marcello Ryaj) | Desenvolvimento (Docker local, PostgreSQL 18.6) | Banco de teste com dados fictícios: 25 movimentações, 1 contrato, 27 registros na trilha | Restaurado num banco separado; contagens e soma dos valores idênticas à origem; trilha continuou recusando `UPDATE`; API subiu sobre o restaurado, login e consultas ok. Os scripts recusaram restaurar por cima do banco em uso. |
 
-**Pendente antes da entrega:** repetir o teste no ambiente de produção (ou homologação) assim que o provedor
-for escolhido (issues #48, #49 e #52), e registrar aqui.
+**Pendente antes da entrega:** repetir o teste com um backup da homologação baixado do R2
+([implantacao.md](implantacao.md), passo 4.8; issues #49 e #52) e registrar aqui. Depois disso, o teste é
+mensal, com o backup de produção (seção "Operação" do mesmo playbook).

@@ -1,0 +1,505 @@
+# Implantação na Railway
+
+Este playbook coloca o IntegraCASD no ar na Railway, do primeiro cadastro até a primeira cobrança real,
+e depois descreve a rotina de implantar versões, voltar versão e reagir a incidentes. A decisão está no
+[ADR-0006](../adr/0006-hospedagem-na-railway.md).
+
+**Siga as fases na ordem.** Marque os itens conforme for fazendo.
+
+Convenções:
+
+- Comandos em blocos `powershell` rodam na **sua máquina**, na raiz do repositório.
+- Os nomes de menus da Railway mudam de tempos em tempos. Se um caminho não bater, abra a busca do
+  painel com **Ctrl+K** e digite o termo indicado.
+- Todo segredo vai para o **cofre de senhas do CASD** (passo 0.4), nunca para o repositório, o chat do
+  grupo ou um arquivo solto.
+
+## Visão geral
+
+```
+Usuários ──┐
+           ├── HTTPS ──► Railway (domínio *.up.railway.app; depois, financeiro.<domínio do CASD>)
+Asaas ─────┘                    │
+                                ▼
+  Projeto integracasd-producao (região nos EUA)
+  ├── app      NestJS: site + /api + webhook      ──┐
+  ├── worker   NestJS + pg-boss (fila e rotinas)  ──┼──► Postgres 18 (volume)
+  └── backup   cron diário: pg_dump ──────────────────────► Cloudflare R2 (cifrado, 35 dias)
+
+  Projeto integracasd-homologacao: os mesmos serviços, Asaas sandbox, dados fictícios
+```
+
+| Peça | Onde | Custo estimado |
+| --- | --- | --- |
+| Produção (app, worker, Postgres, backup) | Railway Hobby | ~US$ 8 a 10/mês |
+| Homologação (quase sempre desligada) | Railway Hobby | ~US$ 2 a 4/mês |
+| Backups (até 10 GB) | Cloudflare R2 | US$ 0 |
+| E-mail de alerta | Resend (gratuito) | US$ 0 |
+| Monitores do site e do backup | UptimeRobot e Healthchecks.io | US$ 0 |
+| Domínio `.org.br` (quando houver) | registro.br | ~R$ 40/ano |
+
+O plano Hobby cobra US$ 5 por mês, e esse valor já conta como uso. Paga-se o que passar disso.
+
+## Resumo das fases
+
+- [ ] **Fase 0:** contas, cofre e decisões
+- [ ] **Fase 1:** pré-requisitos no código
+- [ ] **Fase 2:** projeto de homologação na Railway
+- [ ] **Fase 3:** homologação no ar e testes
+- [ ] **Fase 4:** backups e teste de restauração
+- [ ] **Fase 5:** projeto de produção
+- [ ] **Fase 6:** Asaas real e carga inicial
+- [ ] **Fase 7:** domínio próprio (quando o CASD tiver)
+- Depois do ar: rotina de implantação, volta de versão, operação e incidentes
+
+---
+
+## Fase 0: contas, cofre e decisões
+
+- [ ] **0.1 Conta Asaas de produção** no CNPJ do CASD. A aprovação leva dias: comece já.
+- [ ] **0.2 E-mail institucional** do CASD, lido por pelo menos duas pessoas. Todas as contas usam esse
+  e-mail.
+- [ ] **0.3 Contas** com o e-mail do 0.2 e 2FA ligado:
+  - Railway (entrar com GitHub)
+  - Cloudflare (só para o R2)
+  - Resend
+  - UptimeRobot
+  - Healthchecks.io
+
+  **Crie a conta do Resend com o e-mail que deve receber os alertas.** Sem domínio verificado, o Resend
+  só entrega para o e-mail dono da conta (confira na tela do Resend).
+- [ ] **0.4 Cofre de senhas** compartilhado: organização gratuita do Bitwarden (2 pessoas) ou um arquivo
+  do KeePassXC no drive do CASD. Vão para lá:
+  - as variáveis de cada projeto da Railway;
+  - as credenciais do R2 e as senhas do rclone;
+  - a chave do Resend.
+
+  > **Perder a `CHAVE_DE_CIFRAGEM` deixa ilegível a chave do Asaas guardada no banco. Perder as senhas do
+  > rclone deixa os backups inúteis.**
+- [ ] **0.5 Aprovar o ADR-0006** com a equipe (status Aceita; fecha a #48).
+- [ ] **0.6 Decisões da Fase 1:** Observe (1.7), trilha de auditoria (1.8) e mês de virada da cobrança
+  (1.13). As duas últimas precisam estar decididas antes da carga real.
+
+## Fase 1: pré-requisitos no código
+
+Cada item é uma branch pequena, integrada à `main` como de costume. As Fases 2 e 3 precisam dos itens
+1.1 a 1.12 na `main`.
+
+### Ajustes da API e do worker
+
+- [ ] **1.1 API pronta para rodar atrás do proxy da Railway** (`apps/api/src/main.ts`):
+  - `app.enableShutdownHooks()`;
+  - Swagger só quando `NODE_ENV !== 'production'`;
+  - `trust proxy` ligado e `x-powered-by` desligado.
+- [ ] **1.2 Duas rotas públicas de saúde**, com `@Publico()`:
+  - **`GET /api/saude`:** 200 se o banco responde (`SELECT 1`). A Railway usa essa rota para liberar
+    cada implantação. Por isso ela não pode depender do worker: na primeira subida da produção o worker
+    ainda está desligado.
+  - **`GET /api/saude/completa`:** 200 se o banco responde **e** a rotina `vigilancia-do-asaas` rodou na
+    última hora; 503 caso contrário. É a que o UptimeRobot vigia, porque revela um worker parado.
+- [ ] **1.3 Validar a configuração na subida:** a API e o worker se recusam a subir sem `DATABASE_URL`,
+  `CHAVE_DE_CIFRAGEM` com 32 bytes e, na API, `ASAAS_WEBHOOK_TOKEN`.
+- [ ] **1.4 pg-boss sem agendamento na API:** cron e manutenção da fila ficam só no worker.
+- [ ] **1.5 Timeout nas chamadas ao Asaas**, com teste.
+- [ ] **1.6 Trocar o perfil de um usuário revoga as sessões dele**, com teste.
+- [ ] **1.7 Decisão: remover `@nestjs/observe` e `@nestjs/mau`.** Hoje o Observe manda telemetria para um
+  serviço externo, com credenciais de exemplo fixas no código. Recomendação: remover os dois, o script
+  `deploy` e as entradas em `dependencias.json`.
+- [ ] **1.8 Decisão LGPD: nada de nomes e e-mails no `detalhe` da trilha.** A trilha é imutável
+  (ADR-0004). A decisão vale para o backend e para `scripts/carga-inicial/carregar_alunos.py`.
+- [ ] **1.9 `.env.example`:** incluir `NODE_ENV`, `PORT` e `EMAIL_API_URL`; remover `SESSION_SECRET`.
+
+### O `app` serve o site
+
+- [ ] **1.10 A API serve o build do Vite no mesmo endereço.** Usa `useStaticAssets` do
+  `@nestjs/platform-express`, que já é dependência:
+  - qualquer `GET` fora de `/api` que não seja arquivo devolve o `index.html`, para as rotas do React
+    Router funcionarem ao recarregar;
+  - `/assets/*` com `Cache-Control: public, max-age=31536000, immutable`, e o resto com `no-cache`;
+  - um middleware simples, sem dependência nova, põe os cabeçalhos de segurança:
+    `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+    `Strict-Transport-Security: max-age=15552000` e
+    `Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'`.
+  - O caminho do `dist` do web vem de uma variável com valor padrão. Em desenvolvimento nada muda: o Vite
+    continua servindo o site com o proxy para `/api`.
+
+### Imagem e backup
+
+- [ ] **1.11 `Dockerfile` e `.dockerignore` na raiz.** A Railway usa o `Dockerfile` da raiz sozinha.
+  - **`Dockerfile`:**
+    - `node:24.20.0-bookworm-slim`;
+    - `npm i -g pnpm@11.28.5`;
+    - `COPY . .`;
+    - `pnpm install --frozen-lockfile --ignore-scripts`. O `--ignore-scripts` é necessário porque o
+      `prepare` da raiz roda `git config`, e a imagem não tem git;
+    - `pnpm --filter api exec prisma generate`;
+    - `pnpm --filter web build` e `pnpm --filter api build`;
+    - `WORKDIR /repo/apps/api` e `CMD ["node", "dist/main.js"]`.
+
+    É uma imagem "gorda", de propósito: leva a CLI do Prisma para o `migrate deploy`.
+  - **`.dockerignore`:** `.env*`, `**/node_modules`, `**/dist`, `data/`, `scripts/carga-inicial/dados/`,
+    `backups/`, `*.dump`, `*.tsbuildinfo`, `apps/api/src/generated`, `coverage`, `.git`.
+- [ ] **1.12 Serviço de backup:**
+  - **`scripts/backup/Dockerfile`:** a partir de `postgres:18.6`, com `rclone` e `curl` instalados.
+  - **`scripts/backup/backup-railway.sh`**, commitado com permissão de execução
+    (`git update-index --chmod=+x`). Ele:
+    - roda `pg_dump "$DATABASE_URL" -Fc`;
+    - envia com `rclone copy` para `r2cifrado:$AMBIENTE/`. O rclone é configurado só por variáveis
+      `RCLONE_CONFIG_*` (passo 4.5);
+    - no sucesso, faz `curl "$BACKUP_PING_URL"`;
+    - em qualquer falha, sai com erro e não faz o ping.
+
+### Decisão da carga
+
+- [ ] **1.13 Decisão: mês de virada da cobrança.** A geração recorrente cobra sempre o mês corrente,
+  quando chega o dia de geração. Ela não volta para meses atrasados nem pula meses. A carga traz da
+  planilha os meses não pagos já vencidos.
+
+  O `--hoje` da carga, o dia em que o worker liga e o dia de geração cadastrado decidem qual mês fica
+  com a planilha e qual com o sistema. Há dois riscos:
+  - **cobrança em dobro** para quem pagou na planilha um mês que o sistema também gera;
+  - **um mês sem cobrança**, se a implantação escorregar.
+
+  A equipe e a diretoria escolhem o mês de virada e simulam a sequência na homologação.
+
+## Fase 2: projeto de homologação na Railway
+
+A homologação vem primeiro. Ela usa o Asaas **sandbox** e dados fictícios.
+
+- [ ] **2.1 Plano e limite de gasto:**
+  1. Railway: [[Workspace › Settings › Plans]] → **Hobby**, com o cartão do CASD.
+  2. Depois, em [[Workspace › Settings › Usage]], configure:
+     - **alerta por e-mail em US$ 12;**
+     - **limite rígido em US$ 30.**
+
+  O limite rígido **desliga os serviços** quando é atingido. Por isso fica bem acima do gasto esperado:
+  serve só contra um susto.
+- [ ] **2.2 Dar à Railway acesso ao repositório.** Ao criar o primeiro serviço a partir do GitHub, a
+  Railway pede para instalar o app dela no GitHub. Libere o repositório `ry7a/IntegraCASD`. Quem faz isso
+  é o dono do repositório.
+- [ ] **2.3 Criar o projeto:** [[New Project › Empty project]]. Em [[Settings]], mude o nome para
+  `integracasd-homologacao`.
+- [ ] **2.4 Banco:** [[+ Create › Database › PostgreSQL]].
+  - Confira em [[Postgres › Settings › Source]] se a imagem é da **versão 18**. Se não for, troque a tag
+    para a 18 **antes** de qualquer dado entrar.
+  - Em [[Settings › Deploy › Region]], escolha a região mais próxima do Brasil (hoje, uma dos EUA, de
+    preferência a leste). **Todos os serviços do projeto ficam na mesma região.**
+- [ ] **2.5 Serviço `app`:** [[+ Create › GitHub Repo › ry7a/IntegraCASD]].
+  1. Clique no serviço › [[Settings]] › nome **`app`**.
+  2. [[Settings › Source]]:
+     - Branch **`main`**;
+     - ligue **Wait for CI**, para só implantar commit com o CI verde.
+  3. [[Settings › Build]]: Builder **Dockerfile**. A Railway detecta o da raiz.
+  4. [[Settings › Deploy]]:
+     - Pre-deploy command: `pnpm exec prisma migrate deploy`;
+     - Healthcheck path: `/api/saude`;
+     - Restart policy: **Always**;
+     - Region: a mesma do Postgres;
+     - **Serverless: ligado**, só na homologação. Ele "dorme" quando ninguém usa e economiza.
+  5. [[Variables › Raw Editor]]: cole o bloco abaixo, com os valores do passo 2.7:
+     ```
+     NODE_ENV=production
+     PORT=3000
+     DATABASE_URL=${{Postgres.DATABASE_URL}}
+     CHAVE_DE_CIFRAGEM=<gerada no 2.7>
+     ASAAS_WEBHOOK_TOKEN=<gerado no 2.7>
+     ASAAS_AMBIENTE=sandbox
+     ```
+  6. [[Settings › Networking › Generate Domain]], porta **3000**. Edite o nome para algo como
+     `integracasd-homolog` e anote o endereço `https://integracasd-homolog.up.railway.app`.
+- [ ] **2.6 Serviço `worker`:** [[+ Create › GitHub Repo › ry7a/IntegraCASD]] de novo.
+  1. Nome: **`worker`**.
+  2. Source: branch `main`, Wait for CI ligado.
+  3. Deploy:
+     - Custom start command: `node dist/main-worker.js`;
+     - **sem** pre-deploy;
+     - **sem** healthcheck;
+     - Restart policy **Always**;
+     - **Serverless desligado**;
+     - mesma região.
+  4. **Não gere domínio.**
+  5. Variáveis:
+     ```
+     NODE_ENV=production
+     DATABASE_URL=${{Postgres.DATABASE_URL}}
+     CHAVE_DE_CIFRAGEM=<a MESMA do app>
+     ASAAS_AMBIENTE=sandbox
+     EMAIL_API_KEY=<chave do Resend>
+     EMAIL_REMETENTE=IntegraCASD <onboarding@resend.dev>
+     ```
+     Sem domínio próprio, o remetente é o de testes do Resend. Ao ter domínio, troque (Fase 7).
+- [ ] **2.7 Gerar os segredos** (PowerShell, um valor por vez, direto para o cofre):
+  ```powershell
+  $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)          # CHAVE_DE_CIFRAGEM
+  $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''   # ASAAS_WEBHOOK_TOKEN
+  ```
+  Cada projeto (homologação e produção) tem **seus próprios** segredos. Nunca reaproveite.
+- [ ] **2.8 Esconder os valores:** em cada variável secreta, use o menu [[⋮ › Seal]] para que ninguém
+  consiga mais ler o valor no painel. Antes, confira que o valor está no cofre.
+
+## Fase 3: homologação no ar e testes
+
+- [ ] **3.1 Primeira implantação.** Com os itens da Fase 1 na `main`, o `app` e o `worker` implantam
+  sozinhos (ou use [[Deployments › Deploy]]). Em [[Deployments › View logs]]:
+  - o pre-deploy aplica as migrações;
+  - a saúde fica verde;
+  - o worker mostra os consumidores ligados.
+- [ ] **3.2 Dados fictícios e primeiro usuário.** Use o endereço público do banco, que fica em
+  [[Postgres › Variables › DATABASE_PUBLIC_URL]]. A senha e o endereço são digitados sem ficar no
+  histórico do PowerShell:
+  ```powershell
+  $env:DATABASE_URL = Read-Host "Cole a DATABASE_PUBLIC_URL da homologação"
+  pnpm --filter api dados-ficticios
+  $env:ADMIN_INICIAL_NOME = Read-Host "Nome"
+  $env:ADMIN_INICIAL_EMAIL = Read-Host "E-mail"
+  $s = Read-Host "Senha (mín. 12)" -AsSecureString
+  $env:ADMIN_INICIAL_SENHA = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($s))
+  pnpm --filter api admin-inicial
+  Remove-Item Env:DATABASE_URL, Env:ADMIN_INICIAL_NOME, Env:ADMIN_INICIAL_EMAIL, Env:ADMIN_INICIAL_SENHA
+  ```
+  A variável definida no PowerShell vale mais que o `.env` local, então os comandos vão para o banco da
+  Railway. Confirme entrando no site com o usuário criado.
+- [ ] **3.3 Asaas sandbox:**
+  1. Em sandbox.asaas.com: [[Integrações › Chaves de API › Gerar chave]].
+  2. No sistema: [[Administração › Integração Asaas]], cole a chave e escolha **Sandbox**.
+  3. A faixa de ambiente de testes aparece.
+- [ ] **3.4 Webhook do sandbox:** [[Integrações › Webhooks › Adicionar]].
+  - URL: `https://<domínio da homologação>/api/webhooks/asaas`.
+  - Token de autenticação: o `ASAAS_WEBHOOK_TOKEN` da homologação.
+  - Fila ativa.
+  - Eventos: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_REFUNDED`, `PAYMENT_DELETED`,
+    `PAYMENT_RESTORED`, `PAYMENT_CHARGEBACK_REQUESTED` e `PAYMENT_CHARGEBACK_DISPUTE`.
+- [ ] **3.5 Teste de ponta a ponta** (resultados na issue #49):
+  1. Emitir uma cobrança, pagar no sandbox e ver a baixa e a movimentação aparecerem.
+  2. Abrir `/cobrancas` direto e recarregar: carrega a tela.
+  3. Cookie `integracasd_sessao` com Secure, HttpOnly e SameSite Strict (F12 › Application).
+  4. Token errado no webhook dá 401:
+     ```powershell
+     curl.exe -s -o NUL -w "%{http_code}" -X POST https://<domínio da homologação>/api/webhooks/asaas -H "asaas-access-token: errado" -H "content-type: application/json" -d "{}"
+     ```
+  5. A documentação está fechada: `/api/docs` não abre.
+  6. TLS antigo é recusado ([Segurança.NF004]). O comando abaixo tem de **falhar**:
+     ```powershell
+     curl.exe -s -o NUL --tlsv1.0 --tls-max 1.1 https://<domínio da homologação>/
+     ```
+  7. Bloqueio da conta depois de 5 senhas erradas, testado com um usuário de teste.
+  8. Nenhum erro de CSP no console do navegador.
+  9. Simulação do mês de virada (1.13).
+- [ ] **3.6 Desligar a homologação entre validações.** O `app` já dorme sozinho (Serverless). Para o
+  worker: [[worker › Deployments › ⋮ › Remove]]. Para religar: [[Deploy]] no último deployment.
+
+## Fase 4: backups e teste de restauração
+
+- [ ] **4.1 Bucket R2:** Cloudflare › [[R2 Object Storage]] › ative o R2 (pede cartão; até 10 GB é
+  grátis) › [[Create bucket]].
+  - Nome `integracasd-backups`, Location Automatic, Standard.
+  - Sem acesso público.
+- [ ] **4.2 Apagar o que tiver mais de 35 dias:**
+  [[integracasd-backups › Settings › Object lifecycle rules › Add rule]] → Delete objects after 35 days.
+- [ ] **4.3 Credencial:** [[R2 › Manage API tokens › Create API token]].
+  - **Object Read & Write**, só no bucket `integracasd-backups`.
+  - Copie para o cofre: Access Key ID, Secret Access Key e o endpoint
+    `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`.
+- [ ] **4.4 Monitores:** no Healthchecks.io, crie os checks "backup homologação" e "backup produção",
+  com período de 1 dia e tolerância de 2 h. **Pause** o de produção até o 5.6.
+- [ ] **4.5 Senhas do rclone.** Instale o rclone no Windows (`winget install Rclone.Rclone`). Gere duas
+  senhas, guarde as duas no cofre e tire a versão "obscurecida" de cada uma:
+  ```powershell
+  $b = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); ($b | ForEach-Object { $_.ToString('x2') }) -join ''   # rode 2x: senha e salt
+  rclone obscure <senha>
+  rclone obscure <salt>
+  ```
+- [ ] **4.6 Serviço `backup` na homologação:** [[+ Create › GitHub Repo › ry7a/IntegraCASD]].
+  1. Nome: **`backup`**.
+  2. Build:
+     - Dockerfile path `scripts/backup/Dockerfile` (ou a variável `RAILWAY_DOCKERFILE_PATH`);
+     - Watch paths: `scripts/backup/**`.
+  3. Deploy:
+     - Cron Schedule `0 6 * * *` (a Railway usa UTC: 6h UTC = 3h em Brasília);
+     - Restart policy **Never**;
+     - mesma região.
+  4. Variáveis:
+     ```
+     AMBIENTE=homologacao
+     DATABASE_URL=${{Postgres.DATABASE_URL}}
+     BACKUP_PING_URL=<URL do check "backup homologação">
+     RCLONE_CONFIG_R2_TYPE=s3
+     RCLONE_CONFIG_R2_PROVIDER=Cloudflare
+     RCLONE_CONFIG_R2_ACCESS_KEY_ID=<4.3>
+     RCLONE_CONFIG_R2_SECRET_ACCESS_KEY=<4.3>
+     RCLONE_CONFIG_R2_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+     RCLONE_CONFIG_R2_ACL=private
+     RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+     RCLONE_CONFIG_R2CIFRADO_TYPE=crypt
+     RCLONE_CONFIG_R2CIFRADO_REMOTE=r2:integracasd-backups
+     RCLONE_CONFIG_R2CIFRADO_FILENAME_ENCRYPTION=off
+     RCLONE_CONFIG_R2CIFRADO_DIRECTORY_NAME_ENCRYPTION=false
+     RCLONE_CONFIG_R2CIFRADO_PASSWORD=<senha obscurecida, 4.5>
+     RCLONE_CONFIG_R2CIFRADO_PASSWORD2=<salt obscurecido, 4.5>
+     ```
+- [ ] **4.7 Testar agora:** rode o cron uma vez à mão com [[backup › Deployments › Deploy]] e confira:
+  - o arquivo aparece no bucket, em `homologacao/`;
+  - o check do Healthchecks fica verde.
+- [ ] **4.8 Teste de restauração** ([Confiabilidade.NF006], exigido antes da entrega):
+  1. Configure os mesmos remotes no rclone do Windows (`rclone config`).
+  2. Baixe o dump:
+     ```powershell
+     rclone copy r2cifrado:homologacao/<arquivo>.dump .\backups\
+     ```
+  3. Restaure com `.\scripts\backup\restaurar-backup.ps1 -Arquivo .\backups\<arquivo>.dump`.
+  4. Faça as três conferências de [backup-e-restauracao.md](backup-e-restauracao.md) e **registre na
+     tabela de lá** (fecha a pendência da #52).
+
+## Fase 5: projeto de produção
+
+Pré-requisito: a diretoria validou a homologação ([Hardware e software.NF004]).
+
+- [ ] **5.1 Branch de produção.** A produção implanta só a branch `producao`, que aponta para o commit
+  validado:
+  ```powershell
+  git fetch
+  git push origin <sha validado>:refs/heads/producao
+  ```
+- [ ] **5.2 Projeto `integracasd-producao`:** repita a Fase 2 com estas diferenças:
+  - **Banco novo.** Ele nunca recebe chave de sandbox: a tabela `clientes_asaas` não guarda o ambiente.
+  - Branch **`producao`** no `app` e no `worker`. O Wait for CI pode ficar desligado, porque o commit
+    já passou no CI na `main`.
+  - **Serverless desligado** no `app`.
+  - `ASAAS_AMBIENTE=producao`, segredos **novos** (2.7) e o domínio `integracasd.up.railway.app` (ou
+    o nome que estiver livre).
+  - **Worker criado, mas sem implantação ativa** até o 6.7: depois de criar, use
+    [[worker › Deployments › ⋮ › Remove]].
+- [ ] **5.3 Primeiro usuário de produção:** o 3.2 **sem** a linha do `dados-ficticios`, com a
+  `DATABASE_PUBLIC_URL` da produção. Entre no site e **troque a senha pela tela**.
+- [ ] **5.4 Teste de fumaça:**
+  ```powershell
+  curl.exe -s -o NUL -w "%{http_code} " https://<domínio da produção>/            # 200
+  curl.exe -s -o NUL -w "%{http_code} " https://<domínio da produção>/cobrancas   # 200
+  curl.exe -s https://<domínio da produção>/api/saude                               # 200
+  curl.exe -s https://<domínio da produção>/api/saude/completa                      # 503 até o 6.7
+  ```
+- [ ] **5.5 Monitor de disponibilidade:** no UptimeRobot, crie um monitor HTTP(s) em
+  `https://<domínio da produção>/api/saude/completa`, a cada 5 minutos, com alertas para o e-mail do 0.2
+  e para a diretoria. Deixe **pausado** até o 6.7.
+- [ ] **5.6 Backup da produção:** serviço `backup` como no 4.6, com `AMBIENTE=producao` e a URL do check
+  "backup produção" (despause o check). Rode uma vez à mão e confira o arquivo em `producao/`.
+- [ ] **5.7 Fechar o banco para fora.** Depois da carga (Fase 6), remova o acesso público do banco em
+  [[Postgres › Settings › Networking › TCP Proxy]]. Religue só quando precisar.
+
+## Fase 6: Asaas real e carga inicial
+
+Siga junto o [`scripts/carga-inicial/README.md`](../../scripts/carga-inicial/README.md). Pré-requisito:
+as decisões 1.8 e 1.13 tomadas e já implantadas.
+
+> **Do 6.1 ao 6.7, o worker de produção fica desligado.** Com a chave e os parâmetros cadastrados,
+> ligá-lo dispara cobranças reais antes da conferência. Nesse intervalo, **não avance a branch
+> `producao`.**
+
+- [ ] **6.1 Chave de produção:**
+  1. No Asaas real: [[Integrações › Chaves de API › Gerar chave]].
+  2. No sistema: [[Administração › Integração Asaas]], **Produção**.
+- [ ] **6.2 Webhook de produção:** como no 3.4, com a URL da produção e o `ASAAS_WEBHOOK_TOKEN` de
+  produção. Teste o token errado (3.5, item 4): tem de dar 401.
+- [ ] **6.3 Gerar o SQL da carga** na sua máquina, conforme o README. O `--hoje` tem de bater com o mês
+  de virada.
+- [ ] **6.4 Aplicar a carga** pelo endereço público do banco. O arquivo é montado no contêiner, o que
+  evita problemas de acento no PowerShell:
+  ```powershell
+  $url = Read-Host "Cole a DATABASE_PUBLIC_URL da produção"
+  docker run --rm -v "${PWD}\scripts\carga-inicial\dados:/dados" postgres:18.6 psql $url -v ON_ERROR_STOP=1 -f /dados/carga.sql
+  Remove-Variable url
+  ```
+  O arquivo tem dados reais: apague-o depois da conferência. A carga pode ser repetida sem duplicar.
+- [ ] **6.5 Conferência e aprovação** da área administrativa ([Distribuição.NF002]).
+- [ ] **6.6 Parâmetros de cobrança**, com o dia de geração combinado no 1.13.
+- [ ] **6.7 Ligar o worker:** [[worker › Deployments › Deploy]]. Confira os logs. Em até 30 min,
+  `/api/saude/completa` responde 200. Então despause o monitor do UptimeRobot.
+- [ ] **6.8 Backup logo após a carga:** [[backup › Deployments › Deploy]] e confira no R2.
+- [ ] **6.9 Fechar o banco** (5.7).
+
+## Fase 7: domínio próprio (quando o CASD tiver)
+
+- [ ] **7.1 Registrar** `<nome>.org.br` no registro.br, no CNPJ do CASD (~R$ 40/ano). O `.org.br` exige
+  CNPJ de entidade sem fins lucrativos; se der problema, use `.com.br`.
+- [ ] **7.2 Domínio no `app` de produção:**
+  1. [[app › Settings › Networking › Custom Domain]] → `financeiro.<domínio>`, porta 3000.
+  2. A Railway mostra um **CNAME**, e às vezes também um TXT de verificação.
+- [ ] **7.3 DNS no registro.br:**
+  1. [[Painel › domínio › DNS › Editar zona]] (use os servidores DNS do próprio registro.br).
+  2. Crie o CNAME `financeiro` apontando para o valor da Railway, e o TXT, se ela pediu.
+  3. Espere a Railway mostrar o domínio como ativo, com certificado.
+- [ ] **7.4 Atualizar o que usa o endereço:**
+  - URL do webhook no Asaas (6.2);
+  - monitor do UptimeRobot;
+  - favoritos da diretoria.
+
+  Os usuários precisam entrar de novo, porque o cookie é do endereço antigo.
+- [ ] **7.5 E-mail com o domínio:** verifique o domínio no Resend (registros TXT/MX no registro.br) e
+  troque o `EMAIL_REMETENTE` para `IntegraCASD <alertas@<domínio>>`.
+
+## Depois do ar
+
+### Implantar uma versão nova
+
+1. Integre na `main` como sempre. A homologação implanta sozinha depois do CI verde.
+2. A diretoria valida na homologação.
+3. Promova **o mesmo commit** para a produção:
+   ```powershell
+   git fetch
+   git push origin <sha validado>:refs/heads/producao
+   ```
+4. Acompanhe em [[app › Deployments]]: pre-deploy (migrações), saúde verde. Depois confira os logs do
+   worker. Anote a versão na issue da entrega.
+
+### Voltar para a versão anterior ([Distribuição.NF003]: até 30 min)
+
+1. [[app › Deployments]] → no deployment anterior, [[⋮ › Rollback]]. Faça o mesmo no `worker`.
+2. Depois, volte também a branch para o commit anterior, para a próxima implantação não desfazer o
+   rollback:
+   ```powershell
+   git push --force-with-lease origin <sha anterior>:refs/heads/producao
+   ```
+
+Voltar o código não desfaz migração. Só é seguro se as migrações novas foram do tipo "expandir" (regra
+B7). Senão, restaure o backup feito antes. Leia também as Consequências do ADR-0005.
+
+### Operação
+
+- **Toda semana:**
+  - os dois checks do Healthchecks verdes;
+  - o gasto em [[Workspace › Usage]];
+  - os logs do worker sem erros repetidos.
+- **Todo mês:**
+  - teste de restauração do último backup de produção (4.8), registrado em backup-e-restauracao.md;
+  - relatório do UptimeRobot (meta: 99%).
+- **Nunca:**
+  - trocar a `CHAVE_DE_CIFRAGEM` em uso;
+  - deixar o TCP Proxy do banco aberto sem necessidade;
+  - rodar `dados-ficticios` ou `migrate reset` em produção;
+  - ligar Serverless no `app` ou no `worker` de produção.
+
+### Incidentes
+
+- **Site fora do ar:** veja [[app › Deployments › View logs]] e o status da Railway (status.railway.com).
+  Se um deploy quebrou, faça o rollback.
+- **Fila do Asaas pausada** (15 falhas seguidas):
+  1. Corrija a causa.
+  2. Reative em [[Integrações › Webhooks]].
+  3. Rode [[Cobranças › Sincronizar]].
+- **Banco perdido ou corrompido:**
+  1. Crie um Postgres novo no projeto.
+  2. Restaure o último dump do R2 com `pg_restore` pelo endereço público dele (o mesmo `docker run` do
+     6.4, com `pg_restore --no-owner -d $url /dados/<arquivo>.dump`).
+  3. Aponte `DATABASE_URL` do `app`, do `worker` e do `backup` para o novo
+     (`${{<NomeDoNovo>.DATABASE_URL}}`).
+  4. Reimplante.
+  5. Rode a sincronização com o Asaas para o período desde o backup.
+- **Gasto alto:** veja qual serviço em [[Workspace › Usage]]. A homologação esquecida ligada é o
+  suspeito número um (3.6).
+
+## Referências
+
+- [ADR-0006: hospedagem na Railway](../adr/0006-hospedagem-na-railway.md)
+- [Backup e restauração](backup-e-restauracao.md)
+- [Documentação da Railway](https://docs.railway.com)
+- [Asaas: webhooks](https://docs.asaas.com)
