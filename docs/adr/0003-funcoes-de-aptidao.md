@@ -60,6 +60,7 @@ Regras de funcionamento:
 - **B9 (webhook não processa)** e **B10 (idempotência e atomicidade)**: webhook e worker ainda não existem. Os testes serão criados junto com o módulo de Cobranças: B9 confere que o controller do webhook só valida `asaas-access-token`, grava, enfileira e responde ([Desempenho.NF001]); B10 confere que a baixa e a marcação de "processado" ocorrem na mesma transação e que um evento repetido não gera efeito duplicado ([Confiabilidade.NF003], [Confiabilidade.NF004]). Enquanto isso, esses requisitos constam como "pendente" em `requisitos-verificaveis.json`.
 - ~~**F6 em modo estrito**~~ (feito em 26/10/2026): todas as telas passaram a usar a API e o script `verificar:build` roda `verificar-dados-ficticios.mjs --estrito`. Uma tela nova pode voltar a usar dados fictícios durante o desenvolvimento, mas não entra na `main` com eles.
 - **Exceções de autenticação (B8):** `GET /api` e `GET /api/alunos` estão em `excecoes.json` porque a autenticação ainda não existe. Ao implementá-la, remover as exceções (o teste obriga: exceção obsoleta falha).
+  - _Nota (2026-11-08):_ as duas exceções já foram removidas com a autenticação, e `GET /api` ("Hello World") deixou de existir.
 - **Outras exceções registradas:** B3 no DTO de alunos (importa o enum gerado pelo Prisma só para o OpenAPI) e F5 em `estilo-telas.css` (cores em hex que devem migrar para variáveis do tema em `index.css`).
 - `apps/web/src/App.css` é sobra do modelo do Vite e não é importado por ninguém; remover numa limpeza.
 

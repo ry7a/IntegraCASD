@@ -79,8 +79,10 @@ src/modulos/cobrancas/
   ou `paraConciliar`); `existeNoAsaas` e `conferirCobrancaNoAsaas` ficam em `dominio/cobranca.ts`.
 - Em testes, use um dublê da interface. Nunca chame o Asaas real em teste automatizado.
 - Respostas 429 são tratadas no cliente: aguardar o intervalo informado e repetir.
-- Cada chamada ao Asaas tem tempo limite de 15 s (`TEMPO_LIMITE_EM_MS` no cliente HTTP). Estourou, vira o mesmo
-  `ErroAsaas` de Asaas indisponível que a falha de rede: quem chamou reage igual (rotina e webhook repetem).
+- Cada chamada ao Asaas tem tempo limite: 15 s nas leituras (GET, `TEMPO_LIMITE_DE_LEITURA_EM_MS`) e 45 s nos
+  pedidos que criam ou alteram (POST, PUT, DELETE, `TEMPO_LIMITE_DE_ESCRITA_EM_MS`), porque abortar uma criação
+  cedo demais pode deixar a cobrança no Asaas e não aqui. Estourou, vira o mesmo `ErroAsaas` de Asaas
+  indisponível que a falha de rede: quem chamou reage igual (rotina e webhook repetem).
 - Erros do Asaas são traduzidos para mensagens orientadas à ação antes de chegar à API ([Usabilidade.NF002]). Nunca repasse a mensagem crua da plataforma.
 
 ## Webhook e worker
@@ -106,6 +108,9 @@ src/modulos/cobrancas/
   HTTP de um provedor (Resend), sem dependência nova (a Railway bloqueia SMTP nos planos baratos). Lê `EMAIL_API_KEY` e
   `EMAIL_REMETENTE` do `.env` a cada envio (sem eles o alerta não sai e o motivo vai para o log) e nunca lança: devolve
   `enviado: false` com o motivo. A chave nunca vai para código, log ou trilha. Em testes, use `NotificadorDeAlertasFalso`.
+  A variável opcional `EMAIL_ALERTAS_PARA` (lista separada por vírgula, lida a cada envio) troca os destinatários:
+  preenchida, os alertas vão só para ela, e não para a diretoria. Serve enquanto o remetente for o de teste do
+  Resend, que só entrega para o dono da conta (`destinatarios-dos-alertas.ts`).
 - **Alerta de webhook parado** ([Confiabilidade.NF002]): a rotina `vigilancia-do-asaas` roda a cada 30 minutos no worker,
   mede há quanto tempo o Asaas não envia notificações (desde a última recebida ou do cadastro da chave) e, passado o prazo
   configurado (12, 24 ou 48 h), avisa a diretoria por e-mail. Um registro em `alertas_conciliacao` por interrupção evita
@@ -115,11 +120,17 @@ src/modulos/cobrancas/
 ## Segurança e auditoria
 
 - Toda rota exige sessão autenticada (guarda global), exceto login, webhook (que usa o token próprio) e saúde,
-  marcadas com `@Publico()`. O teste B8 só aceita `@Publico()` nesses três controllers.
+  marcadas com `@Publico()`. O teste B8 só aceita `@Publico()` nesses três controllers, só deixa a chave
+  `CHAVE_ROTA_PUBLICA` aparecer no decorator e na guarda, e fixa o número de rotas da saúde (2) e do webhook (1):
+  uma rota nova ali não nasce pública sem ninguém ver.
+- A guarda usa o perfil **atual** do usuário (`sessao.usuario.perfil`), não o copiado para a sessão no login:
+  rebaixar alguém vale na hora. A coluna `sessoes.perfil` ficou só como registro do perfil no login (candidata a
+  sair numa migração futura, no padrão expandir e contrair).
 - **Saúde** (`src/compartilhado/saude/`, fora do OpenAPI): `GET /api/saude` responde 200 se o banco responde
   (a Railway libera cada implantação por ela; não depende do worker); `GET /api/saude/completa` exige também
-  que a rotina `vigilancia-do-asaas` tenha concluído na última hora (lida da tabela de jobs do pg-boss pelo
-  `AgendadorDeRotinas.ultimaExecucaoConcluida`) e é a que o monitor externo vigia. Falha vira 503, sem detalhes.
+  que a rotina `vigilancia-do-asaas` tenha concluído na última hora (um `max(completed_on)` na tabela de jobs do
+  pg-boss, pelo `AgendadorDeRotinas.ultimaExecucaoConcluida`) e é a que o monitor externo vigia. A resposta da
+  completa é reaproveitada por 30 s, para um excesso de pedidos não pesar no banco. Falha vira 503, sem detalhes.
 - Rotas de Administração ficam em `/api/admin/...` e exigem perfil de diretoria; o perfil é verificado no backend, sempre.
 - No controller, declare também para o contrato (regra B8): `@ApiCookieAuth('cookie')` em toda rota autenticada e,
   nas de Administração, `@ApiExtension('x-perfil', 'DIRETORIA')` com `@Perfis(PerfilUsuario.DIRETORIA)`.
@@ -129,7 +140,10 @@ src/modulos/cobrancas/
   dentro da mesma transação, nunca `tx.registroAuditoria.create` direto. A trilha é só de inclusão: o banco
   recusa `UPDATE`/`DELETE` nela (ADR-0004, regra B13). Rotina automática grava com `usuarioId: null`.
   Como ela não pode ser apagada, o `detalhe` **nunca leva dado pessoal** (nome, e-mail, CPF, telefone...):
-  o registro já é identificado por `entidade` + `registroId`, e o detalhe diz o que mudou (regra B14).
+  o registro já é identificado por `entidade` + `registroId`, e o detalhe diz o que mudou (regra B14, que também
+  barra `JSON.stringify` na chamada). Como rede de segurança, `registrarNaTrilha` mascara e-mail e CPF no detalhe
+  antes de gravar. Texto livre digitado pelo usuário (descrição, justificativa, motivo) ainda pode levar um nome:
+  a máscara não pega isso.
 
 ## Testes
 
