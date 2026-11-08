@@ -69,7 +69,11 @@ export class UsuariosService {
     }
 
     const senhaHash = dados.novaSenha ? await criarHashDaSenha(dados.novaSenha) : undefined;
-    const revogarSessoes = dados.ativo === false || senhaHash !== undefined;
+    // O perfil é copiado para a sessão no login e a guarda confere `sessao.perfil`: sem revogar, o
+    // perfil antigo valeria até a sessão expirar (12 h). Por isso trocar o perfil derruba as sessões
+    // abertas, como já acontece ao inativar ou trocar a senha; a pessoa entra de novo com o perfil novo.
+    const trocaDePerfil = dados.perfil !== undefined && dados.perfil !== atual.perfil;
+    const revogarSessoes = dados.ativo === false || senhaHash !== undefined || trocaDePerfil;
     return this.prisma.$transaction(async (tx) => {
       const alterado = await tx.usuario.update({
         where: { id },
@@ -93,7 +97,9 @@ export class UsuariosService {
         operacao: alterado.ativo ? 'ALTERACAO' : 'INATIVACAO',
         entidade: 'USUARIO',
         registroId: alterado.id,
-        detalhe: `Usuario ${alterado.email} alterado.`,
+        detalhe: trocaDePerfil
+          ? `Usuario ${alterado.email} alterado; perfil ${atual.perfil} -> ${alterado.perfil}, sessoes abertas revogadas.`
+          : `Usuario ${alterado.email} alterado.`,
       });
       return alterado;
     });
