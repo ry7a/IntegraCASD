@@ -31,4 +31,8 @@ export abstract class AgendadorDeRotinas {
 
   // Liga a rotina ao código que a executa. Só o worker chama.
   abstract consumir(rotina: string, executar: (dados: DadosDaRotina) => Promise<void>): Promise<void>;
+
+  // Quando a rotina terminou sem erro pela última vez (null se não há registro). Usada pela saúde
+  // completa (/api/saude/completa) para saber se o worker está vivo.
+  abstract ultimaExecucaoConcluida(rotina: string): Promise<Date | null>;
 }

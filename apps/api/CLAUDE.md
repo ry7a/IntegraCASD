@@ -24,7 +24,7 @@ src/modulos/cobrancas/
 - Camadas conferidas por teste (B2, B3): `dominio/` não importa Nest nem Prisma; `api/` não importa `infra/`;
   Prisma e `$transaction` nunca aparecem em `api/` nem em `dominio/`.
 - Código compartilhado entre módulos fica em `src/compartilhado/`: `asaas/`, `auditoria/`, `autenticacao/`,
-  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
+  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/` e `datas.ts` (dia de hoje em São Paulo).
 - Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
   (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
   enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
@@ -105,7 +105,12 @@ src/modulos/cobrancas/
 
 ## Segurança e auditoria
 
-- Toda rota exige sessão autenticada (guarda global), exceto login e webhook (que usa o token próprio), marcadas com `@Publico()`.
+- Toda rota exige sessão autenticada (guarda global), exceto login, webhook (que usa o token próprio) e saúde,
+  marcadas com `@Publico()`. O teste B8 só aceita `@Publico()` nesses três controllers.
+- **Saúde** (`src/compartilhado/saude/`, fora do OpenAPI): `GET /api/saude` responde 200 se o banco responde
+  (a Railway libera cada implantação por ela; não depende do worker); `GET /api/saude/completa` exige também
+  que a rotina `vigilancia-do-asaas` tenha concluído na última hora (lida da tabela de jobs do pg-boss pelo
+  `AgendadorDeRotinas.ultimaExecucaoConcluida`) e é a que o monitor externo vigia. Falha vira 503, sem detalhes.
 - Rotas de Administração ficam em `/api/admin/...` e exigem perfil de diretoria; o perfil é verificado no backend, sempre.
 - No controller, declare também para o contrato (regra B8): `@ApiCookieAuth('cookie')` em toda rota autenticada e,
   nas de Administração, `@ApiExtension('x-perfil', 'DIRETORIA')` com `@Perfis(PerfilUsuario.DIRETORIA)`.

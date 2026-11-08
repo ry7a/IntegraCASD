@@ -1,4 +1,4 @@
-// B8: toda rota é autenticada, exceto login e webhook ([Segurança.NF001]).
+// B8: toda rota é autenticada, exceto login, webhook e saúde ([Segurança.NF001]).
 // Lê o contrato gerado (packages/api-client/openapi.json), que o CI mantém em dia (F3).
 //
 // Convenções para quem for implementar a autenticação:
@@ -12,11 +12,19 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { RAIZ_REPO } from './arquivos.js';
+import { PASTA_SRC, RAIZ_REPO, caminhoRelativo, lerCodigo, listarArquivos } from './arquivos.js';
 import { aplicarExcecoes } from './excecoes.js';
 
 // Únicas rotas que podem ser públicas (o prefixo /api vem de configurarApp em openapi.ts).
 const ROTAS_PUBLICAS = ['/api/auth/login', '/api/webhooks/asaas'];
+
+// Únicos arquivos que podem marcar rota com @Publico(). O webhook e a saúde ficam fora do OpenAPI
+// (@ApiExcludeController), então o teste do contrato não os enxerga: esta lista fecha a brecha.
+const ARQUIVOS_COM_ROTA_PUBLICA = [
+  'apps/api/src/modulos/acesso/api/autenticacao.controller.ts', // login
+  'apps/api/src/modulos/cobrancas/api/webhook-asaas.controller.ts', // webhook (token próprio)
+  'apps/api/src/compartilhado/saude/saude.controller.ts', // saúde (Railway e monitor externo)
+];
 const PREFIXO_ADMIN = '/api/admin';
 const METODOS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'];
 
@@ -53,6 +61,16 @@ describe('B8: toda rota autenticada', () => {
       .filter(({ caminho }) => caminho.startsWith(PREFIXO_ADMIN))
       .filter(({ operacao }) => operacao['x-perfil'] !== 'DIRETORIA')
       .map(({ alvo }) => alvo);
+    expect(violacoes).toEqual([]);
+  });
+});
+
+describe('B8: rotas públicas só onde pode', () => {
+  it('@Publico() só aparece nos controllers de login, webhook e saúde', () => {
+    const violacoes = listarArquivos(PASTA_SRC, '.ts')
+      .filter((arquivo) => /@Publico\(\)/.test(lerCodigo(arquivo)))
+      .map(caminhoRelativo)
+      .filter((relativo) => !ARQUIVOS_COM_ROTA_PUBLICA.includes(relativo));
     expect(violacoes).toEqual([]);
   });
 });

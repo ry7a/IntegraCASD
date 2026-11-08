@@ -4,6 +4,7 @@ import { AppService } from './app.service.js';
 import { EventosInternosModule } from './compartilhado/eventos/eventos-internos.js';
 import { PrismaModule } from './compartilhado/prisma/prisma.module.js';
 import { AutenticacaoModule } from './compartilhado/autenticacao/autenticacao.module.js';
+import { SaudeModule } from './compartilhado/saude/saude.module.js';
 import { AcessoModule } from './modulos/acesso/index.js';
 import { AdministracaoModule } from './modulos/administracao/index.js';
 import { CadastrosModule } from './modulos/cadastros/index.js';
@@ -16,6 +17,7 @@ import { MovimentacoesModule } from './modulos/movimentacoes/index.js';
     PrismaModule,
     EventosInternosModule,
     AutenticacaoModule,
+    SaudeModule,
     AcessoModule,
     AdministracaoModule,
     CadastrosModule,

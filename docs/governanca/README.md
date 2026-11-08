@@ -32,7 +32,7 @@ Os testes não executam o código: leem os `.ts` com `node:fs` e conferem import
 | B4  | `fetch(`, `axios`, `undici`, `node:http(s)` e `asaas.com` só em `src/compartilhado/asaas/` | chamar o Asaas direto de um módulo | usar a interface do Cliente Asaas |
 | B5  | Schema sem `Float`/`Decimal`; campo `...Centavos` é `Int`; sem `parseFloat` e `.toFixed(` no `src/` | valor monetário decimal | centavos, como inteiro |
 | B6  | Sem `.delete(`, `.deleteMany(` no `src/`; sem `DELETE FROM` e `DROP TABLE` nas migrações | excluir registro | inativar (campo `ativo`/situação) ou estornar |
-| B8  | Toda operação do `packages/api-client/openapi.json` tem `security` não vazio, exceto login e webhook; rota `/api/admin...` declara `x-perfil: DIRETORIA` | rota nova sem autenticação | veja "Convenção de segurança" abaixo |
+| B8  | Toda operação do `packages/api-client/openapi.json` tem `security` não vazio, exceto login e webhook; rota `/api/admin...` declara `x-perfil: DIRETORIA`; `@Publico()` só nos controllers de login, webhook e saúde | rota nova sem autenticação | veja "Convenção de segurança" abaixo |
 | B11 | Nenhum arquivo versionado com o prefixo de chave do Asaas; nenhum `.env` versionado (só `.env.example`) | colar a chave num arquivo | usar o `.env` (ignorado pelo git) |
 | B13 | Só `src/compartilhado/auditoria/trilha.ts` grava em `registroAuditoria`; ninguém faz `update`/`delete` nela; existe a migração com o gatilho que recusa `UPDATE`, `DELETE` e `TRUNCATE` na trilha ([Segurança.NF006]) | `tx.registroAuditoria.create(...)` direto no módulo | `registrarNaTrilha(tx, {...})` dentro da transação da alteração (ADR-0004) |
 | G3  | Todo `package.json` do workspace só tem dependências da lista; `typescript` 6.0.3, `prisma`, `@prisma/client` e `@prisma/adapter-pg` 7.10.0 | instalar pacote novo | veja "Dependências" abaixo |
@@ -80,7 +80,7 @@ Quando uma regra é violada por um motivo legítimo, **não se enfraquece a regr
 ## Convenção de segurança (B8)
 
 - **Rota autenticada:** declarar o esquema de segurança do Swagger no controller, por exemplo `@ApiCookieAuth()`. No `openapi.json` vira `"security": [{ "cookie": [] }]`.
-- **Rotas públicas permitidas:** apenas `/api/auth/login` e `/api/webhooks/asaas` (lista fixa em `rotas-autenticadas.spec.ts`).
+- **Rotas públicas permitidas:** apenas `/api/auth/login`, `/api/webhooks/asaas`, `/api/saude` e `/api/saude/completa`. O webhook e a saúde ficam fora do contrato (`@ApiExcludeController`), por isso o teste também confere que `@Publico()` só aparece nos três controllers da lista fixa em `rotas-autenticadas.spec.ts`.
 - **Rotas de Administração** (caminho começa com `/api/admin`): além da segurança, declarar `@ApiExtension('x-perfil', 'DIRETORIA')`. O perfil é verificado de verdade no backend; a extensão só torna o requisito visível e testável no contrato.
 - Hoje a autenticação não existe: `GET /api` e `GET /api/alunos` são exceções registradas. Ao implementar a autenticação, remova as exceções.
 

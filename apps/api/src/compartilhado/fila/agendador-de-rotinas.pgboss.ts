@@ -34,4 +34,19 @@ export class AgendadorDeRotinasPgBoss extends AgendadorDeRotinas {
       }
     });
   }
+
+  async ultimaExecucaoConcluida(rotina: string): Promise<Date | null> {
+    // O pg-boss guarda cada execução como um job na própria tabela e só apaga os concluídos depois de
+    // 7 dias (deleteAfterSeconds padrão). Uma rotina a cada 30 minutos deixa uns 340 jobs ali; o limite
+    // abaixo cobre isso com folga. findJobs devolve do mais antigo para o mais novo, por isso o laço.
+    const jobs = await this.pgBoss.boss.findJobs(rotina, { limit: 5000 });
+    let ultima: Date | null = null;
+    for (const job of jobs) {
+      if (job.state === 'completed' && job.completedOn !== null) {
+        const concluidaEm = new Date(job.completedOn);
+        if (ultima === null || concluidaEm > ultima) ultima = concluidaEm;
+      }
+    }
+    return ultima;
+  }
 }
