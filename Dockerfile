@@ -39,4 +39,11 @@ ENV NODE_ENV=production
 
 WORKDIR /repo/apps/api
 EXPOSE 3000
+
+# Roda como o usuário sem privilégios `node` (uid 1000, que já vem na imagem oficial), não como root: uma
+# falha na aplicação não dá ao invasor poder de root no contêiner. Os arquivos de /repo continuam do root
+# (copiados e gerados acima) e o `node` só os lê, o que basta: nem a API, nem o worker, nem o
+# `prisma migrate deploy` do pre-deploy escrevem em /repo (os caches, como o do jiti, caem no /tmp ou são
+# desligados quando a pasta não aceita escrita). Vale para tudo que rodar nesta imagem depois desta linha.
+USER node
 CMD ["node", "dist/main.js"]
