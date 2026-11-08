@@ -1,5 +1,6 @@
 // Regras dos parâmetros das cobranças recorrentes [Administração.RF003]. Só TypeScript puro.
 // Datas no formato "AAAA-MM-DD".
+import { mesNoFormatoAAAAMM } from '../../../compartilhado/datas.js';
 
 export type ParametrosDeCobranca = {
   valorMensalidadeCentavos: number;
@@ -80,7 +81,15 @@ function dia(ano: number, mes: number, diaDoMes: number): string {
 
 // A próxima geração é no dia de geração deste mês, se ainda não passou; senão, no do mês seguinte.
 // O vencimento é no mesmo mês da geração (a geração vem sempre antes do vencimento).
-export function proximoCiclo(hoje: string, diaGeracao: number, diaVencimento: number): { geracao: string; vencimento: string } {
+// `aPartirDe` é a trava GERACAO_A_PARTIR_DE ("AAAA-MM"): a geração recorrente não gera mês anterior a ela
+// (regra em cobrancas/dominio/geracao-recorrente.ts), então a tela anuncia o primeiro mês liberado.
+// Trava em formato inválido é ignorada aqui: em produção ela nem deixa o sistema subir (configuracao.ts).
+export function proximoCiclo(
+  hoje: string,
+  diaGeracao: number,
+  diaVencimento: number,
+  aPartirDe: string | null = null,
+): { geracao: string; vencimento: string } {
   let ano = Number(hoje.slice(0, 4));
   let mes = Number(hoje.slice(5, 7));
   if (Number(hoje.slice(8, 10)) > diaGeracao) {
@@ -89,6 +98,11 @@ export function proximoCiclo(hoje: string, diaGeracao: number, diaVencimento: nu
       mes = 1;
       ano += 1;
     }
+  }
+  // "AAAA-MM" com zeros à esquerda se compara como texto: "2026-12" < "2027-02".
+  if (aPartirDe !== null && mesNoFormatoAAAAMM(aPartirDe) && dia(ano, mes, 1).slice(0, 7) < aPartirDe) {
+    ano = Number(aPartirDe.slice(0, 4));
+    mes = Number(aPartirDe.slice(5, 7));
   }
   return { geracao: dia(ano, mes, diaGeracao), vencimento: dia(ano, mes, diaVencimento) };
 }
@@ -101,8 +115,13 @@ export type Conferencia = {
 };
 
 // O que o usuário confere antes de salvar (fluxo principal, passo 4).
-export function conferir(parametros: ParametrosDeCobranca, hoje: string, alunosCobraveis: number): Conferencia {
-  const ciclo = proximoCiclo(hoje, parametros.diaGeracao, parametros.diaVencimento);
+export function conferir(
+  parametros: ParametrosDeCobranca,
+  hoje: string,
+  alunosCobraveis: number,
+  aPartirDe: string | null = null,
+): Conferencia {
+  const ciclo = proximoCiclo(hoje, parametros.diaGeracao, parametros.diaVencimento, aPartirDe);
   return {
     proximaGeracao: ciclo.geracao,
     proximoVencimento: ciclo.vencimento,

@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import type { ListarAlunosCobraveis } from '../../cadastros/index.js';
 import type { ParametrosRepositorio } from '../infra/parametros.repositorio.js';
 import { AlterarParametrosDeCobranca } from './alterar-parametros-de-cobranca.js';
+import { ConferirParametrosDeCobranca } from './conferir-parametros-de-cobranca.js';
 import { ConsultarParametrosDeCobranca } from './consultar-parametros-de-cobranca.js';
 
 const validos = {
@@ -45,6 +46,15 @@ describe('parâmetros de cobrança [Administração.RF003]', () => {
       alunosCobrados: 2,
       totalPrevistoCentavos: 17000,
     });
+  });
+
+  it('com a trava GERACAO_A_PARTIR_DE, a conferência anuncia o primeiro mês liberado', async () => {
+    const { repositorio } = repositorioFalso({ ...validos, alteradoEm: new Date(), alteradoPor: 'Diretora' });
+    const consultar = new ConsultarParametrosDeCobranca(repositorio, doisAlunos);
+    const { conferencia } = await consultar.executar('2026-12-05', '2027-02');
+    expect(conferencia).toMatchObject({ proximaGeracao: '2027-02-01', proximoVencimento: '2027-02-10' });
+    const conferida = await new ConferirParametrosDeCobranca(doisAlunos).executar(validos, '2026-12-05', '2027-02');
+    expect(conferida).toMatchObject({ proximaGeracao: '2027-02-01', proximoVencimento: '2027-02-10' });
   });
 
   it('grava parâmetros válidos e recusa geração depois do vencimento com 400 (fluxo E1)', async () => {

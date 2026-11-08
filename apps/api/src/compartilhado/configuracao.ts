@@ -1,11 +1,14 @@
 import { Logger } from '@nestjs/common';
+import { mesNoFormatoAAAAMM } from './datas.js';
+import { geracaoAPartirDeDoAmbiente } from './geracao-a-partir-de.js';
 import { chaveMestraDoAmbiente } from './seguranca/cifra.js';
 
 // Confere, na subida da API e do worker, as variáveis sem as quais o sistema não funciona direito.
 // Em produção, configuração inválida impede a subida: melhor a Railway mostrar a implantação como falha
 // do que o sistema no ar recusando webhooks ou sem conseguir ler a chave do Asaas. Fora de produção só
 // avisa no log, para não travar quem ainda não preencheu o .env inteiro.
-// As mensagens dizem o que falta, nunca o valor da variável (são segredos).
+// As mensagens dizem o que falta, nunca o valor da variável (são segredos). Exceção: GERACAO_A_PARTIR_DE,
+// que não é segredo; mostrar o valor ajuda a achar o erro de digitação.
 
 export type Processo = 'api' | 'worker';
 
@@ -25,6 +28,14 @@ export function problemasDaConfiguracao(env: NodeJS.ProcessEnv, processo: Proces
     chaveMestraDoAmbiente(env);
   } catch {
     problemas.push('CHAVE_DE_CIFRAGEM precisa ter 32 bytes em base64 (veja o passo 2.7 do playbook de implantação).');
+  }
+
+  // Opcional (vazia = sem trava). Preenchida com erro, a geração recorrente ficaria parada sem ninguém ver.
+  const geracaoAPartirDe = geracaoAPartirDeDoAmbiente(env);
+  if (geracaoAPartirDe !== null && !mesNoFormatoAAAAMM(geracaoAPartirDe)) {
+    problemas.push(
+      `GERACAO_A_PARTIR_DE ("${geracaoAPartirDe}") precisa estar no formato AAAA-MM, com mês de 01 a 12 (ex.: 2027-02), ou ficar vazia.`,
+    );
   }
 
   // Só a API recebe o webhook do Asaas.

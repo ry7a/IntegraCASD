@@ -59,6 +59,19 @@ describe('problemasDaConfiguracao', () => {
     expect(problemasDaConfiguracao(ambiente({ ASAAS_WEBHOOK_TOKEN: undefined }), 'worker')).toEqual([]);
   });
 
+  it('GERACAO_A_PARTIR_DE é opcional; preenchida, precisa ser AAAA-MM com mês de 01 a 12, na API e no worker', () => {
+    for (const processo of ['api', 'worker'] as const) {
+      expect(problemasDaConfiguracao(ambiente({ GERACAO_A_PARTIR_DE: undefined }), processo)).toEqual([]);
+      expect(problemasDaConfiguracao(ambiente({ GERACAO_A_PARTIR_DE: '  ' }), processo)).toEqual([]);
+      expect(problemasDaConfiguracao(ambiente({ GERACAO_A_PARTIR_DE: '2027-02' }), processo)).toEqual([]);
+      for (const invalida of ['2027-2', '2027-13', '2027-00', '02/2027', 'fevereiro']) {
+        expect(problemasDaConfiguracao(ambiente({ GERACAO_A_PARTIR_DE: invalida }), processo)).toEqual([
+          `GERACAO_A_PARTIR_DE ("${invalida}") precisa estar no formato AAAA-MM, com mês de 01 a 12 (ex.: 2027-02), ou ficar vazia.`,
+        ]);
+      }
+    }
+  });
+
   it('nenhuma mensagem repete o valor das variáveis', () => {
     const env = ambiente({ DATABASE_URL: '', CHAVE_DE_CIFRAGEM: 'valor-secreto-curto', ASAAS_WEBHOOK_TOKEN: 'coloque-segredo-xyz' });
     const texto = problemasDaConfiguracao(env, 'api').join(' ');
@@ -79,5 +92,14 @@ describe('validarConfiguracaoNaSubida', () => {
 
   it('fora de produção, só avisa', () => {
     expect(() => validarConfiguracaoNaSubida('api', ambiente({ CHAVE_DE_CIFRAGEM: '' }))).not.toThrow();
+    expect(() => validarConfiguracaoNaSubida('worker', ambiente({ GERACAO_A_PARTIR_DE: '2027-13' }))).not.toThrow();
+  });
+
+  it('em produção, GERACAO_A_PARTIR_DE inválida impede a subida da API e do worker', () => {
+    for (const processo of ['api', 'worker'] as const) {
+      const env = ambiente({ NODE_ENV: 'production', GERACAO_A_PARTIR_DE: '2027-2' });
+      expect(() => validarConfiguracaoNaSubida(processo, env)).toThrow(/GERACAO_A_PARTIR_DE \("2027-2"\)/);
+    }
+    expect(() => validarConfiguracaoNaSubida('worker', ambiente({ NODE_ENV: 'production', GERACAO_A_PARTIR_DE: '2027-02' }))).not.toThrow();
   });
 });

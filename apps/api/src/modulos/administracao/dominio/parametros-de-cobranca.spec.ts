@@ -86,6 +86,17 @@ describe('próximo ciclo e conferência', () => {
     expect(proximoCiclo('2026-12-05', 1, 10)).toEqual({ geracao: '2027-01-01', vencimento: '2027-01-10' });
   });
 
+  // Trava GERACAO_A_PARTIR_DE: a rotina não gera mês anterior a ela; a tela anuncia o primeiro liberado.
+  it('com a trava, a próxima geração é no primeiro mês liberado, inclusive na virada do ano', () => {
+    expect(proximoCiclo('2026-12-05', 1, 10, '2027-02')).toEqual({ geracao: '2027-02-01', vencimento: '2027-02-10' });
+    expect(proximoCiclo('2027-01-31', 1, 10, '2027-02')).toEqual({ geracao: '2027-02-01', vencimento: '2027-02-10' });
+    // Trava já passada não muda nada.
+    expect(proximoCiclo('2027-03-05', 1, 10, '2027-02')).toEqual({ geracao: '2027-04-01', vencimento: '2027-04-10' });
+    // Sem trava, ou com trava em formato inválido (em produção nem sobe), vale o cálculo de sempre.
+    expect(proximoCiclo('2026-12-05', 1, 10, null)).toEqual({ geracao: '2027-01-01', vencimento: '2027-01-10' });
+    expect(proximoCiclo('2026-12-05', 1, 10, '2027-2')).toEqual({ geracao: '2027-01-01', vencimento: '2027-01-10' });
+  });
+
   it('total previsto = alunos cobrados x mensalidade', () => {
     expect(conferir(validos, '2026-10-26', 3)).toEqual({
       proximaGeracao: '2026-11-01',

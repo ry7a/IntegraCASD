@@ -2,13 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ClienteAsaas, ErroAsaas } from '../../../compartilhado/asaas/cliente-asaas.js';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
 import { AgendadorDeRotinas, ROTINA_GERACAO_RECORRENTE } from '../../../compartilhado/fila/agendador-de-rotinas.js';
+import { geracaoAPartirDeDoAmbiente } from '../../../compartilhado/geracao-a-partir-de.js';
 import { BuscarParametrosVigentes } from '../../administracao/index.js';
 import { ListarAlunos } from '../../cadastros/index.js';
 import {
   deveGerarAgora,
   descricaoDaMensalidade,
+  motivoDaReferenciaBloqueada,
   motivoDoCadastroIncompleto,
   referenciaDoCiclo,
+  referenciaLiberada,
   vencimentoDaMensalidade,
   type FalhaDaGeracao,
 } from '../dominio/geracao-recorrente.js';
@@ -38,8 +41,13 @@ export class GerarCobrancasRecorrentes {
     private readonly ritmo: RitmoDoAsaas,
   ) {}
 
-  // Devolve o resultado, ou nulo quando não havia o que fazer (antes do dia de geração, mês já gerado).
-  async executar(origem: OrigemDaExecucao, hoje = hojeEmSaoPaulo()): Promise<ResultadoDaExecucao | null> {
+  // Devolve o resultado, ou nulo quando não havia o que fazer (antes do dia de geração, mês já gerado,
+  // mês anterior à trava GERACAO_A_PARTIR_DE). `aPartirDe` vem do .env, lido a cada execução.
+  async executar(
+    origem: OrigemDaExecucao,
+    hoje = hojeEmSaoPaulo(),
+    aPartirDe = geracaoAPartirDeDoAmbiente(),
+  ): Promise<ResultadoDaExecucao | null> {
     const parametros = await this.parametros.executar();
     if (parametros === null) {
       this.logger.warn('Geração recorrente não executada: os parâmetros de cobrança ainda não foram cadastrados.');
@@ -47,6 +55,11 @@ export class GerarCobrancasRecorrentes {
     }
     const referencia = referenciaDoCiclo(hoje, parametros.diaGeracao);
     if (referencia === null) return null;
+    // Antes de iniciar a execução: um registro aqui faria a rotina pular o mês certo depois.
+    if (aPartirDe !== null && !referenciaLiberada(referencia, aPartirDe)) {
+      this.logger.warn(`Geração recorrente de ${referencia} não executada: ${motivoDaReferenciaBloqueada(aPartirDe)}`);
+      return null;
+    }
     // A rotina agendada roda todo dia; só gera no dia de geração (ou depois, se perdeu o dia) e uma
     // vez por mês, salvo interrupção. O pedido manual sempre roda: serve para gerar os pendentes.
     if (origem === 'AGENDADA' && !deveGerarAgora(hoje, parametros.diaGeracao, await this.execucoes.ultimaDoMes(referencia))) {

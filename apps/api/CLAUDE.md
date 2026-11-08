@@ -103,6 +103,10 @@ src/modulos/cobrancas/
   O cron e a manutenção do pg-boss rodam só no worker: o `main-worker.ts` chama `definirProcessoDaFila('worker')`
   antes de montar a aplicação; a API (padrão) só envia jobs e cria filas (`opcoesDoPgBoss`).
 - Toda rotina deve ser segura para rodar duas vezes (ex.: não gerar mensalidade se já existir uma para o aluno no período).
+- A geração recorrente respeita a trava opcional `GERACAO_A_PARTIR_DE` (`AAAA-MM`, lida a cada uso por
+  `compartilhado/geracao-a-partir-de.ts`): mês anterior a ela não é gerado (a rotina só registra o motivo no log,
+  sem gravar execução; o "gerar agora" responde 400) e a conferência dos parâmetros anuncia o primeiro mês liberado.
+  A regra é `referenciaLiberada` (`cobrancas/dominio/geracao-recorrente.ts`); formato inválido é erro de configuração.
 - **Notificador de alertas** (`src/compartilhado/notificacao/`): único ponto que envia e-mail, como o cliente do Asaas é o
   único que fala com o Asaas. Os casos de uso dependem da classe abstrata `NotificadorDeAlertas`; o envio real usa a API
   HTTP de um provedor (Resend), sem dependência nova (a Railway bloqueia SMTP nos planos baratos). Lê `EMAIL_API_KEY` e

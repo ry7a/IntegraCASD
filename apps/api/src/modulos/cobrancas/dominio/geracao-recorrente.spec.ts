@@ -1,8 +1,10 @@
 import {
   deveGerarAgora,
   descricaoDaMensalidade,
+  motivoDaReferenciaBloqueada,
   motivoDoCadastroIncompleto,
   referenciaDoCiclo,
+  referenciaLiberada,
   vencimentoDaMensalidade,
 } from './geracao-recorrente.js';
 
@@ -32,5 +34,35 @@ describe('geração recorrente [Cobranças.RF001]', () => {
   it('cadastro incompleto diz o campo que falta (fluxo A2)', () => {
     expect(motivoDoCadastroIncompleto('')).toMatch(/e-mail/);
     expect(motivoDoCadastroIncompleto('a@exemplo.com')).toMatch(/CPF/);
+  });
+});
+
+describe('trava do início da geração (GERACAO_A_PARTIR_DE)', () => {
+  it('sem trava, toda referência está liberada', () => {
+    expect(referenciaLiberada('2027-01', null)).toBe(true);
+    expect(referenciaLiberada('2020-05', null)).toBe(true);
+  });
+
+  it('bloqueia o mês anterior e libera o próprio mês e os seguintes', () => {
+    expect(referenciaLiberada('2027-01', '2027-02')).toBe(false);
+    expect(referenciaLiberada('2027-02', '2027-02')).toBe(true);
+    expect(referenciaLiberada('2027-03', '2027-02')).toBe(true);
+  });
+
+  it('compara certo na virada do ano', () => {
+    expect(referenciaLiberada('2026-12', '2027-02')).toBe(false);
+    expect(referenciaLiberada('2026-11', '2027-01')).toBe(false);
+    expect(referenciaLiberada('2028-01', '2027-12')).toBe(true);
+  });
+
+  it('trava em formato inválido bloqueia tudo (melhor não gerar do que cobrar em dobro)', () => {
+    for (const invalida of ['2027-2', '2027-13', '2027-00', 'fevereiro/2027', '202702']) {
+      expect(referenciaLiberada('2030-01', invalida)).toBe(false);
+    }
+  });
+
+  it('o motivo diz o mês em que a geração começa, ou que a variável está inválida', () => {
+    expect(motivoDaReferenciaBloqueada('2027-02')).toBe('A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).');
+    expect(motivoDaReferenciaBloqueada('2027-13')).toMatch(/GERACAO_A_PARTIR_DE \("2027-13"\) não está no formato AAAA-MM/);
   });
 });
