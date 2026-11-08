@@ -23,7 +23,12 @@ const ESPERA_PADRAO_EM_SEGUNDOS = 5;
 const ESPERA_MAXIMA_EM_SEGUNDOS = 60;
 // Tempo máximo de cada tentativa (pedido e leitura da resposta). Sem ele, o `fetch` do Node espera
 // até ~300 s por um Asaas travado, segurando a requisição do usuário e as rotinas por minutos.
-const TEMPO_LIMITE_EM_MS = 15_000;
+// Leitura (GET): desistir cedo não tem efeito colateral; quem chamou repete ou mostra o erro.
+const TEMPO_LIMITE_DE_LEITURA_EM_MS = 15_000;
+// Pedido que cria ou altera (POST, PUT, DELETE): desistir não desfaz nada no Asaas. Se abortarmos uma
+// criação de cobrança que o Asaas já estava gravando, ela existe lá e não aqui, e o usuário, ao tentar
+// de novo, gera um segundo boleto para o aluno. Por isso esperamos mais antes de desistir.
+const TEMPO_LIMITE_DE_ESCRITA_EM_MS = 45_000;
 
 export interface ConfiguracaoAsaas {
   urlBase: string;
@@ -150,6 +155,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
   // Envia a requisição. Se o Asaas responder 429 (excesso de requisições), espera o tempo que ele
   // informou e tenta de novo, até o limite de tentativas.
   private async enviar<T>(metodo: 'GET' | 'POST' | 'PUT' | 'DELETE', caminho: string, corpo?: object): Promise<T> {
+    const tempoLimiteEmMs = metodo === 'GET' ? TEMPO_LIMITE_DE_LEITURA_EM_MS : TEMPO_LIMITE_DE_ESCRITA_EM_MS;
     for (let tentativa = 1; ; tentativa++) {
       let resposta: Response;
       try {
@@ -163,10 +169,10 @@ export class ClienteAsaasHttp extends ClienteAsaas {
           },
           ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
           // Cancela a tentativa se o Asaas não responder a tempo (o mesmo sinal vale para ler o corpo).
-          signal: AbortSignal.timeout(TEMPO_LIMITE_EM_MS),
+          signal: AbortSignal.timeout(tempoLimiteEmMs),
         });
       } catch (erro) {
-        throw erroDeComunicacao(erro);
+        throw erroDeComunicacao(erro, tempoLimiteEmMs);
       }
 
       if (resposta.ok) {
@@ -174,7 +180,7 @@ export class ClienteAsaasHttp extends ClienteAsaas {
           return (await resposta.json()) as T;
         } catch (erro) {
           // O tempo pode estourar no meio da leitura do corpo: vira o mesmo erro de Asaas indisponível.
-          if (estourouOTempoLimite(erro)) throw erroDeComunicacao(erro);
+          if (estourouOTempoLimite(erro)) throw erroDeComunicacao(erro, tempoLimiteEmMs);
           throw erro;
         }
       }
@@ -228,10 +234,10 @@ class CobrancaDesconhecida extends ErroAsaas {
 
 // Falha de rede ou tempo esgotado: o Asaas está indisponível (motivo padrão do ErroAsaas), e os
 // casos de uso reagem igual nos dois casos (a rotina ou o webhook tenta de novo; a geração para).
-function erroDeComunicacao(erro: unknown): ErroAsaas {
+function erroDeComunicacao(erro: unknown, tempoLimiteEmMs: number): ErroAsaas {
   if (estourouOTempoLimite(erro)) {
     return new ErroAsaas(
-      `O Asaas não respondeu em ${TEMPO_LIMITE_EM_MS / 1000} segundos. Aguarde alguns minutos e tente novamente.`,
+      `O Asaas não respondeu em ${tempoLimiteEmMs / 1000} segundos. Aguarde alguns minutos e tente novamente.`,
     );
   }
   return new ErroAsaas('Não foi possível falar com o Asaas. Confira a conexão com a internet e tente novamente.');

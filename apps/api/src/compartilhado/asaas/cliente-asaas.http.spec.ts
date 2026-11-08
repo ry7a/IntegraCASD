@@ -181,6 +181,25 @@ describe('ClienteAsaasHttp', () => {
     expect(opcoes.signal?.aborted).toBe(false);
   });
 
+  // Abortar cedo a criação de uma cobrança arrisca ela existir no Asaas e não aqui (e o usuário
+  // emitir outra): pedidos que criam ou alteram esperam mais que as leituras.
+  it('dá 45 s aos pedidos que criam ou alteram e 15 s às leituras', async () => {
+    const tempoLimite = vi.spyOn(AbortSignal, 'timeout');
+    chamarHttp
+      .mockResolvedValueOnce(resposta(200, { id: 'pay_1' }))
+      .mockResolvedValueOnce(resposta(200, { id: 'cus_1' }))
+      .mockResolvedValueOnce(resposta(200, { deleted: true, id: 'pay_1' }))
+      .mockResolvedValueOnce(resposta(200, { id: 'pay_1', customer: 'cus_1', status: 'PENDING', value: 10, dueDate: '2026-10-10' }));
+
+    await cliente.criarCobranca(novaCobranca);
+    await cliente.atualizarCliente('cus_1', { nome: 'Ana Ficticia', cpf: '52998224725', email: 'ana@exemplo.com' });
+    await cliente.cancelarCobranca('pay_1');
+    await cliente.buscarCobranca('pay_1');
+
+    expect(tempoLimite.mock.calls.map(([milissegundos]) => milissegundos)).toEqual([45_000, 45_000, 45_000, 15_000]);
+    tempoLimite.mockRestore();
+  });
+
   // É assim que o `fetch` falha quando o `AbortSignal.timeout` dispara.
   const tempoEsgotado = () => new DOMException('The operation was aborted due to timeout', 'TimeoutError');
 
@@ -191,7 +210,7 @@ describe('ClienteAsaasHttp', () => {
 
     await expect(falha).rejects.toBeInstanceOf(ErroAsaas);
     await expect(falha).rejects.toMatchObject({ motivo: 'INDISPONIVEL' });
-    await expect(falha).rejects.toThrow(/não respondeu em 15 segundos/);
+    await expect(falha).rejects.toThrow(/não respondeu em 45 segundos/);
     await expect(falha).rejects.not.toThrow(/chave-falsa/);
     expect(chamarHttp).toHaveBeenCalledTimes(1);
   });
@@ -204,6 +223,7 @@ describe('ClienteAsaasHttp', () => {
 
     await expect(falha).rejects.toBeInstanceOf(ErroAsaas);
     await expect(falha).rejects.toMatchObject({ motivo: 'INDISPONIVEL' });
+    await expect(falha).rejects.toThrow(/não respondeu em 15 segundos/);
   });
 });
 
