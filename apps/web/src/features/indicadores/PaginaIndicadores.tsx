@@ -23,7 +23,9 @@ function textoDaVariacao(variacao: number | null, mes: string): string {
 }
 
 // Cartão clicável: leva às movimentações que compõem o número (passo 5), sem cara de link.
-const CARTAO_LINK = { display: 'block', color: 'inherit', textDecoration: 'none' }
+// Sem `color` aqui: estilo inline vence qualquer classe, e apagaria o texto branco do cartão
+// escuro (.indicador-destaque). A cor herdada dos outros cartões já vem da regra `a` do CSS.
+const CARTAO_LINK = { display: 'block', textDecoration: 'none' }
 
 // Página inicial. [Indicadores.RF001 a RF003]
 function PaginaIndicadores() {
