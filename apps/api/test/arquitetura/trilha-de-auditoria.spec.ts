@@ -48,7 +48,7 @@ function soOCodigo(chamada: string): string {
     .replace(/'(?:[^'\\\n]|\\.)*'/g, "''");
 }
 
-describe('B13: trilha de auditoria central e só de inclusão', () => {
+describe('B13: trilha de auditoria central e só de inclusão [Segurança.NF006] CT-NF-07', () => {
   it('só o ponto central grava na trilha', () => {
     const violacoes = listarArquivos(PASTA_SRC, '.ts')
       .filter((arquivo) => ESCRITA_NA_TRILHA.test(lerCodigo(arquivo)))
@@ -76,7 +76,7 @@ describe('B13: trilha de auditoria central e só de inclusão', () => {
   });
 });
 
-describe('B14: detalhe da trilha sem dados pessoais', () => {
+describe('B14: detalhe da trilha sem dados pessoais [Padrões.NF001] CT-NF-07', () => {
   const chamadas = listarArquivos(PASTA_SRC, '.ts')
     .filter((arquivo) => !arquivo.endsWith('.spec.ts') && caminhoRelativo(arquivo) !== PONTO_CENTRAL)
     .flatMap((arquivo) => chamadasDaTrilha(lerCodigo(arquivo)).map((texto) => ({ arquivo: caminhoRelativo(arquivo), texto })));

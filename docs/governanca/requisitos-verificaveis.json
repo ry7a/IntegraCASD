@@ -1,6 +1,11 @@
 {
-  "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md e ADRs. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex.",
+  "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md, ADRs e no Plano de Testes. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api, inclusive os de integração e de sistema, que rodam à mão com pnpm test:integracao) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex.",
   "requisitos": [
+    {
+      "id": "Confiabilidade.NF001",
+      "titulo": "Disponibilidade do endereço de notificação",
+      "situacao": "coberto"
+    },
     {
       "id": "Confiabilidade.NF002",
       "titulo": "Alerta de interrupção da conciliação",
@@ -29,30 +34,52 @@
     {
       "id": "Desempenho.NF001",
       "titulo": "Tempo de resposta ao Asaas",
-      "situacao": "pendente",
-      "motivo": "O controller do webhook não existe ainda; o teste de que ele só valida, grava e enfileira é o B9 do ADR-0003."
+      "situacao": "coberto"
+    },
+    {
+      "id": "Desempenho.NF004",
+      "titulo": "Janela de execução da geração recorrente",
+      "situacao": "coberto"
+    },
+    {
+      "id": "Desempenho.NF005",
+      "titulo": "Tratamento de excesso de requisições",
+      "situacao": "coberto"
     },
     {
       "id": "Usabilidade.NF002",
       "titulo": "Mensagens de erro orientadas à ação",
-      "situacao": "pendente",
-      "motivo": "A tradução dos erros do Asaas depende do Cliente Asaas, ainda não implementado."
+      "situacao": "coberto"
     },
     {
       "id": "Usabilidade.NF003",
       "titulo": "Confirmação explícita em operação irreversível",
       "situacao": "pendente",
-      "motivo": "As telas usam dados fictícios e o diálogo de confirmação não tem teste automatizado (o web não tem Vitest)."
+      "motivo": "O diálogo de confirmação fica na tela e o web não tem ferramenta de teste: verificado à mão no CT-NF-01 do Plano de Testes."
     },
     {
       "id": "Hardware e software.NF005",
       "titulo": "Propriedades exigidas do armazenamento",
-      "situacao": "pendente",
-      "motivo": "Garantida pela escolha do PostgreSQL (ADR-0002); não há teste automatizado."
+      "situacao": "coberto"
+    },
+    {
+      "id": "Padrões.NF001",
+      "titulo": "Conformidade com a Lei Geral de Proteção de Dados",
+      "situacao": "coberto"
+    },
+    {
+      "id": "Padrões.NF003",
+      "titulo": "Padrão de codificação e integração",
+      "situacao": "coberto"
     },
     {
       "id": "Segurança.NF001",
       "titulo": "Autenticação e perfis concêntricos",
+      "situacao": "coberto"
+    },
+    {
+      "id": "Segurança.NF002",
+      "titulo": "Autenticação das notificações recebidas",
       "situacao": "coberto"
     },
     {

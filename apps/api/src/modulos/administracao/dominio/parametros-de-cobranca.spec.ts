@@ -14,7 +14,7 @@ const validos = {
 const CONTA = '11111111-1111-4111-8111-111111111111';
 const CATEGORIA = '22222222-2222-4222-8222-222222222222';
 
-describe('parâmetros de cobrança [Administração.RF003]', () => {
+describe('parâmetros de cobrança [Administração.RF003] CT-ADM-03', () => {
   it('aceita parâmetros válidos', () => {
     expect(lerParametros(validos)).toEqual(validos);
   });

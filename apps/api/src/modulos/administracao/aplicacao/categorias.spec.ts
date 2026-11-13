@@ -40,7 +40,7 @@ function criarRepositorioFalso(opcoes: {
   return { repositorio, chamadas };
 }
 
-describe('CriarCategoria [Administração.RF002]', () => {
+describe('CriarCategoria [Administração.RF002] CT-ADM-02', () => {
   it('grava o nome normalizado e o tipo', async () => {
     const { repositorio, chamadas } = criarRepositorioFalso({});
     await new CriarCategoria(repositorio).executar({ nome: '  Material  de limpeza ', tipo: 'SAIDA' }, AUTOR);

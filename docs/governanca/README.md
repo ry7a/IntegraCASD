@@ -8,7 +8,7 @@ Na raiz do repositório (PowerShell):
 
 ```powershell
 pnpm lint                    # ESLint do web (F1, F2, F4, F5, F6, F7) e oxlint da API (B11, B12)
-pnpm test                    # testes da API, inclui apps/api/test/arquitetura (B1 a B8, B11, B13, B14, G3, G4, G5)
+pnpm test                    # testes da API, inclui apps/api/test/arquitetura (B1 a B8, B11, B13, B14, G3, G4, G5, G7)
 pnpm verificar:arquitetura   # migrações (B7) e cores em CSS (F5); não precisa de build
 pnpm build
 pnpm verificar:build         # orçamento de bundle (F8) e dados fictícios no bundle (F6)
@@ -39,6 +39,7 @@ Os testes não executam o código: leem os `.ts` com `node:fs` e conferem import
 | G3  | Todo `package.json` do workspace só tem dependências da lista; `typescript` 6.0.3, `prisma`, `@prisma/client` e `@prisma/adapter-pg` 7.10.0 | instalar pacote novo | veja "Dependências" abaixo |
 | G4  | Exceções com regra, alvo, justificativa e referência; exceção obsoleta falha | | veja "Exceções" abaixo |
 | G5  | Requisito "coberto" é citado por um teste; requisito citado num teste está na lista; ids existem no documento de requisitos | | veja "Requisitos" abaixo |
+| G7  | Os ganchos `.githooks/pre-merge-commit` e `pre-push` encadeiam `pnpm lint && pnpm test && pnpm verificar:arquitetura` e saem com erro se algo falhar; o script `prepare` liga `core.hooksPath` em `.githooks` (CT-NF-07 do Plano de Testes) | editar o gancho e tirar uma das verificações | manter as três; para pular numa emergência existe `--no-verify` (e avise a equipe) |
 
 O oxlint (`apps/api/.oxlintrc.json`) cobre **B11** (`no-console`: use o `Logger` do Nest ou `process.stdout.write` em scripts, e nunca registre segredos) e **B12** (`typescript/no-explicit-any` e `typescript/ban-ts-comment`: use `unknown` e conserte o tipo em vez de `any` ou `@ts-ignore`).
 
@@ -96,7 +97,7 @@ Também são conferidas as versões fixadas: `typescript` 6.0.3 (o 7 quebra a CL
 
 ## Requisitos verificáveis (G5)
 
-[`requisitos-verificaveis.json`](requisitos-verificaveis.json) lista os requisitos não funcionais que o código precisa respeitar, cada um `coberto` ou `pendente` (com motivo). Para marcar como `coberto`, escreva um teste `*.spec.ts` em `apps/api` que cite o requisito entre colchetes, no formato do documento de requisitos (`[Categoria.NFnnn]`) e troque a situação. Um requisito citado num teste precisa estar na lista, e todo id da lista precisa existir em `docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex`.
+[`requisitos-verificaveis.json`](requisitos-verificaveis.json) lista os requisitos não funcionais que o código precisa respeitar, cada um `coberto` ou `pendente` (com motivo). Para marcar como `coberto`, escreva um teste `*.spec.ts` em `apps/api` que cite o requisito entre colchetes, no formato do documento de requisitos (`[Categoria.NFnnn]`) e troque a situação. Os testes de integração e de sistema (`apps/api/test/integracao` e `apps/api/test/sistema`, rodados à mão com `pnpm test:integracao`, fora do CI) também contam como citação. Um requisito citado num teste precisa estar na lista, e todo id da lista precisa existir em `docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex`.
 
 ## Revisão arquitetural por sprint (G6)
 
@@ -111,4 +112,4 @@ Ritual de **15 minutos**, no fim de cada sprint, com a equipe toda:
 
 ## Pendências
 
-B9 (webhook não processa) e B10 (idempotência e atomicidade da baixa) ainda não têm teste porque webhook e worker não existem. Serão criados junto com o módulo de Cobranças. Veja o [ADR-0003](../adr/0003-funcoes-de-aptidao.md).
+B9 (webhook não processa) e B10 (idempotência e atomicidade da baixa) não viraram funções de aptidão estáticas: são verificados com banco real pela suíte de integração (`pnpm test:integracao`), nos casos CT-COB-05 e CT-NF-03 (B9) e CT-COB-05 e CT-NF-02 (B10) do Plano de Testes. Essa suíte não roda no CI nem nos ganchos; roda à mão antes de cada entrega. Veja o [ADR-0003](../adr/0003-funcoes-de-aptidao.md).

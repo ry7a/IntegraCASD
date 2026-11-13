@@ -77,7 +77,7 @@ function prismaFalso(usuarioAtual: ReturnType<typeof usuarioDiretor>) {
   return { prisma, tx, operacoes, gravarNaTrilha };
 }
 
-describe('manutencao de usuarios [Administracao.RF001]', () => {
+describe('manutencao de usuarios [Administração.RF001]', () => {
   it('recusa a autoinativacao', async () => {
     const prisma = {
       usuario: { findUnique: vi.fn(async () => usuarioDiretor()) },

@@ -10,7 +10,26 @@ const vencida = (alunoId: string, valorCentavos: number, vencimento: string) => 
   vencimento,
 });
 
-describe('inadimplência [Indicadores.RF002]', () => {
+// Vencimento de uma cobrança que, em HOJE, está com `dias` de atraso.
+function vencidaHa(dias: number): string {
+  const data = new Date(`${HOJE}T00:00:00Z`);
+  data.setUTCDate(data.getUTCDate() - dias);
+  return data.toISOString().slice(0, 10);
+}
+
+describe('inadimplência [Indicadores.RF002] CT-IND-02', () => {
+  // Análise de valor-limite (Plano de Testes, CT-IND-02): os dois lados de cada fronteira das faixas.
+  it.each([
+    { dias: 30, faixa: 'ate30Dias' },
+    { dias: 31, faixa: 'de31a60Dias' },
+    { dias: 60, faixa: 'de31a60Dias' },
+    { dias: 61, faixa: 'acimaDe60Dias' },
+  ])('atraso de $dias dias entra na faixa $faixa', ({ dias, faixa }) => {
+    const resultado = apurarInadimplencia([vencida('a', 8500, vencidaHa(dias))], HOJE);
+    expect(resultado.maioresDevedores[0].diasDeAtrasoMaisAntigo).toBe(dias);
+    expect(resultado.alunosPorFaixa).toEqual({ ate30Dias: 0, de31a60Dias: 0, acimaDe60Dias: 0, [faixa]: 1 });
+  });
+
   it('agrupa por aluno, soma os valores originais e ordena os devedores por valor', () => {
     const resultado = apurarInadimplencia(
       [vencida('a', 8500, '2026-10-10'), vencida('a', 8500, '2026-09-10'), vencida('b', 30000, '2026-10-20')],

@@ -23,7 +23,7 @@ function ehArquivoEnvProibido(arquivo: string): boolean {
   return (nome === '.env' || nome.startsWith('.env.')) && nome !== '.env.example';
 }
 
-describe('B11: segredos fora do repositório', () => {
+describe('B11: segredos fora do repositório [Segurança.NF003] CT-NF-07', () => {
   it('nenhum arquivo .env está versionado (só o .env.example)', () => {
     const violacoes = arquivosVersionados().filter(ehArquivoEnvProibido);
     const { pendentes, obsoletas } = aplicarExcecoes('B11', violacoes);

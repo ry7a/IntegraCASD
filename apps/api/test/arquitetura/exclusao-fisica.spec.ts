@@ -9,7 +9,7 @@ import { aplicarExcecoes } from './excecoes.js';
 // a exceção do próprio tipo de arquivo (.ts para o código, .sql para as migrações).
 const doTipo = (extensao: string) => (alvo: string) => alvo.endsWith(extensao);
 
-describe('B6: nada é excluído fisicamente', () => {
+describe('B6: nada é excluído fisicamente CT-NF-07', () => {
   it('o código não chama .delete( nem .deleteMany(', () => {
     const violacoes = listarArquivos(PASTA_SRC, '.ts')
       .filter((arquivo) => /\.delete(Many)?\s*\(/.test(lerCodigo(arquivo)))

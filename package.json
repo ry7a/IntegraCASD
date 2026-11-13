@@ -13,6 +13,8 @@
         "gerar:cliente-api": "pnpm --filter api gerar:openapi && pnpm --filter @integracasd/api-client gerar",
         "lint": "pnpm -r lint",
         "test": "pnpm -r test",
+        "test:integracao": "pnpm --filter api test:integracao",
+        "medir:webhook": "node scripts/testes/medir-webhook.mjs",
         "cobertura": "pnpm --filter api test:cov",
         "build": "pnpm -r build",
         "verificar:arquitetura": "node scripts/arquitetura/verificar-migracoes.mjs && node scripts/arquitetura/verificar-cores.mjs",

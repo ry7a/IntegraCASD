@@ -28,7 +28,7 @@ function repositorioFalso(vigentes: object | null) {
 
 const doisAlunos = { executar: async () => [{}, {}] } as unknown as ListarAlunosCobraveis;
 
-describe('parâmetros de cobrança [Administração.RF003]', () => {
+describe('parâmetros de cobrança [Administração.RF003] CT-ADM-03', () => {
   it('antes do primeiro cadastro, não há vigentes nem conferência', async () => {
     const { repositorio } = repositorioFalso(null);
     expect(await new ConsultarParametrosDeCobranca(repositorio, doisAlunos).executar('2026-10-26')).toEqual({

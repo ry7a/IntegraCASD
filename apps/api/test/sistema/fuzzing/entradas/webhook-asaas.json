@@ -1,0 +1,556 @@
+{
+  "alvo": "POST /api/webhooks/asaas, cabeçalho asaas-access-token (webhook-asaas.controller.ts)",
+  "comoForamGeradas": "Pedido ao LLM: 'Este é o controller do webhook do Asaas (exige o cabeçalho asaas-access-token, um corpo JSON com id e event, e guarda o resto como veio) e esta é a regra que o worker aplica depois (dominio/conciliacao.ts: payment.id, payment.value em reais, payment.paymentDate). Gere entradas fictícias inválidas, extremas ou inesperadas para as classes: JSON truncado, campos faltando ou com tipo trocado, id de evento repetido, evento desconhecido, corpo muito grande, token quase igual ao correto, texto estranho (SQL, HTML, unicode, byte nulo) e valores de pagamento absurdos. Para cada uma, diga o que se espera: recusa sem efeito ou aceite gravado uma única vez. Nada de dados reais; ids no formato evt_fz01_NNN.' Revisado à mão: marcadores no lugar de valores grandes e dos ids das cobranças do cenário.",
+  "marcadores": {
+    "token": "padrão \"CERTO\" (o token do webhook da configuração de teste); null = sem o cabeçalho",
+    "{{HOJE}}": "dia de hoje, AAAA-MM-DD",
+    "{{COBRANCA_NOVA}}": "id no Asaas de uma cobrança aberta criada só para esta entrada",
+    "{{COBRANCA_COMPARTILHADA}}": "id no Asaas de uma cobrança aberta que várias entradas tentam pagar",
+    "$repetir / $embaralhado": "geram textos grandes no teste (veja entradas.ts)"
+  },
+  "entradas": [
+    {
+      "classe": "json-truncado",
+      "descricao": "JSON cortado no meio do valor do id",
+      "corpoBruto": "{\"id\": \"evt_fz01_001",
+      "idEvento": "evt_fz01_001",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "json-truncado",
+      "descricao": "JSON sem a chave de fechamento",
+      "corpoBruto": "{\"id\": \"evt_fz01_002\", \"event\": \"PAYMENT_RECEIVED\"",
+      "idEvento": "evt_fz01_002",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "json-truncado",
+      "descricao": "JSON cortado no meio do valor do pagamento",
+      "corpoBruto": "{\"id\": \"evt_fz01_003\", \"event\": \"PAYMENT_RECEIVED\", \"payment\": {\"id\": \"pay_fz01_003\", \"value\": 85.",
+      "idEvento": "evt_fz01_003",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "json-truncado",
+      "descricao": "só a chave de abertura",
+      "corpoBruto": "{",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "json-truncado",
+      "descricao": "vírgula sobrando depois do último campo",
+      "corpoBruto": "{\"id\": \"evt_fz01_005\", \"event\": \"PAYMENT_RECEIVED\",}",
+      "idEvento": "evt_fz01_005",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "json-truncado",
+      "descricao": "aspas simples no lugar de aspas duplas",
+      "corpoBruto": "{'id': 'evt_fz01_006', 'event': 'PAYMENT_RECEIVED'}",
+      "idEvento": "evt_fz01_006",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "corpo é o literal null",
+      "corpoBruto": "null",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "corpo é um texto JSON",
+      "corpoBruto": "\"evt_fz01_008\"",
+      "idEvento": "evt_fz01_008",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "corpo é um número",
+      "corpoBruto": "12345",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "lista com dois eventos válidos (o Asaas manda um por vez)",
+      "corpo": [
+        { "id": "evt_fz01_010", "event": "PAYMENT_CREATED" },
+        { "id": "evt_fz01_011", "event": "PAYMENT_CREATED" }
+      ],
+      "idEvento": "evt_fz01_010",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "objeto vazio",
+      "corpo": {},
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-nao-objeto",
+      "descricao": "sem corpo nenhum",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "sem o campo id",
+      "corpo": { "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_013", "value": 85 } },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "sem o campo event",
+      "corpo": { "id": "evt_fz01_014", "payment": { "id": "pay_fz01_014", "value": 85 } },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "só o pagamento, sem id nem event",
+      "corpo": { "payment": { "id": "pay_fz01_015", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "id vazio",
+      "corpo": { "id": "", "event": "PAYMENT_RECEIVED" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "event vazio",
+      "corpo": { "id": "evt_fz01_017", "event": "" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "campo-faltando",
+      "descricao": "evento de pagamento sem o objeto payment (aceito; o worker não tem o que baixar)",
+      "corpo": { "id": "evt_fz01_018", "event": "PAYMENT_RECEIVED" },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "id numérico",
+      "corpo": { "id": 19, "event": "PAYMENT_RECEIVED" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "id booleano",
+      "corpo": { "id": true, "event": "PAYMENT_RECEIVED" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "id como lista",
+      "corpo": { "id": ["evt_fz01_021"], "event": "PAYMENT_RECEIVED" },
+      "idEvento": "evt_fz01_021",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "id como objeto de consulta (injeção ao estilo NoSQL)",
+      "corpo": { "id": { "$ne": null }, "event": "PAYMENT_RECEIVED" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "id nulo",
+      "corpo": { "id": null, "event": "PAYMENT_RECEIVED" },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "event numérico",
+      "corpo": { "id": "evt_fz01_024", "event": 42 },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "event como objeto",
+      "corpo": { "id": "evt_fz01_025", "event": { "tipo": "PAYMENT_RECEIVED" } },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "payment como texto (aceito; o worker ignora o pagamento)",
+      "corpo": { "id": "evt_fz01_026", "event": "PAYMENT_RECEIVED", "payment": "pay_fz01_026" },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "payment.id numérico (aceito; o worker não acha cobrança)",
+      "corpo": { "id": "evt_fz01_027", "event": "PAYMENT_RECEIVED", "payment": { "id": 27, "value": 85 } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "valor em texto com vírgula, como na tela (aceito; o worker usa o valor da cobrança)",
+      "corpo": { "id": "evt_fz01_028", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": "85,00", "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "tipo-trocado",
+      "descricao": "valor negativo (aceito; o worker usa o valor da cobrança)",
+      "corpo": { "id": "evt_fz01_029", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": -85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "valor-absurdo",
+      "descricao": "valor de um trilhão de reais",
+      "corpo": { "id": "evt_fz01_030", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 1000000000000, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "valor-absurdo",
+      "descricao": "valor de um décimo de centavo (arredonda para zero)",
+      "corpo": { "id": "evt_fz01_031", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 0.001, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "valor-absurdo",
+      "descricao": "valor 1e999 (o JSON.parse vira Infinity)",
+      "corpoBruto": "{\"id\": \"evt_fz01_032\", \"event\": \"PAYMENT_RECEIVED\", \"payment\": {\"id\": \"{{COBRANCA_NOVA}}\", \"value\": 1e999, \"paymentDate\": \"{{HOJE}}\"}}",
+      "idEvento": "evt_fz01_032",
+      "esperado": "aceito"
+    },
+    {
+      "classe": "data-inexistente",
+      "descricao": "data de pagamento com mês 13 e dia 45",
+      "corpo": { "id": "evt_fz01_033", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85, "paymentDate": "2026-13-45" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "data-inexistente",
+      "descricao": "data de pagamento 30 de fevereiro",
+      "corpo": { "id": "evt_fz01_034", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85, "paymentDate": "2026-02-30" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "data-inexistente",
+      "descricao": "data de pagamento escrita por extenso",
+      "corpo": { "id": "evt_fz01_035", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85, "paymentDate": "ontem à tarde" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "tipo de evento que o Asaas não tem",
+      "corpo": { "id": "evt_fz01_036", "event": "EVENTO_QUE_NAO_EXISTE", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85 } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "tipo conhecido em minúsculas",
+      "corpo": { "id": "evt_fz01_037", "event": "payment_received", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "evento de outra área do Asaas (transferência), sem payment",
+      "corpo": { "id": "evt_fz01_038", "event": "TRANSFER_DONE", "transfer": { "id": "tra_fz01_038", "value": 1000 } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "tipo de evento com 5000 caracteres",
+      "corpo": { "id": "evt_fz01_039", "event": { "$repetir": "PAYMENT_", "vezes": 625 } },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "estorno de cobrança que ainda está aberta (vira pendência para conferência)",
+      "corpo": { "id": "evt_fz01_040", "event": "PAYMENT_REFUNDED", "payment": { "id": "{{COBRANCA_NOVA}}", "value": 85 } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "remoção no painel de cobrança aberta (cancela aqui)",
+      "corpo": { "id": "evt_fz01_041", "event": "PAYMENT_DELETED", "payment": { "id": "{{COBRANCA_NOVA}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "evento-desconhecido",
+      "descricao": "pagamento de cobrança que não existe aqui (vira pendência)",
+      "corpo": { "id": "evt_fz01_042", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_que_nao_existe", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "id-repetido",
+      "descricao": "pagamento da cobrança compartilhada, enviado três vezes seguidas",
+      "corpo": { "id": "evt_fz01_043", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_COMPARTILHADA}}", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "repeticoes": 3,
+      "esperado": "aceito"
+    },
+    {
+      "classe": "id-repetido",
+      "descricao": "mesmo evento enviado cinco vezes ao mesmo tempo",
+      "corpo": { "id": "evt_fz01_044", "event": "PAYMENT_CONFIRMED", "payment": { "id": "{{COBRANCA_COMPARTILHADA}}", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "simultaneas": 5,
+      "esperado": "aceito"
+    },
+    {
+      "classe": "id-repetido",
+      "descricao": "id já recebido, agora com outro tipo de evento (fica o primeiro)",
+      "corpo": { "id": "evt_fz01_043", "event": "PAYMENT_REFUNDED", "payment": { "id": "{{COBRANCA_COMPARTILHADA}}", "value": 85 } },
+      "tipoGravado": "PAYMENT_RECEIVED",
+      "esperado": "aceito"
+    },
+    {
+      "classe": "id-repetido",
+      "descricao": "outro id pagando a mesma cobrança com outro valor (não pode criar segunda entrada)",
+      "corpo": { "id": "evt_fz01_046", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_COMPARTILHADA}}", "value": 1, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "id-repetido",
+      "descricao": "id igual a um já recebido, só que em maiúsculas (é outro evento)",
+      "corpo": { "id": "EVT_FZ01_043", "event": "PAYMENT_RECEIVED", "payment": { "id": "{{COBRANCA_COMPARTILHADA}}", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "corpo-grande",
+      "descricao": "corpo de 2 MB (acima do limite do servidor)",
+      "corpo": { "id": "evt_fz01_048", "event": "PAYMENT_CREATED", "lixo": { "$repetir": "x", "vezes": 2000000 } },
+      "esperado": "recusa"
+    },
+    {
+      "classe": "corpo-grande",
+      "descricao": "corpo de 90 KB (abaixo do limite)",
+      "corpo": { "id": "evt_fz01_049", "event": "PAYMENT_CREATED", "lixo": { "$repetir": "x", "vezes": 90000 } },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "corpo-grande",
+      "descricao": "payment com 5000 listas aninhadas",
+      "corpoBruto": ["{\"id\": \"evt_fz01_050\", \"event\": \"PAYMENT_CREATED\", \"payment\": ", { "$repetir": "[", "vezes": 5000 }, { "$repetir": "]", "vezes": 5000 }, "}"],
+      "idEvento": "evt_fz01_050",
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "corpo-grande",
+      "descricao": "payment com 20000 listas aninhadas",
+      "corpoBruto": ["{\"id\": \"evt_fz01_051\", \"event\": \"PAYMENT_CREATED\", \"payment\": ", { "$repetir": "[", "vezes": 20000 }, { "$repetir": "]", "vezes": 20000 }, "}"],
+      "idEvento": "evt_fz01_051",
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id com 6000 caracteres que não se comprimem",
+      "corpo": { "id": { "$embaralhado": 6000 }, "event": "PAYMENT_CREATED" },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id com comando SQL",
+      "corpo": { "id": "evt_fz01_053'); DROP TABLE eventos_webhook; --", "event": "PAYMENT_CREATED" },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id com HTML e script",
+      "corpo": { "id": "evt_fz01_054<script>alert(1)</script>", "event": "PAYMENT_CREATED" },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id com acento, emoji e quebra de linha",
+      "corpo": { "id": "evt_fz01_055_ação_😀\nlinha2", "event": "PAYMENT_CREATED" },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id só com espaços",
+      "corpo": { "id": "   ", "event": "PAYMENT_CREATED" },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id com byte nulo no meio",
+      "corpo": { "id": "evt_fz01_057\u0000fim", "event": "PAYMENT_CREATED" },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "byte nulo num campo do pagamento",
+      "corpo": { "id": "evt_fz01_058", "event": "PAYMENT_CREATED", "payment": { "id": "pay_fz01_058", "description": "texto\u0000com nulo" } },
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "id do pagamento com comando SQL (vira pendência com o texto literal)",
+      "corpo": { "id": "evt_fz01_059", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_x' OR '1'='1", "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "chave __proto__ no corpo (tentativa de poluir o protótipo)",
+      "corpoBruto": "{\"id\": \"evt_fz01_060\", \"event\": \"PAYMENT_CREATED\", \"__proto__\": {\"poluidoPeloFuzzing\": \"sim\"}}",
+      "idEvento": "evt_fz01_060",
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "constructor.prototype no pagamento (tentativa de poluir o protótipo)",
+      "corpoBruto": "{\"id\": \"evt_fz01_061\", \"event\": \"PAYMENT_CREATED\", \"payment\": {\"constructor\": {\"prototype\": {\"poluidoPeloFuzzing\": \"sim\"}}}}",
+      "idEvento": "evt_fz01_061",
+      "esperado": "aceito"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "chave id repetida no JSON (vale a última)",
+      "corpoBruto": "{\"id\": \"evt_fz01_062_primeiro\", \"id\": \"evt_fz01_062\", \"event\": \"PAYMENT_CREATED\"}",
+      "idEvento": "evt_fz01_062",
+      "esperado": "aceito"
+    },
+    {
+      "classe": "tipo-de-conteudo",
+      "descricao": "JSON válido enviado como text/plain",
+      "tipoConteudo": "text/plain",
+      "corpoBruto": "{\"id\": \"evt_fz01_063\", \"event\": \"PAYMENT_CREATED\"}",
+      "idEvento": "evt_fz01_063",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-de-conteudo",
+      "descricao": "formulário (x-www-form-urlencoded) com id e event",
+      "tipoConteudo": "application/x-www-form-urlencoded",
+      "corpoBruto": "id=evt_fz01_064&event=PAYMENT_CREATED",
+      "idEvento": "evt_fz01_064",
+      "esperado": "recusa-ou-aceito"
+    },
+    {
+      "classe": "tipo-de-conteudo",
+      "descricao": "formulário com id em forma de objeto (id[$ne]=)",
+      "tipoConteudo": "application/x-www-form-urlencoded",
+      "corpoBruto": "id[$ne]=x&event=PAYMENT_CREATED",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "tipo-de-conteudo",
+      "descricao": "XML no lugar de JSON",
+      "tipoConteudo": "application/xml",
+      "corpoBruto": "<evento><id>evt_fz01_066</id><event>PAYMENT_CREATED</event></evento>",
+      "idEvento": "evt_fz01_066",
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "sem o cabeçalho do token",
+      "token": null,
+      "corpo": { "id": "evt_fz01_067", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token vazio",
+      "token": "",
+      "corpo": { "id": "evt_fz01_068", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token sem a última letra",
+      "token": "token-do-webhook-so-para-test",
+      "corpo": { "id": "evt_fz01_069", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token com uma letra a mais",
+      "token": "token-do-webhook-so-para-testee",
+      "corpo": { "id": "evt_fz01_070", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token com uma letra trocada",
+      "token": "token-do-webhook-so-para-tesre",
+      "corpo": { "id": "evt_fz01_071", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token todo em maiúsculas",
+      "token": "TOKEN-DO-WEBHOOK-SO-PARA-TESTE",
+      "corpo": { "id": "evt_fz01_072", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token com só a primeira letra maiúscula",
+      "token": "Token-do-webhook-so-para-teste",
+      "corpo": { "id": "evt_fz01_073", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token com uma letra acentuada parecida (ó no lugar de o)",
+      "token": "token-do-webhook-só-para-teste",
+      "corpo": { "id": "evt_fz01_074", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token certo com o prefixo Bearer",
+      "token": "Bearer token-do-webhook-so-para-teste",
+      "corpo": { "id": "evt_fz01_075", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token certo repetido duas vezes, separado por vírgula",
+      "token": "token-do-webhook-so-para-teste,token-do-webhook-so-para-teste",
+      "corpo": { "id": "evt_fz01_076", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "valor de exemplo do .env.example",
+      "token": "coloque-aqui-o-token-do-webhook",
+      "corpo": { "id": "evt_fz01_077", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token certo repetido 300 vezes (9 mil caracteres)",
+      "token": { "$repetir": "token-do-webhook-so-para-teste", "vezes": 300 },
+      "corpo": { "id": "evt_fz01_078", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token certo no cabeçalho Authorization em vez de asaas-access-token",
+      "cabecalhoDoToken": "authorization",
+      "corpo": { "id": "evt_fz01_079", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token certo na URL em vez do cabeçalho",
+      "token": null,
+      "rota": "/api/webhooks/asaas?asaas-access-token=token-do-webhook-so-para-teste",
+      "corpo": { "id": "evt_fz01_080", "event": "PAYMENT_RECEIVED", "payment": { "id": "pay_fz01_token", "value": 85 } },
+      "status": 401,
+      "esperado": "recusa"
+    },
+    {
+      "classe": "token",
+      "descricao": "token errado com corpo truncado (o token não pode ser ignorado por causa do erro do corpo)",
+      "token": "outro-token",
+      "corpoBruto": "{\"id\": \"evt_fz01_081\", \"event\": ",
+      "idEvento": "evt_fz01_081",
+      "esperado": "recusa"
+    }
+  ]
+}
