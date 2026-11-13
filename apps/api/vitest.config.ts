@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
@@ -9,6 +9,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // Os testes de integração e de sistema precisam de um PostgreSQL de verdade. Por isso ficam fora do
+    // `pnpm test` (e, com ele, do gancho do git e do CI) e rodam à mão com `pnpm test:integracao`.
+    exclude: [...configDefaults.exclude, 'test/integracao/**', 'test/sistema/**'],
     // Alguns testes são lentos de propósito (hash Argon2) ou leem todos os arquivos versionados (B11).
     // Com os testes rodando em paralelo, os 5 s padrão às vezes não bastavam e o teste falhava à toa.
     testTimeout: 20_000,
