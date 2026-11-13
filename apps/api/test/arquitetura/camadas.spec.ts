@@ -29,7 +29,7 @@ function ehPacoteProibidoNoDominio(texto: string): boolean {
   return texto.startsWith('@nestjs/') || texto.startsWith('@prisma/') || texto.includes('generated/prisma');
 }
 
-describe('B2: camadas dentro do módulo', () => {
+describe('B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07', () => {
   for (const modulo of listarModulos()) {
     const pastaDoModulo = path.join(PASTA_MODULOS, modulo);
 

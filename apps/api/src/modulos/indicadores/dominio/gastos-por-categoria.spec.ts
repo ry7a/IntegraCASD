@@ -3,7 +3,7 @@ import { lerMes, percentual, somarMeses, variacao } from './periodo.js';
 
 const categoria = (id: string, valorCentavos: number) => ({ categoriaId: id, categoriaNome: `Categoria ${id}`, valorCentavos });
 
-describe('gastos por categoria [Indicadores.RF003]', () => {
+describe('gastos por categoria [Indicadores.RF003] CT-IND-03', () => {
   it('ordena por valor, com a participação de cada uma (uma casa decimal)', () => {
     const resultado = apurarGastos([categoria('a', 10000), categoria('b', 20000), categoria('c', 30000)], []);
     expect(resultado.totalSaidasCentavos).toBe(60000);

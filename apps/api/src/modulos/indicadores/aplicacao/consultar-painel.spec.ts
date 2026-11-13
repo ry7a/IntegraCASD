@@ -18,7 +18,7 @@ function repositorio(porMes: Record<string, { entradasCentavos: number; saidasCe
   return { falso, meses };
 }
 
-describe('painel de indicadores [Indicadores.RF001]', () => {
+describe('painel de indicadores [Indicadores.RF001] CT-IND-01', () => {
   it('resultado do mês e variação sobre o anterior; aguardando liberação separado (fluxo A2)', async () => {
     const { falso } = repositorio({
       '2026-10': { entradasCentavos: 110000, saidasCentavos: 45000 },

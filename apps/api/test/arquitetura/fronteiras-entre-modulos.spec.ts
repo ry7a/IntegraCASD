@@ -39,7 +39,7 @@ function importsQueFuramAFronteira(arquivo: string): string[] {
   return ruins;
 }
 
-describe('B1: fronteiras entre módulos', () => {
+describe('B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07', () => {
   it('todo módulo tem um index.ts como ponto de entrada público', () => {
     const semIndex = listarModulos().filter(
       (modulo) => !existsSync(path.join(PASTA_MODULOS, modulo, 'index.ts')),

@@ -11,7 +11,7 @@ const valido = {
   dataFim: '2026-12-31',
 };
 
-describe('contratos [Cadastros.RF004]', () => {
+describe('contratos [Cadastros.RF004] CT-CAD-03', () => {
   it('lê e normaliza um contrato válido; sem término, o prazo é indeterminado', () => {
     expect(lerDadosParaInclusao(valido)).toEqual({ ...valido, contraparte: 'Limpeza Fictícia Ltda.' });
     expect(lerDadosParaInclusao({ ...valido, dataFim: '' }).dataFim).toBeNull();
