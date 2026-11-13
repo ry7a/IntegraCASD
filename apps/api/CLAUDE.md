@@ -152,9 +152,17 @@ src/modulos/cobrancas/
 ## Testes
 
 - Vitest. Regras de domínio e casos de uso têm teste unitário, no arquivo `*.spec.ts` ao lado do código.
-- Os testes não usam banco nem rede: rodam sem o Docker. Dependências externas são trocadas por dublês
-  (`cliente-asaas.falso.ts`, `agendador-de-rotinas.falso.ts`, `fila-de-eventos.falsa.ts`,
+- Os testes de unidade (`pnpm test`) não usam banco nem rede: rodam sem o Docker. Dependências externas são
+  trocadas por dublês (`cliente-asaas.falso.ts`, `agendador-de-rotinas.falso.ts`, `fila-de-eventos.falsa.ts`,
   `notificador-de-alertas.falso.ts`); repositórios são testados com um Prisma falso que anota as operações.
+- **Integração e sistema** (`test/integracao/`, `test/sistema/`, config `vitest.integracao.config.ts`): usam um
+  PostgreSQL de verdade e a aplicação inteira; só o Asaas e o e-mail são falsos (`test/apoio/aplicacao.ts`).
+  Rodam à mão com `pnpm test:integracao` (raiz), fora do `pnpm test`, dos ganchos e do CI. O banco
+  `integracasd_integracao` é apagado e recriado a cada execução (`test/apoio/preparar-banco.ts`); outro banco só
+  com `DATABASE_URL_INTEGRACAO`, local e com "integracao" no nome. Um arquivo por caso do Plano de Testes
+  (`ct-cob-05-webhook.spec.ts`), com o requisito e o caso no `describe`. Dados fictícios pelas fábricas de
+  `test/apoio/cenario.ts`; o banco é compartilhado entre os arquivos, então confira só o que o teste criou.
+  O CT-NF-05 (mil alunos, ritmo real) leva uns 6 minutos; `$env:PULAR_CT_NF_05='1'` pula enquanto você trabalha.
 - `test/arquitetura/` guarda as funções de aptidão do backend (fronteiras, camadas, dinheiro, exclusão física,
   segredos, rotas autenticadas, trilha, dependências, requisitos); estão descritas em `docs/governanca/README.md`.
 - Teste que cobre um requisito não funcional cita o id entre colchetes (`[Confiabilidade.NF003]`) e o requisito é

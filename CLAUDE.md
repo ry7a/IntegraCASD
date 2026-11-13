@@ -64,6 +64,8 @@ pnpm dev:worker              # worker (fila do pg-boss), sem porta HTTP
 pnpm lint                    # lint de tudo (ESLint no web, oxlint na API)
 pnpm test                    # testes de tudo (hoje só a API tem testes)
 pnpm --filter api test       # testes do backend
+pnpm test:integracao         # integração e sistema da API com PostgreSQL real (docker compose up -d antes); só à mão
+pnpm medir:webhook           # CT-NF-03: tempo de resposta do webhook (local; -- --alvo homologacao usa o .env.homologacao)
 pnpm cobertura               # cobertura de testes do backend (relatório em apps/api/coverage/index.html)
 pnpm --filter web lint       # lint do frontend
 pnpm --filter api dados-ficticios  # popula o banco local com dados fictícios
@@ -76,6 +78,10 @@ pnpm relatorio:arquitetura   # relatório para a revisão de arquitetura do fim 
 .\scripts\backup\fazer-backup.ps1   # backup do banco (docs/playbooks/backup-e-restauracao.md)
 .\scripts\backup\restaurar-backup.ps1 -Arquivo <dump>  # restaura num banco separado e confere
 ```
+
+O `pnpm test:integracao` apaga e recria o banco `integracasd_integracao` (só aceita banco local com
+"integracao" no nome) e não roda nos ganchos nem no CI: rode à mão antes de cada entrega. O plano e o
+roteiro de execução dos testes estão em `docs/testes/`.
 
 Lint, testes e `verificar:arquitetura` também rodam sozinhos nos ganchos do git
 (`.githooks/pre-merge-commit` e `pre-push`, ativados pelo `pnpm install`). O CI
