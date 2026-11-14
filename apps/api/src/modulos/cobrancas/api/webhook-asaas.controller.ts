@@ -4,7 +4,6 @@ import { ReceberEventoWebhook } from '../aplicacao/receber-evento-webhook.js';
 import type { EventoRecebido } from '../aplicacao/receber-evento-webhook.js';
 import { TokenDoWebhookGuard } from './token-do-webhook.guard.js';
 import { Publico } from '../../../compartilhado/autenticacao/publico.decorator.js';
-import { lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 // Webhook do Asaas: valida o token (guard), grava o evento, enfileira e responde 200.
 // Nenhuma regra de negócio aqui. Fica fora do OpenAPI: só o Asaas chama esta rota,
@@ -97,16 +96,10 @@ function problemaNoCorpo(valor: unknown, nivel: number): ProblemaNoCorpo | null 
 const SURROGATE_SEM_PAR = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
 
 // Texto que o PostgreSQL recusa no jsonb: o caractere nulo e o Unicode inválido (o surrogate sem par).
-// Gravar respondia 500.
+// Gravar respondia 500. O corpo é guardado como veio (nem aparado): por isso só se procura o caractere,
+// sem passar pela leitura de texto do módulo comum.
 function problemaNoTexto(texto: string): ProblemaNoCorpo | null {
-  if (temCaractereNulo(texto)) return 'caractere-nulo';
+  if (texto.includes('\u0000')) return 'caractere-nulo';
   if (SURROGATE_SEM_PAR.test(texto)) return 'unicode-invalido';
   return null;
-}
-
-// O PostgreSQL recusa o caractere nulo em texto e em JSON. A regra é a do texto do módulo comum; o
-// tamanho não importa aqui (por isso o máximo infinito), só o motivo da recusa.
-function temCaractereNulo(texto: string): boolean {
-  const leitura = lerTexto(texto, Number.POSITIVE_INFINITY);
-  return !leitura.valido && leitura.motivo === 'caractere-nulo';
 }
