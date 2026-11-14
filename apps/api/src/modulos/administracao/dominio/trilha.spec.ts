@@ -34,6 +34,14 @@ describe('filtros da trilha de auditoria [Administração.RF005]', () => {
     expect(() => lerFiltrosDaTrilha({ tamanhoPagina: '500' }, HOJE)).toThrow(/200/);
   });
 
+  it('recusa período com data que não existe no calendário ou com ano fora do limite, citando a data', () => {
+    expect(() => lerFiltrosDaTrilha({ de: '2026-13-01', ate: '2026-13-31' }, HOJE)).toThrow(/data inicial.*não existe no calendário/);
+    expect(() => lerFiltrosDaTrilha({ ate: '2026-02-30' }, HOJE)).toThrow(/data final.*não existe no calendário/);
+    expect(() => lerFiltrosDaTrilha({ de: '0000-01-01' }, HOJE)).toThrow(/data inicial.*1900 e 9999/);
+    expect(() => lerFiltrosDaTrilha({ de: '01/11/2026' }, HOJE)).toThrow(/datas no formato AAAA-MM-DD/);
+    expect(lerFiltrosDaTrilha({ de: '2024-02-29', ate: '2024-03-01' }, HOJE)).toMatchObject({ de: '2024-02-29', ate: '2024-03-01' });
+  });
+
   it('o período cobre os dias inteiros no fuso de São Paulo', () => {
     const { inicio, fim } = intervaloEmSaoPaulo('2026-10-01', '2026-10-26');
     expect(inicio.toISOString()).toBe('2026-10-01T03:00:00.000Z');
