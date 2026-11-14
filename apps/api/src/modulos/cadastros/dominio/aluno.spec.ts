@@ -66,6 +66,20 @@ describe('demais campos', () => {
     expect(() => normalizarTurma('Turma 28')).toThrow(/T28/);
   });
 
+  // Revisão da spec #57: a spec deixa de fora "limites de negócio mais apertados". E-mail, celular e turma não
+  // tinham limite de tamanho; continuam sem (só o teto técnico, bem acima de qualquer valor de verdade).
+  it('e-mail, celular e turma sem limite de tamanho de negócio; o caractere nulo continua recusado', () => {
+    const emailLongo = `${'a'.repeat(300)}@exemplo.com`;
+    expect(normalizarEmail(emailLongo)).toBe(emailLongo);
+    // Com a máscara, passa de 20 caracteres, mas os dígitos são 11.
+    expect(normalizarCelular('( 1 2 )  9 8 7 6 5 - 4 3 2 1')).toBe('12987654321');
+    // Turma longa é recusada pelo formato (T28), não por um tamanho.
+    expect(() => normalizarTurma("T28'; DROP TABLE turmas; --")).toThrow(/formato T28/);
+    expect(() => normalizarEmail('aluna\u0000@exemplo.com')).toThrow(/nulo\) no e-mail/);
+    expect(() => normalizarCelular('12\u000098765-4321')).toThrow(/nulo\) no celular/);
+    expect(() => normalizarTurma('T\u000028')).toThrow(/nulo\) na turma/);
+  });
+
   it('alojamento: os três campos juntos ou nenhum', () => {
     expect(lerAlojamento({ bloco: 'a', apto: '101', vaga: '2' })).toEqual({ bloco: 'A', apto: '101', vaga: '2' });
     expect(lerAlojamento({ bloco: '', apto: ' ', vaga: '' })).toBeNull();

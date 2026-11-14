@@ -1,5 +1,5 @@
 // Regras do cadastro de aluno [Cadastros.RF001]. Só TypeScript puro: sem framework e sem banco.
-import { MAIOR_INTEIRO_DO_BANCO, lerInteiroNaoNegativo } from '../../../compartilhado/leitura-de-entrada.js';
+import { MAIOR_INTEIRO_DO_BANCO, TAMANHO_MAXIMO_TECNICO, lerInteiroNaoNegativo } from '../../../compartilhado/leitura-de-entrada.js';
 import { DadoInvalido, cpfValido, normalizarCpf, normalizarNomeCompleto, texto } from './comum.js';
 
 export { CadastroDuplicado, DadoInvalido, cpfValido, normalizarCpf } from './comum.js';
@@ -30,17 +30,20 @@ export type DadosDoAluno = {
 // Campos do aluno (CPF, nome e erros vêm de ./comum.ts, iguais para funcionários)
 // ---------------------------------------------------------------------------
 
+// E-mail, celular e turma não têm limite de tamanho de negócio (a spec #57 deixa esses limites de fora):
+// `texto` pede um máximo, e TAMANHO_MAXIMO_TECNICO é só um teto técnico, bem acima de qualquer valor de verdade.
 export function normalizarEmail(valor: unknown): string {
-  const email = texto(valor, 'no e-mail', 254)?.toLowerCase() ?? '';
+  const email = texto(valor, 'no e-mail', TAMANHO_MAXIMO_TECNICO)?.toLowerCase() ?? '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new DadoInvalido('Informe um e-mail válido, por exemplo nome@exemplo.com. O Asaas exige o e-mail.');
   }
   return email;
 }
 
-// Celular com DDD: 10 ou 11 dígitos. Guarda só os dígitos.
+// Celular com DDD: 10 ou 11 dígitos. Guarda só os dígitos. O tamanho que vale é o dos dígitos, contados
+// depois de tirar a máscara.
 export function normalizarCelular(valor: unknown): string | null {
-  const bruto = texto(valor, 'no celular', 20);
+  const bruto = texto(valor, 'no celular', TAMANHO_MAXIMO_TECNICO);
   if (bruto === null) return null;
   const digitos = bruto.replace(/\D/g, '');
   if (digitos.length < 10 || digitos.length > 11) {
@@ -63,9 +66,9 @@ export function lerMatricula(valor: unknown): number | null {
   return lida.valor;
 }
 
-// Turma no formato da planilha: "T" seguido de dois dígitos (T26, T28...).
+// Turma no formato da planilha: "T" seguido de dois dígitos (T26, T28...). O formato já limita o tamanho.
 export function normalizarTurma(valor: unknown): string | null {
-  const turma = texto(valor, 'na turma', 10)?.toUpperCase().replace(/\s/g, '') ?? null;
+  const turma = texto(valor, 'na turma', TAMANHO_MAXIMO_TECNICO)?.toUpperCase().replace(/\s/g, '') ?? null;
   if (turma === null) return null;
   if (!/^T\d{2}$/.test(turma)) throw new DadoInvalido('Informe a turma no formato T28.');
   return turma;
