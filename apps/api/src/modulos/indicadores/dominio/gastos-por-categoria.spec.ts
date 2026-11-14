@@ -1,5 +1,5 @@
 import { apurarGastos } from './gastos-por-categoria.js';
-import { lerMes, percentual, somarMeses, variacao } from './periodo.js';
+import { PeriodoInvalido, lerMes, percentual, somarMeses, variacao } from './periodo.js';
 
 const categoria = (id: string, valorCentavos: number) => ({ categoriaId: id, categoriaNome: `Categoria ${id}`, valorCentavos });
 
@@ -33,6 +33,17 @@ describe('período dos indicadores [Indicadores.RF001]', () => {
     expect(lerMes(undefined, '2026-10-26')).toBe('2026-10');
     expect(lerMes('2026-09', '2026-10-26')).toBe('2026-09');
     expect(() => lerMes('2026-13', '2026-10-26')).toThrow(/AAAA-MM/);
+  });
+
+  // Mesma regra do mês das movimentações (compartilhado/leitura-de-entrada.ts): "0000-01" passava no formato
+  // e o banco dava erro 500.
+  it('recusa ano fora de 1900 a 9999, citando o mês; aceita os dois extremos', () => {
+    expect(() => lerMes('0000-01', '2026-10-26')).toThrow(PeriodoInvalido);
+    expect(() => lerMes('0000-01', '2026-10-26')).toThrow(/ano do mês.*1900 e 9999/);
+    expect(() => lerMes('1899-12', '2026-10-26')).toThrow(/1900 e 9999/);
+    expect(lerMes('1900-01', '2026-10-26')).toBe('1900-01');
+    expect(lerMes('9999-12', '2026-10-26')).toBe('9999-12');
+    expect(() => lerMes('2026-00', '2026-10-26')).toThrow(/mês vai de 01 a 12/);
   });
 
   it('vira o ano ao somar meses', () => {

@@ -1,13 +1,19 @@
 // Período de referência dos indicadores [Indicadores.RF001]: um mês "AAAA-MM", o corrente por padrão.
+import { MAIOR_ANO, MENOR_ANO, lerMes as lerMesComum } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class PeriodoInvalido extends Error {}
 
+// O mês é lido pela regra comum (compartilhado/leitura-de-entrada.ts), a mesma das movimentações: mês de
+// 01 a 12 e ano de 1900 a 9999. "0000-01" passava no formato e o banco dava erro 500.
 export function lerMes(valor: unknown, hoje: string): string {
   if (valor === undefined || valor === null || valor === '') return hoje.slice(0, 7);
-  if (typeof valor !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(valor)) {
-    throw new PeriodoInvalido('Informe o mês no formato AAAA-MM.');
+  const lido = lerMesComum(valor);
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'inexistente') throw new PeriodoInvalido('O mês vai de 01 a 12. Informe o mês no formato AAAA-MM.');
+  if (lido.motivo === 'fora-do-limite') {
+    throw new PeriodoInvalido(`Confira o ano do mês: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
   }
-  return valor;
+  throw new PeriodoInvalido('Informe o mês no formato AAAA-MM.');
 }
 
 // somarMeses("2026-01", -1) -> "2025-12"
