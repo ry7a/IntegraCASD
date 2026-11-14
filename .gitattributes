@@ -7,3 +7,6 @@
 *.png binary
 *.jpg binary
 *.pdf binary
+# Evidências dos testes: guardadas byte a byte (sem trocar fim de linha), para o MANIFESTO-sha256.txt bater
+# depois de um clone em qualquer máquina.
+docs/testes/evidencias/** -text

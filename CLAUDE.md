@@ -66,6 +66,7 @@ pnpm test                    # testes de tudo (hoje só a API tem testes)
 pnpm --filter api test       # testes do backend
 pnpm test:integracao         # integração e sistema da API com PostgreSQL real (docker compose up -d antes); só à mão
 pnpm medir:webhook           # CT-NF-03: tempo de resposta do webhook (local; -- --alvo homologacao usa o .env.homologacao)
+pnpm evidencias              # Plano de Testes: roda as fases automáticas e guarda as evidências (docs/testes/roteiro-de-execucao.md)
 pnpm cobertura               # cobertura de testes do backend (relatório em apps/api/coverage/index.html)
 pnpm --filter web lint       # lint do frontend
 pnpm --filter api dados-ficticios  # popula o banco local com dados fictícios
