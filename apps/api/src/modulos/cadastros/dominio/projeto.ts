@@ -23,13 +23,13 @@ export type DadosDoProjeto = {
 export type EntradaDoProjeto = Partial<Record<keyof DadosDoProjeto, unknown>>;
 
 function lerNome(valor: unknown): string {
-  const nome = texto(valor, 'no nome do projeto', 120);
+  const nome = texto(valor, 'o nome do projeto', 120);
   if (nome === null || nome.length < 3) throw new DadoInvalido('Informe o nome do projeto, por exemplo "Reforma da sala de estudos".');
   return nome;
 }
 
 function lerResponsavel(valor: unknown): string | null {
-  return texto(valor, 'no responsável', 120);
+  return texto(valor, 'o responsável', 120);
 }
 
 function lerOrcamento(valor: unknown): number | null {

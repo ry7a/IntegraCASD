@@ -1,6 +1,6 @@
 // Regras da categoria de movimentação [Administração.RF002]. Só TypeScript puro: sem
 // framework e sem banco, para poder testar sem montar nada.
-import { lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
+import { lerTexto, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 export const TIPOS_DE_CATEGORIA = ['ENTRADA', 'SAIDA', 'AMBOS'] as const;
 // O tipo é a união dos valores da lista acima: 'ENTRADA' | 'SAIDA' | 'AMBOS'.
@@ -35,17 +35,11 @@ export class CategoriaEmUso extends Error {
 // que só diferem em espaços contam como iguais, e recusa o caractere nulo, que o banco não aceita.
 export function normalizarNome(valor: unknown): string {
   const lido = lerTexto(valor, TAMANHO_MAXIMO_DO_NOME);
-  if (!lido.valido && lido.motivo === 'caractere-nulo') {
-    throw new RegraDaCategoriaViolada(
-      'Há um caractere invisível (nulo) no nome da categoria, comum ao colar de outro programa. Apague e digite de novo.',
-    );
+  // O que não é texto conta como nome em branco.
+  if (!lido.valido && lido.motivo === 'formato') throw new RegraDaCategoriaViolada('Informe o nome da categoria.');
+  if (!lido.valido) {
+    throw new RegraDaCategoriaViolada(mensagemDoTexto(lido.motivo, 'o nome da categoria', TAMANHO_MAXIMO_DO_NOME));
   }
-  if (!lido.valido && lido.motivo === 'acima-do-maximo') {
-    throw new RegraDaCategoriaViolada(
-      `Use no máximo ${TAMANHO_MAXIMO_DO_NOME} caracteres no nome da categoria.`,
-    );
-  }
-  if (!lido.valido) throw new RegraDaCategoriaViolada('Informe o nome da categoria.');
   if (lido.valor.length < TAMANHO_MINIMO_DO_NOME) {
     throw new RegraDaCategoriaViolada(
       `O nome da categoria precisa ter ao menos ${TAMANHO_MINIMO_DO_NOME} caracteres.`,

@@ -14,7 +14,7 @@ export type DadosDoFuncionario = {
 export type EntradaDoFuncionario = Partial<Record<keyof DadosDoFuncionario, unknown>>;
 
 export function normalizarCargo(valor: unknown): string {
-  const cargo = texto(valor, 'no cargo', 80);
+  const cargo = texto(valor, 'o cargo', 80);
   if (cargo === null || cargo.length < 2) throw new DadoInvalido('Informe o cargo, por exemplo "Auxiliar de limpeza".');
   return cargo;
 }

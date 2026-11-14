@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { PerfilUsuario } from '../../../compartilhado/autenticacao/perfil.js';
 import { criarHashDaSenha } from '../../../compartilhado/autenticacao/senha.js';
 import { registrarNaTrilha, type OperacaoAuditada } from '../../../compartilhado/auditoria/trilha.js';
-import { TAMANHO_MAXIMO_TECNICO, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
+import { TAMANHO_MAXIMO_TECNICO, lerTexto, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { IdentidadeDoUsuario } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import type { EntradaAlterarUsuario, EntradaCriarUsuario, UsuarioResumo } from './usuarios.types.js';
@@ -189,26 +189,23 @@ function detalheDaAlteracao(
 }
 
 // Nome e e-mail pela regra comum de texto: o caractere nulo (o PostgreSQL recusa) virava erro 500 na
-// consulta do e-mail repetido ou na gravação. Sem limite de negócio: só o teto técnico.
-function lerTextoDoUsuario(valor: unknown, noCampo: string): string | null {
+// consulta do e-mail repetido ou na gravação. Sem limite de negócio: só o teto técnico. O que não é
+// texto vira nulo, e cada campo pede o valor com a própria mensagem.
+function lerTextoDoUsuario(valor: unknown, campo: string): string | null {
   const lido = lerTexto(valor, TAMANHO_MAXIMO_TECNICO);
-  if (!lido.valido && lido.motivo === 'caractere-nulo') {
-    throw new BadRequestException(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
-  }
-  if (!lido.valido && lido.motivo === 'acima-do-maximo') {
-    throw new BadRequestException(`Use no máximo ${TAMANHO_MAXIMO_TECNICO} caracteres ${noCampo}.`);
-  }
-  return lido.valido ? lido.valor : null;
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'formato') return null;
+  throw new BadRequestException(mensagemDoTexto(lido.motivo, campo, TAMANHO_MAXIMO_TECNICO));
 }
 
 function validarNome(valor: unknown): string {
-  const nome = lerTextoDoUsuario(valor, 'no nome');
+  const nome = lerTextoDoUsuario(valor, 'o nome');
   if (nome === null || nome.length < 2) throw new BadRequestException('Informe o nome do usuario.');
   return nome;
 }
 
 function validarEmail(valor: unknown): string {
-  const email = lerTextoDoUsuario(valor, 'no e-mail')?.toLowerCase() ?? '';
+  const email = lerTextoDoUsuario(valor, 'o e-mail')?.toLowerCase() ?? '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Informe um e-mail valido.');
   return email;
 }

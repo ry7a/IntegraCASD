@@ -1,7 +1,15 @@
 // Regras da conciliação [Cobranças.RF005]: o que cada aviso do Asaas faz com a cobrança.
 // Só TypeScript puro. Datas em "AAAA-MM-DD".
 import { dataDoAsaas, dataDoPagamentoNoAsaas } from '../../../compartilhado/asaas/datas-do-pagamento.js';
-import { lerCentavos, lerDia, lerTexto, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
+import {
+  MAIOR_ANO,
+  MAIOR_VALOR_EM_REAIS,
+  MENOR_ANO,
+  lerCentavos,
+  lerDia,
+  lerTexto,
+  mensagemDoTexto,
+} from '../../../compartilhado/leitura-de-entrada.js';
 import { CobrancaInvalida, type SituacaoGuardada } from './cobranca.js';
 
 // O que interessa de um evento de cobrança do Asaas. O corpo completo fica guardado no banco.
@@ -165,7 +173,8 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
 // Dado que o Asaas mandou, mas que não dá para usar (defeitos D4, D5 e D8 do Plano de Testes). Baixar com ele
 // gravaria uma data que o Asaas não informou, ou o banco recusaria e o evento ficaria em nova tentativa para
 // sempre. Devolve o campo inválido e o problema (que cita o campo), ou nulo se está tudo certo. Campo
-// ausente não é problema.
+// ausente não é problema. As frases não são as de compartilhado/leitura-de-entrada.ts de propósito: aqui
+// ninguém vai corrigir um formulário; a pendência conta o que o Asaas mandou, com o valor recebido.
 function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: string } | null {
   const datas = [
     ['a data do pagamento', aviso.pagoEm],
@@ -192,7 +201,7 @@ function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: strin
   const problema =
     lido.motivo === 'abaixo-do-minimo'
       ? 'o valor pago, convertido para centavos, dá zero centavo'
-      : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+      : `o valor pago passa do maior valor que o sistema guarda (${MAIOR_VALOR_EM_REAIS})`;
   return { campo: 'o valor pago', problema };
 }
 
@@ -200,10 +209,8 @@ function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: strin
 // texto. Sem ela, o caractere nulo chegava ao banco e a resolução dava erro 500.
 export function lerResolucaoDaPendencia(valor: unknown): string {
   const lida = lerTexto(valor, 500);
-  if (!lida.valido && lida.motivo === 'caractere-nulo') {
-    throw new CobrancaInvalida('Há um caractere invisível (nulo) na resolução, comum ao colar de outro programa. Apague e digite de novo.');
-  }
-  if (!lida.valido && lida.motivo === 'acima-do-maximo') throw new CobrancaInvalida('Use no máximo 500 caracteres na resolução.');
+  // O que não é texto conta como resolução em branco (a mensagem abaixo pede o texto).
+  if (!lida.valido && lida.motivo !== 'formato') throw new CobrancaInvalida(mensagemDoTexto(lida.motivo, 'a resolução', 500));
   if (!lida.valido || lida.valor.length < 5) {
     throw new CobrancaInvalida('Escreva o que foi conferido e decidido, por exemplo: pagamento em duplicidade devolvido pelo Asaas.');
   }

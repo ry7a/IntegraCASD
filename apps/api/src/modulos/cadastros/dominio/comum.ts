@@ -1,5 +1,5 @@
 // Regras comuns aos cadastros de pessoas (alunos e funcionários). Só TypeScript puro.
-import { MAIOR_ANO, MENOR_ANO, lerDia, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
+import { lerDia, lerTexto, mensagemDoDia, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 // Erros do domínio; a camada de aplicação traduz para 400 (dado inválido) ou 409 (duplicado).
 export class DadoInvalido extends Error {}
@@ -31,34 +31,28 @@ export function normalizarCpf(valor: unknown): string {
   return digitos;
 }
 
-// Texto livre, lido pela regra comum (compartilhado/leitura-de-entrada.ts): tira espaços das pontas e
-// repetidos no meio, recusa o caractere nulo e o que passa de `maximo`. Vazio (ou que não é texto) vira `null`.
-// `noCampo` entra na mensagem como está: "no nome", "na justificativa".
-export function texto(valor: unknown, noCampo: string, maximo: number): string | null {
+// Texto livre, lido pela regra comum (compartilhado/leitura-de-entrada.ts), que também monta a mensagem:
+// tira espaços das pontas e repetidos no meio, recusa o caractere nulo e o que passa de `maximo`. Vazio (ou
+// que não é texto) vira `null`. `campo` vai com o artigo: "o nome", "a justificativa".
+export function texto(valor: unknown, campo: string, maximo: number): string | null {
   const lido = lerTexto(valor, maximo);
   if (lido.valido) return lido.valor === '' ? null : lido.valor;
-  if (lido.motivo === 'caractere-nulo') {
-    throw new DadoInvalido(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
-  }
-  if (lido.motivo === 'acima-do-maximo') throw new DadoInvalido(`Use no máximo ${maximo} caracteres ${noCampo}.`);
-  return null;
+  if (lido.motivo === 'formato') return null;
+  throw new DadoInvalido(mensagemDoTexto(lido.motivo, campo, maximo));
 }
 
 export function normalizarNomeCompleto(valor: unknown): string {
-  const nome = texto(valor, 'no nome', 120);
+  const nome = texto(valor, 'o nome', 120);
   if (nome === null || nome.length < 3) throw new DadoInvalido('Informe o nome completo.');
   return nome;
 }
 
 // Data no formato da API, "AAAA-MM-DD", que existe no calendário (recusa 2026-02-30), pela regra comum.
+// `campo` é sempre uma data, sem o artigo: "data de início", "data de admissão".
 export function lerData(valor: unknown, campo: string): string {
   const lida = lerDia(valor);
   if (lida.valido) return lida.valor;
-  if (lida.motivo === 'inexistente') throw new DadoInvalido(`A ${campo} não existe no calendário. Confira o dia e o mês.`);
-  if (lida.motivo === 'abaixo-do-minimo' || lida.motivo === 'acima-do-maximo') {
-    throw new DadoInvalido(`Confira o ano da ${campo}: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
-  }
-  throw new DadoInvalido(`Informe a ${campo} no formato AAAA-MM-DD.`);
+  throw new DadoInvalido(mensagemDoDia(lida.motivo, `a ${campo}`));
 }
 
 // MER, regra 7: código de contrato e projeto no formato da planilha: ano com 2 dígitos + letra

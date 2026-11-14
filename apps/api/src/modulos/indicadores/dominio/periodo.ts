@@ -1,5 +1,5 @@
 // Período de referência dos indicadores [Indicadores.RF001]: um mês "AAAA-MM", o corrente por padrão.
-import { MAIOR_ANO, MENOR_ANO, lerMes as lerMesComum } from '../../../compartilhado/leitura-de-entrada.js';
+import { lerMes as lerMesComum, mensagemDoMes } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class PeriodoInvalido extends Error {}
 
@@ -9,11 +9,7 @@ export function lerMes(valor: unknown, hoje: string): string {
   if (valor === undefined || valor === null || valor === '') return hoje.slice(0, 7);
   const lido = lerMesComum(valor);
   if (lido.valido) return lido.valor;
-  if (lido.motivo === 'inexistente') throw new PeriodoInvalido('O mês vai de 01 a 12. Informe o mês no formato AAAA-MM.');
-  if (lido.motivo === 'abaixo-do-minimo' || lido.motivo === 'acima-do-maximo') {
-    throw new PeriodoInvalido(`Confira o ano do mês: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
-  }
-  throw new PeriodoInvalido('Informe o mês no formato AAAA-MM.');
+  throw new PeriodoInvalido(mensagemDoMes(lido.motivo, 'o mês'));
 }
 
 // somarMeses("2026-01", -1) -> "2025-12"

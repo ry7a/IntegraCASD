@@ -1,12 +1,13 @@
 // Regras da cobrança [Cobranças.RF001 a RF008]. Só TypeScript puro. Datas em "AAAA-MM-DD".
 import {
-  MAIOR_ANO,
   MAIOR_INTEIRO_DO_BANCO,
-  MENOR_ANO,
   lerCentavos,
   lerDia,
   lerInteiroNaoNegativo,
   lerTexto,
+  mensagemDoDia,
+  mensagemDoTexto,
+  mensagemDosCentavos,
 } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class CobrancaInvalida extends Error {}
@@ -48,46 +49,32 @@ export type NovaCobrancaAvulsa = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Dia "AAAA-MM-DD" que existe no calendário, pela regra comum (compartilhado/leitura-de-entrada.ts).
-// Sem ela, 30/02 ia ao Asaas como 30/02 e era gravado aqui como 02/03, e um mês 13 nos filtros da consulta
-// dava erro 500. `campo` entra na mensagem como está: "o vencimento", "a data do pagamento", "o início do período".
+// As leituras abaixo seguem a regra comum (compartilhado/leitura-de-entrada.ts), que também monta a mensagem
+// da recusa; aqui ela só vira CobrancaInvalida. `campo` vai com o artigo: "o vencimento", "a descrição".
+
+// Dia "AAAA-MM-DD" que existe no calendário. Sem a regra comum, 30/02 ia ao Asaas como 30/02 e era gravado
+// aqui como 02/03, e um mês 13 nos filtros da consulta dava erro 500.
 function lerDataDaCobranca(valor: unknown, campo: string): string {
   const lida = lerDia(valor);
   if (lida.valido) return lida.valor;
-  if (lida.motivo === 'inexistente') {
-    throw new CobrancaInvalida(`Confira ${campo}: essa data não existe no calendário (veja o dia e o mês).`);
-  }
-  if (lida.motivo === 'abaixo-do-minimo' || lida.motivo === 'acima-do-maximo') {
-    throw new CobrancaInvalida(`Confira ${campo}: o ano precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
-  }
-  throw new CobrancaInvalida(`Informe ${campo} no formato AAAA-MM-DD.`);
+  throw new CobrancaInvalida(mensagemDoDia(lida.motivo, campo));
 }
 
-// Valor em centavos, pela regra comum: inteiro de 1 até o maior inteiro que a coluna do banco guarda.
-// Acima disso o banco respondia erro 500, e na cobrança avulsa isso acontecia depois de criar no Asaas.
-// `campo` entra na mensagem como está: "o valor", "o valor pago".
+// Valor em centavos: inteiro de 1 até o maior inteiro que a coluna do banco guarda. Acima disso o banco
+// respondia erro 500, e na cobrança avulsa isso acontecia depois de criar no Asaas.
 function lerValorDaCobranca(valor: unknown, campo: string): number {
   const lido = lerCentavos(valor);
   if (lido.valido) return lido.valor;
-  if (lido.motivo === 'acima-do-maximo') {
-    // R$ 21.474.836,47 é MAIOR_INTEIRO_DO_BANCO em reais.
-    throw new CobrancaInvalida(`Confira ${campo}: o máximo aceito é R$ 21.474.836,47 (2147483647 centavos).`);
-  }
-  // Formato errado, zero ou negativo.
-  throw new CobrancaInvalida(`Informe ${campo} em centavos, como número inteiro maior que zero (ex.: 8500 para R$ 85,00).`);
+  throw new CobrancaInvalida(mensagemDosCentavos(lido.motivo, campo));
 }
 
-// Texto livre, pela regra comum: aparado, espaços repetidos reduzidos a um e sem caractere nulo (que o
-// PostgreSQL recusa). O que não é texto vira "": o tamanho mínimo, cada campo confere com a própria mensagem.
-// `noCampo` entra na mensagem como está: "na descrição", "na justificativa".
-function lerTextoDaCobranca(valor: unknown, noCampo: string, maximo: number): string {
+// Texto livre: aparado, espaços repetidos reduzidos a um e sem caractere nulo (que o PostgreSQL recusa).
+// O que não é texto vira "": o tamanho mínimo, cada campo confere com a própria mensagem.
+function lerTextoDaCobranca(valor: unknown, campo: string, maximo: number): string {
   const lido = lerTexto(valor, maximo);
   if (lido.valido) return lido.valor;
-  if (lido.motivo === 'caractere-nulo') {
-    throw new CobrancaInvalida(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
-  }
-  if (lido.motivo === 'acima-do-maximo') throw new CobrancaInvalida(`Use no máximo ${maximo} caracteres ${noCampo}.`);
-  return '';
+  if (lido.motivo === 'formato') return '';
+  throw new CobrancaInvalida(mensagemDoTexto(lido.motivo, campo, maximo));
 }
 
 // [Cobranças.RF002] Valida a entrada da cobrança avulsa. `hoje` entra por parâmetro para o teste.
@@ -101,7 +88,7 @@ export function lerNovaCobrancaAvulsa(entrada: Partial<Record<keyof NovaCobranca
   if (vencimento < hoje) {
     throw new CobrancaInvalida('O vencimento não pode ser anterior a hoje. Escolha outra data.');
   }
-  const descricao = lerTextoDaCobranca(entrada.descricao, 'na descrição', 200);
+  const descricao = lerTextoDaCobranca(entrada.descricao, 'a descrição', 200);
   if (descricao.length < 3) throw new CobrancaInvalida('Descreva a cobrança, por exemplo: Camiseta do CASD.');
   const renegociacaoDeId = entrada.renegociacaoDeId ?? null;
   if (renegociacaoDeId !== null && (typeof renegociacaoDeId !== 'string' || !UUID.test(renegociacaoDeId))) {
@@ -217,7 +204,7 @@ export function lerFiltrosDaConsulta(consulta: Record<string, unknown>): Filtros
   if (alunoId !== null && !UUID.test(alunoId)) throw new CobrancaInvalida('Aluno não encontrado. Volte à lista e escolha outro.');
   // A busca também passa pela regra comum de texto: o PostgreSQL recusa o caractere nulo até numa consulta,
   // e ?busca=%00 dava erro 500. Vazia (ou só espaços) é "sem busca".
-  const textoDaBusca = lerTextoDaCobranca(consulta.busca, 'na busca', TAMANHO_MAXIMO_DA_BUSCA);
+  const textoDaBusca = lerTextoDaCobranca(consulta.busca, 'a busca', TAMANHO_MAXIMO_DA_BUSCA);
   const busca = textoDaBusca === '' ? null : textoDaBusca;
   const pagina = inteiroNaoNegativo(consulta.pagina, 'a página') ?? 1;
   const tamanho = inteiroNaoNegativo(consulta.tamanhoPagina, 'o tamanho da página') ?? TAMANHO_PADRAO;
@@ -291,7 +278,7 @@ export function lerPagamentoManual(entrada: Partial<Record<keyof PagamentoManual
   const forma = FORMAS_MANUAIS.find((permitida) => permitida === entrada.formaPagamento);
   if (forma === undefined) throw new CobrancaInvalida('Escolha a forma do pagamento: Pix, transferência, dinheiro ou cartão.');
   // Fluxo E1: sem justificativa escrita, não há registro de por que o sistema passou a divergir do Asaas.
-  const justificativa = lerTextoDaCobranca(entrada.justificativa, 'na justificativa', 500);
+  const justificativa = lerTextoDaCobranca(entrada.justificativa, 'a justificativa', 500);
   if (justificativa.length < 10) {
     throw new CobrancaInvalida('A justificativa é obrigatória: explique como o pagamento foi comprovado (ex.: Pix recebido na conta do CASD).');
   }
@@ -301,7 +288,7 @@ export function lerPagamentoManual(entrada: Partial<Record<keyof PagamentoManual
 // Lido antes de chamar o Asaas (cancelar-cobranca.ts): um motivo que o banco recusa (caractere nulo) não
 // pode deixar a cobrança cancelada lá e aberta aqui.
 export function lerMotivoDoCancelamento(valor: unknown): string {
-  const motivo = lerTextoDaCobranca(valor, 'no motivo', 300);
+  const motivo = lerTextoDaCobranca(valor, 'o motivo', 300);
   if (motivo.length < 5) throw new CobrancaInvalida('Informe o motivo do cancelamento, por exemplo: renegociação em 3 parcelas.');
   return motivo;
 }
