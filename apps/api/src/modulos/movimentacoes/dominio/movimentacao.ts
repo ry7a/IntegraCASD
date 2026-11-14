@@ -1,4 +1,5 @@
 // Regras das movimentações [Movimentações.RF001 a RF003]. Só TypeScript puro. Datas em "AAAA-MM-DD".
+import { MAIOR_ANO, MAIOR_INTEIRO_DO_BANCO, MENOR_ANO, lerCentavos, lerDia, lerMes, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 export type TipoMovimentacao = 'ENTRADA' | 'SAIDA';
 export type FormaPagamento = 'ASAAS' | 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
@@ -39,12 +40,21 @@ function deUmaLista<T extends string>(valor: unknown, lista: T[], mensagem: stri
   return encontrado;
 }
 
+// Mês da consulta pela regra comum: mês de 01 a 12 e ano de 1900 a 9999 ("0000-01" passava no formato
+// e estourava no banco). Aqui só se escolhe a mensagem pelo motivo.
+function lerMesDaConsulta(valor: unknown): string {
+  const lido = lerMes(valor);
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'inexistente') throw new MovimentacaoInvalida('O mês vai de 01 a 12. Informe o mês no formato AAAA-MM.');
+  if (lido.motivo === 'fora-do-limite') {
+    throw new MovimentacaoInvalida(`Confira o ano do mês: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
+  }
+  throw new MovimentacaoInvalida('Informe o mês no formato AAAA-MM.');
+}
+
 // `hoje` entra por parâmetro para o teste. Os valores chegam da URL, como texto.
 export function lerFiltros(consulta: Record<string, unknown>, hoje: string): FiltrosDeMovimentacoes {
-  const mes = consulta.mes === undefined || consulta.mes === '' ? hoje.slice(0, 7) : consulta.mes;
-  if (typeof mes !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
-    throw new MovimentacaoInvalida('Informe o mês no formato AAAA-MM.');
-  }
+  const mes = lerMesDaConsulta(consulta.mes === undefined || consulta.mes === '' ? hoje.slice(0, 7) : consulta.mes);
   return {
     mes,
     tipo: deUmaLista(consulta.tipo, TIPOS, 'O tipo deve ser ENTRADA ou SAIDA.'),
@@ -113,30 +123,61 @@ export type NovaMovimentacao = {
   funcionarioId: string | null;
 };
 
+// A data é lida pela regra comum (compartilhado/leitura-de-entrada.ts), que recusa 30/02 e mês 13
+// em vez de deixar o banco trocar por outra data. Aqui só se escolhe a mensagem pelo motivo.
+function lerDataDoLancamento(valor: unknown): string {
+  const lida = lerDia(valor);
+  if (lida.valido) return lida.valor;
+  if (lida.motivo === 'inexistente') throw new MovimentacaoInvalida('A data não existe no calendário. Confira o dia e o mês.');
+  if (lida.motivo === 'fora-do-limite') {
+    throw new MovimentacaoInvalida(`Confira o ano da data: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
+  }
+  throw new MovimentacaoInvalida('Informe a data no formato AAAA-MM-DD.');
+}
+
+// Valor em centavos pela regra comum. O motivo 'fora-do-limite' junta "zero ou negativo" e "acima do que
+// a coluna guarda"; as mensagens são separadas porque a correção de cada um é diferente.
+function lerValorDoLancamento(valor: unknown): number {
+  const lido = lerCentavos(valor);
+  if (lido.valido) return lido.valor;
+  if (typeof valor === 'number' && valor > MAIOR_INTEIRO_DO_BANCO) {
+    // R$ 21.474.836,47 é MAIOR_INTEIRO_DO_BANCO em reais.
+    throw new MovimentacaoInvalida('O valor passa do limite do sistema (R$ 21.474.836,47). Confira se não sobrou zero.');
+  }
+  // Fluxo E2: valor zero (ou negativo, ou fracionado, ou em texto) é recusado.
+  throw new MovimentacaoInvalida('Informe um valor maior que zero, em centavos inteiros (ex.: 120000 para R$ 1.200,00).');
+}
+
+// Descrição pela regra comum: aparada, espaços repetidos reduzidos e sem caractere nulo (o PostgreSQL
+// recusa o \u0000, que costuma vir de colar de outro programa). Texto curto demais ou que não é texto
+// pede a descrição de novo.
+function lerDescricaoDoLancamento(valor: unknown): string {
+  const lida = lerTexto(valor, 200);
+  if (!lida.valido && lida.motivo === 'caractere-nulo') {
+    throw new MovimentacaoInvalida('Há um caractere invisível (nulo) na descrição, comum ao colar de outro programa. Apague e digite de novo.');
+  }
+  if (!lida.valido && lida.motivo === 'fora-do-limite') throw new MovimentacaoInvalida('Use no máximo 200 caracteres na descrição.');
+  if (!lida.valido || lida.valor.length < 3) {
+    throw new MovimentacaoInvalida('Descreva a movimentação, por exemplo: NF 685, limpeza de outubro.');
+  }
+  return lida.valor;
+}
+
 // `hoje` entra por parâmetro para o teste.
 export function lerNovaMovimentacao(entrada: Partial<Record<keyof NovaMovimentacao, unknown>>, hoje: string): NovaMovimentacao {
   const contaId = idOpcional(entrada.contaId, 'Escolha a conta na lista.');
   if (contaId === null) throw new MovimentacaoInvalida('Escolha a conta da movimentação.');
   const tipo = deUmaLista(entrada.tipo, TIPOS, 'Escolha se é entrada ou saída.');
   if (tipo === null) throw new MovimentacaoInvalida('Escolha se é entrada ou saída.');
-  const valor = entrada.valorCentavos;
-  // Fluxo E2: valor zero (ou negativo, ou fracionado) é recusado.
-  if (typeof valor !== 'number' || !Number.isInteger(valor) || valor <= 0) {
-    throw new MovimentacaoInvalida('Informe um valor maior que zero, em centavos inteiros (ex.: 120000 para R$ 1.200,00).');
-  }
-  const data = entrada.data;
-  if (typeof data !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    throw new MovimentacaoInvalida('Informe a data no formato AAAA-MM-DD.');
-  }
+  const valor = lerValorDoLancamento(entrada.valorCentavos);
+  const data = lerDataDoLancamento(entrada.data);
   // Fluxo E1: movimentação registra fato ocorrido, não previsão.
   if (data > hoje) throw new MovimentacaoInvalida('A data não pode ser no futuro: registre a movimentação quando ela acontecer.');
   const categoriaId = idOpcional(entrada.categoriaId, 'Escolha a categoria na lista.');
   if (categoriaId === null) throw new MovimentacaoInvalida('Escolha a categoria da movimentação.');
   const forma = deUmaLista(entrada.forma, FORMAS_MANUAIS, 'Escolha a forma: Pix, transferência, dinheiro ou cartão.');
   if (forma === null) throw new MovimentacaoInvalida('Escolha a forma: Pix, transferência, dinheiro ou cartão.');
-  const descricao = typeof entrada.descricao === 'string' ? entrada.descricao.trim().replace(/\s+/g, ' ') : '';
-  if (descricao.length < 3) throw new MovimentacaoInvalida('Descreva a movimentação, por exemplo: NF 685, limpeza de outubro.');
-  if (descricao.length > 200) throw new MovimentacaoInvalida('Use no máximo 200 caracteres na descrição.');
+  const descricao = lerDescricaoDoLancamento(entrada.descricao);
   const contratoId = idOpcional(entrada.contratoId, 'Escolha o contrato na lista.');
   const projetoId = idOpcional(entrada.projetoId, 'Escolha o projeto na lista.');
   const funcionarioId = idOpcional(entrada.funcionarioId, 'Escolha o funcionário na lista.');
