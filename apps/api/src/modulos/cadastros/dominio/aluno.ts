@@ -1,4 +1,5 @@
 // Regras do cadastro de aluno [Cadastros.RF001]. Só TypeScript puro: sem framework e sem banco.
+import { MAIOR_INTEIRO_DO_BANCO, lerInteiroNaoNegativo } from '../../../compartilhado/leitura-de-entrada.js';
 import { DadoInvalido, cpfValido, normalizarCpf, normalizarNomeCompleto, texto } from './comum.js';
 
 export { CadastroDuplicado, DadoInvalido, cpfValido, normalizarCpf } from './comum.js';
@@ -30,7 +31,7 @@ export type DadosDoAluno = {
 // ---------------------------------------------------------------------------
 
 export function normalizarEmail(valor: unknown): string {
-  const email = texto(valor)?.toLowerCase() ?? '';
+  const email = texto(valor, 'no e-mail', 254)?.toLowerCase() ?? '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new DadoInvalido('Informe um e-mail válido, por exemplo nome@exemplo.com. O Asaas exige o e-mail.');
   }
@@ -39,7 +40,7 @@ export function normalizarEmail(valor: unknown): string {
 
 // Celular com DDD: 10 ou 11 dígitos. Guarda só os dígitos.
 export function normalizarCelular(valor: unknown): string | null {
-  const bruto = texto(valor);
+  const bruto = texto(valor, 'no celular', 20);
   if (bruto === null) return null;
   const digitos = bruto.replace(/\D/g, '');
   if (digitos.length < 10 || digitos.length > 11) {
@@ -49,23 +50,22 @@ export function normalizarCelular(valor: unknown): string | null {
 }
 
 export function normalizarApelido(valor: unknown): string | null {
-  const apelido = texto(valor);
-  if (apelido !== null && apelido.length > 40) throw new DadoInvalido('Use no máximo 40 caracteres no apelido.');
-  return apelido;
+  return texto(valor, 'no apelido', 40);
 }
 
+// Inteiro positivo que cabe na coluna do banco. Pode chegar como texto ("2041").
 export function lerMatricula(valor: unknown): number | null {
   if (valor === null || valor === undefined || valor === '') return null;
-  const numero = typeof valor === 'string' ? Number(valor.trim()) : valor;
-  if (typeof numero !== 'number' || !Number.isInteger(numero) || numero <= 0) {
-    throw new DadoInvalido('A matrícula deve ser um número inteiro positivo.');
+  const lida = lerInteiroNaoNegativo(typeof valor === 'string' ? Number(valor.trim()) : valor);
+  if (!lida.valido || lida.valor === 0) {
+    throw new DadoInvalido(`A matrícula deve ser um número inteiro positivo, de no máximo ${MAIOR_INTEIRO_DO_BANCO}.`);
   }
-  return numero;
+  return lida.valor;
 }
 
 // Turma no formato da planilha: "T" seguido de dois dígitos (T26, T28...).
 export function normalizarTurma(valor: unknown): string | null {
-  const turma = texto(valor)?.toUpperCase().replace(/\s/g, '') ?? null;
+  const turma = texto(valor, 'na turma', 10)?.toUpperCase().replace(/\s/g, '') ?? null;
   if (turma === null) return null;
   if (!/^T\d{2}$/.test(turma)) throw new DadoInvalido('Informe a turma no formato T28.');
   return turma;
@@ -93,15 +93,12 @@ export function lerAlojamento(valor: unknown): Alojamento | null {
     throw new DadoInvalido('Informe o alojamento com bloco, apartamento e vaga.');
   }
   const campos = valor as Record<string, unknown>;
-  const bloco = texto(campos.bloco)?.toUpperCase() ?? null;
-  const apto = texto(campos.apto)?.toUpperCase() ?? null;
-  const vaga = texto(campos.vaga)?.toUpperCase() ?? null;
+  const bloco = texto(campos.bloco, 'no bloco', 10)?.toUpperCase() ?? null;
+  const apto = texto(campos.apto, 'no apartamento', 10)?.toUpperCase() ?? null;
+  const vaga = texto(campos.vaga, 'na vaga', 10)?.toUpperCase() ?? null;
   if (bloco === null && apto === null && vaga === null) return null;
   if (bloco === null || apto === null || vaga === null) {
     throw new DadoInvalido('Informe bloco, apartamento e vaga juntos, ou deixe os três em branco.');
-  }
-  if ([bloco, apto, vaga].some((parte) => parte.length > 10)) {
-    throw new DadoInvalido('Bloco, apartamento e vaga têm no máximo 10 caracteres cada.');
   }
   return { bloco, apto, vaga };
 }

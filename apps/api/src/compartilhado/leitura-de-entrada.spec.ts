@@ -71,7 +71,7 @@ describe('centavos: inteiro de 1 a 2.147.483.647 (o Int do PostgreSQL)', () => {
 
   it('recusa por formato fração de centavo, texto (mesmo "4500"), NaN, infinito e outros tipos', () => {
     for (const invalido of [45.5, 0.001, '4500', 'R$ 45,00', '', Number.NaN, Number.POSITIVE_INFINITY, null, undefined, [4500], { $gt: 0 }]) {
-      expect(lerCentavos(invalido), String(invalido)).toEqual({ valido: false, motivo: 'formato' });
+      expect(lerCentavos(invalido), JSON.stringify(invalido)).toEqual({ valido: false, motivo: 'formato' });
     }
   });
 });
@@ -118,7 +118,7 @@ describe('texto: aparado, sem caractere nulo, até o tamanho máximo de quem cha
 
   it('recusa por formato o que não é texto', () => {
     for (const invalido of [12345, null, undefined, ['texto'], { primeiro: 'Aluno' }]) {
-      expect(lerTexto(invalido, 200), String(invalido)).toEqual({ valido: false, motivo: 'formato' });
+      expect(lerTexto(invalido, 200), JSON.stringify(invalido)).toEqual({ valido: false, motivo: 'formato' });
     }
   });
 });
