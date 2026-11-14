@@ -56,7 +56,7 @@ describe('registrar movimentação [Movimentações.RF001]', () => {
         categoria: { ativo: true, tipo: 'SAIDA' },
         contaAtiva: true,
         vinculoEncontrado: true,
-        projetoExecutado: false,
+        situacaoDoProjeto: null,
         ...referencias,
       }),
       registrar: async (nova: NovaMovimentacao, autorId: string) => {
@@ -74,8 +74,22 @@ describe('registrar movimentação [Movimentações.RF001]', () => {
   });
 
   it('em projeto executado, aceita e avisa (fluxo A2)', async () => {
-    const { casoDeUso } = montar({ projetoExecutado: true });
+    const { casoDeUso } = montar({ situacaoDoProjeto: 'EXECUTADO' });
     expect((await casoDeUso.executar({ ...valida, projetoId: PROJETO }, 'usuario-1', HOJE)).aviso).toMatch(/projeto já executado/);
+  });
+
+  // [Cadastros.RF005] E1: "encerrado" é executado OU cancelado (a definição é do Cadastros).
+  it.each(['EXECUTADO', 'CANCELADO'] as const)('em projeto %s, aceita e avisa que o projeto está encerrado (fluxo A2)', async (situacaoDoProjeto) => {
+    const { casoDeUso, gravadas } = montar({ situacaoDoProjeto });
+    const registrada = await casoDeUso.executar({ ...valida, projetoId: PROJETO }, 'usuario-1', HOJE);
+    expect(registrada.aviso).toMatch(/projeto encerrado/);
+    expect(gravadas).toHaveLength(1);
+  });
+
+  it.each(['A_LIBERAR', 'LIBERADO', 'EM_EXECUCAO'] as const)('em projeto em andamento (%s), aceita sem aviso', async (situacaoDoProjeto) => {
+    const { casoDeUso, gravadas } = montar({ situacaoDoProjeto });
+    expect(await casoDeUso.executar({ ...valida, projetoId: PROJETO }, 'usuario-1', HOJE)).toEqual({ id: 'mov-1', aviso: null });
+    expect(gravadas).toHaveLength(1);
   });
 
   it('conta inativa, vínculo inexistente ou categoria incompatível: 400, nada gravado', async () => {

@@ -25,16 +25,13 @@ export type DadosDoProjeto = {
 export type EntradaDoProjeto = Partial<Record<keyof DadosDoProjeto, unknown>>;
 
 function lerNome(valor: unknown): string {
-  const nome = texto(valor);
+  const nome = texto(valor, 'no nome do projeto', 120);
   if (nome === null || nome.length < 3) throw new DadoInvalido('Informe o nome do projeto, por exemplo "Reforma da sala de estudos".');
-  if (nome.length > 120) throw new DadoInvalido('Use no máximo 120 caracteres no nome do projeto.');
   return nome;
 }
 
 function lerResponsavel(valor: unknown): string | null {
-  const responsavel = texto(valor);
-  if (responsavel !== null && responsavel.length > 120) throw new DadoInvalido('Use no máximo 120 caracteres no responsável.');
-  return responsavel;
+  return texto(valor, 'no responsável', 120);
 }
 
 function lerOrcamento(valor: unknown): number | null {

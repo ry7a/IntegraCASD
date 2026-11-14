@@ -53,6 +53,14 @@ describe('demais campos', () => {
     expect(() => lerMatricula('-3')).toThrow(DadoInvalido);
   });
 
+  it('matrícula acima do inteiro do banco (2^31, 1e300) é recusada citando o campo, em vez de virar erro 500', () => {
+    expect(lerMatricula(2_147_483_647)).toBe(2_147_483_647);
+    for (const grande of [2_147_483_648, 1e300, '2147483648']) {
+      expect(() => lerMatricula(grande), String(grande)).toThrow(DadoInvalido);
+      expect(() => lerMatricula(grande), String(grande)).toThrow(/matrícula/);
+    }
+  });
+
   it('turma no formato T28, sem diferenciar maiúsculas', () => {
     expect(normalizarTurma(' t28 ')).toBe('T28');
     expect(() => normalizarTurma('Turma 28')).toThrow(/T28/);
@@ -70,6 +78,13 @@ describe('inclusão e alteração', () => {
     expect(() => lerDadosParaInclusao({ nome: 'Aluna Ficticia', cpf: CPF_VALIDO })).toThrow(/e-mail/);
     const dados = lerDadosParaInclusao({ nome: 'Aluna Ficticia', cpf: CPF_VALIDO, email: 'aluna@exemplo.com' });
     expect(dados).toMatchObject({ nome: 'Aluna Ficticia', cpf: CPF_VALIDO, turma: null, alojamento: null });
+  });
+
+  it('texto com caractere nulo (colado de outro programa) é recusado citando o campo, em vez de virar erro 500', () => {
+    const entrada = { nome: 'Aluna Ficticia', cpf: CPF_VALIDO, email: 'aluna@exemplo.com' };
+    expect(() => lerDadosParaInclusao({ ...entrada, nome: 'Aluna\u0000 Ficticia' })).toThrow(/nome/);
+    expect(() => lerDadosParaInclusao({ ...entrada, apelido: 'Fic\u0000' })).toThrow(/apelido/);
+    expect(() => lerDadosParaAlteracao({ nome: 'Aluna\u0000 Ficticia' })).toThrow(DadoInvalido);
   });
 
   it('na alteração, só muda o que veio; null limpa campo opcional', () => {

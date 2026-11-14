@@ -137,7 +137,10 @@ describe('[Cobranças.RF005] [Segurança.NF002] [Confiabilidade.NF003] CT-FZ-01 
       if (entrada.esperado === 'recusa') expect(recusado, comoFoi).toBe(true);
       expect(aceito || recusado, `respostas misturadas: ${comoFoi}`).toBe(true);
 
-      const gravadosComEsseId = idEvento === null ? [] : await aplicacao.prisma.eventoWebhook.findMany({ where: { idAsaas: idEvento } });
+      // Um id com caractere nulo não tem como estar gravado (o PostgreSQL não guarda esse caractere em texto) e
+      // nem pode ser procurado: o banco recusa a própria consulta (erro 22021). Nesse caso a lista é vazia.
+      const idProcuravel = idEvento !== null && !idEvento.includes('\u0000');
+      const gravadosComEsseId = idProcuravel ? await aplicacao.prisma.eventoWebhook.findMany({ where: { idAsaas: idEvento } }) : [];
       if (recusado) {
         // Recusa sem efeito: nenhum evento novo e nada na fila.
         expect(await totalDeEventos()).toBe(eventosAntes);
