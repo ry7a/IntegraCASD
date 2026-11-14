@@ -1,5 +1,6 @@
 // Regras da conciliação [Cobranças.RF005]: o que cada aviso do Asaas faz com a cobrança.
 // Só TypeScript puro. Datas em "AAAA-MM-DD".
+import { dataDoAsaas, dataDoPagamentoNoAsaas } from '../../../compartilhado/asaas/datas-do-pagamento.js';
 import { lerCentavos, lerDia, lerTexto, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
 import { CobrancaInvalida, type SituacaoGuardada } from './cobranca.js';
 
@@ -23,13 +24,6 @@ export function reaisParaCentavos(reais: number): number {
   return Math.round(reais * 100);
 }
 
-// Data de um aviso do Asaas: o "AAAA-MM-DD" do começo do texto, ainda sem conferir o calendário (quem
-// confere é decidirConciliacao). Sem esse formato ("ontem", número), conta como não informada.
-// O webhook e a sincronização leem as datas por aqui, para os dois decidirem igual.
-export function dataDoAviso(valor: unknown): string | null {
-  return typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}/.test(valor) ? valor.slice(0, 10) : null;
-}
-
 export function lerAvisoDePagamento(tipo: string, payload: unknown): AvisoDePagamento {
   const corpo = typeof payload === 'object' && payload !== null ? (payload as Record<string, unknown>) : {};
   const pagamento =
@@ -43,8 +37,10 @@ export function lerAvisoDePagamento(tipo: string, payload: unknown): AvisoDePaga
     idCobrancaAsaas: pagamento.id,
     // Converte antes de conferir: 0,001 real só se revela inválido depois de virar zero centavo.
     valorPagoCentavos: typeof valor === 'number' ? reaisParaCentavos(valor) : null,
-    pagoEm: dataDoAviso(pagamento.paymentDate) ?? dataDoAviso(pagamento.clientPaymentDate) ?? dataDoAviso(pagamento.confirmedDate),
-    disponivelEm: dataDoAviso(pagamento.creditDate),
+    // As datas são lidas pela mesma função que o cliente do Asaas usa na sincronização
+    // (compartilhado/asaas/datas-do-pagamento.ts): para o mesmo dado, webhook e sincronização decidem igual.
+    pagoEm: dataDoPagamentoNoAsaas(pagamento),
+    disponivelEm: dataDoAsaas(pagamento.creditDate),
   };
 }
 
@@ -173,7 +169,7 @@ function dadoInvalido(aviso: AvisoDePagamento): string | null {
     if (data === null) continue;
     const leitura = lerDia(data);
     if (!leitura.valido) {
-      // dataDoAviso já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
+      // dataDoAsaas já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
       return leitura.motivo === 'fora-do-limite'
         ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
         : `${campo} (${data}) não existe no calendário`;

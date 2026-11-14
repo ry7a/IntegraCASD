@@ -32,6 +32,15 @@ describe('leitura do aviso do Asaas', () => {
     });
   });
 
+  // Spec #57, história 22: o mesmo caso do teste do cliente HTTP (cliente-asaas.http.spec.ts), que alimenta
+  // a sincronização. Os dois caminhos chegam à mesma data.
+  it('o paymentDate malformado não esconde o clientPaymentDate válido, como na sincronização', () => {
+    expect(aviso('PAYMENT_RECEIVED', { paymentDate: 'ontem', clientPaymentDate: '2026-10-09', creditDate: 'amanhã' })).toMatchObject({
+      pagoEm: '2026-10-09',
+      disponivelEm: null,
+    });
+  });
+
   it('evento sem cobrança não aponta para cobrança nenhuma', () => {
     expect(lerAvisoDePagamento('ACCOUNT_STATUS_UPDATED', { id: 'evt_x', event: 'ACCOUNT_STATUS_UPDATED' }).idCobrancaAsaas).toBeNull();
   });
