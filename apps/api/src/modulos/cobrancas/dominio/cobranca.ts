@@ -1,4 +1,5 @@
 // Regras da cobrança [Cobranças.RF001 a RF008]. Só TypeScript puro. Datas em "AAAA-MM-DD".
+import { MAIOR_ANO, MAIOR_INTEIRO_DO_BANCO, MENOR_ANO, lerDia, lerInteiroNaoNegativo } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class CobrancaInvalida extends Error {}
 
@@ -143,19 +144,24 @@ export type FiltrosDaConsulta = {
 const TAMANHO_PADRAO = 50;
 const TAMANHO_MAXIMO = 200;
 
+// Filtro de data, lido pela regra comum (compartilhado/leitura-de-entrada.ts): sem ela, um mês 13 chegava
+// ao banco e virava erro 500. `nome` entra na mensagem como está: "o início do período".
 function data(valor: unknown, nome: string): string | null {
   if (valor === undefined || valor === '') return null;
-  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-    throw new CobrancaInvalida(`Informe ${nome} no formato AAAA-MM-DD.`);
-  }
-  return valor;
+  const lida = lerDia(valor);
+  if (lida.valido) return lida.valor;
+  if (lida.motivo === 'inexistente') throw new CobrancaInvalida(`Confira ${nome}: essa data não existe no calendário (veja o dia e o mês).`);
+  if (lida.motivo === 'fora-do-limite') throw new CobrancaInvalida(`Confira ${nome}: o ano precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
+  throw new CobrancaInvalida(`Informe ${nome} no formato AAAA-MM-DD.`);
 }
 
+// Filtro numérico, também pela regra comum: acima do maior inteiro do banco, a consulta dava erro 500.
+// Na URL tudo chega como texto, por isso o Number(...) antes de ler.
 function inteiroNaoNegativo(valor: unknown, nome: string): number | null {
   if (valor === undefined || valor === '') return null;
-  const numero = Number(valor);
-  if (!Number.isInteger(numero) || numero < 0) throw new CobrancaInvalida(`Informe ${nome} como número inteiro.`);
-  return numero;
+  const lido = lerInteiroNaoNegativo(Number(valor));
+  if (!lido.valido) throw new CobrancaInvalida(`Informe ${nome} como número inteiro, de 0 a ${MAIOR_INTEIRO_DO_BANCO}.`);
+  return lido.valor;
 }
 
 // Lê os filtros da URL (sempre texto). Sem situação informada, abertas e vencidas (o padrão da tela).
