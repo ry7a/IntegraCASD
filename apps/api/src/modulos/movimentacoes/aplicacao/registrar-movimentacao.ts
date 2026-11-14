@@ -1,13 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
+import { estaEncerrado, type SituacaoDoProjeto } from '../../cadastros/index.js';
 import { MovimentacaoInvalida, conferirCategoria, lerNovaMovimentacao, type NovaMovimentacao } from '../dominio/movimentacao.js';
 import { MovimentacoesRepositorio } from '../infra/movimentacoes.repositorio.js';
 
 export type MovimentacaoRegistradaAgora = {
   id: string;
-  // Fluxo A2: o lançamento em projeto executado é aceito, mas a tela avisa.
+  // Fluxo A2: o lançamento em projeto encerrado é aceito, mas a tela avisa.
   aviso: string | null;
 };
+
+// [Movimentações.RF001] A2 e [Cadastros.RF005] E1: em projeto encerrado o lançamento é aceito e sinalizado.
+// "Encerrado" (executado ou cancelado) é a definição do Cadastros, a mesma que a lista de projetos usa.
+function avisoDoProjeto(situacao: SituacaoDoProjeto | null): string | null {
+  if (situacao === null || !estaEncerrado(situacao)) return null;
+  return 'Movimentação registrada em projeto encerrado (projeto já executado ou cancelado). Confira se o projeto deve ser reaberto.';
+}
 
 // Caso de uso [Movimentações.RF001]: lança uma entrada ou saída manual.
 @Injectable()
@@ -28,10 +36,7 @@ export class RegistrarMovimentacao {
         throw new MovimentacaoInvalida('O contrato, projeto ou funcionário escolhido não foi encontrado. Escolha de novo na lista.');
       }
       const id = await this.movimentacoes.registrar(nova, autorId);
-      return {
-        id,
-        aviso: referencias.projetoExecutado ? 'Movimentação registrada em projeto já executado. Confira se o projeto deve ser reaberto.' : null,
-      };
+      return { id, aviso: avisoDoProjeto(referencias.situacaoDoProjeto) };
     } catch (erro) {
       if (erro instanceof MovimentacaoInvalida) throw new BadRequestException(erro.message);
       throw erro;
