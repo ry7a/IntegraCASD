@@ -40,7 +40,7 @@ export function texto(valor: unknown, noCampo: string, maximo: number): string |
   if (lido.motivo === 'caractere-nulo') {
     throw new DadoInvalido(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
   }
-  if (lido.motivo === 'fora-do-limite') throw new DadoInvalido(`Use no máximo ${maximo} caracteres ${noCampo}.`);
+  if (lido.motivo === 'acima-do-maximo') throw new DadoInvalido(`Use no máximo ${maximo} caracteres ${noCampo}.`);
   return null;
 }
 
@@ -55,7 +55,7 @@ export function lerData(valor: unknown, campo: string): string {
   const lida = lerDia(valor);
   if (lida.valido) return lida.valor;
   if (lida.motivo === 'inexistente') throw new DadoInvalido(`A ${campo} não existe no calendário. Confira o dia e o mês.`);
-  if (lida.motivo === 'fora-do-limite') {
+  if (lida.motivo === 'abaixo-do-minimo' || lida.motivo === 'acima-do-maximo') {
     throw new DadoInvalido(`Confira o ano da ${campo}: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
   }
   throw new DadoInvalido(`Informe a ${campo} no formato AAAA-MM-DD.`);

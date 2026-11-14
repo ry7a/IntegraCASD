@@ -177,22 +177,23 @@ function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: strin
     if (!leitura.valido) {
       // dataDoAsaas já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
       const problema =
-        leitura.motivo === 'fora-do-limite'
-          ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
-          : `${campo} (${data}) não existe no calendário`;
+        leitura.motivo === 'inexistente'
+          ? `${campo} (${data}) não existe no calendário`
+          : `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`;
       return { campo, problema };
     }
   }
   // Negativo não é valor pago: conta como "não informado" (vale o da cobrança), como sempre foi.
   const valor = aviso.valorPagoCentavos;
-  if (valor !== null && valor >= 0 && !lerCentavos(valor).valido) {
-    const problema =
-      valor === 0
-        ? 'o valor pago, convertido para centavos, dá zero centavo'
-        : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
-    return { campo: 'o valor pago', problema };
-  }
-  return null;
+  if (valor === null || valor < 0) return null;
+  const lido = lerCentavos(valor);
+  if (lido.valido) return null;
+  // Negativo já ficou de fora: abaixo do mínimo só pode ser o zero.
+  const problema =
+    lido.motivo === 'abaixo-do-minimo'
+      ? 'o valor pago, convertido para centavos, dá zero centavo'
+      : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+  return { campo: 'o valor pago', problema };
 }
 
 // Fluxo E1: o texto de quem resolve uma pendência (o que foi conferido e decidido), pela regra comum de
@@ -202,7 +203,7 @@ export function lerResolucaoDaPendencia(valor: unknown): string {
   if (!lida.valido && lida.motivo === 'caractere-nulo') {
     throw new CobrancaInvalida('Há um caractere invisível (nulo) na resolução, comum ao colar de outro programa. Apague e digite de novo.');
   }
-  if (!lida.valido && lida.motivo === 'fora-do-limite') throw new CobrancaInvalida('Use no máximo 500 caracteres na resolução.');
+  if (!lida.valido && lida.motivo === 'acima-do-maximo') throw new CobrancaInvalida('Use no máximo 500 caracteres na resolução.');
   if (!lida.valido || lida.valor.length < 5) {
     throw new CobrancaInvalida('Escreva o que foi conferido e decidido, por exemplo: pagamento em duplicidade devolvido pelo Asaas.');
   }

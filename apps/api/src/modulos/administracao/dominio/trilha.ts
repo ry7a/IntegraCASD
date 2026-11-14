@@ -34,7 +34,7 @@ function dia(valor: unknown, nome: string): string {
   const lido = lerDia(valor);
   if (lido.valido) return lido.valor;
   if (lido.motivo === 'inexistente') throw new FiltroDaTrilhaInvalido(`A ${nome} não existe no calendário. Confira o dia e o mês.`);
-  if (lido.motivo === 'fora-do-limite') {
+  if (lido.motivo === 'abaixo-do-minimo' || lido.motivo === 'acima-do-maximo') {
     throw new FiltroDaTrilhaInvalido(`Confira o ano da ${nome}: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
   }
   throw new FiltroDaTrilhaInvalido('Informe as datas no formato AAAA-MM-DD.');

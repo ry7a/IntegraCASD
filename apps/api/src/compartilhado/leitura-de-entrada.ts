@@ -18,7 +18,8 @@
 export type MotivoDaRecusa =
   | 'formato' // tipo ou forma errados: "28/02/2026", "4500" em vez de 4500, 45.5 centavos, número no lugar de texto
   | 'inexistente' // forma certa, mas não está no calendário: 30/02, 31/04, mês 00 ou 13
-  | 'fora-do-limite' // ano fora de 1900..9999, inteiro fora do limite, texto maior que o máximo
+  | 'abaixo-do-minimo' // ano antes de 1900, centavos zero ou negativos, inteiro negativo
+  | 'acima-do-maximo' // ano depois de 9999, inteiro acima do que a coluna guarda, texto maior que o máximo
   | 'caractere-nulo'; // texto com \u0000, que o PostgreSQL recusa (vem de colar de outro programa)
 
 export type Leitura<T> = { valido: true; valor: T } | { valido: false; motivo: MotivoDaRecusa };
@@ -47,7 +48,8 @@ export function lerDia(valor: unknown): Leitura<string> {
   if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return { valido: false, motivo: 'formato' };
   const [ano, mes, dia] = valor.split('-').map(Number);
   if (mes < 1 || mes > 12 || dia < 1 || dia > diasDoMes(ano, mes)) return { valido: false, motivo: 'inexistente' };
-  if (ano < MENOR_ANO || ano > MAIOR_ANO) return { valido: false, motivo: 'fora-do-limite' };
+  if (ano < MENOR_ANO) return { valido: false, motivo: 'abaixo-do-minimo' };
+  if (ano > MAIOR_ANO) return { valido: false, motivo: 'acima-do-maximo' };
   return { valido: true, valor };
 }
 
@@ -63,11 +65,12 @@ export function lerMes(valor: unknown): Leitura<string> {
 // Number.isInteger já recusa fração, NaN e infinito.
 function lerInteiroEntre(valor: unknown, minimo: number): Leitura<number> {
   if (typeof valor !== 'number' || !Number.isInteger(valor)) return { valido: false, motivo: 'formato' };
-  if (valor < minimo || valor > MAIOR_INTEIRO_DO_BANCO) return { valido: false, motivo: 'fora-do-limite' };
+  if (valor < minimo) return { valido: false, motivo: 'abaixo-do-minimo' };
+  if (valor > MAIOR_INTEIRO_DO_BANCO) return { valido: false, motivo: 'acima-do-maximo' };
   return { valido: true, valor };
 }
 
-// Valor em centavos: inteiro de 1 a MAIOR_INTEIRO_DO_BANCO. Zero e negativo ficam fora do limite.
+// Valor em centavos: inteiro de 1 a MAIOR_INTEIRO_DO_BANCO. Zero e negativo ficam abaixo do mínimo.
 export function lerCentavos(valor: unknown): Leitura<number> {
   return lerInteiroEntre(valor, 1);
 }
@@ -84,6 +87,6 @@ export function lerTexto(valor: unknown, tamanhoMaximo: number): Leitura<string>
   if (typeof valor !== 'string') return { valido: false, motivo: 'formato' };
   if (valor.includes('\u0000')) return { valido: false, motivo: 'caractere-nulo' };
   const limpo = valor.trim().replace(/\s+/g, ' ');
-  if (limpo.length > tamanhoMaximo) return { valido: false, motivo: 'fora-do-limite' };
+  if (limpo.length > tamanhoMaximo) return { valido: false, motivo: 'acima-do-maximo' };
   return { valido: true, valor: limpo };
 }

@@ -57,7 +57,7 @@ function lerDataDaCobranca(valor: unknown, campo: string): string {
   if (lida.motivo === 'inexistente') {
     throw new CobrancaInvalida(`Confira ${campo}: essa data não existe no calendário (veja o dia e o mês).`);
   }
-  if (lida.motivo === 'fora-do-limite') {
+  if (lida.motivo === 'abaixo-do-minimo' || lida.motivo === 'acima-do-maximo') {
     throw new CobrancaInvalida(`Confira ${campo}: o ano precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
   }
   throw new CobrancaInvalida(`Informe ${campo} no formato AAAA-MM-DD.`);
@@ -69,7 +69,7 @@ function lerDataDaCobranca(valor: unknown, campo: string): string {
 function lerValorDaCobranca(valor: unknown, campo: string): number {
   const lido = lerCentavos(valor);
   if (lido.valido) return lido.valor;
-  if (typeof valor === 'number' && valor > MAIOR_INTEIRO_DO_BANCO) {
+  if (lido.motivo === 'acima-do-maximo') {
     // R$ 21.474.836,47 é MAIOR_INTEIRO_DO_BANCO em reais.
     throw new CobrancaInvalida(`Confira ${campo}: o máximo aceito é R$ 21.474.836,47 (2147483647 centavos).`);
   }
@@ -86,7 +86,7 @@ function lerTextoDaCobranca(valor: unknown, noCampo: string, maximo: number): st
   if (lido.motivo === 'caractere-nulo') {
     throw new CobrancaInvalida(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
   }
-  if (lido.motivo === 'fora-do-limite') throw new CobrancaInvalida(`Use no máximo ${maximo} caracteres ${noCampo}.`);
+  if (lido.motivo === 'acima-do-maximo') throw new CobrancaInvalida(`Use no máximo ${maximo} caracteres ${noCampo}.`);
   return '';
 }
 

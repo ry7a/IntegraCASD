@@ -40,7 +40,7 @@ export function normalizarNome(valor: unknown): string {
       'Há um caractere invisível (nulo) no nome da categoria, comum ao colar de outro programa. Apague e digite de novo.',
     );
   }
-  if (!lido.valido && lido.motivo === 'fora-do-limite') {
+  if (!lido.valido && lido.motivo === 'acima-do-maximo') {
     throw new RegraDaCategoriaViolada(
       `Use no máximo ${TAMANHO_MAXIMO_DO_NOME} caracteres no nome da categoria.`,
     );

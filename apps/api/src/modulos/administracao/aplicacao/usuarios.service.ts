@@ -195,7 +195,7 @@ function lerTextoDoUsuario(valor: unknown, noCampo: string): string | null {
   if (!lido.valido && lido.motivo === 'caractere-nulo') {
     throw new BadRequestException(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
   }
-  if (!lido.valido && lido.motivo === 'fora-do-limite') {
+  if (!lido.valido && lido.motivo === 'acima-do-maximo') {
     throw new BadRequestException(`Use no máximo ${TAMANHO_MAXIMO_TECNICO} caracteres ${noCampo}.`);
   }
   return lido.valido ? lido.valor : null;

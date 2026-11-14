@@ -29,11 +29,11 @@ describe('dia "AAAA-MM-DD"', () => {
     expect(lerDia('2026-12-31')).toEqual({ valido: true, valor: '2026-12-31' });
   });
 
-  it('aceita ano de 1900 a 9999 e recusa como fora do limite o que vem antes', () => {
+  it('aceita ano de 1900 a 9999 e recusa como abaixo do mínimo o que vem antes', () => {
     expect(lerDia('1900-01-01')).toEqual({ valido: true, valor: '1900-01-01' });
     expect(lerDia('9999-12-31')).toEqual({ valido: true, valor: '9999-12-31' });
-    expect(lerDia('1899-12-31')).toEqual({ valido: false, motivo: 'fora-do-limite' });
-    expect(lerDia('0000-01-01')).toEqual({ valido: false, motivo: 'fora-do-limite' });
+    expect(lerDia('1899-12-31')).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
+    expect(lerDia('0000-01-01')).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
   });
 });
 
@@ -46,11 +46,11 @@ describe('mês "AAAA-MM"', () => {
     }
   });
 
-  it('mês 00 e 13 não existem; ano antes de 1900 fica fora do limite (como "0000-01")', () => {
+  it('mês 00 e 13 não existem; ano antes de 1900 fica abaixo do mínimo (como "0000-01")', () => {
     expect(lerMes('2026-00')).toEqual({ valido: false, motivo: 'inexistente' });
     expect(lerMes('2026-13')).toEqual({ valido: false, motivo: 'inexistente' });
-    expect(lerMes('0000-01')).toEqual({ valido: false, motivo: 'fora-do-limite' });
-    expect(lerMes('1899-12')).toEqual({ valido: false, motivo: 'fora-do-limite' });
+    expect(lerMes('0000-01')).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
+    expect(lerMes('1899-12')).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
     expect(lerMes('1900-01')).toEqual({ valido: true, valor: '1900-01' });
     expect(lerMes('9999-12')).toEqual({ valido: true, valor: '9999-12' });
   });
@@ -63,9 +63,12 @@ describe('centavos: inteiro de 1 a 2.147.483.647 (o Int do PostgreSQL)', () => {
     expect(lerCentavos(2_147_483_647)).toEqual({ valido: true, valor: 2_147_483_647 });
   });
 
-  it('recusa zero, negativo e o que passa do limite (2^31 e 1e21) como fora do limite', () => {
-    for (const fora of [0, -1, -4500, 2_147_483_648, 1e21]) {
-      expect(lerCentavos(fora), String(fora)).toEqual({ valido: false, motivo: 'fora-do-limite' });
+  it('recusa zero e negativo como abaixo do mínimo, e o que passa do limite (2^31 e 1e21) como acima do máximo', () => {
+    for (const abaixo of [0, -1, -4500]) {
+      expect(lerCentavos(abaixo), String(abaixo)).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
+    }
+    for (const acima of [2_147_483_648, 1e21]) {
+      expect(lerCentavos(acima), String(acima)).toEqual({ valido: false, motivo: 'acima-do-maximo' });
     }
   });
 
@@ -83,9 +86,10 @@ describe('inteiro não negativo: de 0 a 2.147.483.647 (página, matrícula)', ()
     expect(lerInteiroNaoNegativo(2_147_483_647)).toEqual({ valido: true, valor: 2_147_483_647 });
   });
 
-  it('recusa negativo e o que passa do limite (2^31, 1e300) como fora do limite', () => {
-    for (const fora of [-1, 2_147_483_648, 1e300]) {
-      expect(lerInteiroNaoNegativo(fora), String(fora)).toEqual({ valido: false, motivo: 'fora-do-limite' });
+  it('recusa negativo como abaixo do mínimo, e o que passa do limite (2^31, 1e300) como acima do máximo', () => {
+    expect(lerInteiroNaoNegativo(-1)).toEqual({ valido: false, motivo: 'abaixo-do-minimo' });
+    for (const acima of [2_147_483_648, 1e300]) {
+      expect(lerInteiroNaoNegativo(acima), String(acima)).toEqual({ valido: false, motivo: 'acima-do-maximo' });
     }
   });
 
@@ -105,9 +109,9 @@ describe('texto: aparado, sem caractere nulo, até o tamanho máximo de quem cha
     expect(lerTexto('     ', 200)).toEqual({ valido: true, valor: '' });
   });
 
-  it('aceita no tamanho máximo (contado depois de aparar) e recusa um acima como fora do limite', () => {
+  it('aceita no tamanho máximo (contado depois de aparar) e recusa um acima como acima do máximo', () => {
     expect(lerTexto(`  ${'a'.repeat(120)}  `, 120)).toEqual({ valido: true, valor: 'a'.repeat(120) });
-    expect(lerTexto('a'.repeat(121), 120)).toEqual({ valido: false, motivo: 'fora-do-limite' });
+    expect(lerTexto('a'.repeat(121), 120)).toEqual({ valido: false, motivo: 'acima-do-maximo' });
   });
 
   it('recusa o caractere nulo, que o PostgreSQL não grava, em qualquer ponto do texto', () => {

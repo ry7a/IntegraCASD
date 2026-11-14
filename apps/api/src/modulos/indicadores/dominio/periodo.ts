@@ -10,7 +10,7 @@ export function lerMes(valor: unknown, hoje: string): string {
   const lido = lerMesComum(valor);
   if (lido.valido) return lido.valor;
   if (lido.motivo === 'inexistente') throw new PeriodoInvalido('O mês vai de 01 a 12. Informe o mês no formato AAAA-MM.');
-  if (lido.motivo === 'fora-do-limite') {
+  if (lido.motivo === 'abaixo-do-minimo' || lido.motivo === 'acima-do-maximo') {
     throw new PeriodoInvalido(`Confira o ano do mês: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
   }
   throw new PeriodoInvalido('Informe o mês no formato AAAA-MM.');
