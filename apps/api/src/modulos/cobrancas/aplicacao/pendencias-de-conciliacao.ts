@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
+import { lerResolucaoDaPendencia } from '../dominio/conciliacao.js';
 import type { FalhaDaGeracao } from '../dominio/geracao-recorrente.js';
 import { ExecucoesRepositorio, type ExecucaoRegistrada } from '../infra/execucoes.repositorio.js';
 import { PendenciasRepositorio, type PendenciaRegistrada } from '../infra/pendencias.repositorio.js';
+import { traduzirErrosDaCobranca } from './erros-da-cobranca.js';
 
 export type { PendenciaRegistrada };
 
@@ -50,14 +52,12 @@ export class ListarPendencias {
 export class ResolverPendencia {
   constructor(private readonly pendencias: PendenciasRepositorio) {}
 
-  async executar(id: string, entrada: { resolucao?: unknown }, autorId: string): Promise<void> {
-    const resolucao = typeof entrada.resolucao === 'string' ? entrada.resolucao.trim().replace(/\s+/g, ' ') : '';
-    if (resolucao.length < 5) {
-      throw new BadRequestException('Escreva o que foi conferido e decidido, por exemplo: pagamento em duplicidade devolvido pelo Asaas.');
-    }
-    if (resolucao.length > 500) throw new BadRequestException('Use no máximo 500 caracteres.');
-    if (!(await this.pendencias.resolver(id, resolucao, autorId))) {
-      throw new NotFoundException('Esta pendência não está mais aberta. Atualize a página.');
-    }
+  executar(id: string, entrada: { resolucao?: unknown }, autorId: string): Promise<void> {
+    return traduzirErrosDaCobranca(async () => {
+      const resolucao = lerResolucaoDaPendencia(entrada.resolucao);
+      if (!(await this.pendencias.resolver(id, resolucao, autorId))) {
+        throw new NotFoundException('Esta pendência não está mais aberta. Atualize a página.');
+      }
+    });
   }
 }

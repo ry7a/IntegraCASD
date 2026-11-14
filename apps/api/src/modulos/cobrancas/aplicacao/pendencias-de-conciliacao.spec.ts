@@ -66,4 +66,22 @@ describe('fila de pendências de conciliação [Cobranças.RF005]', () => {
       NotFoundException,
     );
   });
+
+  // O PostgreSQL recusa o \u0000: antes, a gravação da resolução dava erro 500.
+  it('resolução com caractere nulo ou com mais de 500 caracteres: recusa com 400 citando a resolução, sem resolver', async () => {
+    const resolvidas: string[] = [];
+    const pendencias = {
+      resolver: async (id: string) => {
+        resolvidas.push(id);
+        return true;
+      },
+    } as unknown as PendenciasRepositorio;
+    const resolver = new ResolverPendencia(pendencias);
+
+    const comNulo = resolver.executar('p1', { resolucao: 'Conferido\u0000 com o Asaas' }, 'u');
+    await expect(comNulo).rejects.toBeInstanceOf(BadRequestException);
+    await expect(comNulo).rejects.toThrow(/nulo\) na resolução/);
+    await expect(resolver.executar('p1', { resolucao: 'r'.repeat(501) }, 'u')).rejects.toThrow(/500 caracteres na resolução/);
+    expect(resolvidas).toEqual([]);
+  });
 });

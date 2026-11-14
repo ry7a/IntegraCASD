@@ -1,7 +1,7 @@
 // Regras da conciliação [Cobranças.RF005]: o que cada aviso do Asaas faz com a cobrança.
 // Só TypeScript puro. Datas em "AAAA-MM-DD".
-import { lerCentavos, lerDia, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
-import type { SituacaoGuardada } from './cobranca.js';
+import { lerCentavos, lerDia, lerTexto, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
+import { CobrancaInvalida, type SituacaoGuardada } from './cobranca.js';
 
 // O que interessa de um evento de cobrança do Asaas. O corpo completo fica guardado no banco.
 // Valor e datas chegam como o Asaas mandou, ainda sem conferir: quem confere é decidirConciliacao,
@@ -187,6 +187,20 @@ function dadoInvalido(aviso: AvisoDePagamento): string | null {
       : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
   }
   return null;
+}
+
+// Fluxo E1: o texto de quem resolve uma pendência (o que foi conferido e decidido), pela regra comum de
+// texto. Sem ela, o caractere nulo chegava ao banco e a resolução dava erro 500.
+export function lerResolucaoDaPendencia(valor: unknown): string {
+  const lida = lerTexto(valor, 500);
+  if (!lida.valido && lida.motivo === 'caractere-nulo') {
+    throw new CobrancaInvalida('Há um caractere invisível (nulo) na resolução, comum ao colar de outro programa. Apague e digite de novo.');
+  }
+  if (!lida.valido && lida.motivo === 'fora-do-limite') throw new CobrancaInvalida('Use no máximo 500 caracteres na resolução.');
+  if (!lida.valido || lida.valor.length < 5) {
+    throw new CobrancaInvalida('Escreva o que foi conferido e decidido, por exemplo: pagamento em duplicidade devolvido pelo Asaas.');
+  }
+  return lida.valor;
 }
 
 function descreverTipo(tipo: string): string {
