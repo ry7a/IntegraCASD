@@ -8,7 +8,7 @@
 import { deDia } from '../../../src/compartilhado/datas.js';
 import type { Aluno, Cobranca } from '../../../src/generated/prisma/client.js';
 import { type AplicacaoDeTeste, entrar, subirAplicacao } from '../../apoio/aplicacao.js';
-import { criarAluno, criarCobrancaAberta, criarUsuario, definirParametros, diaDeHojeMais } from '../../apoio/cenario.js';
+import { criarAluno, criarCobrancaAberta, criarUsuario, definirParametros, diaDeHojeMais, sufixo } from '../../apoio/cenario.js';
 import { cancelarCobranca, pagarNoAsaasESincronizar, registrarPagamentoManual } from '../../integracao/cobrancas/apoio-de-cobrancas.js';
 
 // Um item da lista, como a API devolve (GET /api/cobrancas).
@@ -151,6 +151,32 @@ describe('[Cobranças.RF008] CT-COB-08 consulta de cobranças pela API', () => {
     expect(doPeriodo.total).toBe(await aplicacao.prisma.cobranca.count({ where: { situacao: 'ABERTA', vencimento: deDia(dia) } }));
     if (doPeriodo.total <= 200) {
       expect(doPeriodo.itens.map((item) => item.alunoId)).toEqual(expect.arrayContaining([alunoA.id, alunoB.id]));
+    }
+  });
+
+  // Defeito D9: a busca vira um LIKE no PostgreSQL, onde % e _ são curingas e \ é o escape. Sem tratar, buscar
+  // "%" trazia todas as cobranças. Os alunos daqui diferem só no caractere especial do nome; a busca com ele
+  // tem de achar só o aluno que o tem. As cobranças ficam canceladas para não aparecerem na consulta padrão
+  // (abertas e vencidas), que o CT-FZ-02 faz no mesmo banco buscando "%" e "_" e esperando lista vazia.
+  it('FA: busca com %, _ ou \\ procura o caractere como texto, e não como curinga do LIKE', async () => {
+    // Só letras: com 3 dígitos ou mais na busca, ela também procura no CPF.
+    const marca = sufixo().replace(/\d/g, (digito) => 'ghijklmnop'[Number(digito)]);
+    const cobrancaCancelada = async (nome: string) => {
+      const aluno = await criarAluno(aplicacao.prisma);
+      await aplicacao.prisma.aluno.update({ where: { id: aluno.id }, data: { nome } });
+      const cobranca = await criarCobrancaAberta(aplicacao.prisma, aplicacao.asaas, { alunoId: aluno.id });
+      await cancelarCobranca(aplicacao, cookie, cobranca.id);
+      return cobranca;
+    };
+    // O controle casa com "Meio%Termo" e "Meio_Termo" se os curingas não forem escapados.
+    await cobrancaCancelada(`Aluno Ficticio ${marca} MeioXTermo`);
+
+    for (const caractere of ['%', '_', '\\']) {
+      const comCaractere = await cobrancaCancelada(`Aluno Ficticio ${marca} Meio${caractere}Termo`);
+
+      const lista = await consultar({ busca: `${marca} Meio${caractere}Termo`, situacoes: 'CANCELADA' });
+
+      expect(lista.itens.map((item) => item.id), `busca com ${caractere}`).toEqual([comCaractere.id]);
     }
   });
 });

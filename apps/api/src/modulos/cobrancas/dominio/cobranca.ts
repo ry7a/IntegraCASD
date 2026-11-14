@@ -5,6 +5,7 @@ import {
   MENOR_ANO,
   lerCentavos,
   lerDia,
+  lerInteiroNaoNegativo,
   lerTexto,
 } from '../../../compartilhado/leitura-de-entrada.js';
 
@@ -48,13 +49,13 @@ export type NovaCobrancaAvulsa = {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Dia "AAAA-MM-DD" que existe no calendário, pela regra comum (compartilhado/leitura-de-entrada.ts).
-// Sem ela, 30/02 ia ao Asaas como 30/02 e era gravado aqui como 02/03. `campo` entra na mensagem como
-// está: "o vencimento", "a data do pagamento".
+// Sem ela, 30/02 ia ao Asaas como 30/02 e era gravado aqui como 02/03, e um mês 13 nos filtros da consulta
+// dava erro 500. `campo` entra na mensagem como está: "o vencimento", "a data do pagamento", "o início do período".
 function lerDataDaCobranca(valor: unknown, campo: string): string {
   const lida = lerDia(valor);
   if (lida.valido) return lida.valor;
   if (lida.motivo === 'inexistente') {
-    throw new CobrancaInvalida(`Confira ${campo}: essa data não existe no calendário (dia ou mês fora do intervalo).`);
+    throw new CobrancaInvalida(`Confira ${campo}: essa data não existe no calendário (veja o dia e o mês).`);
   }
   if (lida.motivo === 'fora-do-limite') {
     throw new CobrancaInvalida(`Confira ${campo}: o ano precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
@@ -186,19 +187,19 @@ export type FiltrosDaConsulta = {
 const TAMANHO_PADRAO = 50;
 const TAMANHO_MAXIMO = 200;
 
+// Filtro de data: vazio é "sem filtro"; preenchido, segue a mesma leitura do vencimento (lerDataDaCobranca).
 function data(valor: unknown, nome: string): string | null {
   if (valor === undefined || valor === '') return null;
-  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-    throw new CobrancaInvalida(`Informe ${nome} no formato AAAA-MM-DD.`);
-  }
-  return valor;
+  return lerDataDaCobranca(valor, nome);
 }
 
+// Filtro numérico, também pela regra comum: acima do maior inteiro do banco, a consulta dava erro 500.
+// Na URL tudo chega como texto, por isso o Number(...) antes de ler.
 function inteiroNaoNegativo(valor: unknown, nome: string): number | null {
   if (valor === undefined || valor === '') return null;
-  const numero = Number(valor);
-  if (!Number.isInteger(numero) || numero < 0) throw new CobrancaInvalida(`Informe ${nome} como número inteiro.`);
-  return numero;
+  const lido = lerInteiroNaoNegativo(Number(valor));
+  if (!lido.valido) throw new CobrancaInvalida(`Informe ${nome} como número inteiro, de 0 a ${MAIOR_INTEIRO_DO_BANCO}.`);
+  return lido.valor;
 }
 
 // Lê os filtros da URL (sempre texto). Sem situação informada, abertas e vencidas (o padrão da tela).
