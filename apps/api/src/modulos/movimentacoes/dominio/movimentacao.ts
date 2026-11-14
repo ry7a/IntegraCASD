@@ -94,11 +94,17 @@ export function regraDoEstorno(
   return { podeEstornar: true, motivoSemEstorno: null };
 }
 
+// Motivo pela regra comum de texto: sem ela, o caractere nulo chegava ao banco e o estorno dava erro 500.
 export function lerMotivoDoEstorno(valor: unknown): string {
-  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
-  if (motivo.length < 5) throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
-  if (motivo.length > 300) throw new MovimentacaoInvalida('Use no máximo 300 caracteres no motivo.');
-  return motivo;
+  const lido = lerTexto(valor, 300);
+  if (!lido.valido && lido.motivo === 'caractere-nulo') {
+    throw new MovimentacaoInvalida('Há um caractere invisível (nulo) no motivo, comum ao colar de outro programa. Apague e digite de novo.');
+  }
+  if (!lido.valido && lido.motivo === 'fora-do-limite') throw new MovimentacaoInvalida('Use no máximo 300 caracteres no motivo.');
+  if (!lido.valido || lido.valor.length < 5) {
+    throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
+  }
+  return lido.valor;
 }
 
 // ---------------------------------------------------------------------------
