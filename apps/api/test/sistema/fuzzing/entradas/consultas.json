@@ -22,6 +22,8 @@
     { "classe": "sql", "descricao": "cobranças: busca só com o curinga _ do LIKE", "rota": "/api/cobrancas", "consulta": { "busca": "_" }, "esperado": "lista-vazia" },
     { "classe": "sql", "descricao": "cobranças: busca com barra invertida (escape do LIKE)", "rota": "/api/cobrancas", "consulta": { "busca": "\\" }, "esperado": "lista-vazia" },
     { "classe": "texto-longo", "descricao": "cobranças: busca com 5000 caracteres", "rota": "/api/cobrancas", "consulta": { "busca": { "$repetir": "z", "vezes": 5000 } }, "esperado": "lista-vazia" },
+    { "classe": "byte-nulo", "descricao": "cobranças: busca só com o caractere nulo, ?busca=%00 (revisão da spec #57)", "rota": "/api/cobrancas", "consulta": { "busca": "\u0000" }, "esperado": "recusa", "campoNaMensagem": "busca" },
+    { "classe": "byte-nulo", "descricao": "cobranças: busca com caractere nulo no meio (revisão da spec #57)", "rota": "/api/cobrancas", "consulta": { "busca": "Ana\u0000Ficticia" }, "esperado": "recusa", "campoNaMensagem": "busca" },
     { "classe": "sql", "descricao": "cobranças: busca com dígitos e SQL (procura também no CPF)", "rota": "/api/cobrancas", "consulta": { "busca": "123' OR 1=1 --" }, "esperado": "lista" },
     { "classe": "sql", "descricao": "cobranças: aluno com injeção de SQL", "rota": "/api/cobrancas", "consulta": { "alunoId": "1 OR 1=1" }, "esperado": "recusa", "campoNaMensagem": "aluno" },
     { "classe": "periodo-invertido", "descricao": "cobranças: vencimento de dezembro até janeiro", "rota": "/api/cobrancas", "consulta": { "vencimentoDe": "2026-12-31", "vencimentoAte": "2026-01-01" }, "esperado": "lista-vazia" },

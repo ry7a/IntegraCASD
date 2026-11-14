@@ -186,6 +186,9 @@ export type FiltrosDaConsulta = {
 
 const TAMANHO_PADRAO = 50;
 const TAMANHO_MAXIMO = 200;
+// A busca só procura, não grava: o teto é só técnico, bem acima do que alguém digita (o servidor HTTP
+// já limita o tamanho da URL a uns 16 mil caracteres).
+const TAMANHO_MAXIMO_DA_BUSCA = 10_000;
 
 // Filtro de data: vazio é "sem filtro"; preenchido, segue a mesma leitura do vencimento (lerDataDaCobranca).
 function data(valor: unknown, nome: string): string | null {
@@ -212,7 +215,10 @@ export function lerFiltrosDaConsulta(consulta: Record<string, unknown>): Filtros
   }
   const alunoId = typeof consulta.alunoId === 'string' && consulta.alunoId !== '' ? consulta.alunoId : null;
   if (alunoId !== null && !UUID.test(alunoId)) throw new CobrancaInvalida('Aluno não encontrado. Volte à lista e escolha outro.');
-  const busca = typeof consulta.busca === 'string' && consulta.busca.trim() !== '' ? consulta.busca.trim() : null;
+  // A busca também passa pela regra comum de texto: o PostgreSQL recusa o caractere nulo até numa consulta,
+  // e ?busca=%00 dava erro 500. Vazia (ou só espaços) é "sem busca".
+  const textoDaBusca = lerTextoDaCobranca(consulta.busca, 'na busca', TAMANHO_MAXIMO_DA_BUSCA);
+  const busca = textoDaBusca === '' ? null : textoDaBusca;
   const pagina = inteiroNaoNegativo(consulta.pagina, 'a página') ?? 1;
   const tamanho = inteiroNaoNegativo(consulta.tamanhoPagina, 'o tamanho da página') ?? TAMANHO_PADRAO;
   return {

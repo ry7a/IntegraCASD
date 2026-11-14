@@ -104,6 +104,14 @@ describe('consulta [Cobranças.RF008]', () => {
     expect(lerFiltrosDaConsulta({ valorMinimoCentavos: '0' }).valorMinimoCentavos).toBe(0);
   });
 
+  // O PostgreSQL recusa o \u0000 até numa consulta: antes, ?busca=%00 dava erro 500.
+  it('lê a busca pela regra comum: aparada, espaços repetidos reduzidos, e recusa o caractere nulo citando a busca', () => {
+    expect(lerFiltrosDaConsulta({ busca: '  Ana   Ficticia ' }).busca).toBe('Ana Ficticia');
+    expect(lerFiltrosDaConsulta({ busca: '   ' }).busca).toBeNull();
+    expect(lerFiltrosDaConsulta({ busca: 'z'.repeat(5000) }).busca).toHaveLength(5000);
+    expect(() => lerFiltrosDaConsulta({ busca: 'Ana\u0000' })).toThrow(/nulo\) na busca/);
+  });
+
   it('dias de atraso só para vencida', () => {
     expect(diasDeAtraso('VENCIDA', '2026-10-16', HOJE)).toBe(10);
     expect(diasDeAtraso('ABERTA', '2026-11-10', HOJE)).toBeNull();
