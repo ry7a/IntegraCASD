@@ -78,4 +78,40 @@ describe('B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07', () => {
     expect(pendentes).toEqual([]);
     expect(obsoletas).toEqual([]);
   });
+
+  // Dois módulos que se importam (pelos index.ts) formam um ciclo: quem o Node carregar primeiro pode
+  // encontrar o outro pela metade ("Cannot access ... before initialization"). Revisão da spec #57: o
+  // Movimentações importava uma regra do Cadastros, que importa o MovimentacoesModule.
+  it('não há ciclo de imports entre módulos', () => {
+    // De cada módulo, os outros módulos que ele importa (pelo index.ts, a única porta permitida).
+    const importados = new Map<string, Set<string>>();
+    for (const modulo of listarModulos()) {
+      const destinos = new Set<string>();
+      for (const arquivo of listarArquivos(path.join(PASTA_MODULOS, modulo), '.ts')) {
+        for (const texto of extrairImports(readFileSync(arquivo, 'utf8'))) {
+          const destino = resolverImportRelativo(arquivo, texto);
+          if (destino === null) continue;
+          const relativo = path.relative(PASTA_MODULOS, destino);
+          if (relativo.startsWith('..')) continue;
+          const moduloDestino = relativo.split(path.sep)[0];
+          if (moduloDestino !== modulo) destinos.add(moduloDestino);
+        }
+      }
+      importados.set(modulo, destinos);
+    }
+
+    // Busca em profundidade a partir de cada módulo: voltar a um módulo do caminho atual é um ciclo.
+    const ciclos = new Set<string>();
+    function visitar(modulo: string, caminho: string[]): void {
+      const repetido = caminho.indexOf(modulo);
+      if (repetido >= 0) {
+        ciclos.add([...caminho.slice(repetido), modulo].join(' -> '));
+        return;
+      }
+      for (const proximo of importados.get(modulo) ?? []) visitar(proximo, [...caminho, modulo]);
+    }
+    for (const modulo of importados.keys()) visitar(modulo, []);
+
+    expect([...ciclos].sort()).toEqual([]);
+  });
 });

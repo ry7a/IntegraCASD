@@ -23,10 +23,7 @@ import { FuncionariosRepositorio } from './infra/funcionarios.repositorio.js';
 // Módulo Cadastros: alunos, turmas, funcionários, contratos e projetos. O que outros módulos usam entra em `exports`
 // (e também no index.ts, que é por onde eles importam).
 @Module({
-  // Movimentações entrega o total pago em cada contrato e projeto. O MovimentacoesModule não importa este
-  // módulo (sem ciclo no Nest): do Cadastros, Movimentações só usa a regra pura `estaEncerrado`, pelo index.ts.
-  // Como os dois index.ts se importam, o Cadastros carrega antes do Movimentações (a app.module já faz assim);
-  // carregar o Movimentações primeiro, no Node, dá "Cannot access ... before initialization".
+  // Movimentações entrega o total pago em cada contrato e projeto (e não depende do Cadastros: sem ciclo).
   imports: [MovimentacoesModule],
   controllers: [AlunosController, TurmasController, FuncionariosController, ContratosController, ProjetosController],
   providers: [
