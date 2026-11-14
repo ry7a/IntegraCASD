@@ -58,11 +58,12 @@ function prismaFalso(usuarioAtual: ReturnType<typeof usuarioDiretor>) {
     // A função fica numa variável: a regra B13 barra escrever na trilha fora do ponto central.
     registroAuditoria: { create: gravarNaTrilha },
   };
+  const buscarUsuario = vi.fn(async ({ where }: { where: { id?: string } }) =>
+    where.id === usuarioAtual.id ? usuarioAtual : null,
+  );
   const prisma = {
     usuario: {
-      findUnique: vi.fn(async ({ where }: { where: { id?: string } }) =>
-        where.id === usuarioAtual.id ? usuarioAtual : null,
-      ),
+      findUnique: buscarUsuario,
       count: vi.fn(async () => 2),
     },
     $transaction: vi.fn(async (trabalho: (cliente: typeof tx) => Promise<unknown>) => {
@@ -74,7 +75,7 @@ function prismaFalso(usuarioAtual: ReturnType<typeof usuarioDiretor>) {
       }
     }),
   } as unknown as PrismaService;
-  return { prisma, tx, operacoes, gravarNaTrilha };
+  return { prisma, tx, operacoes, gravarNaTrilha, buscarUsuario };
 }
 
 describe('manutencao de usuarios [Administração.RF001]', () => {
@@ -275,7 +276,7 @@ describe('manutencao de usuarios [Administração.RF001]', () => {
     ['nome', { nome: 'Usuario\u0000 Ficticio' }, /nulo\) no nome/],
     ['e-mail', { email: 'usuario\u0000@exemplo.com' }, /nulo\) no e-mail/],
   ])('caractere nulo no %s: recusa com 400 citando o campo, sem consultar nem gravar', async (_campo, campos, mensagem) => {
-    const { prisma, tx } = prismaFalso(usuarioDiretor('diretor-2'));
+    const { prisma, tx, buscarUsuario } = prismaFalso(usuarioDiretor('diretor-2'));
     const servico = new UsuariosService(prisma);
     const novo = { nome: 'Usuario Ficticio', email: 'usuario@exemplo.com', perfil: PerfilUsuario.ADMINISTRATIVO, senhaInicial: 'senha-ficticia-12', ...campos };
 
@@ -284,7 +285,7 @@ describe('manutencao de usuarios [Administração.RF001]', () => {
     await expect(criando).rejects.toThrow(mensagem);
     await expect(servico.alterar('diretor-2', campos, DIRETOR)).rejects.toThrow(mensagem);
     // A única consulta foi a do usuário alterado, pelo id: nenhuma pelo e-mail com o caractere nulo.
-    expect(prisma.usuario.findUnique).toHaveBeenCalledTimes(1);
+    expect(buscarUsuario).toHaveBeenCalledTimes(1);
     expect(tx.usuario.update).not.toHaveBeenCalled();
   });
 });
