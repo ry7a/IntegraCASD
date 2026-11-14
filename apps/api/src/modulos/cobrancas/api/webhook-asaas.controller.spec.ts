@@ -109,6 +109,33 @@ describe('[Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento'
     expect(fila.enfileirados).toEqual([]);
   });
 
+  // "\ud800" no JSON vira um texto com metade de um par de surrogates (UTF-16), que não é Unicode válido: o
+  // jsonb do PostgreSQL recusa e o webhook respondia 500.
+  it.each([
+    ['no id', { id: 'evt_falso_8\ud800', event: 'PAYMENT_CREATED' }],
+    ['no event', { id: 'evt_falso_8', event: 'PAYMENT_\udc00CREATED' }],
+    ['num campo do pagamento (metade alta, sem a baixa)', { id: 'evt_falso_8', event: 'PAYMENT_CREATED', payment: { description: 'texto \ud83d fim' } }],
+    ['num campo do pagamento (metade baixa, sem a alta)', { id: 'evt_falso_8', event: 'PAYMENT_CREATED', payment: { description: '\ude00' } }],
+    ['no nome de uma chave', { id: 'evt_falso_8', event: 'PAYMENT_CREATED', payment: { 'chave\ud800': 1 } }],
+  ])('recusa com 400, sem gravar nem enfileirar, um surrogate sem par %s', async (_onde, corpo) => {
+    const { controller, repositorio, fila } = montarWebhook();
+
+    const recebendo = controller.receber(corpo);
+
+    await expect(recebendo).rejects.toThrow(BadRequestException);
+    await expect(recebendo).rejects.toThrow('Unicode');
+    expect(repositorio.gravados).toEqual([]);
+    expect(fila.enfileirados).toEqual([]);
+  });
+
+  it('aceita emoji e acentos (pares de surrogates completos)', async () => {
+    const { controller, repositorio } = montarWebhook();
+    const corpo = { id: 'evt_falso_9_ação_😀', event: 'PAYMENT_CREATED', payment: { description: 'Camiseta 👕 do CASD' } };
+
+    await expect(controller.receber(corpo)).resolves.toEqual({ recebido: true });
+    expect(repositorio.gravados).toHaveLength(1);
+  });
+
   // O corpo é o nível 1; o payment com 32 listas aninhadas leva o corpo a 33 níveis.
   it.each([32, 5000, 20000])(
     'recusa com 400, sem gravar nem enfileirar, um payment com %i listas aninhadas (corpo com mais de 32 níveis)',

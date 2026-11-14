@@ -64,22 +64,43 @@ function lerEvento(corpo: unknown): EventoRecebido {
   if (problema === 'caractere-nulo') {
     throw new BadRequestException('O corpo do evento tem caractere nulo (\\u0000), que não pode ser gravado.');
   }
+  if (problema === 'unicode-invalido') {
+    throw new BadRequestException(
+      'O corpo do evento tem texto com Unicode inválido (metade de um par de surrogates, como \\ud800), que não pode ser gravado.',
+    );
+  }
   return { idAsaas: id, tipo: event, payload: corpo as EventoRecebido['payload'] };
 }
 
-// Percorre o corpo inteiro: todo texto (valores e nomes de chaves) sem caractere nulo e no máximo
+type ProblemaNoCorpo = 'caractere-nulo' | 'unicode-invalido' | 'aninhado-demais';
+
+// Percorre o corpo inteiro: todo texto (valores e nomes de chaves) que o banco aceita gravar e no máximo
 // PROFUNDIDADE_MAXIMA níveis de objetos e listas. Para no primeiro problema; por isso a recursão nunca
 // passa de PROFUNDIDADE_MAXIMA + 1 chamadas, por mais fundo que o corpo seja, e não estoura a pilha.
-function problemaNoCorpo(valor: unknown, nivel: number): 'caractere-nulo' | 'aninhado-demais' | null {
-  if (typeof valor === 'string') return temCaractereNulo(valor) ? 'caractere-nulo' : null;
+function problemaNoCorpo(valor: unknown, nivel: number): ProblemaNoCorpo | null {
+  if (typeof valor === 'string') return problemaNoTexto(valor);
   if (typeof valor !== 'object' || valor === null) return null; // número, booleano ou null
   if (nivel > PROFUNDIDADE_MAXIMA) return 'aninhado-demais';
   // Object.entries também serve para listas: as chaves são os índices ("0", "1"...).
   for (const [chave, item] of Object.entries(valor)) {
-    if (temCaractereNulo(chave)) return 'caractere-nulo';
+    const problemaNaChave = problemaNoTexto(chave);
+    if (problemaNaChave !== null) return problemaNaChave;
     const problema = problemaNoCorpo(item, nivel + 1);
     if (problema !== null) return problema;
   }
+  return null;
+}
+
+// Metade de um par de surrogates (UTF-16) sem a outra metade: uma alta (\uD800 a \uDBFF) que não vem seguida
+// de uma baixa, ou uma baixa (\uDC00 a \uDFFF) que não vem depois de uma alta. É o que "\ud800" no JSON vira;
+// um emoji de verdade é um par completo e passa.
+const SURROGATE_SEM_PAR = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+
+// Texto que o PostgreSQL recusa no jsonb: o caractere nulo e o Unicode inválido (o surrogate sem par).
+// Gravar respondia 500.
+function problemaNoTexto(texto: string): ProblemaNoCorpo | null {
+  if (temCaractereNulo(texto)) return 'caractere-nulo';
+  if (SURROGATE_SEM_PAR.test(texto)) return 'unicode-invalido';
   return null;
 }
 
