@@ -1,4 +1,12 @@
 // Regras da cobrança [Cobranças.RF001 a RF008]. Só TypeScript puro. Datas em "AAAA-MM-DD".
+import {
+  MAIOR_ANO,
+  MAIOR_INTEIRO_DO_BANCO,
+  MENOR_ANO,
+  lerCentavos,
+  lerDia,
+  lerTexto,
+} from '../../../compartilhado/leitura-de-entrada.js';
 
 export class CobrancaInvalida extends Error {}
 
@@ -39,26 +47,61 @@ export type NovaCobrancaAvulsa = {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Dia "AAAA-MM-DD" que existe no calendário, pela regra comum (compartilhado/leitura-de-entrada.ts).
+// Sem ela, 30/02 ia ao Asaas como 30/02 e era gravado aqui como 02/03. `campo` entra na mensagem como
+// está: "o vencimento", "a data do pagamento".
+function lerDataDaCobranca(valor: unknown, campo: string): string {
+  const lida = lerDia(valor);
+  if (lida.valido) return lida.valor;
+  if (lida.motivo === 'inexistente') {
+    throw new CobrancaInvalida(`Confira ${campo}: essa data não existe no calendário (dia ou mês fora do intervalo).`);
+  }
+  if (lida.motivo === 'fora-do-limite') {
+    throw new CobrancaInvalida(`Confira ${campo}: o ano precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
+  }
+  throw new CobrancaInvalida(`Informe ${campo} no formato AAAA-MM-DD.`);
+}
+
+// Valor em centavos, pela regra comum: inteiro de 1 até o maior inteiro que a coluna do banco guarda.
+// Acima disso o banco respondia erro 500, e na cobrança avulsa isso acontecia depois de criar no Asaas.
+// `campo` entra na mensagem como está: "o valor", "o valor pago".
+function lerValorDaCobranca(valor: unknown, campo: string): number {
+  const lido = lerCentavos(valor);
+  if (lido.valido) return lido.valor;
+  if (typeof valor === 'number' && valor > MAIOR_INTEIRO_DO_BANCO) {
+    // R$ 21.474.836,47 é MAIOR_INTEIRO_DO_BANCO em reais.
+    throw new CobrancaInvalida(`Confira ${campo}: o máximo aceito é R$ 21.474.836,47 (2147483647 centavos).`);
+  }
+  // Formato errado, zero ou negativo.
+  throw new CobrancaInvalida(`Informe ${campo} em centavos, como número inteiro maior que zero (ex.: 8500 para R$ 85,00).`);
+}
+
+// Texto livre, pela regra comum: aparado, espaços repetidos reduzidos a um e sem caractere nulo (que o
+// PostgreSQL recusa). O que não é texto vira "": o tamanho mínimo, cada campo confere com a própria mensagem.
+// `noCampo` entra na mensagem como está: "na descrição", "na justificativa".
+function lerTextoDaCobranca(valor: unknown, noCampo: string, maximo: number): string {
+  const lido = lerTexto(valor, maximo);
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'caractere-nulo') {
+    throw new CobrancaInvalida(`Há um caractere invisível (nulo) ${noCampo}, comum ao colar de outro programa. Apague e digite de novo.`);
+  }
+  if (lido.motivo === 'fora-do-limite') throw new CobrancaInvalida(`Use no máximo ${maximo} caracteres ${noCampo}.`);
+  return '';
+}
+
 // [Cobranças.RF002] Valida a entrada da cobrança avulsa. `hoje` entra por parâmetro para o teste.
 export function lerNovaCobrancaAvulsa(entrada: Partial<Record<keyof NovaCobrancaAvulsa, unknown>>, hoje: string): NovaCobrancaAvulsa {
   if (typeof entrada.alunoId !== 'string' || !UUID.test(entrada.alunoId)) {
     throw new CobrancaInvalida('Escolha o aluno na lista.');
   }
-  const valor = entrada.valorCentavos;
-  if (typeof valor !== 'number' || !Number.isInteger(valor) || valor <= 0) {
-    throw new CobrancaInvalida('Informe o valor em centavos, como número inteiro maior que zero (ex.: 8500 para R$ 85,00).');
-  }
-  const vencimento = entrada.vencimento;
-  if (typeof vencimento !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(vencimento)) {
-    throw new CobrancaInvalida('Informe o vencimento no formato AAAA-MM-DD.');
-  }
+  const valor = lerValorDaCobranca(entrada.valorCentavos, 'o valor');
+  const vencimento = lerDataDaCobranca(entrada.vencimento, 'o vencimento');
   // Fluxo E2: vencimento no passado não é aceito.
   if (vencimento < hoje) {
     throw new CobrancaInvalida('O vencimento não pode ser anterior a hoje. Escolha outra data.');
   }
-  const descricao = typeof entrada.descricao === 'string' ? entrada.descricao.trim().replace(/\s+/g, ' ') : '';
+  const descricao = lerTextoDaCobranca(entrada.descricao, 'na descrição', 200);
   if (descricao.length < 3) throw new CobrancaInvalida('Descreva a cobrança, por exemplo: Camiseta do CASD.');
-  if (descricao.length > 200) throw new CobrancaInvalida('Use no máximo 200 caracteres na descrição.');
   const renegociacaoDeId = entrada.renegociacaoDeId ?? null;
   if (renegociacaoDeId !== null && (typeof renegociacaoDeId !== 'string' || !UUID.test(renegociacaoDeId))) {
     throw new CobrancaInvalida('A cobrança renegociada não foi encontrada. Abra a renegociação pelo detalhe da cobrança.');
@@ -235,23 +278,16 @@ export function conferirPagamentoManual(situacao: SituacaoGuardada): void {
 
 // `hoje` entra por parâmetro para o teste.
 export function lerPagamentoManual(entrada: Partial<Record<keyof PagamentoManual, unknown>>, hoje: string): PagamentoManual {
-  const pagoEm = entrada.pagoEm;
-  if (typeof pagoEm !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(pagoEm)) {
-    throw new CobrancaInvalida('Informe a data do pagamento no formato AAAA-MM-DD.');
-  }
+  const pagoEm = lerDataDaCobranca(entrada.pagoEm, 'a data do pagamento');
   if (pagoEm > hoje) throw new CobrancaInvalida('A data do pagamento não pode ser no futuro.');
-  const valor = entrada.valorCentavos;
-  if (typeof valor !== 'number' || !Number.isInteger(valor) || valor <= 0) {
-    throw new CobrancaInvalida('Informe o valor pago em centavos, como número inteiro maior que zero (ex.: 8500 para R$ 85,00).');
-  }
+  const valor = lerValorDaCobranca(entrada.valorCentavos, 'o valor pago');
   const forma = FORMAS_MANUAIS.find((permitida) => permitida === entrada.formaPagamento);
   if (forma === undefined) throw new CobrancaInvalida('Escolha a forma do pagamento: Pix, transferência, dinheiro ou cartão.');
   // Fluxo E1: sem justificativa escrita, não há registro de por que o sistema passou a divergir do Asaas.
-  const justificativa = typeof entrada.justificativa === 'string' ? entrada.justificativa.trim().replace(/\s+/g, ' ') : '';
+  const justificativa = lerTextoDaCobranca(entrada.justificativa, 'na justificativa', 500);
   if (justificativa.length < 10) {
     throw new CobrancaInvalida('A justificativa é obrigatória: explique como o pagamento foi comprovado (ex.: Pix recebido na conta do CASD).');
   }
-  if (justificativa.length > 500) throw new CobrancaInvalida('Use no máximo 500 caracteres na justificativa.');
   return { pagoEm, valorCentavos: valor, formaPagamento: forma, justificativa };
 }
 
