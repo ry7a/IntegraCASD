@@ -25,6 +25,19 @@ describe('contratos [Cadastros.RF004] CT-CAD-03', () => {
     expect(lerDadosParaAlteracao({ dataFim: null }, { dataInicio: '2026-01-01', dataFim: '2026-12-31' })).toEqual({ dataFim: null });
   });
 
+  it('recusa caractere nulo nos textos, citando o campo, em vez de virar erro 500 no banco', () => {
+    expect(() => lerDadosParaInclusao({ ...valido, contraparte: 'Limpeza\u0000 Ltda.' })).toThrow(/contraparte/);
+    expect(() => lerDadosParaInclusao({ ...valido, objeto: 'Limpeza\u0000' })).toThrow(/objeto/);
+    expect(() => lerEncerramento({ dataEncerramento: '2026-10-26', justificativa: 'Mudou\u0000 de fornecedor' }, '2026-01-01')).toThrow(
+      /justificativa/,
+    );
+  });
+
+  it('data com ano antes de 1900 é recusada pela regra comum de data, citando o campo', () => {
+    expect(() => lerDadosParaInclusao({ ...valido, dataInicio: '1899-12-31' })).toThrow(/ano da data de início/);
+    expect(lerDadosParaInclusao({ ...valido, dataInicio: '1900-01-01' }).dataInicio).toBe('1900-01-01');
+  });
+
   it('recusa periodicidade desconhecida e valor fracionado', () => {
     expect(() => lerDadosParaInclusao({ ...valido, periodicidade: 'SEMANAL' })).toThrow(/periodicidade/);
     expect(() => lerDadosParaInclusao({ ...valido, valorCentavos: 10.5 })).toThrow(/centavos/);

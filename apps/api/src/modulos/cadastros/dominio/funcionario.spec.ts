@@ -26,6 +26,10 @@ describe('cadastro de funcionário [Cadastros.RF002]', () => {
     expect(() => lerDadosParaInclusao({ ...entrada, dataDesligamento: '2025-01-01' })).toThrow(/anterior/);
   });
 
+  it('cargo com caractere nulo é recusado citando o campo, em vez de virar erro 500 no banco', () => {
+    expect(() => lerDadosParaInclusao({ ...entrada, cargo: 'Auxiliar\u0000 de limpeza' })).toThrow(/cargo/);
+  });
+
   it('na alteração, confere o período com o que já estava gravado', () => {
     const atual = { dataAdmissao: '2025-03-01', dataDesligamento: null };
     expect(() => lerDadosParaAlteracao({ dataDesligamento: '2024-12-31' }, atual)).toThrow(/anterior/);

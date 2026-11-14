@@ -19,11 +19,16 @@ export type DadosDoContrato = {
 
 export type EntradaDoContrato = Partial<Record<keyof DadosDoContrato, unknown>>;
 
-function lerTexto(valor: unknown, campo: string, exemplo: string, maximo: number): string {
-  const lido = texto(valor);
-  if (lido === null || lido.length < 2) throw new DadoInvalido(`Informe ${campo}, por exemplo "${exemplo}".`);
-  if (lido.length > maximo) throw new DadoInvalido(`Use no máximo ${maximo} caracteres em ${campo}.`);
-  return lido;
+function lerContraparte(valor: unknown): string {
+  const contraparte = texto(valor, 'na contraparte', 120);
+  if (contraparte === null || contraparte.length < 2) throw new DadoInvalido('Informe a contraparte, por exemplo "Limpeza Fictícia Ltda.".');
+  return contraparte;
+}
+
+function lerObjeto(valor: unknown): string {
+  const objeto = texto(valor, 'no objeto do contrato', 200);
+  if (objeto === null || objeto.length < 2) throw new DadoInvalido('Informe o objeto do contrato, por exemplo "Limpeza semanal do prédio".');
+  return objeto;
 }
 
 function lerValor(valor: unknown): number {
@@ -53,8 +58,8 @@ function conferirVigencia(dataInicio: string, dataFim: string | null): void {
 
 export function lerDadosParaInclusao(entrada: EntradaDoContrato): DadosDoContrato {
   const dados: DadosDoContrato = {
-    contraparte: lerTexto(entrada.contraparte, 'a contraparte', 'Limpeza Fictícia Ltda.', 120),
-    objeto: lerTexto(entrada.objeto, 'o objeto do contrato', 'Limpeza semanal do prédio', 200),
+    contraparte: lerContraparte(entrada.contraparte),
+    objeto: lerObjeto(entrada.objeto),
     valorCentavos: lerValor(entrada.valorCentavos),
     periodicidade: lerPeriodicidade(entrada.periodicidade),
     dataInicio: lerData(entrada.dataInicio, 'data de início'),
@@ -70,8 +75,8 @@ export function lerDadosParaAlteracao(
   atual: Pick<DadosDoContrato, 'dataInicio' | 'dataFim'>,
 ): Partial<DadosDoContrato> {
   const dados: Partial<DadosDoContrato> = {};
-  if (entrada.contraparte !== undefined) dados.contraparte = lerTexto(entrada.contraparte, 'a contraparte', 'Limpeza Fictícia Ltda.', 120);
-  if (entrada.objeto !== undefined) dados.objeto = lerTexto(entrada.objeto, 'o objeto do contrato', 'Limpeza semanal do prédio', 200);
+  if (entrada.contraparte !== undefined) dados.contraparte = lerContraparte(entrada.contraparte);
+  if (entrada.objeto !== undefined) dados.objeto = lerObjeto(entrada.objeto);
   if (entrada.valorCentavos !== undefined) dados.valorCentavos = lerValor(entrada.valorCentavos);
   if (entrada.periodicidade !== undefined) dados.periodicidade = lerPeriodicidade(entrada.periodicidade);
   if (entrada.dataInicio !== undefined) dados.dataInicio = lerData(entrada.dataInicio, 'data de início');
@@ -87,11 +92,10 @@ export function lerEncerramento(
 ): { dataEncerramento: string; justificativa: string } {
   const dataEncerramento = lerData(entrada.dataEncerramento, 'data de encerramento');
   if (dataEncerramento < dataInicio) throw new DadoInvalido('A data de encerramento não pode ser anterior ao início do contrato.');
-  const justificativa = texto(entrada.justificativa);
+  const justificativa = texto(entrada.justificativa, 'na justificativa', 300);
   if (justificativa === null || justificativa.length < 5) {
     throw new DadoInvalido('Informe a justificativa do encerramento, por exemplo: serviço passou a ser feito pela AEITA.');
   }
-  if (justificativa.length > 300) throw new DadoInvalido('Use no máximo 300 caracteres na justificativa.');
   return { dataEncerramento, justificativa };
 }
 
