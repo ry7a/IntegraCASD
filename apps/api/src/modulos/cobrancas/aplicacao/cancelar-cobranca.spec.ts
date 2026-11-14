@@ -61,4 +61,15 @@ describe('CancelarCobranca [Cobranças.RF004]', () => {
     await expect(caso.executar('cob-1', {}, 'usuario-1')).rejects.toThrow(/motivo/);
     expect(asaas.cobrancasCanceladas).toEqual([]);
   });
+
+  // Antes, o Asaas cancelava e a gravação daqui dava 500 (o PostgreSQL recusa o \u0000): a cobrança ficava
+  // cancelada lá e aberta aqui.
+  it('motivo com caractere nulo: recusa com 400, citando o motivo, antes de falar com o Asaas', async () => {
+    const { caso, asaas, canceladasAqui } = montar('ABERTA');
+    const cancelando = caso.executar('cob-1', { motivo: 'Renegociação\u0000 em 3 parcelas' }, 'usuario-1');
+    await expect(cancelando).rejects.toBeInstanceOf(BadRequestException);
+    await expect(cancelando).rejects.toThrow(/motivo/);
+    expect(asaas.cobrancasCanceladas).toEqual([]);
+    expect(canceladasAqui).toEqual([]);
+  });
 });

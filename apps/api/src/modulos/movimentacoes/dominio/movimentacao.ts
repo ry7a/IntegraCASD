@@ -1,5 +1,14 @@
 // Regras das movimentações [Movimentações.RF001 a RF003]. Só TypeScript puro. Datas em "AAAA-MM-DD".
-import { MAIOR_ANO, MAIOR_INTEIRO_DO_BANCO, MENOR_ANO, lerCentavos, lerDia, lerMes, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
+import {
+  lerCentavos,
+  lerDia,
+  lerMes,
+  lerTexto,
+  mensagemDoDia,
+  mensagemDoMes,
+  mensagemDoTexto,
+  mensagemDosCentavos,
+} from '../../../compartilhado/leitura-de-entrada.js';
 
 export type TipoMovimentacao = 'ENTRADA' | 'SAIDA';
 export type FormaPagamento = 'ASAAS' | 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
@@ -41,15 +50,11 @@ function deUmaLista<T extends string>(valor: unknown, lista: T[], mensagem: stri
 }
 
 // Mês da consulta pela regra comum: mês de 01 a 12 e ano de 1900 a 9999 ("0000-01" passava no formato
-// e estourava no banco). Aqui só se escolhe a mensagem pelo motivo.
+// e estourava no banco). A mensagem da recusa também vem da regra comum.
 function lerMesDaConsulta(valor: unknown): string {
   const lido = lerMes(valor);
   if (lido.valido) return lido.valor;
-  if (lido.motivo === 'inexistente') throw new MovimentacaoInvalida('O mês vai de 01 a 12. Informe o mês no formato AAAA-MM.');
-  if (lido.motivo === 'fora-do-limite') {
-    throw new MovimentacaoInvalida(`Confira o ano do mês: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
-  }
-  throw new MovimentacaoInvalida('Informe o mês no formato AAAA-MM.');
+  throw new MovimentacaoInvalida(mensagemDoMes(lido.motivo, 'o mês'));
 }
 
 // `hoje` entra por parâmetro para o teste. Os valores chegam da URL, como texto.
@@ -94,11 +99,15 @@ export function regraDoEstorno(
   return { podeEstornar: true, motivoSemEstorno: null };
 }
 
+// Motivo pela regra comum de texto: sem ela, o caractere nulo chegava ao banco e o estorno dava erro 500.
 export function lerMotivoDoEstorno(valor: unknown): string {
-  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
-  if (motivo.length < 5) throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
-  if (motivo.length > 300) throw new MovimentacaoInvalida('Use no máximo 300 caracteres no motivo.');
-  return motivo;
+  const lido = lerTexto(valor, 300);
+  // O que não é texto conta como motivo em branco (a mensagem abaixo pede o motivo).
+  if (!lido.valido && lido.motivo !== 'formato') throw new MovimentacaoInvalida(mensagemDoTexto(lido.motivo, 'o motivo', 300));
+  if (!lido.valido || lido.valor.length < 5) {
+    throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
+  }
+  return lido.valor;
 }
 
 // ---------------------------------------------------------------------------
@@ -124,28 +133,19 @@ export type NovaMovimentacao = {
 };
 
 // A data é lida pela regra comum (compartilhado/leitura-de-entrada.ts), que recusa 30/02 e mês 13
-// em vez de deixar o banco trocar por outra data. Aqui só se escolhe a mensagem pelo motivo.
+// em vez de deixar o banco trocar por outra data, e monta a mensagem da recusa.
 function lerDataDoLancamento(valor: unknown): string {
   const lida = lerDia(valor);
   if (lida.valido) return lida.valor;
-  if (lida.motivo === 'inexistente') throw new MovimentacaoInvalida('A data não existe no calendário. Confira o dia e o mês.');
-  if (lida.motivo === 'fora-do-limite') {
-    throw new MovimentacaoInvalida(`Confira o ano da data: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
-  }
-  throw new MovimentacaoInvalida('Informe a data no formato AAAA-MM-DD.');
+  throw new MovimentacaoInvalida(mensagemDoDia(lida.motivo, 'a data'));
 }
 
-// Valor em centavos pela regra comum. O motivo 'fora-do-limite' junta "zero ou negativo" e "acima do que
-// a coluna guarda"; as mensagens são separadas porque a correção de cada um é diferente.
+// Valor em centavos pela regra comum. Fluxo E2: valor zero (ou negativo, ou fracionado, ou em texto) é
+// recusado, e o que passa do que a coluna guarda também.
 function lerValorDoLancamento(valor: unknown): number {
   const lido = lerCentavos(valor);
   if (lido.valido) return lido.valor;
-  if (typeof valor === 'number' && valor > MAIOR_INTEIRO_DO_BANCO) {
-    // R$ 21.474.836,47 é MAIOR_INTEIRO_DO_BANCO em reais.
-    throw new MovimentacaoInvalida('O valor passa do limite do sistema (R$ 21.474.836,47). Confira se não sobrou zero.');
-  }
-  // Fluxo E2: valor zero (ou negativo, ou fracionado, ou em texto) é recusado.
-  throw new MovimentacaoInvalida('Informe um valor maior que zero, em centavos inteiros (ex.: 120000 para R$ 1.200,00).');
+  throw new MovimentacaoInvalida(mensagemDosCentavos(lido.motivo, 'o valor'));
 }
 
 // Descrição pela regra comum: aparada, espaços repetidos reduzidos e sem caractere nulo (o PostgreSQL
@@ -153,10 +153,7 @@ function lerValorDoLancamento(valor: unknown): number {
 // pede a descrição de novo.
 function lerDescricaoDoLancamento(valor: unknown): string {
   const lida = lerTexto(valor, 200);
-  if (!lida.valido && lida.motivo === 'caractere-nulo') {
-    throw new MovimentacaoInvalida('Há um caractere invisível (nulo) na descrição, comum ao colar de outro programa. Apague e digite de novo.');
-  }
-  if (!lida.valido && lida.motivo === 'fora-do-limite') throw new MovimentacaoInvalida('Use no máximo 200 caracteres na descrição.');
+  if (!lida.valido && lida.motivo !== 'formato') throw new MovimentacaoInvalida(mensagemDoTexto(lida.motivo, 'a descrição', 200));
   if (!lida.valido || lida.valor.length < 3) {
     throw new MovimentacaoInvalida('Descreva a movimentação, por exemplo: NF 685, limpeza de outubro.');
   }

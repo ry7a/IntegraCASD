@@ -20,13 +20,13 @@ export type DadosDoContrato = {
 export type EntradaDoContrato = Partial<Record<keyof DadosDoContrato, unknown>>;
 
 function lerContraparte(valor: unknown): string {
-  const contraparte = texto(valor, 'na contraparte', 120);
+  const contraparte = texto(valor, 'a contraparte', 120);
   if (contraparte === null || contraparte.length < 2) throw new DadoInvalido('Informe a contraparte, por exemplo "Limpeza Fictícia Ltda.".');
   return contraparte;
 }
 
 function lerObjeto(valor: unknown): string {
-  const objeto = texto(valor, 'no objeto do contrato', 200);
+  const objeto = texto(valor, 'o objeto do contrato', 200);
   if (objeto === null || objeto.length < 2) throw new DadoInvalido('Informe o objeto do contrato, por exemplo "Limpeza semanal do prédio".');
   return objeto;
 }
@@ -92,7 +92,7 @@ export function lerEncerramento(
 ): { dataEncerramento: string; justificativa: string } {
   const dataEncerramento = lerData(entrada.dataEncerramento, 'data de encerramento');
   if (dataEncerramento < dataInicio) throw new DadoInvalido('A data de encerramento não pode ser anterior ao início do contrato.');
-  const justificativa = texto(entrada.justificativa, 'na justificativa', 300);
+  const justificativa = texto(entrada.justificativa, 'a justificativa', 300);
   if (justificativa === null || justificativa.length < 5) {
     throw new DadoInvalido('Informe a justificativa do encerramento, por exemplo: serviço passou a ser feito pela AEITA.');
   }

@@ -28,8 +28,18 @@ src/modulos/cobrancas/
 - Camadas conferidas por teste (B2, B3): `dominio/` não importa Nest nem Prisma; `api/` não importa `infra/`;
   Prisma e `$transaction` nunca aparecem em `api/` nem em `dominio/`.
 - Código compartilhado entre módulos fica em `src/compartilhado/`: `asaas/`, `auditoria/`, `autenticacao/`,
-  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/`, `datas.ts` (dia de hoje em São Paulo)
-  e `configuracao.ts` (variáveis de ambiente conferidas na subida da API e do worker).
+  `eventos/`, `fila/`, `notificacao/`, `prisma/`, `saude/`, `seguranca/`, `datas.ts` (dia de hoje em São Paulo),
+  `configuracao.ts` (variáveis de ambiente conferidas na subida da API e do worker), `leitura-de-entrada.ts`
+  (abaixo) e `situacao-do-projeto.ts` (projeto encerrado = executado ou cancelado, usado por Cadastros e
+  Movimentações sem um importar o outro).
+- **Todo valor que vem de fora** (corpo, filtro da URL, aviso do Asaas) é lido por `leitura-de-entrada.ts`:
+  `lerDia`, `lerMes`, `lerCentavos`, `lerInteiroNaoNegativo` e `lerTexto(valor, tamanhoMaximo)`. Elas não lançam
+  erro: devolvem o valor ou o motivo da recusa (`formato`, `inexistente`, `abaixo-do-minimo`, `acima-do-maximo`,
+  `caractere-nulo`). A mensagem sai de `mensagemDoDia`, `mensagemDoMes`, `mensagemDosCentavos` ou
+  `mensagemDoTexto`, com o campo e o artigo (`'o vencimento'`), e o módulo só a embrulha no próprio erro
+  (`CobrancaInvalida`, `DadoInvalido`...), que a `aplicacao/` transforma em 400. É o que garante data que existe,
+  inteiro que cabe na coluna `Int` e texto sem `\u0000` (spec #57). Texto sem limite de negócio usa o teto
+  técnico `TAMANHO_MAXIMO_TECNICO`.
 - Quando um módulo precisa avisar outro sem importá-lo (evitando ciclo), use `EventosInternos`
   (`src/compartilhado/eventos/`): quem publica não conhece quem ouve. Quem ouve não chama o Asaas na hora:
   enfileira uma rotina, que o pg-boss repete se falhar. Exemplo: "aluno alterado" -> atualizar o cliente no Asaas.
@@ -88,6 +98,12 @@ src/modulos/cobrancas/
 ## Webhook e worker
 
 - O controller do webhook só faz: validar `asaas-access-token`, gravar o evento (id do Asaas com `UNIQUE`), enfileirar no pg-boss e responder 200. Nenhuma regra de negócio ali.
+  Ele também recusa com 400, sem gravar nem enfileirar, o evento fora dos limites do formato (o que o banco não
+  consegue gravar): `id` ou `payment.id` com mais de 255 caracteres, `event` com mais de 100, caractere nulo ou
+  surrogate sem par em qualquer texto do corpo e corpo com mais de 32 níveis (nota de 13/11/2026 no ADR-0002).
+  Dado presente e inválido no pagamento (data inexistente, valor que não cabe) é gravado e vira pendência de
+  conciliação no worker. Webhook e sincronização leem as datas do pagamento pela mesma função
+  (`compartilhado/asaas/datas-do-pagamento.ts`).
 - O processamento fica em handlers do worker. Antes de processar, verificar se o evento já foi processado; a marcação de "processado" acontece dentro da mesma transação da baixa.
   A conciliação segue esse desenho: as regras (qual aviso leva a qual efeito) ficam em
   `modulos/cobrancas/dominio/conciliacao.ts`; o `ConciliacaoRepositorio` marca o evento como processado

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { hojeEmSaoPaulo } from '../../../compartilhado/datas.js';
-import { estaEncerrado, type SituacaoDoProjeto } from '../../cadastros/index.js';
+import { estaEncerrado, type SituacaoDoProjeto } from '../../../compartilhado/situacao-do-projeto.js';
 import { MovimentacaoInvalida, conferirCategoria, lerNovaMovimentacao, type NovaMovimentacao } from '../dominio/movimentacao.js';
 import { MovimentacoesRepositorio } from '../infra/movimentacoes.repositorio.js';
 
@@ -11,7 +11,8 @@ export type MovimentacaoRegistradaAgora = {
 };
 
 // [Movimentações.RF001] A2 e [Cadastros.RF005] E1: em projeto encerrado o lançamento é aceito e sinalizado.
-// "Encerrado" (executado ou cancelado) é a definição do Cadastros, a mesma que a lista de projetos usa.
+// "Encerrado" (executado ou cancelado) é a mesma definição que a lista de projetos do Cadastros usa
+// (compartilhado/situacao-do-projeto.ts).
 function avisoDoProjeto(situacao: SituacaoDoProjeto | null): string | null {
   if (situacao === null || !estaEncerrado(situacao)) return null;
   return 'Movimentação registrada em projeto encerrado (projeto já executado ou cancelado). Confira se o projeto deve ser reaberto.';

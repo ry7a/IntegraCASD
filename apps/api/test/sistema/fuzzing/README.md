@@ -6,11 +6,11 @@ as entradas; quem envia e julga é o Vitest, com a aplicação inteira e o Postg
 
 | Arquivo | Alvo | Entradas |
 |---|---|---|
-| `entradas/webhook-asaas.json` | CT-FZ-01: `POST /api/webhooks/asaas` | 81 |
+| `entradas/webhook-asaas.json` | CT-FZ-01: `POST /api/webhooks/asaas` | 84 |
 | `entradas/aluno.json` | CT-FZ-02: cadastro de aluno | 55 |
 | `entradas/cobranca-avulsa.json` | CT-FZ-02: cobrança avulsa | 43 |
 | `entradas/movimentacao.json` | CT-FZ-02: lançamento de movimentação | 42 |
-| `entradas/consultas.json` | CT-FZ-02: filtros de alunos, cobranças, movimentações e trilha | 59 |
+| `entradas/consultas.json` | CT-FZ-02: filtros de alunos, cobranças, movimentações, indicadores e trilha | 65 |
 
 Para rodar só estes testes (PostgreSQL do `docker compose` no ar), na raiz:
 

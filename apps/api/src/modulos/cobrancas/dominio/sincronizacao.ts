@@ -1,8 +1,9 @@
 // Regras da sincronização com o Asaas [Cobranças.RF007]. Só TypeScript puro. Datas em "AAAA-MM-DD".
 // A sincronização não tem regras próprias de baixa: transforma a situação que o Asaas informa no mesmo
 // aviso que o webhook mandaria, e a conciliação (conciliacao.ts) decide o efeito.
+import { dataDoAsaas } from '../../../compartilhado/asaas/datas-do-pagamento.js';
 import { CobrancaInvalida, diasEntre, type SituacaoExibida } from './cobranca.js';
-import { dataDoAviso, type AvisoDePagamento } from './conciliacao.js';
+import type { AvisoDePagamento } from './conciliacao.js';
 
 // O que a sincronização precisa saber de uma cobrança no Asaas.
 export type SituacaoNoAsaas = {
@@ -30,9 +31,11 @@ export function avisoDaSituacaoNoAsaas(cobranca: SituacaoNoAsaas): AvisoDePagame
     idCobrancaAsaas: cobranca.idAsaas,
     // Vai como veio: quem confere (zero centavo, acima do limite) é a conciliação, igual para o webhook.
     valorPagoCentavos: cobranca.valorCentavos,
-    pagoEm: dataDoAviso(cobranca.pagoEm),
+    // O cliente do Asaas já leu as datas como o webhook as lê (compartilhado/asaas/datas-do-pagamento.ts);
+    // ler de novo não muda nada e protege de outra implementação do ClienteAsaas.
+    pagoEm: dataDoAsaas(cobranca.pagoEm),
     // O Asaas só informa a data de crédito quando o valor já foi recebido.
-    disponivelEm: cobranca.situacao === 'RECEIVED' || cobranca.situacao === 'RECEIVED_IN_CASH' ? dataDoAviso(cobranca.disponivelEm) : null,
+    disponivelEm: cobranca.situacao === 'RECEIVED' || cobranca.situacao === 'RECEIVED_IN_CASH' ? dataDoAsaas(cobranca.disponivelEm) : null,
   };
 }
 

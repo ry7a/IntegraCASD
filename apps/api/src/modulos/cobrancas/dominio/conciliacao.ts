@@ -1,7 +1,16 @@
 // Regras da conciliação [Cobranças.RF005]: o que cada aviso do Asaas faz com a cobrança.
 // Só TypeScript puro. Datas em "AAAA-MM-DD".
-import { lerCentavos, lerDia, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
-import type { SituacaoGuardada } from './cobranca.js';
+import { dataDoAsaas, dataDoPagamentoNoAsaas } from '../../../compartilhado/asaas/datas-do-pagamento.js';
+import {
+  MAIOR_ANO,
+  MAIOR_VALOR_EM_REAIS,
+  MENOR_ANO,
+  lerCentavos,
+  lerDia,
+  lerTexto,
+  mensagemDoTexto,
+} from '../../../compartilhado/leitura-de-entrada.js';
+import { CobrancaInvalida, type SituacaoGuardada } from './cobranca.js';
 
 // O que interessa de um evento de cobrança do Asaas. O corpo completo fica guardado no banco.
 // Valor e datas chegam como o Asaas mandou, ainda sem conferir: quem confere é decidirConciliacao,
@@ -23,13 +32,6 @@ export function reaisParaCentavos(reais: number): number {
   return Math.round(reais * 100);
 }
 
-// Data de um aviso do Asaas: o "AAAA-MM-DD" do começo do texto, ainda sem conferir o calendário (quem
-// confere é decidirConciliacao). Sem esse formato ("ontem", número), conta como não informada.
-// O webhook e a sincronização leem as datas por aqui, para os dois decidirem igual.
-export function dataDoAviso(valor: unknown): string | null {
-  return typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}/.test(valor) ? valor.slice(0, 10) : null;
-}
-
 export function lerAvisoDePagamento(tipo: string, payload: unknown): AvisoDePagamento {
   const corpo = typeof payload === 'object' && payload !== null ? (payload as Record<string, unknown>) : {};
   const pagamento =
@@ -43,8 +45,10 @@ export function lerAvisoDePagamento(tipo: string, payload: unknown): AvisoDePaga
     idCobrancaAsaas: pagamento.id,
     // Converte antes de conferir: 0,001 real só se revela inválido depois de virar zero centavo.
     valorPagoCentavos: typeof valor === 'number' ? reaisParaCentavos(valor) : null,
-    pagoEm: dataDoAviso(pagamento.paymentDate) ?? dataDoAviso(pagamento.clientPaymentDate) ?? dataDoAviso(pagamento.confirmedDate),
-    disponivelEm: dataDoAviso(pagamento.creditDate),
+    // As datas são lidas pela mesma função que o cliente do Asaas usa na sincronização
+    // (compartilhado/asaas/datas-do-pagamento.ts): para o mesmo dado, webhook e sincronização decidem igual.
+    pagoEm: dataDoPagamentoNoAsaas(pagamento),
+    disponivelEm: dataDoAsaas(pagamento.creditDate),
   };
 }
 
@@ -106,11 +110,12 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     // Dado presente e inválido (data fora do calendário, valor que não cabe): nada muda aqui e o aviso
     // vai para conferência, em vez de gravar um dado inventado ou travar a fila.
     const invalido = dadoInvalido(aviso);
-    const conferirDadoInvalido = (situacaoAqui: string) =>
-      pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}, mas ${invalido}. ${situacaoAqui}`);
+    const conferirDadoInvalido = (dado: { problema: string }, situacaoAqui: string) =>
+      pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}, mas ${dado.problema}. ${situacaoAqui}`);
     if (cobranca.situacao === 'ABERTA') {
       if (invalido !== null) {
         return conferirDadoInvalido(
+          invalido,
           'A cobrança continua aberta: confira o pagamento no painel do Asaas e, se ele foi feito, registre o pagamento manual.',
         );
       }
@@ -126,7 +131,11 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     if (cobranca.situacao === 'PAGA') {
       if (disponivelEm === null || cobranca.disponivelEm !== null) return { tipo: 'NADA' };
       if (invalido !== null) {
-        return conferirDadoInvalido('A cobrança continua paga, sem a data em que o valor fica disponível: confira essa data no painel do Asaas.');
+        // O que mandar conferir é o campo inválido, que pode ser o valor e não a data de crédito.
+        return conferirDadoInvalido(
+          invalido,
+          `A cobrança continua paga e a data em que o valor fica disponível não foi registrada: confira ${invalido.campo} no painel do Asaas.`,
+        );
       }
       return { tipo: 'MARCAR_DISPONIVEL', disponivelEm };
     }
@@ -163,8 +172,10 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
 
 // Dado que o Asaas mandou, mas que não dá para usar (defeitos D4, D5 e D8 do Plano de Testes). Baixar com ele
 // gravaria uma data que o Asaas não informou, ou o banco recusaria e o evento ficaria em nova tentativa para
-// sempre. Devolve o problema, citando o campo, ou nulo se está tudo certo. Campo ausente não é problema.
-function dadoInvalido(aviso: AvisoDePagamento): string | null {
+// sempre. Devolve o campo inválido e o problema (que cita o campo), ou nulo se está tudo certo. Campo
+// ausente não é problema. As frases não são as de compartilhado/leitura-de-entrada.ts de propósito: aqui
+// ninguém vai corrigir um formulário; a pendência conta o que o Asaas mandou, com o valor recebido.
+function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: string } | null {
   const datas = [
     ['a data do pagamento', aviso.pagoEm],
     ['a data de crédito', aviso.disponivelEm],
@@ -173,20 +184,37 @@ function dadoInvalido(aviso: AvisoDePagamento): string | null {
     if (data === null) continue;
     const leitura = lerDia(data);
     if (!leitura.valido) {
-      // dataDoAviso já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
-      return leitura.motivo === 'fora-do-limite'
-        ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
-        : `${campo} (${data}) não existe no calendário`;
+      // dataDoAsaas já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
+      const problema =
+        leitura.motivo === 'inexistente'
+          ? `${campo} (${data}) não existe no calendário`
+          : `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`;
+      return { campo, problema };
     }
   }
   // Negativo não é valor pago: conta como "não informado" (vale o da cobrança), como sempre foi.
   const valor = aviso.valorPagoCentavos;
-  if (valor !== null && valor >= 0 && !lerCentavos(valor).valido) {
-    return valor === 0
+  if (valor === null || valor < 0) return null;
+  const lido = lerCentavos(valor);
+  if (lido.valido) return null;
+  // Negativo já ficou de fora: abaixo do mínimo só pode ser o zero.
+  const problema =
+    lido.motivo === 'abaixo-do-minimo'
       ? 'o valor pago, convertido para centavos, dá zero centavo'
-      : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+      : `o valor pago passa do maior valor que o sistema guarda (${MAIOR_VALOR_EM_REAIS})`;
+  return { campo: 'o valor pago', problema };
+}
+
+// Fluxo E1: o texto de quem resolve uma pendência (o que foi conferido e decidido), pela regra comum de
+// texto. Sem ela, o caractere nulo chegava ao banco e a resolução dava erro 500.
+export function lerResolucaoDaPendencia(valor: unknown): string {
+  const lida = lerTexto(valor, 500);
+  // O que não é texto conta como resolução em branco (a mensagem abaixo pede o texto).
+  if (!lida.valido && lida.motivo !== 'formato') throw new CobrancaInvalida(mensagemDoTexto(lida.motivo, 'a resolução', 500));
+  if (!lida.valido || lida.valor.length < 5) {
+    throw new CobrancaInvalida('Escreva o que foi conferido e decidido, por exemplo: pagamento em duplicidade devolvido pelo Asaas.');
   }
-  return null;
+  return lida.valor;
 }
 
 function descreverTipo(tipo: string): string {

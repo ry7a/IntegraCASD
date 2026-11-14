@@ -79,6 +79,18 @@ describe('[Segurança.NF001] [Segurança.NF005] [Segurança.NF007] CT-NF-06 aute
     expect(trilha).toHaveLength(1);
   });
 
+  // Revisão da spec #57 (defeito D6): o PostgreSQL recusa o \u0000 até na consulta do e-mail, e o login dava 500.
+  it('e-mail com caractere nulo é credencial inválida (401), como outra qualquer, sem contar falha nem bloquear', async () => {
+    const usuario = await criarUsuario(aplicacao.prisma, 'ADMINISTRATIVO');
+
+    const resposta = await aplicacao.http().post('/api/auth/login').send({ email: `${usuario.email}\u0000`, senha: usuario.senha });
+
+    expect(resposta.status).toBe(401);
+    expect(resposta.body.message).toBe('E-mail ou senha invalidos.');
+    const depois = await aplicacao.prisma.usuario.findUniqueOrThrow({ where: { id: usuario.id } });
+    expect(depois).toMatchObject({ tentativasFalhas: 0, bloqueadoAte: null });
+  });
+
   it('a sessão de quem entrou funciona até o logout; depois dele, 401', async () => {
     const usuario = await criarUsuario(aplicacao.prisma, 'ADMINISTRATIVO');
     const cookie = await entrar(aplicacao, usuario.email, usuario.senha);

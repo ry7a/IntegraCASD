@@ -104,6 +104,14 @@ describe('consulta [Cobranças.RF008]', () => {
     expect(lerFiltrosDaConsulta({ valorMinimoCentavos: '0' }).valorMinimoCentavos).toBe(0);
   });
 
+  // O PostgreSQL recusa o \u0000 até numa consulta: antes, ?busca=%00 dava erro 500.
+  it('lê a busca pela regra comum: aparada, espaços repetidos reduzidos, e recusa o caractere nulo citando a busca', () => {
+    expect(lerFiltrosDaConsulta({ busca: '  Ana   Ficticia ' }).busca).toBe('Ana Ficticia');
+    expect(lerFiltrosDaConsulta({ busca: '   ' }).busca).toBeNull();
+    expect(lerFiltrosDaConsulta({ busca: 'z'.repeat(5000) }).busca).toHaveLength(5000);
+    expect(() => lerFiltrosDaConsulta({ busca: 'Ana\u0000' })).toThrow(/nulo\) na busca/);
+  });
+
   it('dias de atraso só para vencida', () => {
     expect(diasDeAtraso('VENCIDA', '2026-10-16', HOJE)).toBe(10);
     expect(diasDeAtraso('ABERTA', '2026-11-10', HOJE)).toBeNull();
@@ -141,6 +149,12 @@ describe('cancelamento [Cobranças.RF004]', () => {
     expect(() => conferirCancelamento('PAGA')).toThrow(/devolução do valor é feita pelo Asaas/);
     expect(() => conferirCancelamento('CANCELADA')).toThrow(/já está cancelada/);
     expect(() => conferirCancelamento('ABERTA')).not.toThrow();
+  });
+
+  it('o motivo recusa o caractere nulo e o que passa de 300 caracteres, citando o motivo', () => {
+    expect(() => lerMotivoDoCancelamento('Renegociação\u0000 em 3 parcelas')).toThrow(/nulo\) no motivo/);
+    expect(() => lerMotivoDoCancelamento('m'.repeat(301))).toThrow(/300 caracteres no motivo/);
+    expect(lerMotivoDoCancelamento('m'.repeat(300))).toHaveLength(300);
   });
 
   it('o motivo é obrigatório', () => {

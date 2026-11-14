@@ -133,6 +133,22 @@ describe('[Cobranças.RF007] CT-COB-07 sincronização com o Asaas', () => {
     ]);
   });
 
+  // Revisão da spec #57 (defeito D6): o PostgreSQL recusa o \u0000 e a gravação da resolução dava 500.
+  it('a resolução da pendência com caractere nulo é recusada com 400 citando a resolução, e a pendência continua aberta', async () => {
+    const pendencia = await aplicacao.prisma.pendenciaConciliacao.findFirstOrThrow({ where: { cobrancaId: pagaAMaoEPagaNoAsaas.id } });
+
+    const recusa = await aplicacao
+      .http()
+      .post(`/api/cobrancas/conciliacao/pendencias/${pendencia.id}/resolver`)
+      .set('Cookie', cookie)
+      .send({ resolucao: 'Conferido\u0000 com o Asaas (teste)' });
+
+    expect(recusa.status).toBe(400);
+    expect(recusa.body.message).toContain('resolução');
+    const depois = await aplicacao.prisma.pendenciaConciliacao.findUniqueOrThrow({ where: { id: pendencia.id } });
+    expect(depois).toMatchObject({ resolvidaEm: null, resolucao: null });
+  });
+
   it('[Confiabilidade.NF007] a execução fica registrada com início, fim, autor e o resumo do que mudou, que a resposta também mostra', async () => {
     const resumoEsperado = { conferidas: 3, atualizadas: 1, somenteNoAsaas: 0, naoIdentificadas: 0, paraConferir: 1, falha: null };
     expect(resposta.body).toMatchObject(resumoEsperado);

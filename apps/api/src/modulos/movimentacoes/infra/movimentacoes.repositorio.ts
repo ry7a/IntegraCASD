@@ -3,7 +3,7 @@ import { Prisma } from '../../../generated/prisma/client.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
-import { estaEncerrado, type SituacaoDoProjeto } from '../../cadastros/index.js';
+import { estaEncerrado, type SituacaoDoProjeto } from '../../../compartilhado/situacao-do-projeto.js';
 import {
   limitesDoMes,
   type FiltrosDeMovimentacoes,

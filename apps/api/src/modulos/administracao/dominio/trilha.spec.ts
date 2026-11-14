@@ -42,6 +42,13 @@ describe('filtros da trilha de auditoria [Administração.RF005]', () => {
     expect(lerFiltrosDaTrilha({ de: '2024-02-29', ate: '2024-03-01' }, HOJE)).toMatchObject({ de: '2024-02-29', ate: '2024-03-01' });
   });
 
+  // O PostgreSQL recusa o \u0000 até numa consulta: antes, o filtro dava erro 500.
+  it('recusa o registro com caractere nulo ou com mais de 64 caracteres, citando o registro', () => {
+    expect(() => lerFiltrosDaTrilha({ registroId: 'abc\u0000' }, HOJE)).toThrow(/nulo\) no registro/);
+    expect(() => lerFiltrosDaTrilha({ registroId: 'r'.repeat(65) }, HOJE)).toThrow(/registro/i);
+    expect(lerFiltrosDaTrilha({ registroId: 'r'.repeat(64) }, HOJE).registroId).toHaveLength(64);
+  });
+
   it('o período cobre os dias inteiros no fuso de São Paulo', () => {
     const { inicio, fim } = intervaloEmSaoPaulo('2026-10-01', '2026-10-26');
     expect(inicio.toISOString()).toBe('2026-10-01T03:00:00.000Z');

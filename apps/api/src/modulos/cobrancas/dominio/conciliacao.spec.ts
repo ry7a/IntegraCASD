@@ -32,6 +32,15 @@ describe('leitura do aviso do Asaas', () => {
     });
   });
 
+  // Spec #57, história 22: o mesmo caso do teste do cliente HTTP (cliente-asaas.http.spec.ts), que alimenta
+  // a sincronização. Os dois caminhos chegam à mesma data.
+  it('o paymentDate malformado não esconde o clientPaymentDate válido, como na sincronização', () => {
+    expect(aviso('PAYMENT_RECEIVED', { paymentDate: 'ontem', clientPaymentDate: '2026-10-09', creditDate: 'amanhã' })).toMatchObject({
+      pagoEm: '2026-10-09',
+      disponivelEm: null,
+    });
+  });
+
   it('evento sem cobrança não aponta para cobrança nenhuma', () => {
     expect(lerAvisoDePagamento('ACCOUNT_STATUS_UPDATED', { id: 'evt_x', event: 'ACCOUNT_STATUS_UPDATED' }).idCobrancaAsaas).toBeNull();
   });
@@ -161,5 +170,19 @@ describe('aviso do Asaas com data ou valor inválido [Cobranças.RF005]', () => 
     const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-13-45' }), cobranca('PAGA'), HOJE);
     expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
     expect(motivo(acao)).toContain('data de crédito (2026-13-45)');
+  });
+
+  // Revisão da spec #57: o motivo mandava conferir "essa data" quando o inválido era o valor.
+  it('recebido depois do confirmado, com data de crédito válida e valor que dá zero centavo: o motivo manda conferir o valor', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-10-22', value: 0.001 }), cobranca('PAGA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toMatch(/valor pago.*zero centavo/);
+    expect(motivo(acao)).toContain('confira o valor pago no painel do Asaas');
+    expect(motivo(acao)).not.toContain('essa data');
+  });
+
+  it('com a data de crédito inválida, o motivo manda conferir a data de crédito', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-04-31' }), cobranca('PAGA'), HOJE);
+    expect(motivo(acao)).toContain('confira a data de crédito no painel do Asaas');
   });
 });

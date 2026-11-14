@@ -3,6 +3,7 @@ import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import { criarTokenDeSessao, DURACAO_SESSAO_MS, resumirToken } from '../../../compartilhado/autenticacao/sessao.js';
 import { senhaConfere, simularVerificacaoDeSenha } from '../../../compartilhado/autenticacao/senha.js';
+import { TAMANHO_MAXIMO_TECNICO, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 const LIMITE_DE_FALHAS = 5;
 const DURACAO_BLOQUEIO_MS = 15 * 60 * 1000;
@@ -12,7 +13,10 @@ export class Autenticar {
   constructor(private readonly prisma: PrismaService) {}
 
   async executar(emailInformado: unknown, senhaInformada: unknown) {
-    const email = typeof emailInformado === 'string' ? emailInformado.trim().toLowerCase() : '';
+    // E-mail pela regra comum de texto. O que ela recusa (caractere nulo, que o PostgreSQL não aceita nem
+    // numa consulta) vira credencial errada como outra qualquer: nenhum usuário tem um e-mail assim.
+    const lido = lerTexto(emailInformado, TAMANHO_MAXIMO_TECNICO);
+    const email = lido.valido ? lido.valor.toLowerCase() : '';
     const senha = typeof senhaInformada === 'string' ? senhaInformada : '';
     if (!email || !senha) throw new UnauthorizedException('E-mail ou senha invalidos.');
 
