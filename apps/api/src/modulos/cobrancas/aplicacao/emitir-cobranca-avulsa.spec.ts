@@ -73,4 +73,24 @@ describe('EmitirCobrancaAvulsa [Cobranças.RF002]', () => {
     const { caso } = montar({ semParametros: true });
     await expect(caso.executar(entrada, 'usuario-1', HOJE)).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  // [Confiabilidade.NF005] Entrada recusada nunca chega ao Asaas: nem o cliente nem a cobrança são criados
+  // lá, e nada é gravado aqui. Antes, 30/02 ia ao Asaas como 30/02 e era gravado aqui como 02/03; mês 13,
+  // valor acima do limite e caractere nulo davam erro 500 depois de a cobrança já existir no Asaas.
+  // A mensagem cita o campo a corrigir ([Usabilidade.NF002]).
+  it.each([
+    { caso: 'vencimento em 30 de fevereiro', troca: { vencimento: '2027-02-30' }, campo: /vencimento/ },
+    { caso: 'vencimento em 31 de abril', troca: { vencimento: '2027-04-31' }, campo: /vencimento/ },
+    { caso: 'vencimento no mês 13', troca: { vencimento: '2027-13-01' }, campo: /vencimento/ },
+    { caso: 'vencimento no mês 00', troca: { vencimento: '2027-00-10' }, campo: /vencimento/ },
+    { caso: 'valor acima do inteiro do banco (2^31 centavos)', troca: { valorCentavos: 2_147_483_648 }, campo: /valor/ },
+    { caso: 'valor 1e21 centavos', troca: { valorCentavos: 1e21 }, campo: /valor/ },
+    { caso: 'descrição com caractere nulo no meio', troca: { descricao: 'Camiseta\u0000 do CASD' }, campo: /descrição/ },
+  ])('$caso: recusa antes de falar com o Asaas', async ({ troca, campo }) => {
+    const { caso, asaas, gravadas } = montar();
+    await expect(caso.executar({ ...entrada, ...troca }, 'usuario-1', HOJE)).rejects.toThrow(campo);
+    expect(asaas.clientesCriados).toEqual([]);
+    expect(asaas.cobrancasCriadas).toEqual([]);
+    expect(gravadas).toEqual([]);
+  });
 });

@@ -61,6 +61,15 @@ describe('CriarCategoria [Administração.RF002] CT-ADM-02', () => {
       new CriarCategoria(repositorio).executar({ nome: 'Zeladoria', tipo: 'QUALQUER' }, AUTOR),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  // O PostgreSQL recusa o \u0000: antes, a consulta do nome repetido já dava erro 500.
+  it('recusa com 400 o nome com caractere nulo, citando o nome da categoria, sem gravar', async () => {
+    const { repositorio, chamadas } = criarRepositorioFalso({});
+    const criando = new CriarCategoria(repositorio).executar({ nome: 'Limpe\u0000za', tipo: 'SAIDA' }, AUTOR);
+    await expect(criando).rejects.toBeInstanceOf(BadRequestException);
+    await expect(criando).rejects.toThrow(/nulo\) no nome da categoria/);
+    expect(chamadas.criar).toEqual([]);
+  });
 });
 
 describe('AlterarCategoria [Administração.RF002]', () => {

@@ -70,6 +70,33 @@ describe('[Administração.RF001] CT-ADM-01 usuários e permissões', () => {
     expect(naLista).toMatchObject({ perfil: 'ADMINISTRATIVO', ativo: true, ultimoAcessoEm: expect.any(String) });
   });
 
+  // Revisão da spec #57 (defeito D6): o PostgreSQL recusa o \u0000, e a consulta do e-mail (ou a gravação) dava 500.
+  it('caractere nulo no nome ou no e-mail: 400 citando o campo, na inclusão e na alteração, sem gravar [Usabilidade.NF002]', async () => {
+    const outro = await criarUsuario(aplicacao.prisma, 'ADMINISTRATIVO');
+    const outroAntes = await aplicacao.prisma.usuario.findUniqueOrThrow({ where: { id: outro.id } });
+    const usuariosAntes = await aplicacao.prisma.usuario.count();
+    const trilhaAntes = await aplicacao.prisma.registroAuditoria.count({ where: { entidade: 'USUARIO' } });
+    const casos = [
+      { campo: 'nome', corpo: { nome: 'Usuario\u0000 Ficticio' } },
+      { campo: 'e-mail', corpo: { email: `nulo\u0000.${sufixo()}@exemplo.com` } },
+    ];
+
+    for (const { campo, corpo } of casos) {
+      const novo = { nome: 'Usuario Ficticio', email: `nulo.${sufixo()}@exemplo.com`, perfil: 'ADMINISTRATIVO', senhaInicial: `senha-${sufixo()}`, ...corpo };
+      const inclusao = await chamar('post', '/api/admin/usuarios', cookieDiretor, novo);
+      expect(inclusao.status, `inclusão com nulo no ${campo}`).toBe(400);
+      expect(inclusao.body.message).toContain(campo);
+
+      const alteracao = await chamar('patch', `/api/admin/usuarios/${outro.id}`, cookieDiretor, corpo);
+      expect(alteracao.status, `alteração com nulo no ${campo}`).toBe(400);
+      expect(alteracao.body.message).toContain(campo);
+    }
+
+    expect(await aplicacao.prisma.usuario.count()).toBe(usuariosAntes);
+    expect(await aplicacao.prisma.usuario.findUniqueOrThrow({ where: { id: outro.id } })).toMatchObject({ nome: outroAntes.nome, email: outro.email });
+    expect(await aplicacao.prisma.registroAuditoria.count({ where: { entidade: 'USUARIO' } })).toBe(trilhaAntes);
+  });
+
   it('partição ADMINISTRATIVO: 403 em todas as rotas de Administração, sem efeito no banco [Segurança.NF001]', async () => {
     const emailTentado = `tentativa.${sufixo()}@exemplo.com`;
     const categoriaTentada = `Categoria tentada ${sufixo()}`;

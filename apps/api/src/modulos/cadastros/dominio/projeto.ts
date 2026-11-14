@@ -1,15 +1,13 @@
 // Regras do cadastro de projetos [Cadastros.RF005]. Só TypeScript puro.
 // Datas no formato "AAAA-MM-DD": comparar esses textos dá a mesma ordem que comparar as datas.
+import { estaEncerrado, type SituacaoDoProjeto } from '../../../compartilhado/situacao-do-projeto.js';
 import { DadoInvalido, lerData, proximoCodigoDoAno, texto } from './comum.js';
 
-// MER, decisão 5: os 5 status da planilha. A tela agrupa os três primeiros como "em andamento" e os
-// dois últimos como "encerrados".
-export type SituacaoDoProjeto = 'A_LIBERAR' | 'LIBERADO' | 'EM_EXECUCAO' | 'EXECUTADO' | 'CANCELADO';
+// MER, decisão 5: os 5 status da planilha. O tipo e a regra de projeto encerrado (executado ou cancelado)
+// ficam em compartilhado/situacao-do-projeto.ts, porque o Movimentações também os usa; daqui eles seguem
+// para o resto do Cadastros.
+export { estaEncerrado, type SituacaoDoProjeto };
 const SITUACOES: SituacaoDoProjeto[] = ['A_LIBERAR', 'LIBERADO', 'EM_EXECUCAO', 'EXECUTADO', 'CANCELADO'];
-
-export function estaEncerrado(situacao: SituacaoDoProjeto): boolean {
-  return situacao === 'EXECUTADO' || situacao === 'CANCELADO';
-}
 
 export type DadosDoProjeto = {
   nome: string;
@@ -25,16 +23,13 @@ export type DadosDoProjeto = {
 export type EntradaDoProjeto = Partial<Record<keyof DadosDoProjeto, unknown>>;
 
 function lerNome(valor: unknown): string {
-  const nome = texto(valor);
+  const nome = texto(valor, 'o nome do projeto', 120);
   if (nome === null || nome.length < 3) throw new DadoInvalido('Informe o nome do projeto, por exemplo "Reforma da sala de estudos".');
-  if (nome.length > 120) throw new DadoInvalido('Use no máximo 120 caracteres no nome do projeto.');
   return nome;
 }
 
 function lerResponsavel(valor: unknown): string | null {
-  const responsavel = texto(valor);
-  if (responsavel !== null && responsavel.length > 120) throw new DadoInvalido('Use no máximo 120 caracteres no responsável.');
-  return responsavel;
+  return texto(valor, 'o responsável', 120);
 }
 
 function lerOrcamento(valor: unknown): number | null {

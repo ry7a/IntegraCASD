@@ -102,8 +102,8 @@ gh run view <id> --log | Out-File -Encoding utf8 "$ev\E06-ci-log.txt"
 Abra o link, expanda o job "Lint, testes e build" e salve a página em PDF (`E06-ci.pdf`): o GitHub apaga os
 logs depois de 90 dias.
 
-**Conferir:** todos os códigos de saída são `0`. O `E02-unidade.txt` termina com `Test Files 72 passed` e
-`Tests 474 passed` (ou mais).
+**Conferir:** todos os códigos de saída são `0`. O `E02-unidade.txt` termina com `Test Files 75 passed` e
+`Tests 599 passed` (ou mais).
 
 ---
 
@@ -126,10 +126,10 @@ O `E07-integracao.txt` mostra o nome de cada teste (com o caso, ex.: `CT-COB-05`
 
 **Não defina `PULAR_CT_NF_05`** na execução que vale como evidência.
 
-Resultado conhecido, enquanto os defeitos da Seção 8 não forem corrigidos: **34 testes falham**, todos por
-defeito da aplicação, nunca por erro do teste. São 1 do CT-CAD-04 (D1) e 33 do fuzzing (D4 a D9). O código de
-saída será `1`. Isso **é** a evidência do Falhou desses casos: o nome de cada teste que falha diz a entrada
-e o que se esperava.
+Resultado conhecido, com os defeitos D1 e D3 a D9 da Seção 8 corrigidos (commit `a54dfa1`): **nenhum teste
+falhando**. O `E07-integracao.txt` termina com `Test Files 25 passed` e `Tests 406 passed` (ou mais), e o código
+de saída é `0`. Um teste que falhe agora é defeito novo (ou a volta de um antigo) e vira issue (Seção 8): o nome
+do teste diz a entrada e o que se esperava.
 
 ---
 
@@ -142,10 +142,10 @@ achar cada um no `E02-unidade.txt` ou no `E07-integracao.txt` buscando o ID do c
 
 | Caso | Nível | Arquivo de teste | Evidência | Observação |
 |---|---|---|---|---|
-| CT-CAD-01 | I | `test/integracao/cadastros/ct-cad-01-aluno.spec.ts` | E07 + M02 | A API passa; a confirmação é só da tela (M02). **Provável Falhou: D3** |
+| CT-CAD-01 | I | `test/integracao/cadastros/ct-cad-01-aluno.spec.ts` | E07 + M02 | A API passa. D3 corrigido (Seção 8); falta a verificação manual M02 na homologação para fechar o caso |
 | CT-CAD-02 | I | `test/integracao/cadastros/ct-cad-02-funcionario.spec.ts` | E07 | Limites ontem/hoje/amanhã |
 | CT-CAD-03 | U | `src/modulos/cadastros/dominio/contrato.spec.ts` | E02 | |
-| CT-CAD-04 | I | `test/integracao/cadastros/ct-cad-04-projeto.spec.ts` | E07 | **Falhou: defeito D1** |
+| CT-CAD-04 | I | `test/integracao/cadastros/ct-cad-04-projeto.spec.ts` | E07 | D1 corrigido (Seção 8) |
 | CT-COB-01 | I | `test/integracao/cobrancas/ct-cob-01-geracao-recorrente.spec.ts` | E07 | |
 | CT-COB-02 | I | `test/integracao/cobrancas/ct-cob-02-emissao-avulsa.spec.ts` | E07 | Tabela de decisão R1 a R5 |
 | CT-COB-03 | I | `test/integracao/cobrancas/ct-cob-03-boleto.spec.ts` | E07 | **Falhou no "reenviar": defeito D2** |
@@ -178,8 +178,8 @@ achar cada um no `E02-unidade.txt` ou no `E07-integracao.txt` buscando o ID do c
 | CT-NF-05 | I | `test/integracao/nao-funcionais/ct-nf-05-geracao-de-1000-alunos.spec.ts` | E07 | |
 | CT-NF-06 | I | `test/integracao/nao-funcionais/ct-nf-06-autenticacao-e-bloqueio.spec.ts` e `src/modulos/acesso/aplicacao/autenticar.spec.ts` | E02 + E07 | |
 | CT-NF-07 | U | `test/arquitetura/*.spec.ts` (B1, B2, B6, B11, B13, B14, G7) e `pnpm verificar:arquitetura` | E02 + E04 + I02 | |
-| CT-FZ-01 | S | `test/sistema/fuzzing/ct-fz-01-webhook.spec.ts` | E07 | 81 entradas em `test/sistema/fuzzing/entradas/`. **Falhou: D4 a D8** |
-| CT-FZ-02 | S | `test/sistema/fuzzing/ct-fz-02-formularios-e-filtros.spec.ts` | E07 | 199 entradas. **Falhou: D4, D5, D6 e D9** |
+| CT-FZ-01 | S | `test/sistema/fuzzing/ct-fz-01-webhook.spec.ts` | E07 | 84 entradas em `test/sistema/fuzzing/entradas/`. D4 a D8 corrigidos (Seção 8) |
+| CT-FZ-02 | S | `test/sistema/fuzzing/ct-fz-02-formularios-e-filtros.spec.ts` | E07 | 205 entradas. D4, D5, D6 e D9 corrigidos (Seção 8) |
 
 ---
 
@@ -249,8 +249,8 @@ d. Em Movimentações aparece a entrada daquela cobrança (`M01d-entrada.png`); 
 
 Com um aluno fictício que tenha cobrança **vencida**: inativar mostra o débito e pede confirmação
 (`M02-confirmacao-vencida.png`). Depois, com um aluno que tenha só cobrança **aberta, ainda não vencida**: anote
-se o aviso de débito aparece (`M02-confirmacao-aberta.png`). Pelo agente que revisou o código, hoje ele **não**
-aparece nesse caso (defeito D3). Confirme na tela.
+se o aviso de débito aparece (`M02-confirmacao-aberta.png`). Ele tem de aparecer também nesse caso: era o defeito
+D3, corrigido (Seção 8). Confirme na tela.
 
 ### M03: usabilidade (CT-NF-01)
 
@@ -297,17 +297,21 @@ Esperado: o `pre-merge-commit` roda os testes, um falha e o merge **não** acont
 
 ## 8. Defeitos encontrados na preparação (viram issue)
 
-| Id | Caso | O que acontece | Onde | Severidade |
-|---|---|---|---|---|
-| D1 | CT-CAD-04 ([Cadastros.RF005] E1, [Movimentações.RF001] A2) | Movimentação num projeto **cancelado** é aceita sem aviso. O sistema considera cancelado como "encerrado" (`GET /api/projetos` responde `encerrado: true`), mas o aviso só sai para EXECUTADO | `apps/api/src/modulos/movimentacoes/infra/movimentacoes.repositorio.ts:162` | Baixa: a tela não oferece projeto cancelado, mas a API aceita |
-| D2 | CT-COB-03 ([Cobranças.RF003] passo 3 e A2) | "Reenviar boleto por e-mail" não existe: o backend só tem "baixar"; o botão da tela está desabilitado | `cobrancas.controller.ts:164-171`; issue #29 já aberta (a API v3 do Asaas não reenvia) | Requisito importante: precisa de decisão da equipe |
-| D3 | CT-CAD-01 ([Cadastros.RF001] E2) | O diálogo de inativação só mostra o débito quando há cobrança **vencida**; o caso de uso fala em "Aberta ou Vencida" | `apps/web/src/features/cadastro/DialogoInativarAluno.tsx:24` | **Alta: [Cadastros.RF001] é essencial** |
-| D4 | CT-FZ-02, CT-FZ-01 | **Data no formato certo, mas inexistente** (30/02, 31/04, mês 13 ou 00) não é recusada fora de Cadastros. Cobrança avulsa com 30/02 vai ao Asaas como 30/02 e é gravada aqui como 02/03 (divergência); com mês 13, a resposta é 500 **depois** de criar a cobrança no Asaas (cobrança só no Asaas). Movimentação, filtros de cobranças e da trilha e `mes=0000-01` dão 500 ou gravam a data errada. No worker, `paymentDate` 30/02 baixa com 02/03, e 13/45 trava o evento | `cobrancas/dominio/cobranca.ts:51-58` e `:146-152`, `movimentacoes/dominio/movimentacao.ts:45` e `:127-132`, `administracao/dominio/trilha.ts:47-53`, `cobrancas/dominio/conciliacao.ts:23-25`. A função certa já existe: `lerData` em `cadastros/dominio/comum.ts` | Alta: cobrança divergente do Asaas ([Confiabilidade.NF005]) |
-| D5 | CT-FZ-02, CT-FZ-01 | **Inteiro acima do limite da coluna** (2.147.483.647) passa na validação e dá 500: matrícula, valor da cobrança avulsa (500 depois de criar no Asaas), valor da movimentação, filtros de valor e página das cobranças; no worker, `payment.value` enorme trava o evento | `cadastros/dominio/aluno.ts:57-64`, `cobranca.ts:47-50` e `:154-159`, `movimentacao.ts:122-126`, `conciliacao.ts:34-38` | Média |
-| D6 | CT-FZ-02, CT-FZ-01 | **Byte nulo** (`\u0000`) em texto dá 500 (o PostgreSQL recusa). Na descrição da cobrança avulsa, o erro vem **depois** de criar no Asaas | `texto()` em `cadastros/dominio/comum.ts:34` e equivalentes; `lerEvento` no webhook | Média |
-| D7 | CT-FZ-01 | **Webhook sem limite** no tamanho do id (6.000 caracteres estoura o índice: 500) e na profundidade do JSON (5.000 listas aninhadas: 500). Nada é gravado | `cobrancas/api/webhook-asaas.controller.ts` (`lerEvento`) | Média: o requisito é nunca responder 500 ao Asaas |
-| D8 | CT-FZ-01 | **Valor pago que arredonda para zero** (0,001) passa no `valor > 0` antes de arredondar; a entrada de 0 centavos viola o CHECK e o evento fica em nova tentativa para sempre, com a cobrança aberta e sem pendência | `cobrancas/dominio/conciliacao.ts:38` | Baixa: o Asaas não manda esse valor |
-| D9 | CT-FZ-02 | **Busca de cobranças com `%` ou `_`** devolve todas as abertas, em vez de tratar o caractere como texto | `cobrancas/infra/cobrancas.repositorio.ts:376-385` | Baixa |
+A coluna "Onde" aponta o código do commit em que o defeito foi achado. A coluna "Situação" dá o merge na branch
+`fix/entradas-invalidas` (spec #57) que corrigiu o defeito e o ticket; o `a54dfa1` integra as correções da revisão
+de código da spec.
+
+| Id | Caso | O que acontece | Onde | Severidade | Situação |
+|---|---|---|---|---|---|
+| D1 | CT-CAD-04 ([Cadastros.RF005] E1, [Movimentações.RF001] A2) | Movimentação num projeto **cancelado** é aceita sem aviso. O sistema considera cancelado como "encerrado" (`GET /api/projetos` responde `encerrado: true`), mas o aviso só sai para EXECUTADO | `apps/api/src/modulos/movimentacoes/infra/movimentacoes.repositorio.ts:162` | Baixa: a tela não oferece projeto cancelado, mas a API aceita | **Corrigido:** merge `d24c0cc` (#59); revisão em `a54dfa1` (#57) |
+| D2 | CT-COB-03 ([Cobranças.RF003] passo 3 e A2) | "Reenviar boleto por e-mail" não existe: o backend só tem "baixar"; o botão da tela está desabilitado | `cobrancas.controller.ts:164-171`; issue #29 já aberta (a API v3 do Asaas não reenvia) | Requisito importante: precisa de decisão da equipe | Em aberto (issue #29) |
+| D3 | CT-CAD-01 ([Cadastros.RF001] E2) | O diálogo de inativação só mostra o débito quando há cobrança **vencida**; o caso de uso fala em "Aberta ou Vencida" | `apps/web/src/features/cadastro/DialogoInativarAluno.tsx:24` | **Alta: [Cadastros.RF001] é essencial** | **Corrigido:** merge `027c634` (#60); revisão em `a54dfa1` (#57). Falta a M02 na homologação |
+| D4 | CT-FZ-02, CT-FZ-01 | **Data no formato certo, mas inexistente** (30/02, 31/04, mês 13 ou 00) não é recusada fora de Cadastros. Cobrança avulsa com 30/02 vai ao Asaas como 30/02 e é gravada aqui como 02/03 (divergência); com mês 13, a resposta é 500 **depois** de criar a cobrança no Asaas (cobrança só no Asaas). Movimentação, filtros de cobranças e da trilha e `mes=0000-01` dão 500 ou gravam a data errada. No worker, `paymentDate` 30/02 baixa com 02/03, e 13/45 trava o evento | `cobrancas/dominio/cobranca.ts:51-58` e `:146-152`, `movimentacoes/dominio/movimentacao.ts:45` e `:127-132`, `administracao/dominio/trilha.ts:47-53`, `cobrancas/dominio/conciliacao.ts:23-25`. A função certa já existe: `lerData` em `cadastros/dominio/comum.ts` | Alta: cobrança divergente do Asaas ([Confiabilidade.NF005]) | **Corrigido:** merges `916aae3` (#61), `e8064d3` (#62), `c3a097b` (#63) e `8b24259` (#65); revisão em `a54dfa1` (#57) |
+| D5 | CT-FZ-02, CT-FZ-01 | **Inteiro acima do limite da coluna** (2.147.483.647) passa na validação e dá 500: matrícula, valor da cobrança avulsa (500 depois de criar no Asaas), valor da movimentação, filtros de valor e página das cobranças; no worker, `payment.value` enorme trava o evento | `cadastros/dominio/aluno.ts:57-64`, `cobranca.ts:47-50` e `:154-159`, `movimentacao.ts:122-126`, `conciliacao.ts:34-38` | Média | **Corrigido:** merges `93c59c0` (#58), `916aae3` (#61), `e8064d3` (#62), `c3a097b` (#63) e `8b24259` (#65) |
+| D6 | CT-FZ-02, CT-FZ-01 | **Byte nulo** (`\u0000`) em texto dá 500 (o PostgreSQL recusa). Na descrição da cobrança avulsa, o erro vem **depois** de criar no Asaas | `texto()` em `cadastros/dominio/comum.ts:34` e equivalentes; `lerEvento` no webhook | Média | **Corrigido:** merges `93c59c0` (#58), `916aae3` (#61), `e8064d3` (#62) e `23807b5` (#64); demais campos de texto em `a54dfa1` (#57) |
+| D7 | CT-FZ-01 | **Webhook sem limite** no tamanho do id (6.000 caracteres estoura o índice: 500) e na profundidade do JSON (5.000 listas aninhadas: 500). Nada é gravado | `cobrancas/api/webhook-asaas.controller.ts` (`lerEvento`) | Média: o requisito é nunca responder 500 ao Asaas | **Corrigido:** merge `23807b5` (#64); `payment.id` longo e surrogate sem par em `a54dfa1` (#57) |
+| D8 | CT-FZ-01 | **Valor pago que arredonda para zero** (0,001) passa no `valor > 0` antes de arredondar; a entrada de 0 centavos viola o CHECK e o evento fica em nova tentativa para sempre, com a cobrança aberta e sem pendência | `cobrancas/dominio/conciliacao.ts:38` | Baixa: o Asaas não manda esse valor | **Corrigido:** merge `8b24259` (#65); motivo da pendência em `a54dfa1` (#57) |
+| D9 | CT-FZ-02 | **Busca de cobranças com `%` ou `_`** devolve todas as abertas, em vez de tratar o caractere como texto | `cobrancas/infra/cobrancas.repositorio.ts:376-385` | Baixa | **Corrigido:** merge `c3a097b` (#63) |
 
 Para cada caso Falhou ou Bloqueado (Seção 6.2 do plano):
 

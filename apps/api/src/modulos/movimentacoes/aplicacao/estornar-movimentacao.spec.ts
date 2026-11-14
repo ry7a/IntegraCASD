@@ -32,6 +32,21 @@ describe('estornar movimentação [Movimentações.RF002]', () => {
     expect(estornos).toEqual([]);
   });
 
+  // O PostgreSQL recusa o \u0000: antes, a gravação do espelho dava erro 500.
+  it('motivo com caractere nulo: recusa com 400 citando o motivo, sem estornar', async () => {
+    const { casoDeUso, estornos } = montar({ origem: 'MANUAL' });
+    const estornando = casoDeUso.executar('mov-1', { motivo: 'valor\u0000 lançado errado' }, 'u', HOJE);
+    await expect(estornando).rejects.toBeInstanceOf(BadRequestException);
+    await expect(estornando).rejects.toThrow(/nulo\) no motivo/);
+    expect(estornos).toEqual([]);
+  });
+
+  it('motivo com mais de 300 caracteres: recusa citando o motivo', async () => {
+    const { casoDeUso, estornos } = montar({ origem: 'MANUAL' });
+    await expect(casoDeUso.executar('mov-1', { motivo: 'm'.repeat(301) }, 'u', HOJE)).rejects.toThrow(/300 caracteres no motivo/);
+    expect(estornos).toEqual([]);
+  });
+
   it('movimentação de cobrança não é estornada aqui (fluxo E1)', async () => {
     for (const origem of ['CONCILIACAO_AUTOMATICA', 'REGISTRO_MANUAL_DE_COBRANCA', 'ESTORNO'] as const) {
       const { casoDeUso, estornos } = montar({ origem });

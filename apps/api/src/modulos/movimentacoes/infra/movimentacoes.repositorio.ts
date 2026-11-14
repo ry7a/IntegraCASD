@@ -3,6 +3,7 @@ import { Prisma } from '../../../generated/prisma/client.js';
 import { deDia, paraDia } from '../../../compartilhado/datas.js';
 import { registrarNaTrilha } from '../../../compartilhado/auditoria/trilha.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
+import { estaEncerrado, type SituacaoDoProjeto } from '../../../compartilhado/situacao-do-projeto.js';
 import {
   limitesDoMes,
   type FiltrosDeMovimentacoes,
@@ -142,11 +143,12 @@ export class MovimentacoesRepositorio {
   }
 
   // O que o registro precisa conferir: a categoria (ativa e compatível), a conta e o vínculo existem.
+  // A situação do projeto (nula sem projeto) serve ao aviso de projeto encerrado.
   async referenciasDoRegistro(nova: NovaMovimentacao): Promise<{
     categoria: { ativo: boolean; tipo: 'ENTRADA' | 'SAIDA' | 'AMBOS' } | null;
     contaAtiva: boolean;
     vinculoEncontrado: boolean;
-    projetoExecutado: boolean;
+    situacaoDoProjeto: SituacaoDoProjeto | null;
   }> {
     const [categoria, conta, contrato, projeto, funcionario] = await Promise.all([
       this.prisma.categoria.findUnique({ where: { id: nova.categoriaId }, select: { ativo: true, tipo: true } }),
@@ -159,7 +161,7 @@ export class MovimentacoesRepositorio {
       (nova.contratoId === null || contrato !== null) &&
       (nova.projetoId === null || projeto !== null) &&
       (nova.funcionarioId === null || funcionario !== null);
-    return { categoria, contaAtiva: conta?.ativo === true, vinculoEncontrado, projetoExecutado: projeto?.situacao === 'EXECUTADO' };
+    return { categoria, contaAtiva: conta?.ativo === true, vinculoEncontrado, situacaoDoProjeto: projeto?.situacao ?? null };
   }
 
   // [Movimentações.RF001] Grava a movimentação com o autor e a trilha, na mesma transação.
@@ -318,8 +320,8 @@ export class MovimentacoesRepositorio {
       projetos: projetos.map((projeto) => ({
         id: projeto.id,
         nome: `${projeto.codigo} · ${projeto.nome}`,
-        // [Movimentações.RF001] fluxo A2: aceita, mas sinaliza.
-        encerrado: projeto.situacao === 'EXECUTADO',
+        // [Movimentações.RF001] fluxo A2: aceita, mas sinaliza. "Encerrado" é a definição do Cadastros.
+        encerrado: estaEncerrado(projeto.situacao),
       })),
       funcionarios,
     };

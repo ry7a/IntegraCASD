@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { PerfilUsuario } from '../../../compartilhado/autenticacao/perfil.js';
 import { criarHashDaSenha } from '../../../compartilhado/autenticacao/senha.js';
 import { registrarNaTrilha, type OperacaoAuditada } from '../../../compartilhado/auditoria/trilha.js';
+import { TAMANHO_MAXIMO_TECNICO, lerTexto, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 import { PrismaService } from '../../../compartilhado/prisma/prisma.service.js';
 import type { IdentidadeDoUsuario } from '../../../compartilhado/autenticacao/usuario-autenticado.js';
 import type { EntradaAlterarUsuario, EntradaCriarUsuario, UsuarioResumo } from './usuarios.types.js';
@@ -187,14 +188,24 @@ function detalheDaAlteracao(
   return `Usuário alterado: ${camposAlterados.join(', ')}${perfil}${sessoes}.`;
 }
 
+// Nome e e-mail pela regra comum de texto: o caractere nulo (o PostgreSQL recusa) virava erro 500 na
+// consulta do e-mail repetido ou na gravação. Sem limite de negócio: só o teto técnico. O que não é
+// texto vira nulo, e cada campo pede o valor com a própria mensagem.
+function lerTextoDoUsuario(valor: unknown, campo: string): string | null {
+  const lido = lerTexto(valor, TAMANHO_MAXIMO_TECNICO);
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'formato') return null;
+  throw new BadRequestException(mensagemDoTexto(lido.motivo, campo, TAMANHO_MAXIMO_TECNICO));
+}
+
 function validarNome(valor: unknown): string {
-  if (typeof valor !== 'string' || valor.trim().length < 2) throw new BadRequestException('Informe o nome do usuario.');
-  return valor.trim();
+  const nome = lerTextoDoUsuario(valor, 'o nome');
+  if (nome === null || nome.length < 2) throw new BadRequestException('Informe o nome do usuario.');
+  return nome;
 }
 
 function validarEmail(valor: unknown): string {
-  if (typeof valor !== 'string') throw new BadRequestException('Informe um e-mail valido.');
-  const email = valor.trim().toLowerCase();
+  const email = lerTextoDoUsuario(valor, 'o e-mail')?.toLowerCase() ?? '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new BadRequestException('Informe um e-mail valido.');
   return email;
 }

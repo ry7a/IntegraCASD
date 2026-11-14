@@ -211,4 +211,16 @@ describe('[Movimentações.RF002] CT-MOV-02 estorno de movimentação', () => {
     expect(resposta.body.message).toContain('Um estorno não é estornado');
     expect(await espelhosDe(body.espelhoId)).toBe(0);
   });
+
+  // Revisão da spec #57 (defeito D6): o PostgreSQL recusa o \u0000 e a gravação do espelho dava 500.
+  it('motivo com caractere nulo: recusa com 400 citando o motivo e não cria o espelho [Usabilidade.NF002]', async () => {
+    const original = await lancarSaidaManual();
+
+    const resposta = await estornar(original.id, 'Valor lançado\u0000 errado no teste');
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.message).toContain('motivo');
+    expect(await espelhosDe(original.id)).toBe(0);
+    expect(await itemDaLista(original.categoriaId, original.id)).toMatchObject({ estornadaEm: null, podeEstornar: true });
+  });
 });

@@ -29,11 +29,12 @@ function montarCenario() {
     usuario: { update: usuarioAtualizar },
     registroAuditoria: { create: auditoriaCriar },
   };
+  const buscarUsuario = vi.fn(async () => usuario);
   const prisma = {
-    usuario: { findUnique: vi.fn(async () => usuario) },
+    usuario: { findUnique: buscarUsuario },
     $transaction: vi.fn(async (acao: (tx: typeof transacao) => Promise<unknown>) => acao(transacao)),
   } as unknown as PrismaService;
-  return { usuario, auditoriaCriar, autenticar: new Autenticar(prisma) };
+  return { usuario, auditoriaCriar, buscarUsuario, autenticar: new Autenticar(prisma) };
 }
 
 describe('bloqueio de autenticacao [Segurança.NF007] CT-NF-06', () => {
@@ -68,5 +69,20 @@ describe('bloqueio de autenticacao [Segurança.NF007] CT-NF-06', () => {
     const bloqueado = autenticar.executar(usuario.email, 'errada');
     await expect(bloqueado).rejects.toBeInstanceOf(HttpException);
     await expect(bloqueado).rejects.toMatchObject({ status: HttpStatus.TOO_MANY_REQUESTS });
+  });
+});
+
+describe('e-mail com caractere nulo no login', () => {
+  // O PostgreSQL recusa o \u0000 até numa consulta (erro 22021): antes, o login respondia 500. Agora é uma
+  // credencial errada como outra qualquer (401), sem consultar o banco.
+  it('responde "e-mail ou senha inválidos" (401), sem procurar o usuário no banco', async () => {
+    const { usuario, buscarUsuario, autenticar } = montarCenario();
+
+    const entrando = autenticar.executar(`${usuario.email}\u0000`, 'qualquer-senha');
+
+    await expect(entrando).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(entrando).rejects.toThrow('E-mail ou senha invalidos.');
+    expect(buscarUsuario).not.toHaveBeenCalled();
+    expect(usuario.tentativasFalhas).toBe(0);
   });
 });

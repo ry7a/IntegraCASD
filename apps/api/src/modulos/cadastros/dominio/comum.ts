@@ -1,4 +1,5 @@
 // Regras comuns aos cadastros de pessoas (alunos e funcionários). Só TypeScript puro.
+import { lerDia, lerTexto, mensagemDoDia, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 // Erros do domínio; a camada de aplicação traduz para 400 (dado inválido) ou 409 (duplicado).
 export class DadoInvalido extends Error {}
@@ -30,30 +31,28 @@ export function normalizarCpf(valor: unknown): string {
   return digitos;
 }
 
-// Texto livre: tira espaços das pontas e repetidos no meio. Vazio vira `null`.
-export function texto(valor: unknown): string | null {
-  if (typeof valor !== 'string') return null;
-  const limpo = valor.trim().replace(/\s+/g, ' ');
-  return limpo === '' ? null : limpo;
+// Texto livre, lido pela regra comum (compartilhado/leitura-de-entrada.ts), que também monta a mensagem:
+// tira espaços das pontas e repetidos no meio, recusa o caractere nulo e o que passa de `maximo`. Vazio (ou
+// que não é texto) vira `null`. `campo` vai com o artigo: "o nome", "a justificativa".
+export function texto(valor: unknown, campo: string, maximo: number): string | null {
+  const lido = lerTexto(valor, maximo);
+  if (lido.valido) return lido.valor === '' ? null : lido.valor;
+  if (lido.motivo === 'formato') return null;
+  throw new DadoInvalido(mensagemDoTexto(lido.motivo, campo, maximo));
 }
 
 export function normalizarNomeCompleto(valor: unknown): string {
-  const nome = texto(valor);
+  const nome = texto(valor, 'o nome', 120);
   if (nome === null || nome.length < 3) throw new DadoInvalido('Informe o nome completo.');
-  if (nome.length > 120) throw new DadoInvalido('Use no máximo 120 caracteres no nome.');
   return nome;
 }
 
-// Data no formato da API, "AAAA-MM-DD", e que existe no calendário (recusa 2026-02-30).
+// Data no formato da API, "AAAA-MM-DD", que existe no calendário (recusa 2026-02-30), pela regra comum.
+// `campo` é sempre uma data, sem o artigo: "data de início", "data de admissão".
 export function lerData(valor: unknown, campo: string): string {
-  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-    throw new DadoInvalido(`Informe a ${campo} no formato AAAA-MM-DD.`);
-  }
-  const data = new Date(`${valor}T00:00:00Z`);
-  if (Number.isNaN(data.getTime()) || data.toISOString().slice(0, 10) !== valor) {
-    throw new DadoInvalido(`A ${campo} não existe no calendário. Confira o dia e o mês.`);
-  }
-  return valor;
+  const lida = lerDia(valor);
+  if (lida.valido) return lida.valor;
+  throw new DadoInvalido(mensagemDoDia(lida.motivo, `a ${campo}`));
 }
 
 // MER, regra 7: código de contrato e projeto no formato da planilha: ano com 2 dígitos + letra

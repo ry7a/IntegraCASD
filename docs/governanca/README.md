@@ -26,7 +26,7 @@ Os testes não executam o código: leem os `.ts` com `node:fs` e conferem import
 
 | Id  | Regra | Como violar sem querer | O que fazer |
 | --- | ----- | ---------------------- | ----------- |
-| B1  | Cada módulo em `src/modulos/<nome>/` tem `index.ts` e só se importa de outro módulo por ele; sem `forwardRef` | importar `../cadastros/infra/...` de outro módulo | exportar o que precisa no `index.ts` do módulo dono |
+| B1  | Cada módulo em `src/modulos/<nome>/` tem `index.ts` e só se importa de outro módulo por ele; sem `forwardRef`; sem ciclo de imports entre módulos (A importa B, que importa A) | importar `../cadastros/infra/...` de outro módulo; Movimentações importar uma regra do Cadastros, que importa o `MovimentacoesModule` | exportar o que precisa no `index.ts` do módulo dono; regra pura usada pelos dois lados de um ciclo vai para `src/compartilhado/` (ex.: `situacao-do-projeto.ts`) |
 | B2  | `dominio/` não importa `@nestjs/*`, `@prisma/*`, `generated/prisma`, `infra/`, `api/`, `aplicacao/`; `api/` não importa `infra/`; `aplicacao/` não importa `api/` | controller chamando repositório | o controller chama um caso de uso (`aplicacao/`) |
 | B3  | `PrismaService`, `@prisma/*`, `generated/prisma` e `$transaction` não aparecem em `api/` nem `dominio/` | usar o Prisma no controller | mover para o repositório em `infra/` |
 | B4  | `fetch(`, `axios`, `undici`, `node:http(s)` e `asaas.com` só em `src/compartilhado/asaas/` | chamar o Asaas direto de um módulo | usar a interface do Cliente Asaas |

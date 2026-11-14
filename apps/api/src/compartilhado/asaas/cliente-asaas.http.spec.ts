@@ -112,6 +112,24 @@ describe('ClienteAsaasHttp', () => {
     expect(await cliente.buscarCobranca('pay_x')).toBeNull();
   });
 
+  // Spec #57, história 22: a sincronização lê as datas como o webhook (datas-do-pagamento.ts). Antes, o
+  // cliente fazia paymentDate ?? clientPaymentDate sem conferir: "ontem" escondia a data válida.
+  it('lê as datas do pagamento como o webhook: o paymentDate malformado não esconde o clientPaymentDate', async () => {
+    chamarHttp.mockResolvedValueOnce(
+      resposta(200, {
+        id: 'pay_1',
+        customer: 'cus_1',
+        status: 'RECEIVED',
+        value: 85,
+        dueDate: '2026-10-10',
+        paymentDate: 'ontem',
+        clientPaymentDate: '2026-10-09',
+        creditDate: 'amanhã',
+      }),
+    );
+    expect(await cliente.buscarCobranca('pay_1')).toMatchObject({ pagoEm: '2026-10-09', disponivelEm: null });
+  });
+
   it('lista as cobranças do período percorrendo todas as páginas', async () => {
     const pagamento = (id: string) => ({ id, customer: 'cus_1', status: 'PENDING', value: 10, dueDate: '2026-10-10' });
     chamarHttp

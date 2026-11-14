@@ -82,6 +82,31 @@ describe('registrar pagamento manualmente [Cobranças.RF006]', () => {
     expect(registros).toEqual([]);
   });
 
+  // Antes, 30/02 passava (tem a forma AAAA-MM-DD e é "anterior" a hoje na comparação de texto) e o banco
+  // gravava outra data. A mensagem cita o campo a corrigir ([Usabilidade.NF002]).
+  it.each(['2026-02-30', '2026-04-31', '2026-13-01', '2026-00-10'])(
+    'data do pagamento %s, que não existe no calendário: 400 citando o campo, e nada é gravado',
+    async (pagoEm) => {
+      const { casoDeUso, registros } = montar();
+      const pedido = casoDeUso.executar('uuid-da-cobranca', { ...valido, pagoEm }, 'usuario-1', HOJE);
+      await expect(pedido).rejects.toBeInstanceOf(BadRequestException);
+      await expect(pedido).rejects.toThrow(/data do pagamento/);
+      expect(registros).toEqual([]);
+    },
+  );
+
+  // Valor acima do inteiro do banco e texto com caractere nulo passavam aqui e davam erro 500 no banco.
+  it.each([
+    { caso: 'valor pago acima do inteiro do banco', troca: { valorCentavos: 2_147_483_648 }, campo: /valor pago/ },
+    { caso: 'justificativa com caractere nulo', troca: { justificativa: 'Pix recebido\u0000 na conta do CASD' }, campo: /justificativa/ },
+  ])('$caso: 400 citando o campo, e nada é gravado', async ({ troca, campo }) => {
+    const { casoDeUso, registros } = montar();
+    const pedido = casoDeUso.executar('uuid-da-cobranca', { ...valido, ...troca }, 'usuario-1', HOJE);
+    await expect(pedido).rejects.toBeInstanceOf(BadRequestException);
+    await expect(pedido).rejects.toThrow(campo);
+    expect(registros).toEqual([]);
+  });
+
   it('cobrança já paga: 400; inexistente: 404', async () => {
     await expect(
       montar({ cobranca: { ...cobranca, situacao: 'PAGA' } }).casoDeUso.executar('x', valido, 'u', HOJE),

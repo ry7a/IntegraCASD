@@ -14,9 +14,8 @@ export type DadosDoFuncionario = {
 export type EntradaDoFuncionario = Partial<Record<keyof DadosDoFuncionario, unknown>>;
 
 export function normalizarCargo(valor: unknown): string {
-  const cargo = texto(valor);
+  const cargo = texto(valor, 'o cargo', 80);
   if (cargo === null || cargo.length < 2) throw new DadoInvalido('Informe o cargo, por exemplo "Auxiliar de limpeza".');
-  if (cargo.length > 80) throw new DadoInvalido('Use no máximo 80 caracteres no cargo.');
   return cargo;
 }
 

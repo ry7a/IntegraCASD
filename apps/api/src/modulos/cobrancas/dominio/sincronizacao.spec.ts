@@ -7,8 +7,11 @@ import {
   semSincronizarHaDias,
   sincronizacaoAntiga,
 } from './sincronizacao.js';
+import { decidirConciliacao, type CobrancaAConciliar } from './conciliacao.js';
 
 const noAsaas = { idAsaas: 'pay_ficticio_1', valorCentavos: 8500, pagoEm: '2026-10-20', disponivelEm: '2026-10-22', removida: false };
+const aberta: CobrancaAConciliar = { situacao: 'ABERTA', valorCentavos: 8500, disponivelEm: null };
+const HOJE = '2026-10-26';
 
 describe('sincronização com o Asaas [Cobranças.RF007]', () => {
   it('traduz a situação no Asaas no aviso equivalente do webhook', () => {
@@ -24,6 +27,19 @@ describe('sincronização com o Asaas [Cobranças.RF007]', () => {
     expect(avisoDaSituacaoNoAsaas({ ...noAsaas, situacao: 'PENDING', removida: true }).tipo).toBe('PAYMENT_DELETED');
     // Situações sem efeito aqui não viram evento de pagamento.
     expect(avisoDaSituacaoNoAsaas({ ...noAsaas, situacao: 'OVERDUE' }).tipo).toBe('SITUACAO_OVERDUE');
+  });
+
+  // Issue #65: a sincronização chega à mesma decisão que o webhook para o mesmo dado inválido.
+  it('valor que no Asaas arredonda para zero centavo vira pendência, como no webhook', () => {
+    const recebida = avisoDaSituacaoNoAsaas({ ...noAsaas, situacao: 'RECEIVED', valorCentavos: 0 });
+    expect(decidirConciliacao(recebida, aberta, HOJE)).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+  });
+
+  it('data de pagamento inexistente vira pendência; data sem o formato AAAA-MM-DD vale hoje, como no webhook', () => {
+    const inexistente = avisoDaSituacaoNoAsaas({ ...noAsaas, situacao: 'CONFIRMED', pagoEm: '2026-02-30' });
+    expect(decidirConciliacao(inexistente, aberta, HOJE)).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    const semFormato = avisoDaSituacaoNoAsaas({ ...noAsaas, situacao: 'CONFIRMED', pagoEm: 'ontem à tarde' });
+    expect(decidirConciliacao(semFormato, aberta, HOJE)).toMatchObject({ tipo: 'BAIXAR', pagoEm: HOJE });
   });
 
   it('reconhece a referência externa da mensalidade gerada aqui', () => {

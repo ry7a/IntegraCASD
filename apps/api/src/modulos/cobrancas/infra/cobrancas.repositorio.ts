@@ -364,6 +364,13 @@ export type TotaisDoAluno = {
 
 export type EventoDaCobranca = { id: string; ocorridoEm: Date; descricao: string; origem: 'ASAAS' | 'USUARIO' };
 
+// O `contains` do Prisma vira um LIKE no PostgreSQL, onde % (qualquer sequência) e _ (qualquer caractere)
+// são curingas e \ é o escape. O Prisma não os escapa: sem isto, buscar "%" trazia todas as cobranças.
+// A barra vai primeiro, para não escapar de novo as barras que a própria troca acrescenta.
+function textoLiteralNoLike(texto: string): string {
+  return texto.replaceAll('\\', '\\\\').replaceAll('%', '\\%').replaceAll('_', '\\_');
+}
+
 // Traduz os filtros do domínio para a consulta do Prisma.
 function condicoesDaConsulta(filtros: FiltrosDaConsulta, hoje: string): Prisma.CobrancaWhereInput {
   const porSituacao: Prisma.CobrancaWhereInput[] = filtros.situacoes.map((situacao) => {
@@ -378,7 +385,7 @@ function condicoesDaConsulta(filtros: FiltrosDaConsulta, hoje: string): Prisma.C
     condicoes.push({
       aluno: {
         OR: [
-          { nome: { contains: filtros.busca, mode: 'insensitive' } },
+          { nome: { contains: textoLiteralNoLike(filtros.busca), mode: 'insensitive' } },
           ...(digitos.length >= 3 ? [{ cpf: { contains: digitos } }] : []),
         ],
       },

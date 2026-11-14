@@ -32,6 +32,15 @@ describe('leitura do aviso do Asaas', () => {
     });
   });
 
+  // Spec #57, história 22: o mesmo caso do teste do cliente HTTP (cliente-asaas.http.spec.ts), que alimenta
+  // a sincronização. Os dois caminhos chegam à mesma data.
+  it('o paymentDate malformado não esconde o clientPaymentDate válido, como na sincronização', () => {
+    expect(aviso('PAYMENT_RECEIVED', { paymentDate: 'ontem', clientPaymentDate: '2026-10-09', creditDate: 'amanhã' })).toMatchObject({
+      pagoEm: '2026-10-09',
+      disponivelEm: null,
+    });
+  });
+
   it('evento sem cobrança não aponta para cobrança nenhuma', () => {
     expect(lerAvisoDePagamento('ACCOUNT_STATUS_UPDATED', { id: 'evt_x', event: 'ACCOUNT_STATUS_UPDATED' }).idCobrancaAsaas).toBeNull();
   });
@@ -104,5 +113,76 @@ describe('conciliação [Cobranças.RF005]', () => {
 
   it('aviso de pagamento atrasado, chegando depois do estorno, não faz nada', () => {
     expect(decidirConciliacao(aviso('PAYMENT_CONFIRMED'), cobranca('ESTORNADA'), HOJE)).toEqual({ tipo: 'NADA' });
+  });
+});
+
+// Defeitos D4, D5 e D8 do Plano de Testes (issue #65): dado presente e inválido não baixa com data
+// inventada nem trava a fila; vira pendência de divergência, com o campo no motivo.
+describe('aviso do Asaas com data ou valor inválido [Cobranças.RF005]', () => {
+  function motivo(acao: ReturnType<typeof decidirConciliacao>): string {
+    return acao.tipo === 'PENDENCIA' ? acao.motivo : `sem pendência: ${acao.tipo}`;
+  }
+
+  it('data do pagamento que não existe no calendário vira pendência, sem baixar', () => {
+    for (const paymentDate of ['2026-02-30', '2026-13-45']) {
+      const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { paymentDate }), cobranca('ABERTA'), HOJE);
+      expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA', idCobrancaAsaas: 'pay_ficticio_1' });
+      expect(motivo(acao)).toContain(`data do pagamento (${paymentDate})`);
+    }
+  });
+
+  it('data com ano fora de 1900 a 9999 vira pendência, com o motivo certo', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_CONFIRMED', { paymentDate: '1899-12-31' }), cobranca('ABERTA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toContain('data do pagamento (1899-12-31) está fora dos anos aceitos');
+  });
+
+  it('data de crédito que não existe no calendário vira pendência, sem baixar', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-04-31' }), cobranca('ABERTA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toContain('data de crédito (2026-04-31)');
+  });
+
+  it('valor pago de 0,001 real, que em centavos dá zero, vira pendência (D8)', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { value: 0.001 }), cobranca('ABERTA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toMatch(/valor pago.*zero centavo/);
+  });
+
+  it('valor pago acima do que a coluna guarda vira pendência (D5)', () => {
+    // Um trilhão de reais, e 21.474.836,48 reais: um centavo acima do maior inteiro do banco.
+    for (const value of [1_000_000_000_000, 21_474_836.48]) {
+      const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { value }), cobranca('ABERTA'), HOJE);
+      expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+      expect(motivo(acao)).toMatch(/valor pago.*maior valor que o sistema guarda/);
+    }
+  });
+
+  it('valor negativo ou em texto e data que não é data contam como não informados, como hoje', () => {
+    // As mesmas entradas do CT-FZ-01: o worker usa o valor da cobrança e a data de hoje.
+    const estranho = aviso('PAYMENT_RECEIVED', { value: -85, paymentDate: 'ontem à tarde' });
+    expect(decidirConciliacao(estranho, cobranca('ABERTA'), HOJE)).toMatchObject({ tipo: 'BAIXAR', valorPagoCentavos: 8500, pagoEm: HOJE });
+    const emTexto = aviso('PAYMENT_RECEIVED', { value: '85,00' });
+    expect(decidirConciliacao(emTexto, cobranca('ABERTA'), HOJE)).toMatchObject({ tipo: 'BAIXAR', valorPagoCentavos: 8500 });
+  });
+
+  it('recebido depois do confirmado, com data de crédito inexistente, vira pendência em vez de marcar a disponibilidade', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-13-45' }), cobranca('PAGA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toContain('data de crédito (2026-13-45)');
+  });
+
+  // Revisão da spec #57: o motivo mandava conferir "essa data" quando o inválido era o valor.
+  it('recebido depois do confirmado, com data de crédito válida e valor que dá zero centavo: o motivo manda conferir o valor', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-10-22', value: 0.001 }), cobranca('PAGA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toMatch(/valor pago.*zero centavo/);
+    expect(motivo(acao)).toContain('confira o valor pago no painel do Asaas');
+    expect(motivo(acao)).not.toContain('essa data');
+  });
+
+  it('com a data de crédito inválida, o motivo manda conferir a data de crédito', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-04-31' }), cobranca('PAGA'), HOJE);
+    expect(motivo(acao)).toContain('confira a data de crédito no painel do Asaas');
   });
 });

@@ -165,6 +165,24 @@ describe('[Cobranças.RF004] CT-COB-04 cancelamento de cobrança', () => {
     expect(asaas.noAsaas.get(cobranca.idAsaas!)?.removida).toBe(false);
   });
 
+  // Revisão da spec #57: o Asaas cancelava e a gravação daqui dava 500 (o PostgreSQL recusa o \u0000), deixando
+  // a cobrança cancelada lá e aberta aqui. O motivo é lido e recusado antes de chamar o Asaas.
+  it('motivo com caractere nulo: recusa com 400 citando o motivo, sem chegar ao Asaas [Usabilidade.NF002]', async () => {
+    const cobranca = await cobrancaAberta();
+
+    const resposta = await aplicacao
+      .http()
+      .post(`/api/cobrancas/${cobranca.id}/cancelar`)
+      .set('Cookie', cookie)
+      .send({ motivo: 'Renegociação\u0000 em 3 parcelas (teste)' });
+
+    expect(resposta.status).toBe(400);
+    expect(resposta.body.message).toContain('motivo');
+    expect(pedidosDeCancelamentoAoAsaas(cobranca.idAsaas)).toBe(0);
+    expect(asaas.noAsaas.get(cobranca.idAsaas!)?.removida).toBe(false);
+    await conferirQueNadaMudou(cobranca);
+  });
+
   it('E2: o Asaas recusa o cancelamento: nada muda aqui e a falha é informada', async () => {
     const cobranca = await cobrancaAberta();
     asaas.cancelamentosRecusados.add(cobranca.idAsaas!);

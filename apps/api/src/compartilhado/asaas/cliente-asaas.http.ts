@@ -8,6 +8,7 @@ import {
   NovoClienteAsaas,
   type CobrancaNoAsaas,
 } from './cliente-asaas.js';
+import { dataDoAsaas, dataDoPagamentoNoAsaas } from './datas-do-pagamento.js';
 
 const URLS_BASE = {
   sandbox: 'https://api-sandbox.asaas.com/v3',
@@ -281,8 +282,9 @@ function paraCobrancaNoAsaas(pagamento: PagamentoDoAsaas): CobrancaNoAsaas {
     vencimento: pagamento.dueDate,
     descricao: pagamento.description ?? null,
     referenciaExterna: pagamento.externalReference ?? null,
-    pagoEm: pagamento.paymentDate ?? pagamento.clientPaymentDate ?? pagamento.confirmedDate ?? null,
-    disponivelEm: pagamento.creditDate ?? null,
+    // Lidas como o webhook as lê (datas-do-pagamento.ts): webhook e sincronização decidem igual.
+    pagoEm: dataDoPagamentoNoAsaas(pagamento),
+    disponivelEm: dataDoAsaas(pagamento.creditDate),
     multaPercentual: pagamento.fine?.value ?? 0,
     jurosMensalPercentual: pagamento.interest?.value ?? 0,
     urlBoleto: pagamento.bankSlipUrl ?? null,

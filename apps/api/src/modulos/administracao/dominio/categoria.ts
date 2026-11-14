@@ -1,5 +1,6 @@
 // Regras da categoria de movimentação [Administração.RF002]. Só TypeScript puro: sem
 // framework e sem banco, para poder testar sem montar nada.
+import { lerTexto, mensagemDoTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 export const TIPOS_DE_CATEGORIA = ['ENTRADA', 'SAIDA', 'AMBOS'] as const;
 // O tipo é a união dos valores da lista acima: 'ENTRADA' | 'SAIDA' | 'AMBOS'.
@@ -29,24 +30,22 @@ export class CategoriaEmUso extends Error {
   }
 }
 
-// Tira espaços das pontas e espaços repetidos no meio: "  Material   de limpeza " vira
-// "Material de limpeza". Assim dois nomes que só diferem em espaços contam como iguais.
+// Lido pela regra comum de texto (compartilhado/leitura-de-entrada.ts): tira espaços das pontas e
+// espaços repetidos no meio ("  Material   de limpeza " vira "Material de limpeza"), assim dois nomes
+// que só diferem em espaços contam como iguais, e recusa o caractere nulo, que o banco não aceita.
 export function normalizarNome(valor: unknown): string {
-  if (typeof valor !== 'string') {
-    throw new RegraDaCategoriaViolada('Informe o nome da categoria.');
+  const lido = lerTexto(valor, TAMANHO_MAXIMO_DO_NOME);
+  // O que não é texto conta como nome em branco.
+  if (!lido.valido && lido.motivo === 'formato') throw new RegraDaCategoriaViolada('Informe o nome da categoria.');
+  if (!lido.valido) {
+    throw new RegraDaCategoriaViolada(mensagemDoTexto(lido.motivo, 'o nome da categoria', TAMANHO_MAXIMO_DO_NOME));
   }
-  const nome = valor.trim().replace(/\s+/g, ' ');
-  if (nome.length < TAMANHO_MINIMO_DO_NOME) {
+  if (lido.valor.length < TAMANHO_MINIMO_DO_NOME) {
     throw new RegraDaCategoriaViolada(
       `O nome da categoria precisa ter ao menos ${TAMANHO_MINIMO_DO_NOME} caracteres.`,
     );
   }
-  if (nome.length > TAMANHO_MAXIMO_DO_NOME) {
-    throw new RegraDaCategoriaViolada(
-      `Use no máximo ${TAMANHO_MAXIMO_DO_NOME} caracteres no nome da categoria.`,
-    );
-  }
-  return nome;
+  return lido.valor;
 }
 
 export function lerTipo(valor: unknown): TipoDeCategoria {

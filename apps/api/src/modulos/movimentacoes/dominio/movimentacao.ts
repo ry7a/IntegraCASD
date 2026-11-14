@@ -1,4 +1,14 @@
 // Regras das movimentações [Movimentações.RF001 a RF003]. Só TypeScript puro. Datas em "AAAA-MM-DD".
+import {
+  lerCentavos,
+  lerDia,
+  lerMes,
+  lerTexto,
+  mensagemDoDia,
+  mensagemDoMes,
+  mensagemDoTexto,
+  mensagemDosCentavos,
+} from '../../../compartilhado/leitura-de-entrada.js';
 
 export type TipoMovimentacao = 'ENTRADA' | 'SAIDA';
 export type FormaPagamento = 'ASAAS' | 'PIX' | 'TRANSFERENCIA' | 'DINHEIRO' | 'CARTAO';
@@ -39,12 +49,17 @@ function deUmaLista<T extends string>(valor: unknown, lista: T[], mensagem: stri
   return encontrado;
 }
 
+// Mês da consulta pela regra comum: mês de 01 a 12 e ano de 1900 a 9999 ("0000-01" passava no formato
+// e estourava no banco). A mensagem da recusa também vem da regra comum.
+function lerMesDaConsulta(valor: unknown): string {
+  const lido = lerMes(valor);
+  if (lido.valido) return lido.valor;
+  throw new MovimentacaoInvalida(mensagemDoMes(lido.motivo, 'o mês'));
+}
+
 // `hoje` entra por parâmetro para o teste. Os valores chegam da URL, como texto.
 export function lerFiltros(consulta: Record<string, unknown>, hoje: string): FiltrosDeMovimentacoes {
-  const mes = consulta.mes === undefined || consulta.mes === '' ? hoje.slice(0, 7) : consulta.mes;
-  if (typeof mes !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes)) {
-    throw new MovimentacaoInvalida('Informe o mês no formato AAAA-MM.');
-  }
+  const mes = lerMesDaConsulta(consulta.mes === undefined || consulta.mes === '' ? hoje.slice(0, 7) : consulta.mes);
   return {
     mes,
     tipo: deUmaLista(consulta.tipo, TIPOS, 'O tipo deve ser ENTRADA ou SAIDA.'),
@@ -84,11 +99,15 @@ export function regraDoEstorno(
   return { podeEstornar: true, motivoSemEstorno: null };
 }
 
+// Motivo pela regra comum de texto: sem ela, o caractere nulo chegava ao banco e o estorno dava erro 500.
 export function lerMotivoDoEstorno(valor: unknown): string {
-  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
-  if (motivo.length < 5) throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
-  if (motivo.length > 300) throw new MovimentacaoInvalida('Use no máximo 300 caracteres no motivo.');
-  return motivo;
+  const lido = lerTexto(valor, 300);
+  // O que não é texto conta como motivo em branco (a mensagem abaixo pede o motivo).
+  if (!lido.valido && lido.motivo !== 'formato') throw new MovimentacaoInvalida(mensagemDoTexto(lido.motivo, 'o motivo', 300));
+  if (!lido.valido || lido.valor.length < 5) {
+    throw new MovimentacaoInvalida('Informe o motivo do estorno, por exemplo: valor lançado errado.');
+  }
+  return lido.valor;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,30 +132,49 @@ export type NovaMovimentacao = {
   funcionarioId: string | null;
 };
 
+// A data é lida pela regra comum (compartilhado/leitura-de-entrada.ts), que recusa 30/02 e mês 13
+// em vez de deixar o banco trocar por outra data, e monta a mensagem da recusa.
+function lerDataDoLancamento(valor: unknown): string {
+  const lida = lerDia(valor);
+  if (lida.valido) return lida.valor;
+  throw new MovimentacaoInvalida(mensagemDoDia(lida.motivo, 'a data'));
+}
+
+// Valor em centavos pela regra comum. Fluxo E2: valor zero (ou negativo, ou fracionado, ou em texto) é
+// recusado, e o que passa do que a coluna guarda também.
+function lerValorDoLancamento(valor: unknown): number {
+  const lido = lerCentavos(valor);
+  if (lido.valido) return lido.valor;
+  throw new MovimentacaoInvalida(mensagemDosCentavos(lido.motivo, 'o valor'));
+}
+
+// Descrição pela regra comum: aparada, espaços repetidos reduzidos e sem caractere nulo (o PostgreSQL
+// recusa o \u0000, que costuma vir de colar de outro programa). Texto curto demais ou que não é texto
+// pede a descrição de novo.
+function lerDescricaoDoLancamento(valor: unknown): string {
+  const lida = lerTexto(valor, 200);
+  if (!lida.valido && lida.motivo !== 'formato') throw new MovimentacaoInvalida(mensagemDoTexto(lida.motivo, 'a descrição', 200));
+  if (!lida.valido || lida.valor.length < 3) {
+    throw new MovimentacaoInvalida('Descreva a movimentação, por exemplo: NF 685, limpeza de outubro.');
+  }
+  return lida.valor;
+}
+
 // `hoje` entra por parâmetro para o teste.
 export function lerNovaMovimentacao(entrada: Partial<Record<keyof NovaMovimentacao, unknown>>, hoje: string): NovaMovimentacao {
   const contaId = idOpcional(entrada.contaId, 'Escolha a conta na lista.');
   if (contaId === null) throw new MovimentacaoInvalida('Escolha a conta da movimentação.');
   const tipo = deUmaLista(entrada.tipo, TIPOS, 'Escolha se é entrada ou saída.');
   if (tipo === null) throw new MovimentacaoInvalida('Escolha se é entrada ou saída.');
-  const valor = entrada.valorCentavos;
-  // Fluxo E2: valor zero (ou negativo, ou fracionado) é recusado.
-  if (typeof valor !== 'number' || !Number.isInteger(valor) || valor <= 0) {
-    throw new MovimentacaoInvalida('Informe um valor maior que zero, em centavos inteiros (ex.: 120000 para R$ 1.200,00).');
-  }
-  const data = entrada.data;
-  if (typeof data !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
-    throw new MovimentacaoInvalida('Informe a data no formato AAAA-MM-DD.');
-  }
+  const valor = lerValorDoLancamento(entrada.valorCentavos);
+  const data = lerDataDoLancamento(entrada.data);
   // Fluxo E1: movimentação registra fato ocorrido, não previsão.
   if (data > hoje) throw new MovimentacaoInvalida('A data não pode ser no futuro: registre a movimentação quando ela acontecer.');
   const categoriaId = idOpcional(entrada.categoriaId, 'Escolha a categoria na lista.');
   if (categoriaId === null) throw new MovimentacaoInvalida('Escolha a categoria da movimentação.');
   const forma = deUmaLista(entrada.forma, FORMAS_MANUAIS, 'Escolha a forma: Pix, transferência, dinheiro ou cartão.');
   if (forma === null) throw new MovimentacaoInvalida('Escolha a forma: Pix, transferência, dinheiro ou cartão.');
-  const descricao = typeof entrada.descricao === 'string' ? entrada.descricao.trim().replace(/\s+/g, ' ') : '';
-  if (descricao.length < 3) throw new MovimentacaoInvalida('Descreva a movimentação, por exemplo: NF 685, limpeza de outubro.');
-  if (descricao.length > 200) throw new MovimentacaoInvalida('Use no máximo 200 caracteres na descrição.');
+  const descricao = lerDescricaoDoLancamento(entrada.descricao);
   const contratoId = idOpcional(entrada.contratoId, 'Escolha o contrato na lista.');
   const projetoId = idOpcional(entrada.projetoId, 'Escolha o projeto na lista.');
   const funcionarioId = idOpcional(entrada.funcionarioId, 'Escolha o funcionário na lista.');

@@ -25,6 +25,11 @@ describe('projetos [Cadastros.RF005]', () => {
     expect(() => lerDadosParaInclusao({ ...valido, situacao: 'PAUSADO' })).toThrow(/situação/);
   });
 
+  it('recusa caractere nulo no nome e no responsável, citando o campo, em vez de virar erro 500 no banco', () => {
+    expect(() => lerDadosParaInclusao({ ...valido, nome: 'Reforma\u0000 da sala' })).toThrow(/nome do projeto/);
+    expect(() => lerDadosParaInclusao({ ...valido, responsavel: 'Fulano\u0000' })).toThrow(/responsável/);
+  });
+
   it('encerrar é mudar a situação para executado ou cancelado (fluxo A1)', () => {
     expect(lerDadosParaAlteracao({ situacao: 'EXECUTADO' }, { dataInicio: '2026-03-01', dataFim: null })).toEqual({ situacao: 'EXECUTADO' });
     expect(estaEncerrado('EXECUTADO')).toBe(true);
