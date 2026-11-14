@@ -292,9 +292,10 @@ export function lerPagamentoManual(entrada: Partial<Record<keyof PagamentoManual
   return { pagoEm, valorCentavos: valor, formaPagamento: forma, justificativa };
 }
 
+// Lido antes de chamar o Asaas (cancelar-cobranca.ts): um motivo que o banco recusa (caractere nulo) não
+// pode deixar a cobrança cancelada lá e aberta aqui.
 export function lerMotivoDoCancelamento(valor: unknown): string {
-  const motivo = typeof valor === 'string' ? valor.trim().replace(/\s+/g, ' ') : '';
+  const motivo = lerTextoDaCobranca(valor, 'no motivo', 300);
   if (motivo.length < 5) throw new CobrancaInvalida('Informe o motivo do cancelamento, por exemplo: renegociação em 3 parcelas.');
-  if (motivo.length > 300) throw new CobrancaInvalida('Use no máximo 300 caracteres no motivo.');
   return motivo;
 }

@@ -143,6 +143,12 @@ describe('cancelamento [Cobranças.RF004]', () => {
     expect(() => conferirCancelamento('ABERTA')).not.toThrow();
   });
 
+  it('o motivo recusa o caractere nulo e o que passa de 300 caracteres, citando o motivo', () => {
+    expect(() => lerMotivoDoCancelamento('Renegociação\u0000 em 3 parcelas')).toThrow(/nulo\) no motivo/);
+    expect(() => lerMotivoDoCancelamento('m'.repeat(301))).toThrow(/300 caracteres no motivo/);
+    expect(lerMotivoDoCancelamento('m'.repeat(300))).toHaveLength(300);
+  });
+
   it('o motivo é obrigatório', () => {
     expect(() => lerMotivoDoCancelamento('  ')).toThrow(/motivo/);
     expect(lerMotivoDoCancelamento(' Renegociação   em 3 parcelas ')).toBe('Renegociação em 3 parcelas');
