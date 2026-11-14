@@ -27,6 +27,10 @@ export const MENOR_ANO = 1900;
 export const MAIOR_ANO = 9999;
 // O maior valor de uma coluna `Int` do PostgreSQL (2^31 - 1). Acima disso, o banco responde erro.
 export const MAIOR_INTEIRO_DO_BANCO = 2_147_483_647;
+// Máximo para o texto que não tem limite de negócio (e-mail, celular, nome de usuário...): `lerTexto` sempre
+// pede um máximo, e este é só um teto técnico generoso, que nenhum valor de verdade alcança. Não é regra de
+// negócio (a spec #57 deixa de fora "limites de negócio mais apertados").
+export const TAMANHO_MAXIMO_TECNICO = 1000;
 
 function anoBissexto(ano: number): boolean {
   return (ano % 4 === 0 && ano % 100 !== 0) || ano % 400 === 0;

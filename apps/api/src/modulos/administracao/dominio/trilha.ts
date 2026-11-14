@@ -5,7 +5,7 @@ import {
   type EntidadeAuditada,
   type OperacaoAuditada,
 } from '../../../compartilhado/auditoria/trilha.js';
-import { MAIOR_ANO, MENOR_ANO, lerDia } from '../../../compartilhado/leitura-de-entrada.js';
+import { MAIOR_ANO, MENOR_ANO, lerDia, lerTexto } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class FiltroDaTrilhaInvalido extends Error {}
 
@@ -54,6 +54,18 @@ function inteiroEntre(valor: unknown, padrao: number, minimo: number, maximo: nu
   return numero;
 }
 
+// Fluxo A1: um registro específico, pela regra comum de texto. O PostgreSQL recusa o caractere nulo até
+// numa consulta: sem a leitura, o filtro dava erro 500. Vazio é "todos os registros".
+function lerRegistroId(valor: unknown): string | null {
+  if (valor === undefined || valor === '') return null;
+  const lido = lerTexto(valor, 64);
+  if (!lido.valido && lido.motivo === 'caractere-nulo') {
+    throw new FiltroDaTrilhaInvalido('Há um caractere invisível (nulo) no registro, comum ao colar de outro programa. Apague e digite de novo.');
+  }
+  if (!lido.valido) throw new FiltroDaTrilhaInvalido('Registro inválido.');
+  return lido.valor === '' ? null : lido.valor;
+}
+
 // Os valores chegam da URL, como texto. Sem período, o mês corrente (passo 2). `hoje` entra por
 // parâmetro para o teste.
 export function lerFiltrosDaTrilha(consulta: Record<string, unknown>, hoje: string): FiltrosDaTrilha {
@@ -64,17 +76,13 @@ export function lerFiltrosDaTrilha(consulta: Record<string, unknown>, hoje: stri
   if (usuario !== null && usuario !== ROTINA_AUTOMATICA && (typeof usuario !== 'string' || !UUID.test(usuario))) {
     throw new FiltroDaTrilhaInvalido('Escolha o usuário na lista.');
   }
-  const registroId = consulta.registroId === undefined || consulta.registroId === '' ? null : consulta.registroId;
-  if (registroId !== null && (typeof registroId !== 'string' || registroId.length > 64)) {
-    throw new FiltroDaTrilhaInvalido('Registro inválido.');
-  }
   return {
     de,
     ate,
     usuario: usuario as string | null,
     operacao: deUmaLista(consulta.operacao, OPERACOES_AUDITADAS, 'Escolha a operação na lista.'),
     entidade: deUmaLista(consulta.entidade, ENTIDADES_AUDITADAS, 'Escolha o tipo de registro na lista.'),
-    registroId: registroId as string | null,
+    registroId: lerRegistroId(consulta.registroId),
     pagina: inteiroEntre(consulta.pagina, 1, 1, 10_000, 'Página inválida.'),
     tamanhoPagina: inteiroEntre(consulta.tamanhoPagina, 50, 1, 200, 'Use de 1 a 200 registros por página.'),
   };

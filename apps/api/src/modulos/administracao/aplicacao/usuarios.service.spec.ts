@@ -269,4 +269,22 @@ describe('manutencao de usuarios [Administração.RF001]', () => {
       data: expect.objectContaining({ operacao: 'ALTERACAO', detalhe: 'Usuário alterado: nome.' }),
     });
   });
+
+  // O PostgreSQL recusa o \u0000: antes, a consulta do e-mail repetido (ou a gravação) dava erro 500.
+  it.each([
+    ['nome', { nome: 'Usuario\u0000 Ficticio' }, /nulo\) no nome/],
+    ['e-mail', { email: 'usuario\u0000@exemplo.com' }, /nulo\) no e-mail/],
+  ])('caractere nulo no %s: recusa com 400 citando o campo, sem consultar nem gravar', async (_campo, campos, mensagem) => {
+    const { prisma, tx } = prismaFalso(usuarioDiretor('diretor-2'));
+    const servico = new UsuariosService(prisma);
+    const novo = { nome: 'Usuario Ficticio', email: 'usuario@exemplo.com', perfil: PerfilUsuario.ADMINISTRATIVO, senhaInicial: 'senha-ficticia-12', ...campos };
+
+    const criando = servico.criar(novo, DIRETOR);
+    await expect(criando).rejects.toBeInstanceOf(BadRequestException);
+    await expect(criando).rejects.toThrow(mensagem);
+    await expect(servico.alterar('diretor-2', campos, DIRETOR)).rejects.toThrow(mensagem);
+    // A única consulta foi a do usuário alterado, pelo id: nenhuma pelo e-mail com o caractere nulo.
+    expect(prisma.usuario.findUnique).toHaveBeenCalledTimes(1);
+    expect(tx.usuario.update).not.toHaveBeenCalled();
+  });
 });

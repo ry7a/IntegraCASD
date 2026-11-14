@@ -61,6 +61,7 @@
     { "classe": "sql", "descricao": "trilha: tipo de registro com injeção de SQL", "rota": "/api/admin/trilha-auditoria", "consulta": { "entidade": "ALUNO' OR '1'='1" }, "esperado": "recusa", "campoNaMensagem": "tipo de registro" },
     { "classe": "sql", "descricao": "trilha: registro com injeção de SQL", "rota": "/api/admin/trilha-auditoria", "consulta": { "registroId": "' OR '1'='1" }, "esperado": "lista-vazia" },
     { "classe": "texto-longo", "descricao": "trilha: registro com 65 caracteres", "rota": "/api/admin/trilha-auditoria", "consulta": { "registroId": { "$repetir": "r", "vezes": 65 } }, "esperado": "recusa", "campoNaMensagem": "registro" },
+    { "classe": "byte-nulo", "descricao": "trilha: registro com caractere nulo (revisão da spec #57)", "rota": "/api/admin/trilha-auditoria", "consulta": { "registroId": "abc\u0000def" }, "esperado": "recusa", "campoNaMensagem": "registro" },
     { "classe": "valor-invalido", "descricao": "trilha: página zero", "rota": "/api/admin/trilha-auditoria", "consulta": { "pagina": "0" }, "esperado": "recusa", "campoNaMensagem": "página" },
     { "classe": "numero-extremo", "descricao": "trilha: página 10001", "rota": "/api/admin/trilha-auditoria", "consulta": { "pagina": "10001" }, "esperado": "recusa", "campoNaMensagem": "página" },
     { "classe": "numero-extremo", "descricao": "trilha: 201 registros por página", "rota": "/api/admin/trilha-auditoria", "consulta": { "tamanhoPagina": "201" }, "esperado": "recusa", "campoNaMensagem": "registros por página" },
