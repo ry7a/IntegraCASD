@@ -102,11 +102,12 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     // Dado presente e inválido (data fora do calendário, valor que não cabe): nada muda aqui e o aviso
     // vai para conferência, em vez de gravar um dado inventado ou travar a fila.
     const invalido = dadoInvalido(aviso);
-    const conferirDadoInvalido = (situacaoAqui: string) =>
-      pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}, mas ${invalido}. ${situacaoAqui}`);
+    const conferirDadoInvalido = (dado: { problema: string }, situacaoAqui: string) =>
+      pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}, mas ${dado.problema}. ${situacaoAqui}`);
     if (cobranca.situacao === 'ABERTA') {
       if (invalido !== null) {
         return conferirDadoInvalido(
+          invalido,
           'A cobrança continua aberta: confira o pagamento no painel do Asaas e, se ele foi feito, registre o pagamento manual.',
         );
       }
@@ -122,7 +123,11 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     if (cobranca.situacao === 'PAGA') {
       if (disponivelEm === null || cobranca.disponivelEm !== null) return { tipo: 'NADA' };
       if (invalido !== null) {
-        return conferirDadoInvalido('A cobrança continua paga, sem a data em que o valor fica disponível: confira essa data no painel do Asaas.');
+        // O que mandar conferir é o campo inválido, que pode ser o valor e não a data de crédito.
+        return conferirDadoInvalido(
+          invalido,
+          `A cobrança continua paga e a data em que o valor fica disponível não foi registrada: confira ${invalido.campo} no painel do Asaas.`,
+        );
       }
       return { tipo: 'MARCAR_DISPONIVEL', disponivelEm };
     }
@@ -159,8 +164,9 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
 
 // Dado que o Asaas mandou, mas que não dá para usar (defeitos D4, D5 e D8 do Plano de Testes). Baixar com ele
 // gravaria uma data que o Asaas não informou, ou o banco recusaria e o evento ficaria em nova tentativa para
-// sempre. Devolve o problema, citando o campo, ou nulo se está tudo certo. Campo ausente não é problema.
-function dadoInvalido(aviso: AvisoDePagamento): string | null {
+// sempre. Devolve o campo inválido e o problema (que cita o campo), ou nulo se está tudo certo. Campo
+// ausente não é problema.
+function dadoInvalido(aviso: AvisoDePagamento): { campo: string; problema: string } | null {
   const datas = [
     ['a data do pagamento', aviso.pagoEm],
     ['a data de crédito', aviso.disponivelEm],
@@ -170,17 +176,21 @@ function dadoInvalido(aviso: AvisoDePagamento): string | null {
     const leitura = lerDia(data);
     if (!leitura.valido) {
       // dataDoAsaas já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
-      return leitura.motivo === 'fora-do-limite'
-        ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
-        : `${campo} (${data}) não existe no calendário`;
+      const problema =
+        leitura.motivo === 'fora-do-limite'
+          ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
+          : `${campo} (${data}) não existe no calendário`;
+      return { campo, problema };
     }
   }
   // Negativo não é valor pago: conta como "não informado" (vale o da cobrança), como sempre foi.
   const valor = aviso.valorPagoCentavos;
   if (valor !== null && valor >= 0 && !lerCentavos(valor).valido) {
-    return valor === 0
-      ? 'o valor pago, convertido para centavos, dá zero centavo'
-      : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+    const problema =
+      valor === 0
+        ? 'o valor pago, convertido para centavos, dá zero centavo'
+        : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+    return { campo: 'o valor pago', problema };
   }
   return null;
 }

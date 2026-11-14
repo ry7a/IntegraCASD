@@ -171,4 +171,18 @@ describe('aviso do Asaas com data ou valor inválido [Cobranças.RF005]', () => 
     expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
     expect(motivo(acao)).toContain('data de crédito (2026-13-45)');
   });
+
+  // Revisão da spec #57: o motivo mandava conferir "essa data" quando o inválido era o valor.
+  it('recebido depois do confirmado, com data de crédito válida e valor que dá zero centavo: o motivo manda conferir o valor', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-10-22', value: 0.001 }), cobranca('PAGA'), HOJE);
+    expect(acao).toMatchObject({ tipo: 'PENDENCIA', tipoDaPendencia: 'DIVERGENCIA' });
+    expect(motivo(acao)).toMatch(/valor pago.*zero centavo/);
+    expect(motivo(acao)).toContain('confira o valor pago no painel do Asaas');
+    expect(motivo(acao)).not.toContain('essa data');
+  });
+
+  it('com a data de crédito inválida, o motivo manda conferir a data de crédito', () => {
+    const acao = decidirConciliacao(aviso('PAYMENT_RECEIVED', { creditDate: '2026-04-31' }), cobranca('PAGA'), HOJE);
+    expect(motivo(acao)).toContain('confira a data de crédito no painel do Asaas');
+  });
 });
