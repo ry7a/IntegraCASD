@@ -55,6 +55,22 @@ describe('[Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento'
     expect(fila.enfileirados).toEqual([]);
   });
 
+  // Um payment.id enorme virava pendência SEM_COBRANCA, estourava o índice (id_asaas, tipo) das pendências e o
+  // evento ficava em nova tentativa para sempre. O limite é o mesmo do id do evento.
+  it('recusa com 400, sem gravar nem enfileirar, um payment.id com mais de 255 caracteres; com 255, aceita', async () => {
+    const { controller, repositorio, fila } = montarWebhook();
+
+    const recebendo = controller.receber({ id: 'evt_falso_6', event: 'PAYMENT_RECEIVED', payment: { id: 'p'.repeat(256), value: 85 } });
+
+    await expect(recebendo).rejects.toThrow(BadRequestException);
+    await expect(recebendo).rejects.toThrow('"payment.id"');
+    expect(repositorio.gravados).toEqual([]);
+    expect(fila.enfileirados).toEqual([]);
+    await expect(controller.receber({ id: 'evt_falso_7', event: 'PAYMENT_RECEIVED', payment: { id: 'p'.repeat(255) } })).resolves.toEqual({
+      recebido: true,
+    });
+  });
+
   it('recusa com 400, sem gravar nem enfileirar, um event com mais de 100 caracteres', async () => {
     const { controller, repositorio, fila } = montarWebhook();
 

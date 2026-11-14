@@ -29,6 +29,7 @@ export class WebhookAsaasController {
 // gravação e o webhook responderia 500 ([Confiabilidade.NF001]). Os ids do Asaas têm umas dezenas de
 // caracteres; um id enorme estoura o índice único de id_asaas. Os tipos (PAYMENT_RECEIVED...) têm menos de 40.
 // Os avisos do Asaas têm uns 4 níveis de objetos; milhares de listas aninhadas estouram a pilha ao gravar.
+// O limite do id vale para o id do evento e para o da cobrança (payment.id).
 const TAMANHO_MAXIMO_DO_ID = 255;
 const TAMANHO_MAXIMO_DO_TIPO = 100;
 const PROFUNDIDADE_MAXIMA = 32; // o corpo é o nível 1
@@ -48,6 +49,13 @@ function lerEvento(corpo: unknown): EventoRecebido {
   }
   if (event.length > TAMANHO_MAXIMO_DO_TIPO) {
     throw new BadRequestException(`O "event" do evento passa de ${TAMANHO_MAXIMO_DO_TIPO} caracteres.`);
+  }
+  // O id da cobrança no Asaas vira chave da pendência de conciliação (índice id_asaas + tipo): enorme, o
+  // índice estourava no worker e o evento ficava em nova tentativa para sempre. Mesmo limite do id do evento.
+  const { payment } = corpo as { payment?: unknown };
+  const idDoPagamento = typeof payment === 'object' && payment !== null ? (payment as Record<string, unknown>).id : undefined;
+  if (typeof idDoPagamento === 'string' && idDoPagamento.length > TAMANHO_MAXIMO_DO_ID) {
+    throw new BadRequestException(`O "payment.id" do evento passa de ${TAMANHO_MAXIMO_DO_ID} caracteres.`);
   }
   const problema = problemaNoCorpo(corpo, 1);
   if (problema === 'aninhado-demais') {

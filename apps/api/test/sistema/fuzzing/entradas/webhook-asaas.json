@@ -551,6 +551,12 @@
       "corpoBruto": "{\"id\": \"evt_fz01_081\", \"event\": ",
       "idEvento": "evt_fz01_081",
       "esperado": "recusa"
+    },
+    {
+      "classe": "texto-estranho",
+      "descricao": "payment.id com 6000 caracteres que não se comprimem (revisão da spec #57: virava pendência que estoura o índice e repetia para sempre)",
+      "corpo": { "id": "evt_fz01_082", "event": "PAYMENT_RECEIVED", "payment": { "id": { "$embaralhado": 6000 }, "value": 85, "paymentDate": "{{HOJE}}" } },
+      "esperado": "recusa"
     }
   ]
 }
