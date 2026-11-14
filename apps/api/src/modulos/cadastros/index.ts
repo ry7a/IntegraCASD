@@ -6,3 +6,5 @@ export { ListarAlunosCobraveis } from './aplicacao/listar-alunos-cobraveis.js';
 export type { AlunoDetalhe } from './aplicacao/aluno-detalhe.js';
 export { BuscarAluno } from './aplicacao/buscar-aluno.js';
 export { ListarAlunos } from './aplicacao/listar-alunos.js';
+// Movimentações usa a mesma definição de projeto encerrado (executado ou cancelado) para avisar a tela.
+export { estaEncerrado, type SituacaoDoProjeto } from './dominio/projeto.js';
