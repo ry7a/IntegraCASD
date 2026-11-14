@@ -85,3 +85,13 @@ Vamos usar **um único PostgreSQL 18** tanto para os dados quanto para a fila de
 
 - Se o volume de jobs chegar a milhares por minuto, ou se a fila começar a disputar recursos com as consultas de indicadores.
 - Se surgir a necessidade de distribuir eventos para vários consumidores independentes (por exemplo, outros sistemas do CASD), caso em que um broker dedicado passa a se justificar.
+
+## Notas
+
+**13/11/2026 (spec #57).** Na etapa 1, além de validar o token, o controller recusa com 400, sem gravar nem
+enfileirar, o evento fora dos limites do formato: sem `id` ou `event`; `id` ou `payment.id` com mais de 255
+caracteres; `event` com mais de 100; caractere nulo ou surrogate sem par (como `\ud800`) em qualquer texto do
+corpo, valores ou chaves; corpo com mais de 32 níveis de objetos e listas. São limites do que o banco consegue
+gravar e indexar, não regra de negócio: acima deles a gravação (ou, no caso do `payment.id`, a pendência no
+worker) falhava, e o webhook respondia 500 ou o evento ficava em nova tentativa para sempre
+([Confiabilidade.NF001]). A decisão acima não muda.
