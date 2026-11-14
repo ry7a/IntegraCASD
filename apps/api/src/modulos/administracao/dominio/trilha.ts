@@ -5,6 +5,7 @@ import {
   type EntidadeAuditada,
   type OperacaoAuditada,
 } from '../../../compartilhado/auditoria/trilha.js';
+import { MAIOR_ANO, MENOR_ANO, lerDia } from '../../../compartilhado/leitura-de-entrada.js';
 
 export class FiltroDaTrilhaInvalido extends Error {}
 
@@ -26,7 +27,18 @@ export type FiltrosDaTrilha = {
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const DIA = /^\d{4}-\d{2}-\d{2}$/;
+
+// Uma ponta do período, lida pela regra comum (compartilhado/leitura-de-entrada.ts): sem ela, um mês 13
+// chegava ao banco e virava erro 500. `nome` entra na mensagem: "data inicial", "data final".
+function dia(valor: unknown, nome: string): string {
+  const lido = lerDia(valor);
+  if (lido.valido) return lido.valor;
+  if (lido.motivo === 'inexistente') throw new FiltroDaTrilhaInvalido(`A ${nome} não existe no calendário. Confira o dia e o mês.`);
+  if (lido.motivo === 'fora-do-limite') {
+    throw new FiltroDaTrilhaInvalido(`Confira o ano da ${nome}: ele precisa estar entre ${MENOR_ANO} e ${MAIOR_ANO}.`);
+  }
+  throw new FiltroDaTrilhaInvalido('Informe as datas no formato AAAA-MM-DD.');
+}
 
 function deUmaLista<T extends string>(valor: unknown, lista: readonly T[], mensagem: string): T | null {
   if (valor === undefined || valor === '') return null;
@@ -45,11 +57,8 @@ function inteiroEntre(valor: unknown, padrao: number, minimo: number, maximo: nu
 // Os valores chegam da URL, como texto. Sem período, o mês corrente (passo 2). `hoje` entra por
 // parâmetro para o teste.
 export function lerFiltrosDaTrilha(consulta: Record<string, unknown>, hoje: string): FiltrosDaTrilha {
-  const de = consulta.de === undefined || consulta.de === '' ? `${hoje.slice(0, 7)}-01` : consulta.de;
-  const ate = consulta.ate === undefined || consulta.ate === '' ? hoje : consulta.ate;
-  if (typeof de !== 'string' || !DIA.test(de) || typeof ate !== 'string' || !DIA.test(ate)) {
-    throw new FiltroDaTrilhaInvalido('Informe as datas no formato AAAA-MM-DD.');
-  }
+  const de = dia(consulta.de === undefined || consulta.de === '' ? `${hoje.slice(0, 7)}-01` : consulta.de, 'data inicial');
+  const ate = dia(consulta.ate === undefined || consulta.ate === '' ? hoje : consulta.ate, 'data final');
   if (de > ate) throw new FiltroDaTrilhaInvalido('A data inicial precisa ser antes da final.');
   const usuario = consulta.usuario === undefined || consulta.usuario === '' ? null : consulta.usuario;
   if (usuario !== null && usuario !== ROTINA_AUTOMATICA && (typeof usuario !== 'string' || !UUID.test(usuario))) {

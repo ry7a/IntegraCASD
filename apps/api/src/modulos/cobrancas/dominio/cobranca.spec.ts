@@ -88,6 +88,22 @@ describe('consulta [Cobranças.RF008]', () => {
     expect(() => lerFiltrosDaConsulta({ vencimentoDe: '10/11/2026' })).toThrow(/AAAA-MM-DD/);
   });
 
+  it('recusa período de vencimento com data que não existe no calendário, citando o filtro', () => {
+    expect(() => lerFiltrosDaConsulta({ vencimentoDe: '2026-13-45' })).toThrow(/início do período.*não existe no calendário/);
+    expect(() => lerFiltrosDaConsulta({ vencimentoAte: '2026-00-10' })).toThrow(/fim do período.*não existe no calendário/);
+    expect(() => lerFiltrosDaConsulta({ vencimentoDe: '2026-02-30' })).toThrow(CobrancaInvalida);
+    expect(lerFiltrosDaConsulta({ vencimentoDe: '2028-02-29' }).vencimentoDe).toBe('2028-02-29');
+  });
+
+  it('recusa valor e página acima do maior inteiro do banco, citando o filtro', () => {
+    expect(() => lerFiltrosDaConsulta({ valorMaximoCentavos: '99999999999999999999' })).toThrow(/valor máximo/);
+    expect(() => lerFiltrosDaConsulta({ valorMinimoCentavos: '2147483648' })).toThrow(/valor mínimo/);
+    expect(() => lerFiltrosDaConsulta({ pagina: '99999999999999999999' })).toThrow(/página/);
+    expect(() => lerFiltrosDaConsulta({ tamanhoPagina: '99999999999999999999' })).toThrow(/tamanho da página/);
+    expect(lerFiltrosDaConsulta({ valorMaximoCentavos: '2147483647' }).valorMaximoCentavos).toBe(2_147_483_647);
+    expect(lerFiltrosDaConsulta({ valorMinimoCentavos: '0' }).valorMinimoCentavos).toBe(0);
+  });
+
   it('dias de atraso só para vencida', () => {
     expect(diasDeAtraso('VENCIDA', '2026-10-16', HOJE)).toBe(10);
     expect(diasDeAtraso('ABERTA', '2026-11-10', HOJE)).toBeNull();
