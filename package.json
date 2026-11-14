@@ -15,6 +15,7 @@
         "test": "pnpm -r test",
         "test:integracao": "pnpm --filter api test:integracao",
         "medir:webhook": "node scripts/testes/medir-webhook.mjs",
+        "evidencias": "node scripts/testes/coletar-evidencias.mjs",
         "cobertura": "pnpm --filter api test:cov",
         "build": "pnpm -r build",
         "verificar:arquitetura": "node scripts/arquitetura/verificar-migracoes.mjs && node scripts/arquitetura/verificar-cores.mjs",

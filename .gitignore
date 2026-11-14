@@ -179,3 +179,6 @@ apps/api/src/generated/
 # Backups do banco: têm dados pessoais (LGPD), nunca entram no repositório
 backups/
 *.dump
+
+# Execuções de rascunho do plano de testes (pnpm evidencias -- --rascunho): não valem como evidência
+docs/testes/evidencias/*-rascunho*/
