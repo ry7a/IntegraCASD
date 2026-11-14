@@ -2,7 +2,7 @@
 // A sincronização não tem regras próprias de baixa: transforma a situação que o Asaas informa no mesmo
 // aviso que o webhook mandaria, e a conciliação (conciliacao.ts) decide o efeito.
 import { CobrancaInvalida, diasEntre, type SituacaoExibida } from './cobranca.js';
-import type { AvisoDePagamento } from './conciliacao.js';
+import { dataDoAviso, type AvisoDePagamento } from './conciliacao.js';
 
 // O que a sincronização precisa saber de uma cobrança no Asaas.
 export type SituacaoNoAsaas = {
@@ -28,10 +28,11 @@ export function avisoDaSituacaoNoAsaas(cobranca: SituacaoNoAsaas): AvisoDePagame
   return {
     tipo,
     idCobrancaAsaas: cobranca.idAsaas,
-    valorPagoCentavos: cobranca.valorCentavos > 0 ? cobranca.valorCentavos : null,
-    pagoEm: cobranca.pagoEm,
+    // Vai como veio: quem confere (zero centavo, acima do limite) é a conciliação, igual para o webhook.
+    valorPagoCentavos: cobranca.valorCentavos,
+    pagoEm: dataDoAviso(cobranca.pagoEm),
     // O Asaas só informa a data de crédito quando o valor já foi recebido.
-    disponivelEm: cobranca.situacao === 'RECEIVED' || cobranca.situacao === 'RECEIVED_IN_CASH' ? cobranca.disponivelEm : null,
+    disponivelEm: cobranca.situacao === 'RECEIVED' || cobranca.situacao === 'RECEIVED_IN_CASH' ? dataDoAviso(cobranca.disponivelEm) : null,
   };
 }
 

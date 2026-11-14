@@ -1,13 +1,16 @@
 // Regras da conciliação [Cobranças.RF005]: o que cada aviso do Asaas faz com a cobrança.
 // Só TypeScript puro. Datas em "AAAA-MM-DD".
+import { lerCentavos, lerDia, MAIOR_ANO, MENOR_ANO } from '../../../compartilhado/leitura-de-entrada.js';
 import type { SituacaoGuardada } from './cobranca.js';
 
 // O que interessa de um evento de cobrança do Asaas. O corpo completo fica guardado no banco.
+// Valor e datas chegam como o Asaas mandou, ainda sem conferir: quem confere é decidirConciliacao,
+// que separa "ausente" (nulo: vale o padrão) de "presente e inválido" (vira pendência).
 export type AvisoDePagamento = {
   tipo: string;
   // Id da cobrança no Asaas ("pay_..."). Nulo em eventos que não são de cobrança.
   idCobrancaAsaas: string | null;
-  // Valor efetivamente pago (com multa e juros, se houve). Nulo quando o Asaas não informou.
+  // Valor efetivamente pago (com multa e juros, se houve), já em centavos. Nulo quando o Asaas não mandou um número.
   valorPagoCentavos: number | null;
   pagoEm: string | null;
   // Fluxo A1: quando o valor fica disponível na conta do Asaas.
@@ -20,7 +23,10 @@ export function reaisParaCentavos(reais: number): number {
   return Math.round(reais * 100);
 }
 
-function dia(valor: unknown): string | null {
+// Data de um aviso do Asaas: o "AAAA-MM-DD" do começo do texto, ainda sem conferir o calendário (quem
+// confere é decidirConciliacao). Sem esse formato ("ontem", número), conta como não informada.
+// O webhook e a sincronização leem as datas por aqui, para os dois decidirem igual.
+export function dataDoAviso(valor: unknown): string | null {
   return typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}/.test(valor) ? valor.slice(0, 10) : null;
 }
 
@@ -35,9 +41,10 @@ export function lerAvisoDePagamento(tipo: string, payload: unknown): AvisoDePaga
   return {
     tipo,
     idCobrancaAsaas: pagamento.id,
-    valorPagoCentavos: typeof valor === 'number' && valor > 0 ? reaisParaCentavos(valor) : null,
-    pagoEm: dia(pagamento.paymentDate) ?? dia(pagamento.clientPaymentDate) ?? dia(pagamento.confirmedDate),
-    disponivelEm: dia(pagamento.creditDate),
+    // Converte antes de conferir: 0,001 real só se revela inválido depois de virar zero centavo.
+    valorPagoCentavos: typeof valor === 'number' ? reaisParaCentavos(valor) : null,
+    pagoEm: dataDoAviso(pagamento.paymentDate) ?? dataDoAviso(pagamento.clientPaymentDate) ?? dataDoAviso(pagamento.confirmedDate),
+    disponivelEm: dataDoAviso(pagamento.creditDate),
   };
 }
 
@@ -96,16 +103,32 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
 
   if (PAGAMENTO.has(aviso.tipo)) {
     const disponivelEm = aviso.tipo === 'PAYMENT_RECEIVED' ? (aviso.disponivelEm ?? aviso.pagoEm ?? hoje) : null;
+    // Dado presente e inválido (data fora do calendário, valor que não cabe): nada muda aqui e o aviso
+    // vai para conferência, em vez de gravar um dado inventado ou travar a fila.
+    const invalido = dadoInvalido(aviso);
+    const conferirDadoInvalido = (situacaoAqui: string) =>
+      pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}, mas ${invalido}. ${situacaoAqui}`);
     if (cobranca.situacao === 'ABERTA') {
+      if (invalido !== null) {
+        return conferirDadoInvalido(
+          'A cobrança continua aberta: confira o pagamento no painel do Asaas e, se ele foi feito, registre o pagamento manual.',
+        );
+      }
+      // Sem valor pago (ou negativo, que não é valor pago), vale o valor da cobrança.
+      const valorPago = aviso.valorPagoCentavos !== null && aviso.valorPagoCentavos > 0 ? aviso.valorPagoCentavos : null;
       return {
         tipo: 'BAIXAR',
-        valorPagoCentavos: aviso.valorPagoCentavos ?? cobranca.valorCentavos,
+        valorPagoCentavos: valorPago ?? cobranca.valorCentavos,
         pagoEm: aviso.pagoEm ?? hoje,
         disponivelEm,
       };
     }
     if (cobranca.situacao === 'PAGA') {
-      return disponivelEm !== null && cobranca.disponivelEm === null ? { tipo: 'MARCAR_DISPONIVEL', disponivelEm } : { tipo: 'NADA' };
+      if (disponivelEm === null || cobranca.disponivelEm !== null) return { tipo: 'NADA' };
+      if (invalido !== null) {
+        return conferirDadoInvalido('A cobrança continua paga, sem a data em que o valor fica disponível: confira essa data no painel do Asaas.');
+      }
+      return { tipo: 'MARCAR_DISPONIVEL', disponivelEm };
     }
     if (cobranca.situacao === 'PAGA_COM_REGISTRO_MANUAL') {
       // [Cobranças.RF006] fluxo E2: não cria segunda entrada; pode ser pagamento em duplicidade.
@@ -136,6 +159,34 @@ export function decidirConciliacao(aviso: AvisoDePagamento, cobranca: CobrancaAC
     return pendencia('DIVERGENCIA', `O Asaas avisou ${descreverTipo(aviso.tipo)}. Confira a cobrança no Asaas.`);
   }
   return { tipo: 'NADA' };
+}
+
+// Dado que o Asaas mandou, mas que não dá para usar (defeitos D4, D5 e D8 do Plano de Testes). Baixar com ele
+// gravaria uma data que o Asaas não informou, ou o banco recusaria e o evento ficaria em nova tentativa para
+// sempre. Devolve o problema, citando o campo, ou nulo se está tudo certo. Campo ausente não é problema.
+function dadoInvalido(aviso: AvisoDePagamento): string | null {
+  const datas = [
+    ['a data do pagamento', aviso.pagoEm],
+    ['a data de crédito', aviso.disponivelEm],
+  ] as const;
+  for (const [campo, data] of datas) {
+    if (data === null) continue;
+    const leitura = lerDia(data);
+    if (!leitura.valido) {
+      // dataDoAviso já garantiu o formato: sobra a data inexistente (30/02) ou o ano fora do limite.
+      return leitura.motivo === 'fora-do-limite'
+        ? `${campo} (${data}) está fora dos anos aceitos (${MENOR_ANO} a ${MAIOR_ANO})`
+        : `${campo} (${data}) não existe no calendário`;
+    }
+  }
+  // Negativo não é valor pago: conta como "não informado" (vale o da cobrança), como sempre foi.
+  const valor = aviso.valorPagoCentavos;
+  if (valor !== null && valor >= 0 && !lerCentavos(valor).valido) {
+    return valor === 0
+      ? 'o valor pago, convertido para centavos, dá zero centavo'
+      : 'o valor pago passa do maior valor que o sistema guarda (R$ 21.474.836,47)';
+  }
+  return null;
 }
 
 function descreverTipo(tipo: string): string {
