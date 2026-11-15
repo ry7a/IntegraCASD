@@ -1,0 +1,32 @@
+I01, conferências 1 e 2 do playbook backup-e-restauracao.md (seção 2), feitas pelo Claude a pedido de Ryaj
+Início: 2026-11-15T19:45:15Z
+
+Banco de origem (integracasd):
+migracoes aplicadas = 18
+ultima migracao = 20261031120000_referencia_da_cobranca_herdada
+usuarios = 1
+alunos = 890
+cobrancas = 1098
+movimentacoes = 0
+registros da trilha = 3097
+ultimo registro da trilha = 2026-10-31 05:16:40.881
+
+Banco restaurado (integracasd_restaurado):
+migracoes aplicadas = 18
+ultima migracao = 20261031120000_referencia_da_cobranca_herdada
+usuarios = 1
+alunos = 890
+cobrancas = 1098
+movimentacoes = 0
+registros da trilha = 3097
+ultimo registro da trilha = 2026-10-31 05:16:40.881
+
+Soma dos valores das cobranças (centavos), origem e restaurado:
+origem = 13176000
+restaurado = 13176000
+
+UPDATE na trilha do restaurado (tem de dar erro):
+ERROR:  A trilha de auditoria é só de inclusão: UPDATE recusado em registros_auditoria.
+CONTEXT:  PL/pgSQL function trilha_de_auditoria_recusa_mudanca() line 3 at RAISE
+código de saída: 1
+Fim: 2026-11-15T19:45:17Z

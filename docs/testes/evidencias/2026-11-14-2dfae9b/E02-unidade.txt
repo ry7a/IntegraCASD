@@ -1,0 +1,648 @@
+Evidência E02: Testes de unidade e de arquitetura
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:58:13 (UTC-03:00)
+
+$ pnpm --filter api exec vitest run --reporter=verbose --reporter=json --outputFile.json=../../docs/testes/evidencias/2026-11-14-2dfae9b/E02-unidade.json
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 C:/Users/Ryaj/Desktop/ITA/Materias/PROF-1/2-Semestre/CSI-28/IntegraCASD/apps/api
+
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > acesso/dominio não importa infra, api, aplicacao 4ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > acesso/api não importa infra 3ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > acesso/aplicacao não importa api 2ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > administracao/dominio não importa infra, api, aplicacao 7ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > administracao/api não importa infra 10ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > administracao/aplicacao não importa api 20ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cadastros/dominio não importa infra, api, aplicacao 6ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cadastros/api não importa infra 8ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cadastros/aplicacao não importa api 11ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cobrancas/dominio não importa infra, api, aplicacao 5ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cobrancas/api não importa infra 5ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > cobrancas/aplicacao não importa api 17ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > indicadores/dominio não importa infra, api, aplicacao 5ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: toda rota autenticada > toda operação declara security não vazio (exceto login, webhook e exceções) 7ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: toda rota autenticada > rotas de Administração declaram x-perfil: DIRETORIA 2ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: rotas públicas só onde pode > @Publico() só aparece nos controllers de login, webhook e saúde 120ms
+ ✓ test/arquitetura/dinheiro.spec.ts > B5: dinheiro em centavos > o schema tem campos para conferir (o leitor do schema funciona) 5ms
+ ✓ test/arquitetura/dinheiro.spec.ts > B5: dinheiro em centavos > o schema não usa Float nem Decimal 3ms
+ ✓ test/arquitetura/dinheiro.spec.ts > B5: dinheiro em centavos > todo campo terminado em Centavos é Int 1ms
+ ✓ test/arquitetura/dinheiro.spec.ts > B5: dinheiro em centavos > o código não usa parseFloat nem .toFixed( 121ms
+ ✓ test/arquitetura/exclusao-fisica.spec.ts > B6: nada é excluído fisicamente CT-NF-07 > o código não chama .delete( nem .deleteMany( 127ms
+ ✓ test/arquitetura/asaas.spec.ts > B4: só o Cliente Asaas fala com o Asaas > HTTP e a URL do Asaas só aparecem em src/compartilhado/asaas/ 133ms
+ ✓ test/arquitetura/fronteiras-entre-modulos.spec.ts > B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07 > todo módulo tem um index.ts como ponto de entrada público 4ms
+ ✓ test/arquitetura/fronteiras-entre-modulos.spec.ts > B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07 > ninguém importa arquivos internos de outro módulo (só modulos/<nome>/index) 148ms
+ ✓ test/arquitetura/exclusao-fisica.spec.ts > B6: nada é excluído fisicamente CT-NF-07 > as migrações não têm DELETE FROM nem DROP TABLE 22ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > indicadores/api não importa infra 1ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > indicadores/aplicacao não importa api 2ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > movimentacoes/dominio não importa infra, api, aplicacao 1ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > movimentacoes/api não importa infra 1ms
+ ✓ test/arquitetura/camadas.spec.ts > B2: camadas dentro do módulo [Padrões.NF003] CT-NF-07 > movimentacoes/aplicacao não importa api 7ms
+ ✓ test/arquitetura/camadas.spec.ts > B3: Prisma só na camada infra > api/ e dominio/ de qualquer módulo não usam Prisma nem $transaction 26ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B13: trilha de auditoria central e só de inclusão [Segurança.NF006] CT-NF-07 > só o ponto central grava na trilha 91ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B13: trilha de auditoria central e só de inclusão [Segurança.NF006] CT-NF-07 > nem o ponto central altera ou apaga registros da trilha 1ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B13: trilha de auditoria central e só de inclusão [Segurança.NF006] CT-NF-07 > existe uma migração com o gatilho que recusa UPDATE, DELETE e TRUNCATE na trilha 8ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B14: detalhe da trilha sem dados pessoais [Padrões.NF001] CT-NF-07 > encontra as chamadas a registrarNaTrilha (a varredura não está cega) 1ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B14: detalhe da trilha sem dados pessoais [Padrões.NF001] CT-NF-07 > nenhuma chamada monta o detalhe com nome, e-mail, CPF, telefone ou outro campo de pessoa 2ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B14: detalhe da trilha sem dados pessoais [Padrões.NF001] CT-NF-07 > nenhuma chamada serializa um objeto inteiro com JSON.stringify 1ms
+ ✓ test/arquitetura/trilha-de-auditoria.spec.ts > B14: detalhe da trilha sem dados pessoais [Padrões.NF001] CT-NF-07 > a regra pega o jeito errado (confere a própria varredura) 1ms
+ ✓ test/arquitetura/fronteiras-entre-modulos.spec.ts > B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07 > compartilhado/ não depende de nenhum módulo 19ms
+ ✓ test/arquitetura/fronteiras-entre-modulos.spec.ts > B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07 > não usa forwardRef (sinal de dependência circular entre módulos) 87ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: rotas públicas só onde pode > ninguém marca rota pública por fora do @Publico() (chave de metadados ou SetMetadata direto) 86ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: rotas públicas só onde pode > só os controllers públicos e a guarda importam o decorator (pega até o @Publico com outro nome) 102ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: rotas públicas só onde pode > cada controller público tem só os handlers e o @Publico() conhecidos (rota nova ali nasceria pública) 2ms
+ ✓ test/arquitetura/rotas-autenticadas.spec.ts > B8: rotas públicas só onde pode > as expressões pegam o jeito errado (confere a própria varredura) 1ms
+ ✓ test/arquitetura/fronteiras-entre-modulos.spec.ts > B1: fronteiras entre módulos [Padrões.NF003] CT-NF-07 > não há ciclo de imports entre módulos 89ms
+ ✓ test/arquitetura/segredos.spec.ts > B11: segredos fora do repositório [Segurança.NF003] CT-NF-07 > nenhum arquivo .env está versionado (só o .env.example) 73ms
+ ✓ test/arquitetura/segredos.spec.ts > B11: segredos fora do repositório [Segurança.NF003] CT-NF-07 > nenhum arquivo versionado contém o prefixo de chave do Asaas 315ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > início do silêncio [Confiabilidade.NF002] > conta da última notificação quando ela é mais recente que a chave 3ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > início do silêncio [Confiabilidade.NF002] > chave cadastrada depois da última notificação dá um prazo novo ao Asaas 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > início do silêncio [Confiabilidade.NF002] > nunca recebeu nada: conta da chave; sem nenhuma das duas datas, não há o que medir 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > silêncio acima do prazo configurado [Confiabilidade.NF002] > só é alerta quando passa do prazo; exatamente no prazo ainda não 1ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > silêncio acima do prazo configurado [Confiabilidade.NF002] > respeita os três prazos permitidos (12, 24 e 48 horas) 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > silêncio acima do prazo configurado [Confiabilidade.NF002] > conta horas inteiras para o texto do aviso 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > tudo normal e nenhum alerta aberto: nada a fazer 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > silêncio sem alerta aberto: abre o alerta e avisa 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > alerta aberto que ainda não conseguiu avisar ninguém: tenta de novo 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > alerta aberto e já avisado: não repete o e-mail a cada verificação 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > o silêncio continua depois de 24 horas do último aviso: lembra 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > decisão da vigilância [Confiabilidade.NF002] > as notificações voltaram: encerra o alerta aberto 0ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > texto do alerta [Confiabilidade.NF002] [Usabilidade.NF002] > diz o que houve, a hora local da última notificação, o risco dos 14 dias e o que fazer 23ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > texto do alerta [Confiabilidade.NF002] [Usabilidade.NF002] > lembrete: o assunto muda e o texto não promete novo lembrete 2ms
+ ✓ src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts > texto do alerta [Confiabilidade.NF002] [Usabilidade.NF002] > nunca recebeu notificação: explica sem inventar uma data 1ms
+ ✓ src/compartilhado/datas.spec.ts > datas > "hoje" é o dia em São Paulo, mesmo quando em UTC já é o dia seguinte 24ms
+ ✓ src/compartilhado/datas.spec.ts > datas > converte entre "AAAA-MM-DD" e a coluna de data do banco sem mudar o dia 1ms
+ ✓ src/compartilhado/datas.spec.ts > datas > mês "AAAA-MM": quatro dígitos de ano e mês de 01 a 12 1ms
+ ✓ test/arquitetura/ganchos.spec.ts > G7: os ganchos do git barram merge e push com teste falhando CT-NF-07 > .githooks/pre-merge-commit roda lint, testes e arquitetura e sai com erro se algo falhar 5ms
+ ✓ test/arquitetura/ganchos.spec.ts > G7: os ganchos do git barram merge e push com teste falhando CT-NF-07 > .githooks/pre-push roda lint, testes e arquitetura e sai com erro se algo falhar 2ms
+ ✓ test/arquitetura/ganchos.spec.ts > G7: os ganchos do git barram merge e push com teste falhando CT-NF-07 > o pnpm install liga os ganchos (script prepare aponta o core.hooksPath para .githooks) 1ms
+ ✓ src/compartilhado/autenticacao/senha.spec.ts > protecao das credenciais [Segurança.NF005] > usa Argon2id com sal aleatorio e nunca armazena a senha em claro 1554ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > cria a cobrança enviando o valor em reais e a chave no cabeçalho access_token 44ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > atualiza o cliente com PUT /customers/{id} 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > cancela com DELETE /payments/{id}, sem corpo 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > consulta uma cobrança e converte reais em centavos; desconhecida (404) vira nulo 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > lê as datas do pagamento como o webhook: o paymentDate malformado não esconde o clientPaymentDate 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > lista as cobranças do período percorrendo todas as páginas 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > recusa valor que não seja inteiro positivo, sem chamar o Asaas 3ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > traduz o erro 400 sem repassar a mensagem crua do Asaas 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > no 429, espera o tempo informado pelo Asaas e repete a requisição 3ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > desiste depois de 3 respostas 429 seguidas 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > transforma falha de rede em ErroAsaas 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > limita o tempo de cada chamada com um sinal de cancelamento 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > dá 45 s aos pedidos que criam ou alteram e 15 s às leituras 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > trata o tempo esgotado como Asaas indisponível, sem repetir nem vazar a chave 2ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > ClienteAsaasHttp > trata o tempo esgotado durante a leitura da resposta como Asaas indisponível 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > configuracaoAsaasDoAmbiente > usa a URL de sandbox quando o ambiente é sandbox 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > configuracaoAsaasDoAmbiente > falha se a chave ainda for o texto de exemplo do .env.example 1ms
+ ✓ src/compartilhado/asaas/cliente-asaas.http.spec.ts > configuracaoAsaasDoAmbiente > falha se o ambiente for desconhecido 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança avulsa [Cobranças.RF002] > aceita a entrada e limpa a descrição 3ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança avulsa [Cobranças.RF002] > recusa vencimento no passado (fluxo E2), mas aceita hoje 2ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança avulsa [Cobranças.RF002] > valor em centavos, inteiro e positivo 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança avulsa [Cobranças.RF002] > exige o aluno escolhido na lista 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > vencimento sugerido e situação exibida > sugere o próximo dia de vencimento a partir de hoje 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > vencimento sugerido e situação exibida > aberta com vencimento passado aparece como VENCIDA 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > aluno cobrável (fluxo A1) > aluno inativo não recebe cobrança 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > aluno cobrável (fluxo A1) > cadastro incompleto diz o que falta 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > sem filtro de situação, mostra abertas e vencidas 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > lê as situações separadas por vírgula e recusa as desconhecidas 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > lê a página pedida pela tela; sem ela, a primeira 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > limita o tamanho da página e lê valores em centavos 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > recusa período de vencimento com data que não existe no calendário, citando o filtro 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > recusa valor e página acima do maior inteiro do banco, citando o filtro 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > lê a busca pela regra comum: aparada, espaços repetidos reduzidos, e recusa o caractere nulo citando a busca 2ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > dias de atraso só para vencida 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > consulta [Cobranças.RF008] > só cobrança aberta aceita cancelar e pagamento manual 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > boleto [Cobranças.RF003] > só cobrança aberta tem boleto; paga ou cancelada informa a situação (fluxo E1) 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança herdada da planilha (ADR-0005) > só a herdada não existe no Asaas 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cobrança herdada da planilha (ADR-0005) > herdada não tem boleto nem sincronização, e a mensagem diz o que fazer 0ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cancelamento [Cobranças.RF004] > cobrança paga não se cancela: a devolução é pelo Asaas (fluxo E1) 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cancelamento [Cobranças.RF004] > o motivo recusa o caractere nulo e o que passa de 300 caracteres, citando o motivo 1ms
+ ✓ src/modulos/cobrancas/dominio/cobranca.spec.ts > cancelamento [Cobranças.RF004] > o motivo é obrigatório 0ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > envia pela API do provedor, com a chave no cabeçalho e o alerta no corpo 41ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > usa outro endereço quando EMAIL_API_URL está preenchido, sem barra sobrando 1ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > sem chave ou sem remetente no .env: não envia, não chama a rede e diz o que fazer 2ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > sem destinatário: não envia e orienta a cadastrar a diretoria 1ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > provedor recusa: informa o código HTTP, sem repetir o corpo da resposta nem a chave 1ms
+ ✓ src/compartilhado/notificacao/notificador-por-email.http.spec.ts > envio de alertas por e-mail [Confiabilidade.NF002] > rede fora do ar: não lança, avisa que tenta de novo e não vaza a chave 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > CPF [Cadastros.RF001] > confere os dígitos verificadores 3ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > CPF [Cadastros.RF001] > recusa sequência repetida, que passa na conta mas não existe 0ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > CPF [Cadastros.RF001] > aceita com ou sem pontuação e guarda só os dígitos 0ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > CPF [Cadastros.RF001] > explica o que fazer quando o CPF tem tamanho errado ou é inválido 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > e-mail é obrigatório e vai para minúsculas 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > celular aceita 10 ou 11 dígitos com DDD 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > matrícula é inteiro positivo; vazio vira nulo 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > matrícula acima do inteiro do banco (2^31, 1e300) é recusada citando o campo, em vez de virar erro 500 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > turma no formato T28, sem diferenciar maiúsculas 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > e-mail, celular e turma sem limite de tamanho de negócio; o caractere nulo continua recusado 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > demais campos > alojamento: os três campos juntos ou nenhum 2ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > inclusão e alteração > na inclusão, nome, CPF e e-mail são obrigatórios 2ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > inclusão e alteração > texto com caractere nulo (colado de outro programa) é recusado citando o campo, em vez de virar erro 500 1ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > inclusão e alteração > na alteração, só muda o que veio; null limpa campo opcional 0ms
+ ✓ src/modulos/cadastros/dominio/aluno.spec.ts > cadastro incompleto (fluxo A4) > sem e-mail ou com CPF inválido conta como incompleto 0ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > recusa a autoinativacao 5ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > mantem ao menos um usuario de diretoria ativo 2ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > com o formulario inteiro, a trilha lista so o e-mail quando so ele mudou, sem revogar sessoes 5ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > reenviar ativo:false de um usuario ja inativo nao revoga sessoes nem vira INATIVACAO 1ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > passar de ativo para inativo revoga as sessoes e registra INATIVACAO 1ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > formulario sem nenhuma mudanca nao grava nada 1ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > a trilha nunca leva o nome nem o e-mail, antigos ou novos (LGPD) 3ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > trocar o perfil revoga as sessoes abertas do usuario, na mesma transacao, com registro na trilha 2ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > nao revoga sessoes quando o perfil nao muda 1ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > grava so os campos que mudaram em relacao ao cadastro atual (o banco recebe o mesmo que a trilha) 2ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > campo que nao veio no pedido nao e tocado: salvar so o nome nao reativa quem outra pessoa inativou 1ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > caractere nulo no nome: recusa com 400 citando o campo, sem consultar nem gravar 2ms
+ ✓ src/modulos/administracao/aplicacao/usuarios.service.spec.ts > manutencao de usuarios [Administração.RF001] > caractere nulo no e-mail: recusa com 400 citando o campo, sem consultar nem gravar 3ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > testa a chave nova antes de guardar e guarda só a versão cifrada [Segurança.NF003] 10ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > chave recusada pelo Asaas não é guardada e a anterior continua valendo (fluxo E1) 4ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > com o Asaas fora do ar, também não guarda 1ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > recusa ambiente, chave ou prazo inválidos sem chamar o Asaas 1ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > sem CHAVE_DE_CIFRAGEM no servidor, avisa e não guarda 1ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > muda só o prazo do alerta, mantendo a chave (fluxo A2) 1ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > não muda o prazo antes de haver chave cadastrada 1ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > a consulta informa o ambiente e a origem da chave, nunca a chave 2ms
+ ✓ src/modulos/administracao/aplicacao/integracao-asaas.spec.ts > integração com o Asaas [Administração.RF004] > sem chave em lugar nenhum, a integração aparece desconectada 2ms
+[Nest] 27684  - 14/11/2026, 08:58:19    WARN [Configuracao] CHAVE_DE_CIFRAGEM precisa ter 32 bytes em base64 (veja o passo 2.7 do playbook de implantação). Em produção, isto impediria a subida.
+[Nest] 27684  - 14/11/2026, 08:58:19    WARN [Configuracao] GERACAO_A_PARTIR_DE ("2027-13") precisa estar no formato AAAA-MM, com mês de 01 a 12 (ex.: 2027-02), ou ficar vazia. Em produção, isto impediria a subida.
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > configuração completa não tem problema, na API e no worker 3ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > DATABASE_URL vazia ou ausente 2ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > CHAVE_DE_CIFRAGEM que não decodifica para 32 bytes 3ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > a API exige ASAAS_WEBHOOK_TOKEN preenchido e diferente do exemplo 1ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > a API acusa espaço ou quebra de linha nas pontas do ASAAS_WEBHOOK_TOKEN, sem mostrar o valor 1ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > o worker não precisa do token do webhook 0ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > GERACAO_A_PARTIR_DE é opcional; preenchida, precisa ser AAAA-MM com mês de 01 a 12, na API e no worker 1ms
+ ✓ src/compartilhado/configuracao.spec.ts > problemasDaConfiguracao > nenhuma mensagem repete o valor das variáveis 0ms
+ ✓ src/compartilhado/configuracao.spec.ts > validarConfiguracaoNaSubida > em produção, configuração inválida impede a subida 1ms
+ ✓ src/compartilhado/configuracao.spec.ts > validarConfiguracaoNaSubida > em produção, configuração válida sobe 1ms
+ ✓ src/compartilhado/configuracao.spec.ts > validarConfiguracaoNaSubida > fora de produção, só avisa 2ms
+ ✓ src/compartilhado/configuracao.spec.ts > validarConfiguracaoNaSubida > em produção, GERACAO_A_PARTIR_DE inválida impede a subida da API e do worker 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > ListarAlunos [Cadastros.RF001] > sem filtro lista só os ativos e marca cadastro incompleto (fluxo A4) 4ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > CriarAluno [Cadastros.RF001] > grava os dados normalizados 2ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > CriarAluno [Cadastros.RF001] > CPF de outro cadastro ativo não cria um novo e indica qual é (fluxo E1) 3ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > CriarAluno [Cadastros.RF001] > recusa vaga ocupada e matrícula repetida com 409 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > CriarAluno [Cadastros.RF001] > CPF inválido responde 400 com o que fazer 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > AlterarAluno [Cadastros.RF001] > inativar não exclui e fica registrado como INATIVACAO (fluxo A1) 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > AlterarAluno [Cadastros.RF001] > reativar confere se o CPF foi recadastrado por outro aluno ativo 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > AlterarAluno [Cadastros.RF001] > trocar o CPF para o de outro aluno ativo é recusado 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > AlterarAluno [Cadastros.RF001] > manter a própria vaga não acusa vaga ocupada 2ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > AlterarAluno [Cadastros.RF001] > aluno inexistente responde 404; corpo vazio responde 400 1ms
+ ✓ src/modulos/cadastros/aplicacao/alunos.spec.ts > evento "aluno alterado" > mudar nome, CPF ou e-mail avisa os outros módulos; mudar só o apelido não 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa a data 2025-02-30, que não existe no calendário 4ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa a data 2025-04-31, que não existe no calendário 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa a data 2025-13-01, que não existe no calendário 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa a data 2025-00-10, que não existe no calendário 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa a data 0000-00-00, que não existe no calendário 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa ano antes de 1900, o limite de toda data lida pela regra comum 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > aceita 29/02 em ano bissexto 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor 2147483648 centavos, acima do que a coluna do banco guarda 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor 1e+21 centavos, acima do que a coluna do banco guarda 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > aceita o maior valor que a coluna do banco guarda (2^31 - 1 centavos) 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor 0 pedindo centavos inteiros maiores que zero 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor -1 pedindo centavos inteiros maiores que zero 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor 10.5 pedindo centavos inteiros maiores que zero 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa o valor 120000 pedindo centavos inteiros maiores que zero 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > recusa descrição com caractere nulo, que o PostgreSQL não grava 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > leitura do lançamento: data, valor e descrição [Movimentações.RF001] [Usabilidade.NF002] > descrição: 200 caracteres passam; 201, só espaços ou que não é texto são recusados 2ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > sem filtros, mostra o mês corrente com estornos 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > lê os filtros que chegam da URL, como texto 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa mês, tipo, forma ou id inválidos 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 0000-01, com ano fora de 1900 a 9999 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 1899-12, com ano fora de 1900 a 9999 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 2026-00, que não existe 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 2026-13, que não existe 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 2026-1, fora do formato AAAA-MM 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 10/2026, fora do formato AAAA-MM 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > recusa o mês 2026-09, fora do formato AAAA-MM 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > aceita os meses dos extremos: janeiro de 1900 e dezembro de 9999 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > consulta de movimentações [Movimentações.RF003] > o mês vai do dia 1 ao último dia, inclusive fevereiro de ano bissexto 0ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > quem pode ser estornado [Movimentações.RF002] > só lançamento manual ainda não estornado 1ms
+ ✓ src/modulos/movimentacoes/dominio/movimentacao.spec.ts > quem pode ser estornado [Movimentações.RF002] > movimentação de cobrança é tratada pela cobrança (fluxo E1) 0ms
+ ✓ src/site.spec.ts > pastaDoSite > por padrão, de apps/api/dist chega em apps/web/dist 3ms
+ ✓ src/site.spec.ts > pastaDoSite > CAMINHO_DO_SITE troca o lugar 0ms
+ ✓ src/site.spec.ts > cacheDoArquivo > /assets fica no cache para sempre; o resto é conferido a cada visita 0ms
+ ✓ src/site.spec.ts > ehPaginaDoSite > GET e HEAD fora de /api são páginas do site 0ms
+ ✓ src/site.spec.ts > ehPaginaDoSite > /api e outros métodos não são 0ms
+ ✓ src/site.spec.ts > ehPaginaDoSite > /assets não é página: arquivo do build que não existe dá 404, não o index.html 0ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > CriarCategoria [Administração.RF002] CT-ADM-02 > grava o nome normalizado e o tipo 3ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > CriarCategoria [Administração.RF002] CT-ADM-02 > recusa nome igual ao de outra categoria ativa (fluxo E1) com 409 2ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > CriarCategoria [Administração.RF002] CT-ADM-02 > recusa dados inválidos com 400 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > CriarCategoria [Administração.RF002] CT-ADM-02 > recusa com 400 o nome com caractere nulo, citando o nome da categoria, sem gravar 2ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > AlterarCategoria [Administração.RF002] > inativar categoria em uso é permitido e fica registrado como INATIVACAO (fluxo A1) 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > AlterarCategoria [Administração.RF002] > reativar confere se outra categoria ativa já usa o nome 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > AlterarCategoria [Administração.RF002] > não troca para "só entradas" uma categoria que já classifica saídas 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > AlterarCategoria [Administração.RF002] > manter o mesmo nome não acusa duplicidade 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > AlterarCategoria [Administração.RF002] > categoria inexistente responde 404; corpo sem campos responde 400 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > ExcluirCategoria > exclui categoria que nunca foi usada 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > ExcluirCategoria > recusa com 409 a exclusão de categoria em uso 1ms
+ ✓ src/modulos/administracao/aplicacao/categorias.spec.ts > ExcluirCategoria > categoria inexistente responde 404 0ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > a raiz e qualquer rota do React Router devolvem o index.html, com no-cache 185ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > HEAD de uma rota do site também responde 200 8ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > /assets com cache imutável; outros arquivos com no-cache 14ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > /api continua com o Nest: rota conhecida responde, desconhecida dá 404 em JSON 45ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > arquivo de /assets que não existe (aba antiga depois de implantar) dá 404, sem o index.html 13ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > POST fora de /api não recebe o index.html 13ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > cabeçalhos de segurança no site e na API 60ms
+ ✓ src/site.spec.ts > servirOSite (Express de verdade, sem banco) > sem o build do site, recusa subir com mensagem clara 15ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > dia "AAAA-MM-DD" > aceita um dia que existe no calendário 6ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > dia "AAAA-MM-DD" > recusa por formato o que não é texto "AAAA-MM-DD" 2ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > dia "AAAA-MM-DD" > 29/02 só existe em ano bissexto (2028 é; 2026 não; 2000 é; 2100 não) 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > dia "AAAA-MM-DD" > recusa como inexistente o dia que não está no calendário: 30/02, 31/04, dia 00, mês 00 e 13 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > dia "AAAA-MM-DD" > aceita ano de 1900 a 9999 e recusa como abaixo do mínimo o que vem antes 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mês "AAAA-MM" > aceita o mês de 01 a 12 e recusa por formato o que não é texto "AAAA-MM" 2ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mês "AAAA-MM" > mês 00 e 13 não existem; ano antes de 1900 fica abaixo do mínimo (como "0000-01") 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > centavos: inteiro de 1 a 2.147.483.647 (o Int do PostgreSQL) > aceita de 1 centavo até o limite da coluna 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > centavos: inteiro de 1 a 2.147.483.647 (o Int do PostgreSQL) > recusa zero e negativo como abaixo do mínimo, e o que passa do limite (2^31 e 1e21) como acima do máximo 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > centavos: inteiro de 1 a 2.147.483.647 (o Int do PostgreSQL) > recusa por formato fração de centavo, texto (mesmo "4500"), NaN, infinito e outros tipos 2ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > inteiro não negativo: de 0 a 2.147.483.647 (página, matrícula) > aceita de zero até o limite da coluna 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > inteiro não negativo: de 0 a 2.147.483.647 (página, matrícula) > recusa negativo como abaixo do mínimo, e o que passa do limite (2^31, 1e300) como acima do máximo 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > inteiro não negativo: de 0 a 2.147.483.647 (página, matrícula) > recusa por formato fração, texto e outros tipos 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > texto: aparado, sem caractere nulo, até o tamanho máximo de quem chama > tira os espaços das pontas e junta os repetidos no meio 0ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > texto: aparado, sem caractere nulo, até o tamanho máximo de quem chama > só espaços vira texto vazio: se o campo é obrigatório, quem chama decide 0ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > texto: aparado, sem caractere nulo, até o tamanho máximo de quem chama > aceita no tamanho máximo (contado depois de aparar) e recusa um acima como acima do máximo 0ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > texto: aparado, sem caractere nulo, até o tamanho máximo de quem chama > recusa o caractere nulo, que o PostgreSQL não grava, em qualquer ponto do texto 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > texto: aparado, sem caractere nulo, até o tamanho máximo de quem chama > recusa por formato o que não é texto 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mensagem da recusa > dia: inexistente, ano fora de 1900 a 9999 e formato, com as contrações do campo 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mensagem da recusa > mês: inexistente, ano fora de 1900 a 9999 e formato 0ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mensagem da recusa > centavos: acima do máximo tem mensagem própria; zero, negativo, fração e texto pedem o valor certo 0ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mensagem da recusa > texto: caractere nulo, acima do máximo e formato 1ms
+ ✓ src/compartilhado/leitura-de-entrada.spec.ts > mensagem da recusa > campo sem artigo também funciona (sem contração) 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > leitura do aviso do Asaas > converte reais em centavos sem erro de arredondamento 3ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > leitura do aviso do Asaas > lê id, valor pago, data do pagamento e data de crédito 2ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > leitura do aviso do Asaas > o paymentDate malformado não esconde o clientPaymentDate válido, como na sincronização 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > leitura do aviso do Asaas > evento sem cobrança não aponta para cobrança nenhuma 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > pagamento confirmado baixa a cobrança aberta com o valor efetivamente pago 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > pagamento recebido baixa e já informa quando o valor fica disponível (fluxo A1) 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > recebido depois do confirmado só marca a disponibilidade, sem segunda entrada (fluxo A1) 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > sem valor no aviso, usa o valor da cobrança; sem data, usa hoje 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > estorno de cobrança paga leva a "Estornada"; repetido não faz nada 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > cobrança removida no painel do Asaas é cancelada aqui 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > vencimento, criação e atualização não mudam nada ("Vencida" é calculada) 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > pagamento de cobrança que não existe aqui vira pendência, sem descartar o aviso (fluxo E1) 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > pagamento no Asaas de cobrança já registrada à mão não cria segunda entrada [Cobranças.RF006] 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > pagamento de cobrança cancelada pede conferência 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > conciliação [Cobranças.RF005] > aviso de pagamento atrasado, chegando depois do estorno, não faz nada 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > data do pagamento que não existe no calendário vira pendência, sem baixar 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > data com ano fora de 1900 a 9999 vira pendência, com o motivo certo 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > data de crédito que não existe no calendário vira pendência, sem baixar 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > valor pago de 0,001 real, que em centavos dá zero, vira pendência (D8) 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > valor pago acima do que a coluna guarda vira pendência (D5) 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > valor negativo ou em texto e data que não é data contam como não informados, como hoje 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > recebido depois do confirmado, com data de crédito inexistente, vira pendência em vez de marcar a disponibilidade 0ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > recebido depois do confirmado, com data de crédito válida e valor que dá zero centavo: o motivo manda conferir o valor 1ms
+ ✓ src/modulos/cobrancas/dominio/conciliacao.spec.ts > aviso do Asaas com data ou valor inválido [Cobranças.RF005] > com a data de crédito inválida, o motivo manda conferir a data de crédito 0ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > lê e normaliza a entrada; sem vínculo, os três ficam nulos 4ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > recusa data no futuro (fluxo E1) e valor zero (fluxo E2) 2ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > Asaas não é forma de lançamento manual; só um vínculo por movimentação 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > categoria precisa estar ativa e aceitar o tipo (MER, regra 2) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > grava com o autor e devolve o id 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto executado, aceita e avisa (fluxo A2) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto EXECUTADO, aceita e avisa que o projeto está encerrado (fluxo A2) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto CANCELADO, aceita e avisa que o projeto está encerrado (fluxo A2) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto em andamento (A_LIBERAR), aceita sem aviso 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto em andamento (LIBERADO), aceita sem aviso 0ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > em projeto em andamento (EM_EXECUCAO), aceita sem aviso 0ms
+ ✓ src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts > registrar movimentação [Movimentações.RF001] > conta inativa, vínculo inexistente ou categoria incompatível: 400, nada gravado 2ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > aceita parâmetros válidos 3ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > recusa geração no dia do vencimento ou depois (fluxo E1) 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > dias de 1 a 28, para existirem em todo mês 0ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > multa até 2% e juros até 1% ao mês 0ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > valor em centavos, inteiro e positivo 0ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > destino da conciliação [Cobranças.RF005] > conta e categorias são opcionais; vazio vira nulo 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > destino da conciliação [Cobranças.RF005] > aceita conta ativa e categorias de entrada ou de ambos os tipos 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > destino da conciliação [Cobranças.RF005] > recusa conta inativa, categoria inexistente e categoria só de saída 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > próximo ciclo e conferência > se o dia de geração ainda não passou, é neste mês 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > próximo ciclo e conferência > se já passou, é no mês seguinte, virando o ano em dezembro 0ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > próximo ciclo e conferência > com a trava, a próxima geração é no primeiro mês liberado, inclusive na virada do ano 1ms
+ ✓ src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts > próximo ciclo e conferência > total previsto = alunos cobrados x mensalidade 0ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > ConciliacaoRepositorio [Confiabilidade.NF004] > marca o evento, cria a entrada, baixa a cobrança e grava a trilha na mesma transação 5ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > ConciliacaoRepositorio [Confiabilidade.NF004] > evento já marcado por outro processamento: nada mais é feito [Confiabilidade.NF003] 1ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > ConciliacaoRepositorio [Confiabilidade.NF004] > cobrança mudou no meio: lança erro para desfazer a transação e a fila tentar de novo 1ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > ConciliacaoRepositorio [Confiabilidade.NF004] > estorno anula a entrada com uma movimentação espelho, sem apagar nada 2ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > ConciliacaoRepositorio [Confiabilidade.NF004] > pendência marca o evento e entra na fila, sem tocar na cobrança [Cobranças.RF005] 1ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > paraConciliar (ADR-0005) > cobrança do Asaas segue para a conciliação, com a data em AAAA-MM-DD 1ms
+ ✓ src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts > paraConciliar (ADR-0005) > herdada da planilha fica de fora: não existe no Asaas 0ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > sem filtros, o mês corrente até hoje, primeira página de 50 4ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > aceita usuário, rotina automática, operação, tipo de registro e um registro (fluxo A1) 3ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > recusa período invertido, operação desconhecida, usuário inválido e página fora do limite 2ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > recusa período com data que não existe no calendário ou com ano fora do limite, citando a data 2ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > recusa o registro com caractere nulo ou com mais de 64 caracteres, citando o registro 2ms
+ ✓ src/modulos/administracao/dominio/trilha.spec.ts > filtros da trilha de auditoria [Administração.RF005] > o período cobre os dias inteiros no fuso de São Paulo 1ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > cadastro de funcionário [Cadastros.RF002] > na inclusão, normaliza o CPF e aceita sem desligamento 3ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > cadastro de funcionário [Cadastros.RF002] > salário de referência em centavos, inteiro e não negativo 1ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > cadastro de funcionário [Cadastros.RF002] > recusa data que não existe e desligamento antes da admissão 2ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > cadastro de funcionário [Cadastros.RF002] > cargo com caractere nulo é recusado citando o campo, em vez de virar erro 500 no banco 1ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > cadastro de funcionário [Cadastros.RF002] > na alteração, confere o período com o que já estava gravado 1ms
+ ✓ src/modulos/cadastros/dominio/funcionario.spec.ts > situação pelo desligamento (fluxo A1) > fica inativo a partir da data de desligamento, não antes 0ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > traduz a situação no Asaas no aviso equivalente do webhook 3ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > valor que no Asaas arredonda para zero centavo vira pendência, como no webhook 1ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > data de pagamento inexistente vira pendência; data sem o formato AAAA-MM-DD vale hoje, como no webhook 1ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > reconhece a referência externa da mensalidade gerada aqui 1ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > mantém multa e juros de cobrança feita no painel dentro dos limites legais 0ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > período: as duas datas, em ordem, até um ano 2ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > a rotina diária olha 90 dias para trás e 31 para a frente (fluxo A2) 2ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > vencida sem sincronizar há mais de sete dias é sinalizada na lista [Cobranças.RF008] 1ms
+ ✓ src/modulos/cobrancas/dominio/sincronizacao.spec.ts > sincronização com o Asaas [Cobranças.RF007] > no detalhe, sincronização que não é de hoje é recomendada antes do pagamento manual 0ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > com EMAIL_ALERTAS_PARA preenchida, o alerta vai só para essa lista, e não para a diretoria 8ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > EMAIL_ALERTAS_PARA só com espaços vale como vazia: o alerta vai para a diretoria 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > sem integração configurada, não há o que vigiar e ninguém é avisado 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > sem nenhum evento e sem data de cadastro da chave, não há de onde contar o silêncio 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > notificações em dia: não abre alerta nem manda e-mail 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > silêncio acima do prazo: abre o alerta e avisa toda a diretoria por e-mail 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > rodar de novo logo em seguida não repete o e-mail (a rotina é segura para rodar duas vezes) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > o silêncio continua depois de 24 horas: manda um lembrete, no mesmo alerta 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > e-mail fora do ar: o alerta fica aberto sem envio e a próxima verificação tenta de novo 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > as notificações voltaram: encerra o alerta e, se parar de novo, abre um novo 2ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > respeita o prazo configurado (12, 24 ou 48 horas) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > chave cadastrada há pouco dá um prazo novo ao Asaas, mesmo com a última notificação antiga 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > nunca chegou notificação desde o cadastro da chave: conta do cadastro e avisa 1ms
+ ✓ src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts > vigilância do webhook parado [Confiabilidade.NF002] > sem diretoria ativa com e-mail, o pedido de envio vai com a lista vazia e o motivo volta para o log 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > cria no Asaas com multa e juros vigentes e só então grava aqui, com o id do Asaas 5ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > cria o cliente do aluno no Asaas só na primeira cobrança 2ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > Asaas fora do ar: nada é gravado e o erro volta na hora (fluxo E1) [Confiabilidade.NF005] 2ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > cadastro incompleto não chega ao Asaas (fluxo A1) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > sem parâmetros de cobrança cadastrados, recusa com orientação 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'vencimento em 30 de fevereiro': recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'vencimento em 31 de abril': recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'vencimento no mês 13': recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'vencimento no mês 00': recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'valor acima do inteiro do banco (2^31…': recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'valor 1e21 centavos': recusa antes de falar com o Asaas 0ms
+ ✓ src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts > EmitirCobrancaAvulsa [Cobranças.RF002] > 'descrição com caractere nulo no meio': recusa antes de falar com o Asaas 1ms
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 2 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 1 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 1 trazidas do Asaas, 1 não identificadas, 0 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Há pagamentos no Asaas que não foram baixados: falta escolher a conta de recebimento e as categorias em Administração > Parâmetros.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 0 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Interrompida: O Asaas está fora do ar no momento. Tente novamente em alguns minutos.
+[Nest] 12812  - 14/11/2026, 08:58:24     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > baixa aqui a cobrança paga no Asaas e marca todas as conferidas 8ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > registra aqui a mensalidade que só existe no Asaas, reconhecida pela referência externa (RF001 E2) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > cobrança avulsa do painel é registrada pelo cliente do Asaas; sem aluno, fica como não identificada 1ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > cobrança aberta aqui e excluída no Asaas é cancelada 1ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > paga à mão aqui e paga no Asaas: vai para a fila de pendências, sem segunda entrada (RF006 E2) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > aberta aqui e desconhecida no Asaas: vai para a fila como divergência 1ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > sem conta e categoria de recebimento, não baixa e explica na execução 1ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > com o Asaas fora do ar, registra a interrupção e avisa com 502 [Confiabilidade.NF007] 4ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > sincroniza uma cobrança só, a partir do detalhe (fluxo A1) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > cobrança herdada da planilha não é sincronizada: 400, sem consultar o Asaas (ADR-0005) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts > SincronizarCobrancas [Cobranças.RF007] > período inválido: 400, sem consultar o Asaas 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > aceita no limite exato (id de 255, event de 100, corpo de 32 níveis) e grava o evento como veio 5ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um id com mais de 255 caracteres 2ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um payment.id com mais de 255 caracteres; com 255, aceita 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um event com mais de 100 caracteres 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um id com caractere nulo 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um caractere nulo no event 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um caractere nulo num campo do pagamento 0ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um caractere nulo num texto dentro de uma lista 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um caractere nulo no nome de uma chave 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um surrogate sem par no id 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um surrogate sem par no event 0ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um surrogate sem par num campo do pagamento (metade alta, sem a baixa) 0ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um surrogate sem par num campo do pagamento (metade baixa, sem a alta) 0ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um surrogate sem par no nome de uma chave 0ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > aceita emoji e acentos (pares de surrogates completos) 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um payment com 32 listas aninhadas (corpo com mais de 32 níveis) 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um payment com 5000 listas aninhadas (corpo com mais de 32 níveis) 1ms
+ ✓ src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts > [Confiabilidade.NF001] Webhook do Asaas: limites do formato do evento > recusa com 400, sem gravar nem enfileirar, um payment com 20000 listas aninhadas (corpo com mais de 32 níveis) 1ms
+ ✓ src/modulos/acesso/aplicacao/autenticar.spec.ts > bloqueio de autenticacao [Segurança.NF007] CT-NF-06 > quatro senhas incorretas nao bloqueiam: a quinta tentativa ainda confere a senha 7ms
+ ✓ src/modulos/acesso/aplicacao/autenticar.spec.ts > bloqueio de autenticacao [Segurança.NF007] CT-NF-06 > bloqueia por 15 minutos depois de cinco senhas incorretas e audita a ocorrencia 4ms
+ ✓ src/modulos/acesso/aplicacao/autenticar.spec.ts > e-mail com caractere nulo no login > responde "e-mail ou senha inválidos" (401), sem procurar o usuário no banco 2ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > lê data, valor, forma e justificativa 3ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > justificativa é obrigatória (fluxo E1) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > recusa data no futuro, valor fracionado e forma desconhecida 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > só cobrança aberta ou vencida recebe pagamento manual 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > registra com a conta e a categoria da origem da cobrança, e o autor 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > herdada da planilha: paga à mão, entra na categoria da mensalidade (ADR-0005) 0ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > sem conta ou categoria nos parâmetros, avisa o que fazer e não grava 2ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > data do pagamento 2026-02-30, que não existe no calendário: 400 citando o campo, e nada é gravado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > data do pagamento 2026-04-31, que não existe no calendário: 400 citando o campo, e nada é gravado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > data do pagamento 2026-13-01, que não existe no calendário: 400 citando o campo, e nada é gravado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > data do pagamento 2026-00-10, que não existe no calendário: 400 citando o campo, e nada é gravado 0ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > 'valor pago acima do inteiro do banco': 400 citando o campo, e nada é gravado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > 'justificativa com caractere nulo': 400 citando o campo, e nada é gravado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts > registrar pagamento manualmente [Cobranças.RF006] > cobrança já paga: 400; inexistente: 404 1ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeBasica > 200 quando o banco responde 4ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeBasica > 503 quando o banco não responde 1ms
+ ✓ src/compartilhado/saude/saude.spec.ts > situacaoDaVigilancia > em dia até uma hora depois da última execução, inclusive 1ms
+ ✓ src/compartilhado/saude/saude.spec.ts > situacaoDaVigilancia > atrasada passada uma hora 0ms
+ ✓ src/compartilhado/saude/saude.spec.ts > situacaoDaVigilancia > distingue "nunca executou" de "não deu para consultar" 0ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeCompleta > 200 só com o banco respondendo e a vigilância em dia 0ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeCompleta > 503 com o worker parado (vigilância atrasada ou nunca executada), mesmo com o banco no ar 0ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeCompleta > 503 com o banco fora do ar, mesmo com a vigilância em dia 0ms
+ ✓ src/compartilhado/saude/saude.spec.ts > avaliarSaudeCompleta > 503 quando não deu para consultar a vigilância 0ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > cancela primeiro no Asaas e depois aqui 4ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > herdada da planilha: cancela só aqui, sem chamar o Asaas, onde ela não existe (ADR-0005) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > herdada já paga também não pode ser cancelada 2ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > Asaas fora do ar: nada muda aqui, para não deixar boleto válido circulando (fluxo E2) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > cobrança paga não chega ao Asaas (fluxo E1) 0ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > sem motivo, recusa antes de falar com o Asaas 1ms
+ ✓ src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts > CancelarCobranca [Cobranças.RF004] > motivo com caractere nulo: recusa com 400, citando o motivo, antes de falar com o Asaas 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > normalizarNome > tira espaços das pontas e espaços repetidos no meio 3ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > normalizarNome > recusa nome vazio, curto demais ou que não é texto 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > normalizarNome > aceita até 60 caracteres e recusa mais que isso 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > lerTipo e lerSituacao > aceita só ENTRADA, SAIDA ou AMBOS 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > lerTipo e lerSituacao > a situação precisa ser verdadeiro ou falso 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirTrocaDeTipo > não deixa virar "só entradas" uma categoria que já classifica saídas 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirTrocaDeTipo > não deixa virar "só saídas" uma categoria que já classifica entradas 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirTrocaDeTipo > ampliar para AMBOS é sempre permitido 0ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirTrocaDeTipo > categoria sem uso pode trocar de tipo à vontade 0ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirExclusao > categoria nunca usada pode ser excluída 1ms
+ ✓ src/modulos/administracao/dominio/categoria.spec.ts > conferirExclusao > categoria com movimentações não pode ser excluída; o caminho é inativar 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > lê e normaliza um contrato válido; sem término, o prazo é indeterminado 5ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > recusa término antes do início (fluxo E1), inclusive na alteração 3ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > recusa caractere nulo nos textos, citando o campo, em vez de virar erro 500 no banco 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > data com ano antes de 1900 é recusada pela regra comum de data, citando o campo 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > recusa periodicidade desconhecida e valor fracionado 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > situação: vigente, vence em breve (até 60 dias), encerrado pelo término ou pelo usuário 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > encerramento exige justificativa e data a partir do início (fluxo A1) 1ms
+ ✓ src/modulos/cadastros/dominio/contrato.spec.ts > contratos [Cadastros.RF004] CT-CAD-03 > código no formato da planilha: ano + C + sequência (MER, regra 7) 1ms
+[Nest] 34532  - 14/11/2026, 08:58:25     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_RECEIVED): BAIXAR.
+[Nest] 34532  - 14/11/2026, 08:58:25     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_OVERDUE): NADA.
+[Nest] 34532  - 14/11/2026, 08:58:25     LOG [ProcessarEventoWebhook] Evento evt_falso_1 já processado; nada a fazer.
+[Nest] 34532  - 14/11/2026, 08:58:25     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_RECEIVED): já processado.
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > baixa a cobrança na conta e na categoria escolhidas para a origem dela 7ms
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > sem conta ou categoria de recebimento, não aplica nada e falha para a fila tentar de novo 3ms
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > evento que não é de pagamento é marcado como processado sem efeito 1ms
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > não processa de novo um evento que já foi processado [Confiabilidade.NF003] 1ms
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > se outro processamento marcou o evento primeiro, informa que já foi processado 1ms
+ ✓ src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts > ProcessarEventoWebhook [Cobranças.RF005] > lança erro se o evento não existe, para a fila tentar de novo 2ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > atraso de 30 dias entra na faixa 'ate30Dias' 5ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > atraso de 31 dias entra na faixa 'de31a60Dias' 1ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > atraso de 60 dias entra na faixa 'de31a60Dias' 0ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > atraso de 61 dias entra na faixa 'acimaDe60Dias' 0ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > agrupa por aluno, soma os valores originais e ordena os devedores por valor 1ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > cada aluno entra na faixa do atraso da cobrança mais antiga 0ms
+ ✓ src/modulos/indicadores/dominio/inadimplencia.spec.ts > inadimplência [Indicadores.RF002] CT-IND-02 > sem cobranças vencidas, tudo zerado; a relação tem no máximo 10 devedores 1ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > gastos por categoria [Indicadores.RF003] CT-IND-03 > ordena por valor, com a participação de cada uma (uma casa decimal) 4ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > gastos por categoria [Indicadores.RF003] CT-IND-03 > compara com o mês anterior (fluxo A1); categoria só do mês anterior aparece com zero 1ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > gastos por categoria [Indicadores.RF003] CT-IND-03 > mês sem saídas: total zero e lista vazia 0ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > período dos indicadores [Indicadores.RF001] > mês corrente por padrão; recusa formato inválido 2ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > período dos indicadores [Indicadores.RF001] > recusa ano fora de 1900 a 9999, citando o mês; aceita os dois extremos 3ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > período dos indicadores [Indicadores.RF001] > vira o ano ao somar meses 0ms
+ ✓ src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts > período dos indicadores [Indicadores.RF001] > percentual e variação com uma casa; sem base, variação nula 0ms
+[Nest] 13216  - 14/11/2026, 08:58:26    WARN [GerarCobrancasRecorrentes] Geração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).
+[Nest] 13216  - 14/11/2026, 08:58:26    WARN [GerarCobrancasRecorrentes] Geração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > cria a mensalidade do mês para cada aluno ativo, com vencimento, multa e juros dos parâmetros 6ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > rodar de novo não duplica: quem já tem a mensalidade é pulado (fluxo A1) 2ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > cadastro incompleto vira falha com o campo que falta, e os demais seguem (fluxo A2) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > dados recusados pelo Asaas afetam só aquele aluno 1ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > Asaas fora do ar interrompe, não grava nada só aqui e agenda nova tentativa (fluxo E1) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > a rotina agendada não roda antes do dia de geração nem duas vezes no mês 1ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > com a trava em 2027-02, em 31/01/2027 não gera nada nem grava execução (agendada e manual) 3ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > com a trava em 2027-02, em 01/02/2027 gera a mensalidade de fevereiro 1ms
+ ✓ src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts > GerarCobrancasRecorrentes [Cobranças.RF001] > trava vazia (null) não muda nada: gera o mês corrente 1ms
+ ✓ src/compartilhado/seguranca/cifra.spec.ts > cifra da chave do Asaas [Segurança.NF003] > o texto guardado não contém o segredo e volta igual ao decifrar 5ms
+ ✓ src/compartilhado/seguranca/cifra.spec.ts > cifra da chave do Asaas [Segurança.NF003] > cifrar duas vezes dá textos diferentes (vetor de inicialização aleatório) 2ms
+ ✓ src/compartilhado/seguranca/cifra.spec.ts > cifra da chave do Asaas [Segurança.NF003] > outra chave-mestra ou texto adulterado não decifram 3ms
+ ✓ src/compartilhado/seguranca/cifra.spec.ts > cifra da chave do Asaas [Segurança.NF003] > a chave-mestra do .env precisa ter 32 bytes 2ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > cria o espelho com o motivo, a data de hoje e o autor 4ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > exige o motivo 2ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > motivo com caractere nulo: recusa com 400 citando o motivo, sem estornar 2ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > motivo com mais de 300 caracteres: recusa citando o motivo 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > movimentação de cobrança não é estornada aqui (fluxo E1) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > já estornada: informa a data e não cria outro espelho (fluxo E2) 1ms
+ ✓ src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts > estornar movimentação [Movimentações.RF002] > outro estorno ao mesmo tempo: 409; inexistente: 404 1ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > lista por situação calculada pela data de desligamento (fluxo A1) 3ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > CPF de outro funcionário ativo não cria cadastro novo (fluxo E1) 3ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > desligamento com data que já chegou inativa na hora e fica registrado como INATIVACAO 1ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > desligamento futuro mantém ativo até a data 0ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > readmitir (limpar o desligamento) confere se o CPF está com outro funcionário ativo 0ms
+ ✓ src/modulos/cadastros/aplicacao/funcionarios.spec.ts > funcionários [Cadastros.RF002] > funcionário inexistente responde 404 1ms
+ ✓ src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts > fila de pendências de conciliação [Cobranças.RF005] > das falhas da geração, só as da execução mais recente de cada mês, do mês passado em diante 4ms
+ ✓ src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts > fila de pendências de conciliação [Cobranças.RF005] > em janeiro, o mês passado é dezembro do ano anterior 2ms
+ ✓ src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts > fila de pendências de conciliação [Cobranças.RF005] > a lista de resolvidas não traz falhas da geração 1ms
+ ✓ src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts > fila de pendências de conciliação [Cobranças.RF005] > resolver exige o texto do que foi conferido e avisa se a pendência não está mais aberta 3ms
+ ✓ src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts > fila de pendências de conciliação [Cobranças.RF005] > resolução com caractere nulo ou com mais de 500 caracteres: recusa com 400 citando a resolução, sem resolver 2ms
+[Nest] 40720  - 14/11/2026, 08:58:27    WARN [Trilha] Dado pessoal mascarado no detalhe da trilha (MOVIMENTACAO mov-1).
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > registrarNaTrilha [Segurança.NF006] > grava usuário, operação, entidade, registro afetado e detalhe na transação recebida 20ms
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > registrarNaTrilha [Segurança.NF006] > rotina automática é registrada com usuário nulo 1ms
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > mascararDadosPessoais (regra B14 em tempo de execução) > mascara e-mail digitado em texto livre 1ms
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > mascararDadosPessoais (regra B14 em tempo de execução) > mascara CPF com e sem a máscara 1ms
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > mascararDadosPessoais (regra B14 em tempo de execução) > não mexe em ids, uuids, valores em centavos, datas nem números de outro tamanho 1ms
+ ✓ src/compartilhado/auditoria/trilha.spec.ts > mascararDadosPessoais (regra B14 em tempo de execução) > registrarNaTrilha grava o detalhe já mascarado 2ms
+[Nest] 34932  - 14/11/2026, 08:58:28    WARN [ConferirSaude] Saúde: o banco não respondeu (conexão recusada).
+[Nest] 34932  - 14/11/2026, 08:58:28    WARN [ConferirSaude] Saúde: não foi possível consultar a vigilância do Asaas (Fila indisponível.).
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > básica: 200 com o banco no ar, sem olhar o worker 6ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > básica: 503 sem expor a mensagem do erro do banco 3ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: 200 quando a vigilância do Asaas concluiu há 20 minutos 2ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: 503 quando a vigilância nunca rodou (worker desligado) 1ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: 503 (e não exceção) quando a fila não responde 1ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: reaproveita a resposta por 30 s, sem consultar banco nem fila de novo 2ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: passado o prazo do cache, confere de novo 1ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: pedidos simultâneos esperam a mesma conferência 1ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > completa: se o relógio voltar, não confia no cache 1ms
+ ✓ src/compartilhado/saude/conferir-saude.spec.ts > ConferirSaude > básica não usa cache (a Docker e a implantação precisam da situação de agora) 0ms
+ ✓ test/arquitetura/requisitos.spec.ts > G5: rastreabilidade de requisitos > todo requisito tem situação coberto ou pendente, e o pendente tem motivo 12ms
+ ✓ test/arquitetura/requisitos.spec.ts > G5: rastreabilidade de requisitos > todo requisito coberto é citado por ao menos um teste 1ms
+ ✓ test/arquitetura/requisitos.spec.ts > G5: rastreabilidade de requisitos > todo requisito citado num teste está na lista 6ms
+ ✓ test/arquitetura/requisitos.spec.ts > G5: rastreabilidade de requisitos > todo id da lista existe no documento de requisitos 3ms
+ ✓ test/arquitetura/requisitos.spec.ts > G5: rastreabilidade de requisitos > não há ids repetidos na lista 0ms
+ ✓ src/modulos/cadastros/dominio/projeto.spec.ts > projetos [Cadastros.RF005] > responsável, término e orçamento são opcionais; a situação começa em "a liberar" 6ms
+ ✓ src/modulos/cadastros/dominio/projeto.spec.ts > projetos [Cadastros.RF005] > recusa término antes do início, orçamento fracionado e situação desconhecida 2ms
+ ✓ src/modulos/cadastros/dominio/projeto.spec.ts > projetos [Cadastros.RF005] > recusa caractere nulo no nome e no responsável, citando o campo, em vez de virar erro 500 no banco 1ms
+ ✓ src/modulos/cadastros/dominio/projeto.spec.ts > projetos [Cadastros.RF005] > encerrar é mudar a situação para executado ou cancelado (fluxo A1) 2ms
+ ✓ src/modulos/cadastros/dominio/projeto.spec.ts > projetos [Cadastros.RF005] > código: ano + P + sequência (MER, regra 7) 1ms
+[Nest] 17288  - 14/11/2026, 08:58:28    WARN [TokenDoWebhookGuard] Webhook recusado: token inválido.
+[Nest] 17288  - 14/11/2026, 08:58:28    WARN [TokenDoWebhookGuard] Webhook recusado: token inválido.
+[Nest] 17288  - 14/11/2026, 08:58:28   ERROR [TokenDoWebhookGuard] ASAAS_WEBHOOK_TOKEN não está preenchido no .env; webhook recusado.
+ ✓ src/modulos/cobrancas/api/token-do-webhook.guard.spec.ts > TokenDoWebhookGuard > deixa passar quando o token confere 11ms
+ ✓ src/modulos/cobrancas/api/token-do-webhook.guard.spec.ts > TokenDoWebhookGuard > recusa um token diferente 4ms
+ ✓ src/modulos/cobrancas/api/token-do-webhook.guard.spec.ts > TokenDoWebhookGuard > recusa quando o cabeçalho não vem 1ms
+ ✓ src/modulos/cobrancas/api/token-do-webhook.guard.spec.ts > TokenDoWebhookGuard > recusa tudo se o token não estiver configurado no .env 2ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > package.json só tem dependências da lista aprovada 8ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > package.json respeita as versões fixadas 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > apps/api/package.json só tem dependências da lista aprovada 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > apps/api/package.json respeita as versões fixadas 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > apps/web/package.json só tem dependências da lista aprovada 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > apps/web/package.json respeita as versões fixadas 0ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > packages/api-client/package.json só tem dependências da lista aprovada 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > packages/api-client/package.json respeita as versões fixadas 1ms
+ ✓ test/arquitetura/dependencias.spec.ts > G3: dependências aprovadas > todo pacote da lista existe no workspace (sem entradas esquecidas) 4ms
+ ✓ src/compartilhado/asaas/datas-do-pagamento.spec.ts > datas de um pagamento do Asaas > lê o AAAA-MM-DD do começo do texto, ainda sem conferir o calendário 3ms
+ ✓ src/compartilhado/asaas/datas-do-pagamento.spec.ts > datas de um pagamento do Asaas > o que não tem forma de data conta como não informado 1ms
+ ✓ src/compartilhado/asaas/datas-do-pagamento.spec.ts > datas de um pagamento do Asaas > data do pagamento: a primeira com forma de data entre paymentDate, clientPaymentDate e confirmedDate 1ms
+ ✓ src/compartilhado/asaas/datas-do-pagamento.spec.ts > datas de um pagamento do Asaas > cada campo é conferido antes de passar ao próximo: um paymentDate malformado não esconde um clientPaymentDate válido 0ms
+ ✓ src/compartilhado/asaas/datas-do-pagamento.spec.ts > datas de um pagamento do Asaas > um paymentDate com forma de data, mesmo inexistente, é o que vale (a conciliação o manda para conferência) 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > geração recorrente [Cobranças.RF001] > o mês de referência começa no dia de geração 3ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > geração recorrente [Cobranças.RF001] > vence no dia de vencimento do mês; se a geração atrasou demais, vence hoje 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > geração recorrente [Cobranças.RF001] > descreve a mensalidade pelo mês 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > geração recorrente [Cobranças.RF001] > gera no dia (ou depois, se perdeu o dia) e só uma vez por mês, salvo interrupção (fluxos A1 e E1) 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > geração recorrente [Cobranças.RF001] > cadastro incompleto diz o campo que falta (fluxo A2) 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > trava do início da geração (GERACAO_A_PARTIR_DE) > sem trava, toda referência está liberada 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > trava do início da geração (GERACAO_A_PARTIR_DE) > bloqueia o mês anterior e libera o próprio mês e os seguintes 1ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > trava do início da geração (GERACAO_A_PARTIR_DE) > compara certo na virada do ano 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > trava do início da geração (GERACAO_A_PARTIR_DE) > trava em formato inválido bloqueia tudo (melhor não gerar do que cobrar em dobro) 0ms
+ ✓ src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts > trava do início da geração (GERACAO_A_PARTIR_DE) > o motivo diz o mês em que a geração começa, ou que a variável está inválida 0ms
+ ✓ src/modulos/indicadores/aplicacao/consultar-painel.spec.ts > painel de indicadores [Indicadores.RF001] CT-IND-01 > resultado do mês e variação sobre o anterior; aguardando liberação separado (fluxo A2) 6ms
+ ✓ src/modulos/indicadores/aplicacao/consultar-painel.spec.ts > painel de indicadores [Indicadores.RF001] CT-IND-01 > mês sem movimentação: zeros e aviso, sem erro (fluxo A1); sem base, variação nula 2ms
+ ✓ src/modulos/indicadores/aplicacao/consultar-painel.spec.ts > painel de indicadores [Indicadores.RF001] CT-IND-01 > mês em formato inválido: 400 2ms
+ ✓ src/modulos/indicadores/aplicacao/consultar-painel.spec.ts > painel de indicadores [Indicadores.RF001] CT-IND-01 > evolução: os 6 meses até o de referência, do mais antigo ao mais recente, virando o ano 1ms
+[Nest] 21244  - 14/11/2026, 08:58:29     LOG [ReenfileirarEventosParados] Eventos sem processar: 2; reenfileirados: 2; falhas: 0.
+[Nest] 21244  - 14/11/2026, 08:58:29     LOG [ReenfileirarEventosParados] Eventos sem processar: 1; reenfileirados: 0; falhas: 1.
+[Nest] 21244  - 14/11/2026, 08:58:29     LOG [ReenfileirarEventosParados] Eventos sem processar: 1; reenfileirados: 1; falhas: 0.
+ ✓ src/modulos/cobrancas/aplicacao/reenfileirar-eventos-parados.spec.ts > reprocessar eventos gravados e não processados (ADR-0002) > reenfileira só os eventos parados há mais de 5 minutos 6ms
+ ✓ src/modulos/cobrancas/aplicacao/reenfileirar-eventos-parados.spec.ts > reprocessar eventos gravados e não processados (ADR-0002) > com a fila fora do ar, conta as falhas sem interromper a rotina 2ms
+ ✓ src/modulos/cobrancas/aplicacao/reenfileirar-eventos-parados.spec.ts > reprocessar eventos gravados e não processados (ADR-0002) > o worker agenda a rotina a cada 15 minutos e a executa quando disparada 1ms
+ ✓ test/arquitetura/excecoes.spec.ts > G4: exceções explícitas > toda exceção tem regra, alvo, justificativa e referência preenchidos 4ms
+ ✓ test/arquitetura/excecoes.spec.ts > G4: exceções explícitas > a justificativa explica de verdade (pelo menos 20 caracteres) 0ms
+ ✓ test/arquitetura/excecoes.spec.ts > G4: exceções explícitas > toda exceção aponta para uma regra que aceita exceção 0ms
+ ✓ test/arquitetura/excecoes.spec.ts > G4: exceções explícitas > não há exceções repetidas 0ms
+ ✓ src/modulos/cobrancas/aplicacao/consultar-cobrancas.spec.ts > ConsultarCobrancas [Cobranças.RF008] > aberta com vencimento passado sai como VENCIDA, com os dias de atraso 6ms
+ ✓ src/modulos/cobrancas/aplicacao/consultar-cobrancas.spec.ts > ConsultarCobrancas [Cobranças.RF008] > vencida há muito tempo pede sincronização, mas a herdada da planilha não (ADR-0005) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/consultar-cobrancas.spec.ts > ConsultarCobrancas [Cobranças.RF008] > filtro inválido responde 400 com o que fazer 2ms
+ ✓ src/modulos/cobrancas/infra/cobrancas.repositorio.spec.ts > CobrancasRepositorio.cancelar [Cobranças.RF004] > cancela só cobrança ainda aberta e registra na trilha 4ms
+ ✓ src/modulos/cobrancas/infra/cobrancas.repositorio.spec.ts > CobrancasRepositorio.cancelar [Cobranças.RF004] > herdada: a trilha diz que ela não existe no Asaas (ADR-0005) 1ms
+ ✓ src/modulos/cobrancas/infra/cobrancas.repositorio.spec.ts > CobrancasRepositorio.cancelar [Cobranças.RF004] > paga por outro usuário nesse meio-tempo: recusa e não grava a trilha 2ms
+ ✓ src/modulos/cobrancas/infra/cobrancas.repositorio.spec.ts > CobrancasRepositorio.listar [Cobranças.RF008] > busca %, _ e \ como texto: escapa os curingas do LIKE (defeito D9) 3ms
+ ✓ src/modulos/cobrancas/aplicacao/receber-evento-webhook.spec.ts > ReceberEventoWebhook > enfileira o evento novo 3ms
+ ✓ src/modulos/cobrancas/aplicacao/receber-evento-webhook.spec.ts > ReceberEventoWebhook > não enfileira de novo um evento repetido que já foi processado 0ms
+ ✓ src/modulos/cobrancas/aplicacao/receber-evento-webhook.spec.ts > ReceberEventoWebhook > enfileira de novo um evento repetido que ainda não foi processado 0ms
+ ✓ src/modulos/cobrancas/aplicacao/receber-evento-webhook.spec.ts > ReceberEventoWebhook > deixa o erro subir se a fila falhar, para o Asaas tentar de novo 2ms
+ ✓ src/modulos/cobrancas/aplicacao/detalhar-cobranca.spec.ts > DetalharCobranca [Cobranças.RF008] > cobrança do Asaas nunca sincronizada: pede sincronização 5ms
+ ✓ src/modulos/cobrancas/aplicacao/detalhar-cobranca.spec.ts > DetalharCobranca [Cobranças.RF008] > herdada da planilha: sem Asaas e sem aviso de sincronização, mas cancela e recebe pagamento (ADR-0005) 1ms
+ ✓ src/modulos/cobrancas/aplicacao/detalhar-cobranca.spec.ts > DetalharCobranca [Cobranças.RF008] > inexistente: 404 2ms
+ ✓ src/modulos/cobrancas/aplicacao/obter-boleto.spec.ts > ObterBoleto [Cobranças.RF003] > entrega o link e registra quem obteve 4ms
+ ✓ src/modulos/cobrancas/aplicacao/obter-boleto.spec.ts > ObterBoleto [Cobranças.RF003] > herdada da planilha não tem boleto: 400 com o que fazer, sem registrar nada (ADR-0005) 4ms
+ ✓ src/modulos/cobrancas/aplicacao/pedir-geracao-agora.spec.ts > PedirGeracaoAgora [Cobranças.RF001] > sem trava, pede a geração do mês corrente ao worker 4ms
+ ✓ src/modulos/cobrancas/aplicacao/pedir-geracao-agora.spec.ts > PedirGeracaoAgora [Cobranças.RF001] > mês anterior à trava: 400 com o motivo, e nada vai para a fila 4ms
+ ✓ src/modulos/cobrancas/aplicacao/pedir-geracao-agora.spec.ts > PedirGeracaoAgora [Cobranças.RF001] > a partir do mês da trava, o pedido é aceito 1ms
+ ✓ src/modulos/cobrancas/infra/eventos-webhook.repositorio.spec.ts > EventosWebhookRepositorio > grava um evento novo e avisa que é novo 3ms
+ ✓ src/modulos/cobrancas/infra/eventos-webhook.repositorio.spec.ts > EventosWebhookRepositorio > devolve o registro existente, sem erro, quando o evento é repetido 2ms
+ ✓ src/modulos/cobrancas/infra/eventos-webhook.repositorio.spec.ts > EventosWebhookRepositorio > não esconde outros erros do banco 3ms
+ ✓ src/compartilhado/autenticacao/autenticacao.guard.spec.ts > AutenticacaoGuard > usa o perfil atual do usuario, nao o copiado na sessao no login 6ms
+ ✓ src/compartilhado/autenticacao/autenticacao.guard.spec.ts > AutenticacaoGuard > recusa sessao de usuario inativo 2ms
+ ✓ src/compartilhado/autenticacao/autenticacao.guard.spec.ts > AutenticacaoGuard > recusa sessao inexistente 1ms
+ ✓ src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts > AgendadorDeRotinasPgBoss.ultimaExecucaoConcluida > faz uma consulta só, o max(completed_on) dos jobs concluídos daquela rotina 4ms
+ ✓ src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts > AgendadorDeRotinasPgBoss.ultimaExecucaoConcluida > a consulta agrega no banco (não lista jobs) e ignora os que falharam ou foram cancelados 1ms
+ ✓ src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts > AgendadorDeRotinasPgBoss.ultimaExecucaoConcluida > sem nenhum job concluído, devolve null 0ms
+ ✓ src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts > lerUltimaConclusao > aceita Date e texto ISO 0ms
+ ✓ src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts > lerUltimaConclusao > null, linha vazia ou valor inválido viram null 0ms
+ ✓ src/modulos/cobrancas/aplicacao/cobrancas-do-aluno.spec.ts > cobranças do aluno [Cadastros.RF001] fluxo E2 > soma o que está em aberto e o que já venceu, para o aviso de débito ao inativar 5ms
+ ✓ src/modulos/cobrancas/aplicacao/cobrancas-do-aluno.spec.ts > cobranças do aluno [Cadastros.RF001] fluxo E2 > aluno sem cobranças: tudo zerado 1ms
+ ✓ src/modulos/administracao/aplicacao/parametros.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > antes do primeiro cadastro, não há vigentes nem conferência 4ms
+ ✓ src/modulos/administracao/aplicacao/parametros.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > a conferência usa os alunos cobráveis e a próxima geração 1ms
+ ✓ src/modulos/administracao/aplicacao/parametros.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > com a trava GERACAO_A_PARTIR_DE, a conferência anuncia o primeiro mês liberado 2ms
+ ✓ src/modulos/administracao/aplicacao/parametros.spec.ts > parâmetros de cobrança [Administração.RF003] CT-ADM-03 > grava parâmetros válidos e recusa geração depois do vencimento com 400 (fluxo E1) 3ms
+ ✓ src/compartilhado/fila/pg-boss.service.spec.ts > opcoesDoPgBoss > a API não roda agendamento (cron) nem supervisão, mas migra o schema para poder enfileirar 4ms
+ ✓ src/compartilhado/fila/pg-boss.service.spec.ts > opcoesDoPgBoss > o worker roda o agendamento e a supervisão 1ms
+ ✓ src/compartilhado/autenticacao/perfil.guard.spec.ts > perfis concentricos [Segurança.NF001] > permite diretoria e recusa administrativo numa rota restrita 6ms
+[Nest] 31836  - 14/11/2026, 08:58:36    WARN [ConsumidorDeEventosWebhook] Evento uuid-1 não processado; nova tentativa mais tarde. falhou
+ ✓ src/modulos/cobrancas/infra/consumidor-de-eventos-webhook.spec.ts > ConsumidorDeEventosWebhook > entrega ao caso de uso cada evento que chega pela fila 2ms
+ ✓ src/modulos/cobrancas/infra/consumidor-de-eventos-webhook.spec.ts > ConsumidorDeEventosWebhook > deixa o erro do caso de uso subir, para a fila tentar de novo 4ms
+ ✓ src/modulos/cobrancas/aplicacao/atualizar-cliente-asaas.spec.ts > atualizar o cliente no Asaas quando o aluno muda > manda ao Asaas o nome, o CPF e o e-mail atuais do aluno 2ms
+ ✓ src/modulos/cobrancas/aplicacao/atualizar-cliente-asaas.spec.ts > atualizar o cliente no Asaas quando o aluno muda > aluno que nunca teve cobrança não tem cliente no Asaas: nada a fazer 0ms
+ ✓ src/modulos/cobrancas/aplicacao/atualizar-cliente-asaas.spec.ts > atualizar o cliente no Asaas quando o aluno muda > Asaas fora do ar: o erro sobe para o pg-boss tentar de novo 1ms
+ ✓ src/modulos/cobrancas/aplicacao/atualizar-cliente-asaas.spec.ts > atualizar o cliente no Asaas quando o aluno muda > o evento "aluno alterado" vira um pedido na fila, sem chamar o Asaas na hora 0ms
+
+ Test Files  75 passed (75)
+      Tests  599 passed (599)
+   Start at  08:58:15
+   Duration  21.63s (transform 7.18s, setup 0ms, import 143.40s, tests 5.66s, environment 19ms)
+
+JSON report written to C:/Users/Ryaj/Desktop/ITA/Materias/PROF-1/2-Semestre/CSI-28/IntegraCASD/docs/testes/evidencias/2026-11-14-2dfae9b/E02-unidade.json
+
+(código de saída: 0)
+
+Fim: 2026-11-14 08:58:37 (UTC-03:00)
+Duração: 24 s
+Código de saída da etapa: 0

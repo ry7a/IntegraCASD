@@ -1,0 +1,493 @@
+Lint, testes e build	Set up job	﻿2026-11-14T11:57:52.9620611Z Current runner version: '2.338.2'
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9641784Z ##[group]Runner Image Provisioner
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9642576Z Hosted Compute Agent
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9643063Z Version: 20261103.629
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9643655Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9644305Z Build Date: 2026-11-03T17:26:59Z
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9644842Z Worker ID: {33a96ed2-7926-4301-9e31-f91e61101ac4}
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9645458Z Region: centralus
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9645914Z Cloud: Azure
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9646684Z ##[endgroup]
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9647802Z ##[group]Operating System
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9648302Z Ubuntu
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9648808Z 26.04.1
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9649246Z LTS
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9649749Z ##[endgroup]
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9650245Z ##[group]Runner Image
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9650724Z Image: ubuntu-26.04
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9651243Z Version: 20261111.196.1
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9652380Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9653872Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9654642Z ##[endgroup]
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9655649Z ##[group]GITHUB_TOKEN Permissions
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9657440Z Contents: read
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9658019Z Metadata: read
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9658487Z Packages: read
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9658969Z ##[endgroup]
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9660952Z Secret source: Actions
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9662156Z Cache mode: write
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9662915Z Prepare workflow directory
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9924277Z Prepare all required actions
+Lint, testes e build	Set up job	2026-11-14T11:57:52.9964227Z Getting action download info
+Lint, testes e build	Set up job	2026-11-14T11:57:53.2346316Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+Lint, testes e build	Set up job	2026-11-14T11:57:53.3153575Z Download action repository 'pnpm/action-setup@v6' (SHA:73e46992e05b19abd31f2f3c20e0e7370d762115)
+Lint, testes e build	Set up job	2026-11-14T11:57:53.6096126Z Download action repository 'actions/setup-node@v7' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+Lint, testes e build	Set up job	2026-11-14T11:57:53.7824322Z Complete job name: Lint, testes e build
+Lint, testes e build	Run actions/checkout@v7	﻿2026-11-14T11:57:53.8524471Z ##[group]Run actions/checkout@v7
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8525151Z with:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8525493Z   fetch-depth: 0
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8525861Z   repository: ry7a/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8529110Z   token: ***
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8529461Z   ssh-strict: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8529813Z   ssh-user: git
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8530172Z   persist-credentials: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8530561Z   clean: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8530914Z   sparse-checkout-cone-mode: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8531327Z   fetch-tags: false
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8531818Z   show-progress: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8532178Z   lfs: false
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8532565Z   submodules: false
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8532924Z   set-safe-directory: true
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8533335Z   allow-unsafe-pr-checkout: false
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:53.8533905Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0370692Z Syncing repository: ry7a/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0372890Z ##[group]Getting Git version info
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0373639Z Working directory is '/home/runner/work/IntegraCASD/IntegraCASD'
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0374798Z [command]/usr/bin/git version
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0392535Z git version 2.56.1
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0409669Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0422411Z Temporarily overriding HOME='/home/runner/work/_temp/20e7aa84-e8cd-4a94-9cf5-d45df8f0b6d0' before making global git config changes
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0423965Z Adding repository directory to the temporary git global config as a safe directory
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0426250Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/IntegraCASD/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0478082Z Deleting the contents of '/home/runner/work/IntegraCASD/IntegraCASD'
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0480206Z ##[group]Determining repository object format
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0481449Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0482403Z ##[group]Initializing the repository
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0485163Z [command]/usr/bin/git init /home/runner/work/IntegraCASD/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0581278Z hint: Using 'master' as the name for the initial branch. This default branch name
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0582740Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0583523Z hint: to use in all of your new repositories, which will suppress this warning,
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0584291Z hint: call:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0584627Z hint:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0585088Z hint: 	git config --global init.defaultBranch <name>
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0585624Z hint:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0586144Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0587222Z hint: 'development'. The just-created branch can be renamed via this command:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0588103Z hint:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0588599Z hint: 	git branch -m <name>
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0589198Z hint:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0589943Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0591122Z Initialized empty Git repository in /home/runner/work/IntegraCASD/IntegraCASD/.git/
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0599536Z [command]/usr/bin/git remote add origin https://github.com/ry7a/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0647732Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0648811Z ##[group]Disabling automatic garbage collection
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0650578Z [command]/usr/bin/git config --local gc.auto 0
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0681822Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0683229Z ##[group]Setting up auth
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0683999Z Removing SSH command configuration
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0686590Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.0716666Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1067850Z Removing HTTP extra header
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1073376Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1103844Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1342919Z Removing includeIf entries pointing to credentials config files
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1347422Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1376439Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1613223Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1646022Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git.path /home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1672870Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1774161Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1801155Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1826905Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1827526Z ##[group]Fetching the repository
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:54.1832357Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2094365Z From https://github.com/ry7a/IntegraCASD
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2095784Z  * [new branch]      main       -> origin/main
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2103261Z [command]/usr/bin/git branch --list --remote origin/main
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2126909Z   origin/main
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2133196Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2153901Z 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2161229Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2162108Z ##[group]Determining the checkout info
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2162844Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2165832Z [command]/usr/bin/git sparse-checkout disable
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2213483Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2243270Z ##[group]Checking out the ref
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.2245732Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.3163068Z Switched to a new branch 'main'
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.3166198Z branch 'main' set up to track 'origin/main'.
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.3177534Z ##[endgroup]
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.3220633Z [command]/usr/bin/git log -1 --format=%H
+Lint, testes e build	Run actions/checkout@v7	2026-11-14T11:57:55.3255765Z 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Lint, testes e build	Run pnpm/action-setup@v6	﻿2026-11-14T11:57:55.3588935Z ##[group]Run pnpm/action-setup@v6
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3589904Z with:
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3590651Z   dest: ~/setup-pnpm
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3591472Z   run_install: null
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3592445Z   cache: false
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3593303Z   cache_dependency_path: pnpm-lock.yaml
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3594343Z   package_json_file: package.json
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3595306Z   standalone: false
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.3596107Z ##[endgroup]
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:55.4804108Z ##[group]Running self-installer...
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4915754Z 
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4916319Z added 1 package, and audited 2 packages in 808ms
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4917864Z 
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4918490Z 1 package is looking for funding
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4918944Z   run `npm fund` for details
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4923576Z 
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:56.4923754Z found 0 vulnerabilities
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:57.1032902Z Checking for updates...
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:57.4699289Z Switching pnpm from v11.28.10 to v11.28.5...
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:58.1810645Z .../v11/8b7-1a1d9ebe592-d765c48f0b84d51d | Progress: resolved 1, reused 0, downloaded 0, added 0
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:58.1828164Z .../v11/8b7-1a1d9ebe592-d765c48f0b84d51d |   +1 +
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:58.3888694Z .../v11/8b7-1a1d9ebe592-d765c48f0b84d51d | Progress: resolved 1, reused 0, downloaded 1, added 1, done
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:58.9695783Z [WARN] Detected a pnpm v10 installation layout at PNPM_HOME. The pnpm shims at PNPM_HOME have been refreshed so the new version is active, but pnpm v11 expects bins in PNPM_HOME/bin. Run "pnpm setup" to migrate your PATH to the v11 layout.
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:58.9737339Z Successfully updated pnpm to v11.28.5
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:59.0137296Z ##[endgroup]
+Lint, testes e build	Run pnpm/action-setup@v6	2026-11-14T11:57:59.0137772Z Installation Completed!
+Lint, testes e build	Run actions/setup-node@v7	﻿2026-11-14T11:57:59.0314155Z ##[group]Run actions/setup-node@v7
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0314419Z with:
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0314586Z   node-version: 24.20.0
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0314767Z   cache: pnpm
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0314933Z   check-latest: false
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0317123Z   token: ***
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0317305Z   package-manager-cache: true
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0317499Z env:
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0317707Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.0317949Z ##[endgroup]
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.1398629Z Attempting to download 24.20.0...
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:57:59.8600243Z Acquiring 24.20.0 - x64 from https://github.com/actions/node-versions/releases/download/24.20.0-33034074684/node-24.20.0-linux-x64.tar.gz
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:00.2714989Z Extracting ...
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:00.2817428Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/df9b388c-994f-46ab-b523-dd76d859fc81 -f /home/runner/work/_temp/04fd9949-dc8d-4d1e-adff-a41dccd60ac0
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:00.9337204Z Adding to the cache ...
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:02.8764264Z ##[group]Environment details
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.0672148Z node: v24.20.0
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.0672512Z npm: 11.19.0
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.0672766Z yarn: 1.22.22
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.0673342Z ##[endgroup]
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.0687502Z [command]/home/runner/setup-pnpm/node_modules/.bin/bin/pnpm store path --silent
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.5863982Z /home/runner/setup-pnpm/node_modules/.bin/store/v11
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:03.7335379Z Cache hit for: node-cache-Linux-x64-pnpm-a61f8348f55c7bbd8d292844812544336a135b46f1252fb0ebbb66cb838f4e3a
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:04.8797272Z Received 100663296 of 177009186 (56.9%), 95.8 MBs/sec
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:05.3264074Z Received 177009186 of 177009186 (100.0%), 116.1 MBs/sec
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:05.3264599Z Cache Size: ~169 MB (177009186 B)
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:05.3365777Z [command]/usr/bin/tar -xf /home/runner/work/_temp/d489d3b9-f389-4cb2-93ef-0fa666c36c49/cache.tzst -P -C /home/runner/work/IntegraCASD/IntegraCASD --use-compress-program unzstd
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:06.8833766Z Cache restored successfully
+Lint, testes e build	Run actions/setup-node@v7	2026-11-14T11:58:06.8910299Z Cache restored from key: node-cache-Linux-x64-pnpm-a61f8348f55c7bbd8d292844812544336a135b46f1252fb0ebbb66cb838f4e3a
+Lint, testes e build	Run pnpm install --frozen-lockfile	﻿2026-11-14T11:58:06.9076008Z ##[group]Run pnpm install --frozen-lockfile
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:06.9076367Z ^[[36;1mpnpm install --frozen-lockfile^[[0m
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:06.9125949Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:06.9126202Z env:
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:06.9126420Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:06.9126678Z ##[endgroup]
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.3034073Z Scope: all 4 workspace projects
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.3677010Z ? Verifying lockfile against supply-chain policies (728 entries)...
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.4045833Z Lockfile is up to date, resolution step is skipped
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.5016457Z Progress: resolved 1, reused 0, downloaded 0, added 0
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.5303028Z Packages: +634
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:07.5333840Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:08.0823577Z Packages are hard linked from the content-addressable store to the virtual store.
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:08.0824925Z   Content-addressable store is at: /home/runner/setup-pnpm/node_modules/.bin/store/v11
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:08.0825924Z   Virtual store is at:             node_modules/.pnpm
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:08.5020429Z Progress: resolved 634, reused 634, downloaded 0, added 21
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:09.5029315Z Progress: resolved 634, reused 634, downloaded 0, added 379
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:10.2609837Z Progress: resolved 634, reused 634, downloaded 0, added 634, done
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:13.5153636Z ✓ Lockfile passes supply-chain policies (728 entries in 6.1s)
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:13.5503381Z .../node_modules/prisma preinstall$ node scripts/preinstall-entry.js
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:13.6205383Z .../node_modules/prisma preinstall: Done
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:13.9803485Z 
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:13.9822145Z . prepare$ git config core.hooksPath .githooks || exit 0
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:14.0115295Z apps/api postinstall$ prisma generate
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:14.1156083Z . prepare: Done
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:14.7080894Z apps/api postinstall: Loaded Prisma config from prisma.config.ts.
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:14.7437926Z apps/api postinstall: Prisma schema loaded from prisma/schema.prisma.
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:15.0684659Z apps/api postinstall: ✔ Generated Prisma Client (7.10.0) to ./src/generated/prisma in 212ms
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:15.0927841Z apps/api postinstall: Done
+Lint, testes e build	Run pnpm install --frozen-lockfile	2026-11-14T11:58:15.1057501Z Done in 8.1s using pnpm v11.28.5
+Lint, testes e build	Run pnpm lint	﻿2026-11-14T11:58:15.2438709Z ##[group]Run pnpm lint
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.2438963Z ^[[36;1mpnpm lint^[[0m
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.2485056Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.2485271Z env:
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.2485501Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.2485760Z ##[endgroup]
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:15.6317357Z $ pnpm -r lint
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.0260530Z Scope: 3 of 4 workspace projects
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.0374538Z apps/api lint$ oxlint --type-aware src/ test/
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.0380304Z apps/web lint$ eslint .
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.9864491Z apps/api lint: Found 0 warnings and 0 errors.
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.9866240Z apps/api lint: Finished in 894ms on 305 files with 114 rules using 4 threads.
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:16.9922454Z apps/api lint: Done
+Lint, testes e build	Run pnpm lint	2026-11-14T11:58:19.9903667Z apps/web lint: Done
+Lint, testes e build	Run pnpm test	﻿2026-11-14T11:58:20.0424700Z ##[group]Run pnpm test
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.0424945Z ^[[36;1mpnpm test^[[0m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.0469194Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.0469407Z env:
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.0469630Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.0469893Z ##[endgroup]
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.4407382Z $ pnpm -r test
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.8456454Z Scope: 3 of 4 workspace projects
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:20.8673801Z $ vitest run
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.1018887Z ^[[33mThe plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the ^[[1mresolve.tsconfigPaths^[[22m option. You can remove the plugin and set ^[[1mresolve.tsconfigPaths: true^[[22m in your Vite config instead.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.1338504Z 
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.1339998Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv4.1.11 ^[[39m^[[90m/home/runner/work/IntegraCASD/IntegraCASD/apps/api^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.1340691Z 
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.5652836Z  ^[[32m✓^[[39m src/compartilhado/asaas/cliente-asaas.http.spec.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 41^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.6794890Z  ^[[32m✓^[[39m src/modulos/administracao/aplicacao/usuarios.service.spec.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:21.9004476Z  ^[[32m✓^[[39m src/modulos/cobrancas/dominio/conciliacao.spec.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.0783357Z  ^[[32m✓^[[39m src/compartilhado/leitura-de-entrada.spec.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4403268Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/verificar-silencio-do-asaas.spec.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 16^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4707572Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 2 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4734748Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 1 atualizadas, 1 trazidas do Asaas, 0 não identificadas, 0 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4755836Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 0 atualizadas, 1 trazidas do Asaas, 1 não identificadas, 0 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4770089Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4783952Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4800659Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4824295Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Há pagamentos no Asaas que não foram baixados: falta escolher a conta de recebimento e as categorias em Administração > Parâmetros.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4850580Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 0 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Interrompida: O Asaas está fora do ar no momento. Tente novamente em alguns minutos.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4867046Z ^[[32m[Nest] 2580  - ^[[39m11/14/2026, 11:58:22 AM ^[[32m    LOG^[[39m ^[[38;5;3m[SincronizarCobrancas] ^[[39m^[[32mSincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.4890530Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/sincronizar-cobrancas.spec.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.6756854Z  ^[[32m✓^[[39m src/modulos/cobrancas/dominio/cobranca.spec.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[32m 16^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.6843258Z  ^[[32m✓^[[39m test/arquitetura/rotas-autenticadas.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 52^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:22.7462897Z  ^[[32m✓^[[39m src/modulos/cobrancas/api/webhook-asaas.controller.spec.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.0666129Z  ^[[32m✓^[[39m src/modulos/cadastros/aplicacao/alunos.spec.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.1099439Z  ^[[32m✓^[[39m src/modulos/administracao/aplicacao/integracao-asaas.spec.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.4994269Z  ^[[32m✓^[[39m src/modulos/administracao/aplicacao/categorias.spec.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.5065546Z ^[[33m[Nest] 2644  - ^[[39m11/14/2026, 11:58:23 AM ^[[33m   WARN^[[39m ^[[38;5;3m[GerarCobrancasRecorrentes] ^[[39m^[[33mGeração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.5077301Z ^[[33m[Nest] 2644  - ^[[39m11/14/2026, 11:58:23 AM ^[[33m   WARN^[[39m ^[[38;5;3m[GerarCobrancasRecorrentes] ^[[39m^[[33mGeração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.5079264Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/gerar-cobrancas-recorrentes.spec.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.6913279Z  ^[[32m✓^[[39m src/modulos/movimentacoes/dominio/movimentacao.spec.ts ^[[2m(^[[22m^[[2m30 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.7008393Z  ^[[32m✓^[[39m test/arquitetura/trilha-de-auditoria.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 27^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:23.7440163Z  ^[[32m✓^[[39m src/site.spec.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 169^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.0644037Z  ^[[32m✓^[[39m src/modulos/cobrancas/infra/conciliacao.repositorio.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.2525887Z  ^[[32m✓^[[39m src/modulos/cadastros/dominio/aluno.spec.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.4434420Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/registrar-pagamento-manual.spec.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.5334393Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/emitir-cobranca-avulsa.spec.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 15^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.5930185Z ^[[33m[Nest] 2726  - ^[[39m11/14/2026, 11:58:24 AM ^[[33m   WARN^[[39m ^[[38;5;3m[Configuracao] ^[[39m^[[33mCHAVE_DE_CIFRAGEM precisa ter 32 bytes em base64 (veja o passo 2.7 do playbook de implantação). Em produção, isto impediria a subida.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.5974870Z ^[[33m[Nest] 2726  - ^[[39m11/14/2026, 11:58:24 AM ^[[33m   WARN^[[39m ^[[38;5;3m[Configuracao] ^[[39m^[[33mGERACAO_A_PARTIR_DE ("2027-13") precisa estar no formato AAAA-MM, com mês de 01 a 12 (ex.: 2027-02), ou ficar vazia. Em produção, isto impediria a subida.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.5982832Z  ^[[32m✓^[[39m src/compartilhado/configuracao.spec.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.6156250Z  ^[[32m✓^[[39m src/modulos/administracao/dominio/parametros-de-cobranca.spec.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.8083724Z  ^[[32m✓^[[39m src/modulos/cobrancas/dominio/silencio-do-asaas.spec.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.8233376Z  ^[[32m✓^[[39m test/arquitetura/fronteiras-entre-modulos.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 79^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.9035834Z ^[[33m[Nest] 2740  - ^[[39m11/14/2026, 11:58:24 AM ^[[33m   WARN^[[39m ^[[38;5;3m[ConferirSaude] ^[[39m^[[33mSaúde: o banco não respondeu (conexão recusada).^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.9053963Z ^[[33m[Nest] 2740  - ^[[39m11/14/2026, 11:58:24 AM ^[[33m   WARN^[[39m ^[[38;5;3m[ConferirSaude] ^[[39m^[[33mSaúde: não foi possível consultar a vigilância do Asaas (Fila indisponível.).^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:24.9086146Z  ^[[32m✓^[[39m src/compartilhado/saude/conferir-saude.spec.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.0071276Z  ^[[32m✓^[[39m src/modulos/cobrancas/dominio/sincronizacao.spec.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.1621951Z  ^[[32m✓^[[39m src/modulos/movimentacoes/aplicacao/registrar-movimentacao.spec.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.3956189Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/pendencias-de-conciliacao.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.5545008Z  ^[[32m✓^[[39m src/modulos/cadastros/aplicacao/funcionarios.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.5974994Z ^[[32m[Nest] 2775  - ^[[39m11/14/2026, 11:58:25 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ProcessarEventoWebhook] ^[[39m^[[32mEvento evt_falso_1 (PAYMENT_RECEIVED): BAIXAR.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.5997406Z ^[[32m[Nest] 2775  - ^[[39m11/14/2026, 11:58:25 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ProcessarEventoWebhook] ^[[39m^[[32mEvento evt_falso_1 (PAYMENT_OVERDUE): NADA.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.6004432Z ^[[32m[Nest] 2775  - ^[[39m11/14/2026, 11:58:25 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ProcessarEventoWebhook] ^[[39m^[[32mEvento evt_falso_1 já processado; nada a fazer.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.6010320Z ^[[32m[Nest] 2775  - ^[[39m11/14/2026, 11:58:25 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ProcessarEventoWebhook] ^[[39m^[[32mEvento evt_falso_1 (PAYMENT_RECEIVED): já processado.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.6036540Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/processar-evento-webhook.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.7785380Z  ^[[32m✓^[[39m src/modulos/acesso/aplicacao/autenticar.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.8753877Z ^[[33m[Nest] 2810  - ^[[39m11/14/2026, 11:58:25 AM ^[[33m   WARN^[[39m ^[[38;5;3m[Trilha] ^[[39m^[[33mDado pessoal mascarado no detalhe da trilha (MOVIMENTACAO mov-1).^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.8788006Z  ^[[32m✓^[[39m src/compartilhado/auditoria/trilha.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.9303512Z  ^[[32m✓^[[39m src/compartilhado/notificacao/notificador-por-email.http.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:25.9658481Z  ^[[32m✓^[[39m src/modulos/cadastros/dominio/contrato.spec.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.2343342Z  ^[[32m✓^[[39m src/modulos/movimentacoes/aplicacao/estornar-movimentacao.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.3066101Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/cancelar-cobranca.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.3172638Z  ^[[32m✓^[[39m src/modulos/cobrancas/infra/cobrancas.repositorio.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.4026208Z  ^[[32m✓^[[39m test/arquitetura/dependencias.spec.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.4798310Z  ^[[32m✓^[[39m test/arquitetura/requisitos.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.6156064Z  ^[[32m✓^[[39m test/arquitetura/camadas.spec.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[32m 38^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.7619269Z  ^[[32m✓^[[39m src/modulos/administracao/dominio/trilha.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.8103716Z  ^[[32m✓^[[39m src/modulos/indicadores/dominio/gastos-por-categoria.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.9343698Z  ^[[32m✓^[[39m src/modulos/cobrancas/dominio/geracao-recorrente.spec.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:26.9673405Z  ^[[32m✓^[[39m src/modulos/indicadores/dominio/inadimplencia.spec.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.0125996Z  ^[[32m✓^[[39m src/modulos/administracao/aplicacao/parametros.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.3469577Z  ^[[32m✓^[[39m src/modulos/indicadores/aplicacao/consultar-painel.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.3590440Z  ^[[32m✓^[[39m src/compartilhado/fila/agendador-de-rotinas.pgboss.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.4043513Z  ^[[32m✓^[[39m src/compartilhado/autenticacao/autenticacao.guard.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.5283672Z  ^[[32m✓^[[39m src/compartilhado/saude/saude.spec.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.7227148Z ^[[32m[Nest] 2924  - ^[[39m11/14/2026, 11:58:27 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ReenfileirarEventosParados] ^[[39m^[[32mEventos sem processar: 2; reenfileirados: 2; falhas: 0.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.7255781Z ^[[32m[Nest] 2924  - ^[[39m11/14/2026, 11:58:27 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ReenfileirarEventosParados] ^[[39m^[[32mEventos sem processar: 1; reenfileirados: 0; falhas: 1.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.7293898Z ^[[32m[Nest] 2924  - ^[[39m11/14/2026, 11:58:27 AM ^[[32m    LOG^[[39m ^[[38;5;3m[ReenfileirarEventosParados] ^[[39m^[[32mEventos sem processar: 1; reenfileirados: 1; falhas: 0.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.7295927Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/reenfileirar-eventos-parados.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:27.8965120Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/receber-evento-webhook.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.0624824Z  ^[[32m✓^[[39m src/modulos/administracao/dominio/categoria.spec.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.1223492Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/atualizar-cliente-asaas.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.1401495Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/consultar-cobrancas.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.2763500Z  ^[[32m✓^[[39m src/modulos/cadastros/dominio/projeto.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.3038716Z  ^[[32m✓^[[39m test/arquitetura/dinheiro.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.4323222Z  ^[[32m✓^[[39m src/modulos/cadastros/dominio/funcionario.spec.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.4349940Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/cobrancas-do-aluno.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.5028602Z  ^[[32m✓^[[39m test/arquitetura/segredos.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 43^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.5853355Z  ^[[32m✓^[[39m src/compartilhado/asaas/datas-do-pagamento.spec.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.8027302Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/detalhar-cobranca.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:28.9359641Z  ^[[32m✓^[[39m src/modulos/cobrancas/infra/eventos-webhook.repositorio.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.0880227Z ^[[33m[Nest] 3032  - ^[[39m11/14/2026, 11:58:29 AM ^[[33m   WARN^[[39m ^[[38;5;3m[TokenDoWebhookGuard] ^[[39m^[[33mWebhook recusado: token inválido.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.0896742Z ^[[31m[Nest] 3032  - ^[[39m11/14/2026, 11:58:29 AM ^[[31m  ERROR^[[39m ^[[38;5;3m[TokenDoWebhookGuard] ^[[39m^[[31mASAAS_WEBHOOK_TOKEN não está preenchido no .env; webhook recusado.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.0898999Z ^[[33m[Nest] 3032  - ^[[39m11/14/2026, 11:58:29 AM ^[[33m   WARN^[[39m ^[[38;5;3m[TokenDoWebhookGuard] ^[[39m^[[33mWebhook recusado: token inválido.^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.0953011Z  ^[[32m✓^[[39m src/modulos/cobrancas/api/token-do-webhook.guard.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.1284390Z  ^[[32m✓^[[39m test/arquitetura/ganchos.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.2355563Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/pedir-geracao-agora.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.2804460Z  ^[[32m✓^[[39m test/arquitetura/exclusao-fisica.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.2916378Z  ^[[32m✓^[[39m test/arquitetura/excecoes.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.4481156Z  ^[[32m✓^[[39m src/compartilhado/seguranca/cifra.spec.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.5913616Z  ^[[32m✓^[[39m src/modulos/cobrancas/aplicacao/obter-boleto.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.6202838Z  ^[[32m✓^[[39m test/arquitetura/asaas.spec.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 28^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:29.7922267Z  ^[[32m✓^[[39m src/compartilhado/datas.spec.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 22^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.0164009Z ^[[33m[Nest] 3069  - ^[[39m11/14/2026, 11:58:30 AM ^[[33m   WARN^[[39m ^[[38;5;3m[ConsumidorDeEventosWebhook] ^[[39m^[[33mEvento uuid-1 não processado; nova tentativa mais tarde. falhou^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.0182263Z  ^[[32m✓^[[39m src/modulos/cobrancas/infra/consumidor-de-eventos-webhook.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.0238264Z  ^[[32m✓^[[39m src/compartilhado/autenticacao/perfil.guard.spec.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.1578762Z  ^[[32m✓^[[39m src/compartilhado/fila/pg-boss.service.spec.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6919205Z  ^[[32m✓^[[39m src/compartilhado/autenticacao/senha.spec.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 545^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6920416Z      ^[[33m^[[2m✓^[[22m^[[39m usa Argon2id com sal aleatorio e nunca armazena a senha em claro ^[[33m 544^[[2mms^[[22m^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6957070Z 
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6961811Z ^[[2m Test Files ^[[22m ^[[1m^[[32m75 passed^[[39m^[[22m^[[90m (75)^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6964483Z ^[[2m      Tests ^[[22m ^[[1m^[[32m599 passed^[[39m^[[22m^[[90m (599)^[[39m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6965376Z ^[[2m   Start at ^[[22m 11:58:21
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6966766Z ^[[2m   Duration ^[[22m 9.55s^[[2m (transform 1.71s, setup 0ms, import 15.24s, tests 1.71s, environment 8ms)^[[22m
+Lint, testes e build	Run pnpm test	2026-11-14T11:58:30.6968619Z 
+Lint, testes e build	Run pnpm verificar:arquitetura	﻿2026-11-14T11:58:30.7905973Z ##[group]Run pnpm verificar:arquitetura
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7906262Z ^[[36;1mpnpm verificar:arquitetura^[[0m
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7951048Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7951273Z env:
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7951488Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7952005Z   BASE_GIT: 4df48b47a01b33774deb11c21b7f389add44591b
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:30.7952253Z ##[endgroup]
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:31.1826925Z $ node scripts/arquitetura/verificar-migracoes.mjs && node scripts/arquitetura/verificar-cores.mjs
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:31.2244705Z Migrações (B7): ok (base 4df48b47a01b33774deb11c21b7f389add44591b, 0 mudança(s) em apps/api/prisma/migrations).
+Lint, testes e build	Run pnpm verificar:arquitetura	2026-11-14T11:58:31.2511345Z Cores (F5): ok (1 arquivo(s) com exceção registrada).
+Lint, testes e build	Run pnpm build	﻿2026-11-14T11:58:31.2701918Z ##[group]Run pnpm build
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.2702172Z ^[[36;1mpnpm build^[[0m
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.2745853Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.2746073Z env:
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.2746285Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.2746541Z ##[endgroup]
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:31.6649295Z $ pnpm -r build
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:32.0566396Z Scope: 3 of 4 workspace projects
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:32.0695121Z apps/api build$ nest build
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:32.0700963Z apps/web build$ tsc -b && vite build
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.2589823Z apps/api build: Done
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.6552044Z apps/web build: ^[[36mvite v8.3.3 ^[[32mbuilding client environment for production...^[[36m^[[39m
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.6625053Z apps/web build: transforming...
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.8169148Z apps/web build: ✓ 320 modules transformed.
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.8541379Z apps/web build: rendering chunks...
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9325040Z apps/web build: computing gzip size...
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9411189Z apps/web build: dist/index.html                                                     0.46 kB │ gzip:   0.30 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9413071Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-400-normal-fK1oJ5dG.woff       6.39 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9414273Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-700-normal-BV5B8Are.woff       6.42 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9415676Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-600-normal-DgdngZtN.woff       6.58 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9416867Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-500-normal-BEb3_waV.woff       6.58 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9419028Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-400-normal-DG4YqDda.woff2      8.20 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9420609Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-700-normal-CkEo6LDy.woff2      8.22 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9422840Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-500-normal-e4dixQRQ.woff2      8.41 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9424741Z apps/web build: dist/assets/ibm-plex-sans-vietnamese-600-normal-DpPYBSTl.woff2      8.46 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9426697Z apps/web build: dist/assets/ibm-plex-sans-greek-700-normal-CkZN0sRy.woff            8.74 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9428718Z apps/web build: dist/assets/ibm-plex-sans-greek-400-normal-D9ESIMu3.woff            8.76 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9430309Z apps/web build: dist/assets/ibm-plex-sans-greek-500-normal-CuWXN6rf.woff            9.14 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9431233Z apps/web build: dist/assets/ibm-plex-sans-greek-600-normal-D-CqTdkO.woff            9.22 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9432303Z apps/web build: dist/assets/ibm-plex-sans-greek-700-normal-wyJ6jzdA.woff2           9.92 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9432949Z apps/web build: dist/assets/ibm-plex-sans-greek-400-normal-_efipK4i.woff2           9.94 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9433689Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-700-normal-DCQwxkRk.woff    10.16 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9434658Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-400-normal-Dsrv2Tcn.woff    10.28 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9435555Z apps/web build: dist/assets/ibm-plex-sans-greek-600-normal-DzTrcv_p.woff2          10.36 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9436330Z apps/web build: dist/assets/ibm-plex-sans-greek-500-normal-JMMifIXV.woff2          10.37 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9436988Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-500-normal-DB5PtV2g.woff    10.59 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9437695Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-600-normal-Bz0x94Yp.woff    10.61 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9438248Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-700-normal-BmRLXWpJ.woff2   12.05 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9438785Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-400-normal-g30qAdWV.woff2   12.14 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9439321Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-600-normal-DUMzJB7m.woff2   12.30 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9439854Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-500-normal-Cs5J6C77.woff2   12.30 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9440391Z apps/web build: dist/assets/archivo-vietnamese-wght-normal-XAtsl5Q_.woff2          13.24 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9441396Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-700-normal-RFb1v-CK.woff        13.32 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9442130Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-400-normal-BTotfTJu.woff        13.51 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9442663Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-500-normal-ByOcLdNv.woff        13.85 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9443351Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-600-normal-BGq0mW3O.woff        13.88 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9443972Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-400-normal-RBey6euL.woff       14.36 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9444864Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-700-normal-DZH6Xh-4.woff       14.42 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9445762Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-700-normal-D_uavGvn.woff2       14.57 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9446342Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-500-normal-D0aIdm-b.woff       14.73 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9446886Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-600-normal-DIrixKbi.woff       14.77 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9447412Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-400-normal-DZqxrq2p.woff2       14.80 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9447951Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-500-normal-CocWQlwt.woff2       15.00 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9448513Z apps/web build: dist/assets/ibm-plex-sans-cyrillic-600-normal-71GNu3SW.woff2       15.04 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9449353Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-400-normal-C5H60-Va.woff2      15.98 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9450083Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-700-normal-aMgXseD4.woff2      16.18 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9450793Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-600-normal-DOrvGEcy.woff2      16.44 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9451508Z apps/web build: dist/assets/ibm-plex-sans-latin-ext-500-normal-DakdToA3.woff2      16.45 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9452352Z apps/web build: dist/assets/ibm-plex-sans-latin-400-normal-CYLoc0-x.woff           22.10 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9453121Z apps/web build: dist/assets/ibm-plex-sans-latin-700-normal-Bth3BMcD.woff           22.28 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9453844Z apps/web build: dist/assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2          22.58 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9454647Z apps/web build: dist/assets/ibm-plex-sans-latin-700-normal-Bxkt5Cjx.woff2          22.83 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9455303Z apps/web build: dist/assets/ibm-plex-sans-latin-600-normal-Cu4Hd6ag.woff           23.87 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9455831Z apps/web build: dist/assets/ibm-plex-sans-latin-500-normal-BgVn5rGT.woff           23.91 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9456355Z apps/web build: dist/assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2          24.18 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9456865Z apps/web build: dist/assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2          24.25 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9457385Z apps/web build: dist/assets/archivo-latin-ext-wght-normal-C4zznr8T.woff2           32.60 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9457929Z apps/web build: dist/assets/archivo-latin-wght-normal-E0tuGl4L.woff2               34.92 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9458636Z apps/web build: dist/assets/index-BKUyLmwx.css                                     35.84 kB │ gzip:   7.48 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9459292Z apps/web build: dist/assets/index-ycSJ5UOe.js                                     650.14 kB │ gzip: 182.45 kB
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9459771Z apps/web build: ^[[33m[plugin builtin:vite-reporter] 
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9460204Z apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9460667Z apps/web build: - Using dynamic import() to code-split the application
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9461370Z apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9462310Z apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.^[[39m
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9462936Z apps/web build: ^[[32m✓ built in 289ms^[[39m
+Lint, testes e build	Run pnpm build	2026-11-14T11:58:37.9687645Z apps/web build: Done
+Lint, testes e build	Run pnpm verificar:build	﻿2026-11-14T11:58:38.0141269Z ##[group]Run pnpm verificar:build
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.0141769Z ^[[36;1mpnpm verificar:build^[[0m
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.0185443Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.0185738Z env:
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.0185995Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.0186259Z ##[endgroup]
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.4025308Z $ node scripts/arquitetura/verificar-bundle.mjs && node scripts/arquitetura/verificar-dados-ficticios.mjs --estrito
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.4449182Z   index-ycSJ5UOe.js: 180.9 KB (gzip)
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.4449885Z Bundle JS (F8): 180.9 KB gzip, limite 215 KB. ok.
+Lint, testes e build	Run pnpm verificar:build	2026-11-14T11:58:38.4701828Z Dados fictícios (F6): nenhum marcador no bundle. ok.
+Lint, testes e build	Run pnpm verificar:contrato	﻿2026-11-14T11:58:38.4892299Z ##[group]Run pnpm verificar:contrato
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4892589Z ^[[36;1mpnpm verificar:contrato^[[0m
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4936498Z shell: /usr/bin/bash -e {0}
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4936744Z env:
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4936966Z   PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4937602Z   DATABASE_URL: ***localhost:5432/ci
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.4937843Z ##[endgroup]
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:38.8839507Z $ node scripts/arquitetura/verificar-contrato.mjs
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:39.3013130Z $ pnpm --filter api gerar:openapi && pnpm --filter @integracasd/api-client gerar
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:39.6999367Z $ nest build && node dist/gerar-openapi.js
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:44.1925546Z OpenAPI gravado em /home/runner/work/IntegraCASD/IntegraCASD/packages/api-client/openapi.json
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:44.6244521Z $ orval
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:44.9527553Z 🍻 orval v8.40.0 - A swagger client generator for typescript
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:44.9717628Z integracasd - Cleaning output folder
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:45.1932775Z integracasd - 🎉 IntegraCASD - Your OpenAPI spec has been converted into ready to use orval!
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:45.2506807Z 
+Lint, testes e build	Run pnpm verificar:contrato	2026-11-14T11:58:45.2507532Z Contrato (F3): cliente da API em dia com o backend.
+Lint, testes e build	Post Run actions/setup-node@v7	﻿2026-11-14T11:58:45.2760896Z Post job cleanup.
+Lint, testes e build	Post Run actions/setup-node@v7	2026-11-14T11:58:45.3660044Z Cache hit occurred on the primary key node-cache-Linux-x64-pnpm-a61f8348f55c7bbd8d292844812544336a135b46f1252fb0ebbb66cb838f4e3a, not saving cache.
+Lint, testes e build	Post Run pnpm/action-setup@v6	﻿2026-11-14T11:58:45.3754180Z Post job cleanup.
+Lint, testes e build	Post Run pnpm/action-setup@v6	2026-11-14T11:58:45.4914353Z Pruning is unnecessary.
+Lint, testes e build	Post Run actions/checkout@v7	﻿2026-11-14T11:58:45.5039692Z Post job cleanup.
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5751207Z [command]/usr/bin/git version
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5788887Z git version 2.56.1
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5817079Z Temporarily overriding HOME='/home/runner/work/_temp/621b5f20-d9a1-4de8-8104-a2d6772d4af9' before making global git config changes
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5818209Z Adding repository directory to the temporary git global config as a safe directory
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5821514Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/IntegraCASD/IntegraCASD
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5850306Z Removing SSH command configuration
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5855673Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.5893613Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6157050Z Removing HTTP extra header
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6162608Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6198763Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6463255Z Removing includeIf entries pointing to credentials config files
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6469386Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6493479Z includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6494276Z includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git/worktrees/*.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6495314Z includeif.gitdir:/github/workspace/.git.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6495874Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6501487Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6523109Z /home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6531249Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-81bff726\-6fe8\-4a05\-bb34\-3fb5c8f51d28\.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6562360Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git/worktrees/*.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6582910Z /home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6591074Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/IntegraCASD/IntegraCASD/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-81bff726\-6fe8\-4a05\-bb34\-3fb5c8f51d28\.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6620477Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6640623Z /github/runner_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6647605Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-81bff726\-6fe8\-4a05\-bb34\-3fb5c8f51d28\.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6676187Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6695678Z /github/runner_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6701813Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-81bff726\-6fe8\-4a05\-bb34\-3fb5c8f51d28\.config
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6730193Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Lint, testes e build	Post Run actions/checkout@v7	2026-11-14T11:58:45.6956882Z Removing credentials config '/home/runner/work/_temp/git-credentials-81bff726-6fe8-4a05-bb34-3fb5c8f51d28.config'
+Lint, testes e build	Complete job	﻿2026-11-14T11:58:45.7102243Z Cleaning up orphan processes

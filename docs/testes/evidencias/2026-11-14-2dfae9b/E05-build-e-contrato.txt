@@ -1,0 +1,106 @@
+Evidência E05: Build, orçamento do bundle, dados fictícios e contrato OpenAPI
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:59:16 (UTC-03:00)
+
+$ pnpm build
+$ pnpm -r build
+Scope: 3 of 4 workspace projects
+apps/api build$ nest build
+apps/web build$ tsc -b && vite build
+apps/web build: vite v8.3.3 building client environment for production...
+apps/web build: transforming...
+apps/web build: ✓ 320 modules transformed.
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                                                     0.46 kB │ gzip:   0.30 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-400-normal-fK1oJ5dG.woff       6.39 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-700-normal-BV5B8Are.woff       6.42 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-600-normal-DgdngZtN.woff       6.58 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-500-normal-BEb3_waV.woff       6.58 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-400-normal-DG4YqDda.woff2      8.20 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-700-normal-CkEo6LDy.woff2      8.22 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-500-normal-e4dixQRQ.woff2      8.41 kB
+apps/web build: dist/assets/ibm-plex-sans-vietnamese-600-normal-DpPYBSTl.woff2      8.46 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-700-normal-CkZN0sRy.woff            8.74 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-400-normal-D9ESIMu3.woff            8.76 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-500-normal-CuWXN6rf.woff            9.14 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-600-normal-D-CqTdkO.woff            9.22 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-700-normal-wyJ6jzdA.woff2           9.92 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-400-normal-_efipK4i.woff2           9.94 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-700-normal-DCQwxkRk.woff    10.16 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-400-normal-Dsrv2Tcn.woff    10.28 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-600-normal-DzTrcv_p.woff2          10.36 kB
+apps/web build: dist/assets/ibm-plex-sans-greek-500-normal-JMMifIXV.woff2          10.37 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-500-normal-DB5PtV2g.woff    10.59 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-600-normal-Bz0x94Yp.woff    10.61 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-700-normal-BmRLXWpJ.woff2   12.05 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-400-normal-g30qAdWV.woff2   12.14 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-600-normal-DUMzJB7m.woff2   12.30 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-ext-500-normal-Cs5J6C77.woff2   12.30 kB
+apps/web build: dist/assets/archivo-vietnamese-wght-normal-XAtsl5Q_.woff2          13.24 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-700-normal-RFb1v-CK.woff        13.32 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-400-normal-BTotfTJu.woff        13.51 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-500-normal-ByOcLdNv.woff        13.85 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-600-normal-BGq0mW3O.woff        13.88 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-400-normal-RBey6euL.woff       14.36 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-700-normal-DZH6Xh-4.woff       14.42 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-700-normal-D_uavGvn.woff2       14.57 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-500-normal-D0aIdm-b.woff       14.73 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-600-normal-DIrixKbi.woff       14.77 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-400-normal-DZqxrq2p.woff2       14.80 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-500-normal-CocWQlwt.woff2       15.00 kB
+apps/web build: dist/assets/ibm-plex-sans-cyrillic-600-normal-71GNu3SW.woff2       15.04 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-400-normal-C5H60-Va.woff2      15.98 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-700-normal-aMgXseD4.woff2      16.18 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-600-normal-DOrvGEcy.woff2      16.44 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-ext-500-normal-DakdToA3.woff2      16.45 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-400-normal-CYLoc0-x.woff           22.10 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-700-normal-Bth3BMcD.woff           22.28 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2          22.58 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-700-normal-Bxkt5Cjx.woff2          22.83 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-600-normal-Cu4Hd6ag.woff           23.87 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-500-normal-BgVn5rGT.woff           23.91 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2          24.18 kB
+apps/web build: dist/assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2          24.25 kB
+apps/web build: dist/assets/archivo-latin-ext-wght-normal-C4zznr8T.woff2           32.60 kB
+apps/web build: dist/assets/archivo-latin-wght-normal-E0tuGl4L.woff2               34.92 kB
+apps/web build: dist/assets/index-BKUyLmwx.css                                     35.84 kB │ gzip:   7.48 kB
+apps/web build: dist/assets/index-ycSJ5UOe.js                                     650.14 kB │ gzip: 182.45 kB
+apps/web build: [plugin builtin:vite-reporter] 
+apps/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+apps/web build: - Using dynamic import() to code-split the application
+apps/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+apps/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+apps/web build: ✓ built in 919ms
+apps/web build: Done
+apps/api build: Done
+
+(código de saída: 0)
+
+$ pnpm verificar:build
+$ node scripts/arquitetura/verificar-bundle.mjs && node scripts/arquitetura/verificar-dados-ficticios.mjs --estrito
+  index-ycSJ5UOe.js: 180.9 KB (gzip)
+Bundle JS (F8): 180.9 KB gzip, limite 215 KB. ok.
+Dados fictícios (F6): nenhum marcador no bundle. ok.
+
+(código de saída: 0)
+
+$ pnpm verificar:contrato
+$ node scripts/arquitetura/verificar-contrato.mjs
+$ pnpm --filter api gerar:openapi && pnpm --filter @integracasd/api-client gerar
+$ nest build && node dist/gerar-openapi.js
+OpenAPI gravado em C:\Users\Ryaj\Desktop\ITA\Materias\PROF-1\2-Semestre\CSI-28\IntegraCASD\packages\api-client\openapi.json
+$ orval
+🍻 orval v8.40.0 - A swagger client generator for typescript
+integracasd - Cleaning output folder
+integracasd - 🎉 IntegraCASD - Your OpenAPI spec has been converted into ready to use orval!
+
+Contrato (F3): cliente da API em dia com o backend.
+
+(código de saída: 0)
+
+Arquivos versionados alterados pelo build ou pelo contrato: nenhum.
+
+Fim: 2026-11-14 09:00:05 (UTC-03:00)
+Duração: 49 s
+Código de saída da etapa: 0

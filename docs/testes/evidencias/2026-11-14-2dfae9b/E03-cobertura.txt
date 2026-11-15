@@ -1,0 +1,59 @@
+Evidência E03: Cobertura dos testes de unidade
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:58:37 (UTC-03:00)
+
+$ pnpm cobertura
+$ pnpm --filter api test:cov
+$ vitest run --coverage
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 C:/Users/Ryaj/Desktop/ITA/Materias/PROF-1/2-Semestre/CSI-28/IntegraCASD/apps/api
+      Coverage enabled with v8
+
+[Nest] 9620  - 14/11/2026, 08:58:45    WARN [Trilha] Dado pessoal mascarado no detalhe da trilha (MOVIMENTACAO mov-1).
+[Nest] 40188  - 14/11/2026, 08:58:46    WARN [TokenDoWebhookGuard] Webhook recusado: token inválido.
+[Nest] 40188  - 14/11/2026, 08:58:46    WARN [TokenDoWebhookGuard] Webhook recusado: token inválido.
+[Nest] 40188  - 14/11/2026, 08:58:46   ERROR [TokenDoWebhookGuard] ASAAS_WEBHOOK_TOKEN não está preenchido no .env; webhook recusado.
+[Nest] 36556  - 14/11/2026, 08:58:47    WARN [Configuracao] CHAVE_DE_CIFRAGEM precisa ter 32 bytes em base64 (veja o passo 2.7 do playbook de implantação). Em produção, isto impediria a subida.
+[Nest] 36556  - 14/11/2026, 08:58:47    WARN [Configuracao] GERACAO_A_PARTIR_DE ("2027-13") precisa estar no formato AAAA-MM, com mês de 01 a 12 (ex.: 2027-02), ou ficar vazia. Em produção, isto impediria a subida.
+[Nest] 23208  - 14/11/2026, 08:58:48    WARN [ConferirSaude] Saúde: o banco não respondeu (conexão recusada).
+[Nest] 23208  - 14/11/2026, 08:58:48    WARN [ConferirSaude] Saúde: não foi possível consultar a vigilância do Asaas (Fila indisponível.).
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 2 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 1 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 1 trazidas do Asaas, 1 não identificadas, 0 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 1 para conferir.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Há pagamentos no Asaas que não foram baixados: falta escolher a conta de recebimento e as categorias em Administração > Parâmetros.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 0 conferidas, 0 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir. Interrompida: O Asaas está fora do ar no momento. Tente novamente em alguns minutos.
+[Nest] 13336  - 14/11/2026, 08:58:53     LOG [SincronizarCobrancas] Sincronização: 1 conferidas, 1 atualizadas, 0 trazidas do Asaas, 0 não identificadas, 0 para conferir.
+[Nest] 27064  - 14/11/2026, 08:58:57    WARN [GerarCobrancasRecorrentes] Geração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).
+[Nest] 27064  - 14/11/2026, 08:58:57    WARN [GerarCobrancasRecorrentes] Geração recorrente de 2027-01 não executada: A geração do sistema começa em fevereiro/2027 (GERACAO_A_PARTIR_DE).
+[Nest] 28028  - 14/11/2026, 08:58:58     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_RECEIVED): BAIXAR.
+[Nest] 28028  - 14/11/2026, 08:58:58     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_OVERDUE): NADA.
+[Nest] 28028  - 14/11/2026, 08:58:58     LOG [ProcessarEventoWebhook] Evento evt_falso_1 já processado; nada a fazer.
+[Nest] 28028  - 14/11/2026, 08:58:58     LOG [ProcessarEventoWebhook] Evento evt_falso_1 (PAYMENT_RECEIVED): já processado.
+[Nest] 29028  - 14/11/2026, 08:59:00     LOG [ReenfileirarEventosParados] Eventos sem processar: 2; reenfileirados: 2; falhas: 0.
+[Nest] 29028  - 14/11/2026, 08:59:00     LOG [ReenfileirarEventosParados] Eventos sem processar: 1; reenfileirados: 0; falhas: 1.
+[Nest] 29028  - 14/11/2026, 08:59:00     LOG [ReenfileirarEventosParados] Eventos sem processar: 1; reenfileirados: 1; falhas: 0.
+[Nest] 40052  - 14/11/2026, 08:59:11    WARN [ConsumidorDeEventosWebhook] Evento uuid-1 não processado; nova tentativa mais tarde. falhou
+
+ Test Files  75 passed (75)
+      Tests  599 passed (599)
+   Start at  08:58:40
+   Duration  33.64s (transform 8.53s, setup 0ms, import 208.93s, tests 8.30s, environment 28ms)
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 66.2% ( 2463/3720 )
+Branches     : 67.64% ( 1595/2358 )
+Functions    : 52.5% ( 462/880 )
+Lines        : 66.74% ( 2238/3353 )
+================================================================================
+
+(código de saída: 0)
+
+Fim: 2026-11-14 08:59:14 (UTC-03:00)
+Duração: 38 s
+Código de saída da etapa: 0

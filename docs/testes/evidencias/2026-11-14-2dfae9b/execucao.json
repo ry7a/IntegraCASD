@@ -1,0 +1,126 @@
+{
+  "plano": "IntegraCASD_PlanoDeTestes_v1.1",
+  "rascunho": false,
+  "commit": "2dfae9b10b823f6b8d042d1a0d54c72b2562d77a",
+  "assunto": "merge: coleta automática das evidências do plano de testes",
+  "dataDoCommit": "2026-11-14 08:51:40 -0300",
+  "branch": "main",
+  "publicadoEm": [
+    "origin/main"
+  ],
+  "executor": "Ryaj",
+  "inicio": "2026-11-14 08:57:57 (UTC-03:00)",
+  "fim": "2026-11-14 09:12:48 (UTC-03:00)",
+  "etapas": {
+    "E00": {
+      "titulo": "Preparação e ambiente",
+      "arquivo": "E00-ambiente.txt",
+      "inicio": "2026-11-14 08:57:57 (UTC-03:00)",
+      "fim": "2026-11-14 08:58:01 (UTC-03:00)",
+      "duracaoEmSegundos": 4,
+      "comandos": [
+        {
+          "comando": "pnpm install --frozen-lockfile",
+          "codigo": 0
+        },
+        {
+          "comando": "docker compose up -d",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E01": {
+      "titulo": "Lint",
+      "arquivo": "E01-lint.txt",
+      "inicio": "2026-11-14 08:58:01 (UTC-03:00)",
+      "fim": "2026-11-14 08:58:13 (UTC-03:00)",
+      "duracaoEmSegundos": 12,
+      "comandos": [
+        {
+          "comando": "pnpm lint",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E02": {
+      "titulo": "Testes de unidade e de arquitetura",
+      "arquivo": "E02-unidade.txt",
+      "inicio": "2026-11-14 08:58:13 (UTC-03:00)",
+      "fim": "2026-11-14 08:58:37 (UTC-03:00)",
+      "duracaoEmSegundos": 24,
+      "comandos": [
+        {
+          "comando": "pnpm --filter api exec vitest run --reporter=verbose --reporter=json --outputFile.json=../../docs/testes/evidencias/2026-11-14-2dfae9b/E02-unidade.json",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E03": {
+      "titulo": "Cobertura dos testes de unidade",
+      "arquivo": "E03-cobertura.txt",
+      "inicio": "2026-11-14 08:58:37 (UTC-03:00)",
+      "fim": "2026-11-14 08:59:14 (UTC-03:00)",
+      "duracaoEmSegundos": 38,
+      "comandos": [
+        {
+          "comando": "pnpm cobertura",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E04": {
+      "titulo": "Funções de aptidão: migrações imutáveis e cores",
+      "arquivo": "E04-arquitetura.txt",
+      "inicio": "2026-11-14 08:59:14 (UTC-03:00)",
+      "fim": "2026-11-14 08:59:16 (UTC-03:00)",
+      "duracaoEmSegundos": 1,
+      "comandos": [
+        {
+          "comando": "pnpm verificar:arquitetura",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E05": {
+      "titulo": "Build, orçamento do bundle, dados fictícios e contrato OpenAPI",
+      "arquivo": "E05-build-e-contrato.txt",
+      "inicio": "2026-11-14 08:59:16 (UTC-03:00)",
+      "fim": "2026-11-14 09:00:05 (UTC-03:00)",
+      "duracaoEmSegundos": 49,
+      "comandos": [
+        {
+          "comando": "pnpm build",
+          "codigo": 0
+        },
+        {
+          "comando": "pnpm verificar:build",
+          "codigo": 0
+        },
+        {
+          "comando": "pnpm verificar:contrato",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    },
+    "E07": {
+      "titulo": "Testes de integração e de sistema com PostgreSQL real",
+      "arquivo": "E07-integracao.txt",
+      "inicio": "2026-11-14 09:00:13 (UTC-03:00)",
+      "fim": "2026-11-14 09:12:44 (UTC-03:00)",
+      "duracaoEmSegundos": 751,
+      "comandos": [
+        {
+          "comando": "pnpm --filter api exec vitest run --config vitest.integracao.config.ts --reporter=verbose --reporter=json --outputFile.json=../../docs/testes/evidencias/2026-11-14-2dfae9b/E07-integracao.json",
+          "codigo": 0
+        }
+      ],
+      "codigo": 0
+    }
+  }
+}

@@ -1,0 +1,30 @@
+Evidência E00: Preparação e ambiente
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:57:57 (UTC-03:00)
+
+$ pnpm install --frozen-lockfile
+Scope: all 4 workspace projects
+Already up to date
+Done in 522ms using pnpm v11.28.5
+
+(código de saída: 0)
+
+$ docker compose up -d
+ Container integracasd-db-1 Running 
+
+(código de saída: 0)
+
+Ambiente:
+  Sistema: Windows_NT 10.0.26200 (x64)
+  Node: v24.20.0
+  pnpm: 11.28.5
+  Vitest: vitest/4.1.11 win32-x64 node-v24.20.0
+  Docker (servidor): 29.6.1
+  PostgreSQL (docker compose): postgres (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)
+  Mudanças locais em arquivos versionados: nenhuma
+  Arquivos não versionados: .claude/, data/, docs/testes/evidencias/
+  PULAR_CT_NF_05: ignorada (na execução que vale como evidência, o CT-NF-05 sempre roda)
+
+Fim: 2026-11-14 08:58:01 (UTC-03:00)
+Duração: 4 s
+Código de saída da etapa: 0

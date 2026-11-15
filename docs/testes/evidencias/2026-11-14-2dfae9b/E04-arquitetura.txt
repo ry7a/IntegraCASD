@@ -1,0 +1,14 @@
+Evidência E04: Funções de aptidão: migrações imutáveis e cores
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:59:14 (UTC-03:00)
+
+$ pnpm verificar:arquitetura
+$ node scripts/arquitetura/verificar-migracoes.mjs && node scripts/arquitetura/verificar-cores.mjs
+Migrações (B7): ok (base main, 0 mudança(s) em apps/api/prisma/migrations).
+Cores (F5): ok (1 arquivo(s) com exceção registrada).
+
+(código de saída: 0)
+
+Fim: 2026-11-14 08:59:16 (UTC-03:00)
+Duração: 1 s
+Código de saída da etapa: 0
