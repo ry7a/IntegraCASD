@@ -127,6 +127,33 @@ A planilha **não cobra** o mês que ela chamaria de "janeiro/2027": esse é o f
   como pagamento manual da cobrança herdada (ADR-0005), e não só na planilha. A planilha deixa de ser
   a fonte dos débitos no dia da carga.
 
+## Carga anonimizada (homologação)
+
+A homologação usa dados anonimizados ([Padrões.NF001]). Para mostrar o sistema com a "cara" da
+planilha (quantidade de alunos, turmas, ocupação do H8, débitos e inadimplência por turma) sem
+nenhum aluno real:
+
+```powershell
+python scripts/carga-inicial/carregar_alunos.py --anonimizar --hoje AAAA-MM-DD
+```
+
+Gera só `dados/carga-anonimizada.sql` (o relatório de pendências não, porque tem valores da planilha).
+
+- **Trocados:** nome, CPF, e-mail (`@exemplo.com`) e matrícula viram fictícios; celular e apelido
+  ficam em branco. Cadastro incompleto continua incompleto (e-mail vazio ou CPF inválido).
+- **Embaralhados:** os débitos, entre alunos da mesma turma; as vagas, entre os alunos ativos (e, à
+  parte, entre os inativos). Só trocar os nomes não anonimiza: quem conhece o H8 reconheceria o aluno
+  pela vaga e veria os débitos dele.
+- **Mantidos com o aluno:** turma, curso, posto e situação (ativo ou inativo).
+- **Trava:** se algum nome, CPF, e-mail, celular, apelido ou matrícula real aparecer no SQL, o script
+  para e não grava nada.
+- **Gere uma vez e aplique sempre o mesmo arquivo.** O sorteio muda a cada execução: aplicar dois
+  arquivos diferentes duplica os alunos.
+- **Antes de fevereiro/2027**, quando acaba a trava `GERACAO_A_PARTIR_DE`, zere esses dados da
+  homologação: senão a geração recorrente emite boletos no Asaas sandbox para todos eles.
+
+Como aplicar na Railway: `docs/playbooks/implantacao.md` (TCP Proxy aberto só durante a carga).
+
 ## Testes
 
 ```powershell

@@ -60,6 +60,30 @@ def embaralhar_dentro_dos_grupos(valores: list, grupos: list, gerador: random.Ra
     return resultado
 
 
+def literal_sql(texto: str) -> str:
+    """Texto como aparece no SQL gerado: entre aspas simples, com a aspa dobrada (mesma regra de
+    carregar_alunos.sql_texto, repetida aqui porque este módulo não pode importar aquele)."""
+    return "'" + texto.replace("'", "''") + "'"
+
+
+def dados_reais_no_sql(sql: str, reais: list) -> dict[str, int]:
+    """Trava da carga anonimizada: quantos alunos têm algum dado pessoal real no texto do SQL, por campo.
+
+    Procura cada valor na forma em que o SQL o escreveria (literal entre aspas; a matrícula, na
+    condição `matricula = N)`). Devolve só contagens, nunca os valores: o terminal não pode mostrar
+    dado real.
+    """
+    achados = {"nome": 0, "cpf": 0, "email": 0, "celular": 0, "apelido": 0, "matricula": 0}
+    for a in reais:
+        for campo in ("nome", "cpf", "email", "celular", "apelido"):
+            valor = getattr(a, campo)
+            if valor and literal_sql(valor) in sql:
+                achados[campo] += 1
+        if a.matricula is not None and f"matricula = {a.matricula})" in sql:
+            achados["matricula"] += 1
+    return achados
+
+
 def anonimizar(alunos: list, gerador: random.Random) -> list:
     """Lista nova de alunos fictícios com a mesma "cara" dos recebidos (ver a docstring do módulo).
 

@@ -15,7 +15,7 @@ from collections import Counter
 
 import anonimizar
 import regras
-from carregar_alunos import Aluno, Debito
+from carregar_alunos import Aluno, Debito, gerar_sql
 
 
 def debito(referencia: str) -> Debito:
@@ -146,6 +146,38 @@ class TestAnonimizar(unittest.TestCase):
         primeira = anonimizar.anonimizar(alunos_ficticios(), random.Random(7))
         segunda = anonimizar.anonimizar(alunos_ficticios(), random.Random(7))
         self.assertEqual(primeira, segunda)
+
+
+class TestSqlAnonimizado(unittest.TestCase):
+    def test_sql_anonimizado_nao_tem_numero_de_linha(self):
+        anonimos = anonimizar.anonimizar(alunos_ficticios(), random.Random(1))
+        sql = gerar_sql(anonimos, anonimizado=True)
+        self.assertIsNone(re.search(r"-- linha \d", sql))
+        self.assertIn("ANONIMIZADOS", sql)
+
+    def test_sql_normal_continua_igual(self):
+        sql = gerar_sql(alunos_ficticios())
+        self.assertIn("-- linha 10\n", sql)
+        self.assertNotIn("ANONIMIZADOS", sql)
+
+
+class TestTravaDeDadosReais(unittest.TestCase):
+    def test_trava_acha_cada_campo_real(self):
+        alunos = alunos_ficticios()
+        achados = anonimizar.dados_reais_no_sql(gerar_sql(alunos), alunos)
+        for campo in ("nome", "cpf", "email", "celular", "apelido", "matricula"):
+            self.assertGreater(achados[campo], 0, campo)
+
+    def test_trava_acha_nome_com_apostrofo(self):
+        alunos = [aluno(30, "Joana D'Arc Teste", "52601815906", "joana.teste@exemplo.com", "T27")]
+        achados = anonimizar.dados_reais_no_sql(gerar_sql(alunos), alunos)
+        self.assertEqual(achados["nome"], 1)
+
+    def test_trava_nao_acha_nada_no_sql_anonimizado(self):
+        alunos = alunos_ficticios()
+        sql = gerar_sql(anonimizar.anonimizar(alunos, random.Random(5)), anonimizado=True)
+        achados = anonimizar.dados_reais_no_sql(sql, alunos)
+        self.assertEqual(sum(achados.values()), 0, achados)
 
 
 if __name__ == "__main__":

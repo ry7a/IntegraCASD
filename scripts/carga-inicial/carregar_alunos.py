@@ -12,13 +12,19 @@ regras.py e grava, na pasta dados/ (fora do git, LGPD):
 O script não fala com o banco: o SQL é aplicado depois, com o Prisma (ver README.md).
 No terminal só aparecem totais, nunca nomes ou CPFs.
 
+Com --anonimizar, grava só dados/carga-anonimizada.sql, para a homologação ([Padrões.NF001]):
+alunos fictícios com a mesma "cara" da planilha (ver anonimizar.py). Se algum dado real
+sobrar no SQL, o script para sem gravar nada.
+
 Uso, na raiz do repositório:
     python scripts/carga-inicial/carregar_alunos.py
+    python scripts/carga-inicial/carregar_alunos.py --anonimizar --hoje AAAA-MM-DD
 """
 
 import argparse
 import csv
 import datetime
+import random
 import sys
 import warnings
 from collections import Counter
@@ -27,6 +33,7 @@ from pathlib import Path
 
 import openpyxl
 
+import anonimizar
 import regras
 
 PASTA_DO_SCRIPT = Path(__file__).resolve().parent
@@ -345,9 +352,12 @@ def sql_texto(valor) -> str:
     return "'" + str(valor).replace("'", "''") + "'"
 
 
-def sql_do_aluno(a: Aluno) -> str:
+def sql_do_aluno(a: Aluno, anonimizado: bool = False) -> str:
     """Insere se o CPF ainda não existe e, no mesmo comando, grava a inclusão na trilha
-    (usuario_id nulo = rotina automática, como no backend)."""
+    (usuario_id nulo = rotina automática, como no backend).
+
+    Na carga anonimizada o comentário não leva a linha da planilha: ela ligaria o aluno
+    fictício à pessoa real."""
     turma_id = "NULL" if a.turma is None else f"(SELECT id FROM turmas WHERE nome = {sql_texto(a.turma)})"
     if a.alojamento is None:
         alojamento_id = "NULL"
@@ -362,9 +372,10 @@ def sql_do_aluno(a: Aluno) -> str:
     )
     posto = "NULL" if a.posto is None else f"{sql_texto(a.posto)}::posto_aluno"
     curso = "NULL" if a.curso is None else f"{sql_texto(a.curso)}::curso_aluno"
+    comentario = "-- aluno fictício\n" if anonimizado else f"-- linha {a.linha}\n"
     return (
-        f"-- linha {a.linha}\n"
-        "WITH novo AS (\n"
+        comentario
+        + "WITH novo AS (\n"
         "  INSERT INTO alunos (id, nome, cpf, email, matricula, posto, curso, turma_id, celular, apelido,\n"
         "                      alojamento_id, ativo, data_alteracao)\n"
         f"  SELECT gen_random_uuid(), {sql_texto(a.nome)}, {sql_texto(a.cpf)}, {sql_texto(a.email)},\n"
@@ -382,12 +393,13 @@ def sql_do_aluno(a: Aluno) -> str:
     )
 
 
-def sql_do_debito(a: Aluno, d: Debito) -> str:
+def sql_do_debito(a: Aluno, d: Debito, anonimizado: bool = False) -> str:
     """Cobrança HERDADA (ADR-0005): aberta, sem id do Asaas, multa e juros zerados. O mês de
     referência é único por aluno: rodar de novo não duplica (ON CONFLICT)."""
+    comentario = f"-- {d.descricao}\n" if anonimizado else f"-- linha {a.linha}, {d.descricao}\n"
     return (
-        f"-- linha {a.linha}, {d.descricao}\n"
-        "WITH nova AS (\n"
+        comentario
+        + "WITH nova AS (\n"
         "  INSERT INTO cobrancas (id, aluno_id, origem, referencia, descricao, valor_centavos, vencimento,\n"
         "                         multa_percentual, juros_mensal_percentual, data_alteracao)\n"
         f"  SELECT gen_random_uuid(), id, 'HERDADA', {sql_texto(d.referencia)}, {sql_texto(d.descricao)},\n"
@@ -403,14 +415,21 @@ def sql_do_debito(a: Aluno, d: Debito) -> str:
     )
 
 
-def gerar_sql(alunos: list[Aluno]) -> str:
-    partes = [
-        "-- Carga inicial dos alunos e dos débitos deles, gerada por scripts/carga-inicial/carregar_alunos.py.",
-        "-- CONTÉM DADOS REAIS (LGPD): não versionar, não enviar, não usar em ambiente exposto.",
-        "-- Pode rodar de novo: turma, vaga, aluno (pelo CPF) e débito (aluno + mês) que já existem não são duplicados.",
-        "BEGIN;",
-        "",
-    ]
+def gerar_sql(alunos: list[Aluno], anonimizado: bool = False) -> str:
+    if anonimizado:
+        partes = [
+            "-- Carga ANONIMIZADA dos alunos e dos débitos, gerada por scripts/carga-inicial/carregar_alunos.py --anonimizar.",
+            "-- DADOS ANONIMIZADOS para a homologação ([Padrões.NF001]): nenhum aluno real. Nomes, CPFs, e-mails e",
+            "-- matrículas são fictícios; débitos e vagas foram embaralhados entre os alunos.",
+            "-- Pode rodar de novo este mesmo arquivo sem duplicar. Outra geração cria alunos novos: não aplique as duas.",
+        ]
+    else:
+        partes = [
+            "-- Carga inicial dos alunos e dos débitos deles, gerada por scripts/carga-inicial/carregar_alunos.py.",
+            "-- CONTÉM DADOS REAIS (LGPD): não versionar, não enviar, não usar em ambiente exposto.",
+            "-- Pode rodar de novo: turma, vaga, aluno (pelo CPF) e débito (aluno + mês) que já existem não são duplicados.",
+        ]
+    partes += ["BEGIN;", ""]
 
     turmas = sorted({a.turma for a in alunos if a.turma is not None})
     if turmas:
@@ -428,8 +447,8 @@ def gerar_sql(alunos: list[Aluno]) -> str:
             "",
         ]
 
-    partes += [sql_do_aluno(a) for a in alunos]
-    partes += [sql_do_debito(a, d) for a in alunos for d in a.debitos]
+    partes += [sql_do_aluno(a, anonimizado) for a in alunos]
+    partes += [sql_do_debito(a, d, anonimizado) for a in alunos for d in a.debitos]
     partes.append("COMMIT;")
     return "\n".join(partes) + "\n"
 
@@ -468,11 +487,32 @@ def resumir(resultado: Resultado, meses: list[MesDaPlanilha]) -> None:
           + ("" if not por_campo else " (" + ", ".join(f"{c}: {n}" for c, n in sorted(por_campo.items())) + ")"))
 
 
+def gravar_carga_anonimizada(resultado: Resultado, meses: list[MesDaPlanilha]) -> None:
+    """Gera o SQL com alunos fictícios e só grava se a trava não achar nenhum dado real nele.
+    O relatório de pendências não é gravado: ele tem os valores da planilha."""
+    # Semente nova a cada execução: não dá para refazer o sorteio a partir do código.
+    anonimos = anonimizar.anonimizar(resultado.alunos, random.Random())
+    sql = gerar_sql(anonimos, anonimizado=True)
+    achados = anonimizar.dados_reais_no_sql(sql, resultado.alunos)
+    if any(achados.values()):
+        campos = ", ".join(f"{campo}: {n}" for campo, n in achados.items() if n)
+        sys.exit(f"PARADO: o SQL anonimizado ainda tem dados reais ({campos}). Nada foi gravado.")
+
+    arquivo_sql = PASTA_DE_SAIDA / "carga-anonimizada.sql"
+    arquivo_sql.write_text(sql, encoding="utf-8")
+    resumir(Resultado(alunos=anonimos, pendencias=resultado.pendencias, linhas_vazias=resultado.linhas_vazias), meses)
+    print("\nCarga ANONIMIZADA: nenhum nome, CPF, e-mail, celular, apelido ou matrícula real no SQL.")
+    print(f"Gerado (fora do git): {arquivo_sql.relative_to(RAIZ)}. Aplique sempre este mesmo arquivo: "
+          "outra geração cria alunos novos.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Gera o SQL da carga inicial dos alunos a partir da planilha do H8.")
     parser.add_argument("--planilha", type=Path, default=PLANILHA_PADRAO, help="caminho do .xlsx")
     parser.add_argument("--hoje", default=datetime.date.today().isoformat(),
                         help="data da carga (AAAA-MM-DD); mês que vence a partir dela não vira herdada")
+    parser.add_argument("--anonimizar", action="store_true",
+                        help="gera dados/carga-anonimizada.sql, com alunos fictícios, para a homologação")
     argumentos = parser.parse_args()
     if not argumentos.planilha.exists():
         sys.exit(f"Planilha não encontrada: {argumentos.planilha}. Ela fica em data/, fora do git: peça à equipe.")
@@ -481,6 +521,9 @@ def main() -> None:
     resultado = normalizar(planilha, argumentos.hoje)
 
     PASTA_DE_SAIDA.mkdir(exist_ok=True)
+    if argumentos.anonimizar:
+        gravar_carga_anonimizada(resultado, planilha.meses)
+        return
     arquivo_sql = PASTA_DE_SAIDA / "carga.sql"
     arquivo_pendencias = PASTA_DE_SAIDA / "pendencias-alunos.csv"
     arquivo_sql.write_text(gerar_sql(resultado.alunos), encoding="utf-8")
