@@ -12,6 +12,7 @@ carregar_alunos.normalizar e devolve uma lista nova, sem alterar a recebida.
 
 import dataclasses
 import random
+from collections import Counter
 
 import regras
 
@@ -29,6 +30,10 @@ SOBRENOMES = [
 DOMINIO_DOS_EMAILS = "exemplo.com"  # o mesmo do apps/api/prisma/dados-ficticios.sql
 MENOR_MATRICULA = 100000
 MAIOR_MATRICULA = 999999
+# Menor grupo em que embaralhar esconde alguém. Turma menor é embaralhada junto com as outras pequenas;
+# grupo de vagas menor fica sem vaga.
+MINIMO_DO_GRUPO = 5
+GRUPO_DOS_PEQUENOS = ("grupos pequenos",)  # chave que não coincide com o nome de nenhuma turma
 
 
 def cpf_ficticio(gerador: random.Random, valido: bool) -> str:
@@ -43,6 +48,20 @@ def cpf_ficticio(gerador: random.Random, valido: bool) -> str:
         if valido:
             return numero
         return numero[:10] + str((int(numero[10]) + 1) % 10)
+
+
+def juntar_grupos_pequenos(grupos: list, minimo: int) -> list:
+    """Embaralhar dentro de um grupo de 1 ou 2 alunos não esconde ninguém: os grupos com menos de
+    `minimo` membros são embaralhados juntos. Se nem juntos chegam ao mínimo, vão para o maior grupo."""
+    tamanhos = Counter(grupos)
+    pequenos = {grupo for grupo, tamanho in tamanhos.items() if tamanho < minimo}
+    if not pequenos:
+        return list(grupos)
+    destino = GRUPO_DOS_PEQUENOS
+    grandes = [grupo for grupo in tamanhos if grupo not in pequenos]
+    if sum(tamanhos[grupo] for grupo in pequenos) < minimo and grandes:
+        destino = max(grandes, key=lambda grupo: tamanhos[grupo])
+    return [destino if grupo in pequenos else grupo for grupo in grupos]
 
 
 def embaralhar_dentro_dos_grupos(valores: list, grupos: list, gerador: random.Random) -> list:
@@ -97,14 +116,17 @@ def anonimizar(alunos: list, gerador: random.Random) -> list:
     emails_reais = {a.email for a in alunos}
     matriculas_usadas = {a.matricula for a in alunos}
 
-    debitos = embaralhar_dentro_dos_grupos([a.debitos for a in alunos], [a.turma for a in alunos], gerador)
-    # Vaga de ativo só vai para ativo: o banco recusa dois alunos ativos na mesma vaga.
-    vagas = embaralhar_dentro_dos_grupos(
-        [a.alojamento for a in alunos], [(a.ativo, a.alojamento is not None) for a in alunos], gerador
-    )
+    turmas = juntar_grupos_pequenos([a.turma for a in alunos], MINIMO_DO_GRUPO)
+    debitos = embaralhar_dentro_dos_grupos([a.debitos for a in alunos], turmas, gerador)
+    # Vaga de ativo só vai para ativo: o banco recusa dois alunos ativos na mesma vaga. Por isso o grupo
+    # pequeno de vagas não pode se juntar a outro: a vaga dele fica em branco.
+    grupos_de_vaga = [(a.ativo, a.alojamento is not None) for a in alunos]
+    tamanhos = Counter(grupos_de_vaga)
+    vagas = embaralhar_dentro_dos_grupos([a.alojamento for a in alunos], grupos_de_vaga, gerador)
+    vagas = [None if tamanhos[grupo] < MINIMO_DO_GRUPO else vaga for vaga, grupo in zip(vagas, grupos_de_vaga)]
 
-    anonimos = []
-    for numero, a in enumerate(alunos, start=1):
+    sem_email = []  # (aluno fictício ainda sem e-mail, usuário do e-mail ou None se o cadastro não tem e-mail)
+    for posicao, a in enumerate(alunos):
         nome = None
         while nome is None or nome in nomes_reais:
             primeiro = gerador.choice(PRIMEIROS_NOMES)
@@ -116,13 +138,9 @@ def anonimizar(alunos: list, gerador: random.Random) -> list:
             cpf = cpf_ficticio(gerador, valido=regras.cpf_valido(a.cpf))
         cpfs_usados.add(cpf)
 
-        email = ""
+        usuario = None
         if a.email != "":
-            # O número no fim garante e-mails diferentes mesmo com nomes iguais.
             usuario = regras.sem_acento(f"{primeiro}.{ultimo_sobrenome}").lower()
-            email = f"{usuario}.{numero}@{DOMINIO_DOS_EMAILS}"
-            if email in emails_reais:
-                raise ValueError("e-mail fictício igual a um real: o domínio de exemplo foi usado na planilha?")
 
         matricula = None
         if a.matricula is not None:
@@ -130,10 +148,20 @@ def anonimizar(alunos: list, gerador: random.Random) -> list:
                 matricula = gerador.randint(MENOR_MATRICULA, MAIOR_MATRICULA)
             matriculas_usadas.add(matricula)
 
-        anonimos.append(dataclasses.replace(
-            a, linha=0, nome=nome, cpf=cpf, email=email, celular=None, apelido=None,
-            matricula=matricula, alojamento=vagas[numero - 1], debitos=list(debitos[numero - 1]),
-        ))
+        sem_email.append((dataclasses.replace(
+            a, linha=0, nome=nome, cpf=cpf, email="", celular=None, apelido=None,
+            matricula=matricula, alojamento=vagas[posicao], debitos=list(debitos[posicao]),
+        ), usuario))
 
-    gerador.shuffle(anonimos)
+    # Embaralha antes de numerar os e-mails: numerados na ordem de entrada, os números devolveriam
+    # a ordem da planilha. O número no fim garante e-mails diferentes mesmo com nomes iguais.
+    gerador.shuffle(sem_email)
+    anonimos = []
+    for numero, (aluno, usuario) in enumerate(sem_email, start=1):
+        if usuario is not None:
+            email = f"{usuario}.{numero}@{DOMINIO_DOS_EMAILS}"
+            if email in emails_reais:
+                raise ValueError("e-mail fictício igual a um real: o domínio de exemplo foi usado na planilha?")
+            aluno = dataclasses.replace(aluno, email=email)
+        anonimos.append(aluno)
     return anonimos

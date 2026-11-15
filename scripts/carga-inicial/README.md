@@ -143,7 +143,9 @@ Gera só `dados/carga-anonimizada.sql` (o relatório de pendências não, porque
   ficam em branco. Cadastro incompleto continua incompleto (e-mail vazio ou CPF inválido).
 - **Embaralhados:** os débitos, entre alunos da mesma turma; as vagas, entre os alunos ativos (e, à
   parte, entre os inativos). Só trocar os nomes não anonimiza: quem conhece o H8 reconheceria o aluno
-  pela vaga e veria os débitos dele.
+  pela vaga e veria os débitos dele. Turma com menos de 5 alunos é embaralhada junto com as outras
+  pequenas, e um grupo de vagas com menos de 5 alunos fica sem vaga (embaralhar entre 2 não esconde
+  ninguém). O número no fim do e-mail é dado depois de embaralhar, para não devolver a ordem da planilha.
 - **Mantidos com o aluno:** turma, curso, posto e situação (ativo ou inativo).
 - **Trava:** se algum nome, CPF, e-mail, celular, apelido ou matrícula real aparecer no SQL, o script
   para e não grava nada.

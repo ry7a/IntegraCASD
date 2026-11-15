@@ -125,16 +125,26 @@ class TestAnonimizar(unittest.TestCase):
         self.assertEqual(Counter(map(chave, self.entrada)), Counter(map(chave, self.saida)))
 
     def test_debitos_continuam_na_mesma_turma(self):
+        # Turmas com menos de MINIMO_DO_GRUPO alunos são embaralhadas juntas (aqui, T27 e os sem turma).
+        turmas = [a.turma for a in self.entrada]
+        grupo = dict(zip(turmas, anonimizar.juntar_grupos_pequenos(turmas, anonimizar.MINIMO_DO_GRUPO)))
+
         def chave(a):
-            return (a.turma, referencias(a))
+            return (grupo[a.turma], referencias(a))
         self.assertEqual(Counter(map(chave, self.entrada)), Counter(map(chave, self.saida)))
 
-    def test_vagas_de_ativos_ficam_com_ativos(self):
-        for ativo in (True, False):
-            antes = [a.alojamento for a in self.entrada if a.ativo == ativo and a.alojamento]
-            depois = [a.alojamento for a in self.saida if a.ativo == ativo and a.alojamento]
-            self.assertEqual(sorted(antes), sorted(depois))
-            self.assertEqual(len(depois), len(set(depois)))
+    def test_vagas_de_ativos_ficam_com_ativos_e_as_de_poucos_inativos_somem(self):
+        antes = [a.alojamento for a in self.entrada if a.ativo and a.alojamento]
+        depois = [a.alojamento for a in self.saida if a.ativo and a.alojamento]
+        self.assertEqual(sorted(antes), sorted(depois))
+        self.assertEqual(len(depois), len(set(depois)))
+        # Só 2 inativos têm vaga: embaralhar entre 2 não esconde ninguém, então a vaga deles fica em branco.
+        self.assertTrue(all(a.alojamento is None for a in self.saida if not a.ativo))
+
+    def test_numero_do_email_segue_a_ordem_embaralhada(self):
+        # Numerar antes de embaralhar devolveria a ordem da planilha (o N seria a posição de entrada).
+        numeros = [int(a.email.split("@")[0].rsplit(".", 1)[1]) for a in self.saida if a.email]
+        self.assertEqual(numeros, sorted(numeros))
 
     def test_nao_altera_a_lista_de_entrada(self):
         entrada = alunos_ficticios()
@@ -146,6 +156,17 @@ class TestAnonimizar(unittest.TestCase):
         primeira = anonimizar.anonimizar(alunos_ficticios(), random.Random(7))
         segunda = anonimizar.anonimizar(alunos_ficticios(), random.Random(7))
         self.assertEqual(primeira, segunda)
+
+
+class TestGruposPequenos(unittest.TestCase):
+    def test_grupos_pequenos_se_juntam(self):
+        juntos = anonimizar.juntar_grupos_pequenos(["A"] * 6 + ["B"] * 2 + ["C"] * 3, minimo=5)
+        self.assertEqual(juntos[:6], ["A"] * 6)
+        self.assertEqual(len(set(juntos[6:])), 1)
+        self.assertNotEqual(juntos[6], "A")
+
+    def test_grupo_pequeno_sozinho_vai_para_o_maior(self):
+        self.assertEqual(anonimizar.juntar_grupos_pequenos(["T27"] * 6 + ["T19"], minimo=5), ["T27"] * 7)
 
 
 class TestSqlAnonimizado(unittest.TestCase):
