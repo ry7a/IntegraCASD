@@ -1,0 +1,171 @@
+"""Testes da carga das movimentações. Só dados fictícios (LGPD).
+
+A planilha de teste é montada aqui, com o mesmo formato da planilha do Fundo de Manutenção, mas
+com rótulos, nomes e valores inventados.
+
+Rodar, na raiz do repositório:
+    python -m unittest discover -s scripts/carga-inicial -v
+"""
+
+import datetime
+import tempfile
+import unittest
+from pathlib import Path
+
+import openpyxl
+
+import carregar_movimentacoes as cm
+
+MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro",
+         "Outubro", "Novembro", "Dezembro"]
+
+
+def dia(mes: int, numero: int) -> datetime.datetime:
+    return datetime.datetime(2026, mes, numero)
+
+
+def aba_do_mes(planilha, nome: str, entradas: list, saidas: list) -> None:
+    aba = planilha.create_sheet(nome)
+    aba.append([0, "Entradas", 0, "Saídas"])
+    aba.append(["Data", "Categoria", "Descrição", "Valor", "Data", "Projetização", "Categoria", "Descrição",
+                "Valor", "Comprovante"])
+    for i in range(max(len(entradas), len(saidas))):
+        entrada = list(entradas[i]) if i < len(entradas) else [None] * 4
+        saida = list(saidas[i]) if i < len(saidas) else [None] * 5
+        aba.append(entrada + saida + [None])
+
+
+def planilha_ficticia(pasta: str) -> Path:
+    planilha = openpyxl.Workbook()
+    planilha.remove(planilha.active)
+
+    aba_do_mes(planilha, "Janeiro", entradas=[
+        (dia(1, 5), "Cobrança de Boletos", None, 1000.00),
+        (dia(1, 6), "Outros", "Pix de Fulano Teste", 50.00),
+    ], saidas=[
+        (dia(1, 10), "26C001 - Lavanderia Bem Lavado - Manutenção das máquinas", "Contratos", "NF 12 - Lavanderia", 300.00),
+        (dia(1, 11), "26P001 - Reforma Teste", "Projetos", "Tinta", 200.00),
+        (dia(1, 12), "Z - Jardins", "Zeladoria", "Adubo", 80.00),
+        (dia(1, 15), "A - Funcionárias", "Administrativo", "Salário Maria Teste", 1500.00),
+        (dia(1, 20), "A - Funcionárias", "Administrativo", "Salário Joana Teste", 1400.00),
+        (dia(1, 21), "A - Impostos", "Administrativo", None, 30.00),
+        (dia(1, 22), None, None, "Sem classificação", 10.00),
+        (dia(1, 23), "Z - Jardins", "Zeladoria", "Valor zerado", 0),
+    ])
+    aba_do_mes(planilha, "Fevereiro", entradas=[], saidas=[
+        (dia(2, 15), "A - Funcionárias", "Administrativo", "Salário Maria Teste", 1500.00),
+        (dia(2, 16), "26C001 - Lavanderia Bem Lavado - Manutenção das máquinas", "Contratos", None, 300.00),
+    ])
+
+    resumo = planilha.create_sheet("Resumo Mensal")
+    resumo.append(["Resumo Geral", None] + MESES)
+    for _ in range(6):
+        resumo.append([])
+    resumo.append(["Conta Corrente Fundo de Manutenção", "Saldo Inicial", 5000.00])  # linha 8
+    resumo.append([None, "Total de Entradas", 1050.00, 0])  # linha 9
+    resumo.append([None, "Total de Saídas", 3520.00, 1800.00])  # linha 10
+    resumo.append([])
+    resumo.append([])
+    resumo.append(["Conta de Investimentos Fundo de Manutenção", "Saldo Inicial", 20000.10])  # linha 13
+    resumo.append([None, "Total de Entradas", 100.00, 90.00])  # linha 14
+
+    investimentos = planilha.create_sheet("Investimentos")
+    investimentos.append(["Valor", "Data", None, "Descrição", "Saldo", "Categoria"])
+    investimentos.append([20000.00, dia(1, 1), 0, "Saldo Investimento Inicial", 20000.00, "Inicial"])
+    investimentos.append([100.00, dia(1, 31), 0, "Rendimento Jan/26", 20100.00, "Rendimento"])
+    investimentos.append([90.00, dia(2, 28), 0, "Rendimento Fev/26", 20190.00, "Rendimento"])
+
+    zeladoria = planilha.create_sheet("Zeladoria e Administrativo")
+    # Como na planilha real: cada mês ocupa 3 colunas, mas junho tem uma a mais ("Valor a Consultar"),
+    # o que empurra julho em diante uma coluna para a direita.
+    linha1 = ["Projetização", "Gasto Médio", "Desvio Padrão"]
+    linha2 = [None, None, None]
+    for mes in MESES:
+        linha1 += [mes, None, None] + ([None] if mes == "Junho" else [])
+        linha2 += (["Valor Liberado", "Valor a Consultar", "Gasto", "Saldo"] if mes == "Junho"
+                   else ["Valor Liberado", "Gasto", "Saldo"])
+    zeladoria.append(linha1)
+    zeladoria.append(linha2)
+    jardins = ["Z - Jardins", 0, 0] + [None] * (len(linha1) - 3)
+    jardins[linha1.index("Janeiro")] = 500.00
+    jardins[linha1.index("Junho")] = 450.00
+    jardins[linha1.index("Julho")] = 400.00
+    zeladoria.append(jardins)
+    impostos = ["A - Impostos", 0, 0] + [None] * (len(linha1) - 3)
+    impostos[linha1.index("Janeiro")] = 100.00
+    zeladoria.append(impostos)
+
+    contratos = planilha.create_sheet("Contratos")
+    contratos.append(["Descrição", "Numeração", "Situação", "Valor Pago", "Valor A Pagar", "Valor Comprometido",
+                      "Descrição do valor", "Data de Início", "Período de Vigência"])
+    contratos.append(["Lavanderia Bem Lavado", "26C001", "Ativo", 600, 0, 600, "R$ 300,00 mensal",
+                      datetime.datetime(2025, 3, 1), "12 meses"])
+
+    caminho = Path(pasta) / "planilha-ficticia.xlsx"
+    planilha.save(caminho)
+    return caminho
+
+
+class ComPlanilhaFicticia(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.pasta = tempfile.TemporaryDirectory()
+        cls.carga = cm.ler_planilha(planilha_ficticia(cls.pasta.name))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.pasta.cleanup()
+
+
+class TestLeitura(ComPlanilhaFicticia):
+    def test_le_entradas_saidas_e_rendimentos(self):
+        lancamentos = self.carga.lancamentos
+        entradas = [l for l in lancamentos if l.tipo == "ENTRADA" and l.conta == "CORRENTE"]
+        saidas = [l for l in lancamentos if l.tipo == "SAIDA"]
+        rendimentos = [l for l in lancamentos if l.conta == "APLICACAO"]
+        self.assertEqual(len(entradas), 2)
+        self.assertEqual(sum(l.valor_centavos for l in entradas), 105000)
+        self.assertEqual(len(saidas), 9)
+        self.assertEqual(len(rendimentos), 2)
+        self.assertEqual(sum(l.valor_centavos for l in rendimentos), 19000)
+        self.assertTrue(all(l.tipo == "ENTRADA" and l.categoria == "Rendimento" for l in rendimentos))
+
+    def test_saldos_iniciais(self):
+        self.assertEqual(self.carga.saldo_corrente, 500000)
+        self.assertEqual(self.carga.saldo_aplicacao, 2000010)
+        self.assertEqual(self.carga.ano, 2026)
+
+    def test_verbas_com_a_coluna_extra_de_junho(self):
+        verbas = self.carga.verbas
+        self.assertIn(cm.Verba("Jardins", 2026, 1, 50000), verbas)
+        self.assertIn(cm.Verba("Jardins", 2026, 6, 45000), verbas)
+        self.assertIn(cm.Verba("Jardins", 2026, 7, 40000), verbas)
+        self.assertFalse([v for v in verbas if v.centro == "Impostos"])
+        self.assertEqual(self.carga.centros, ["Jardins"])
+
+    def test_contrato_e_projeto(self):
+        self.assertEqual(self.carga.contratos, [cm.ContratoDaCarga(
+            codigo="26C001", contraparte="Lavanderia Bem Lavado", objeto="Manutenção das máquinas",
+            valor_centavos=30000, periodicidade="POR_DEMANDA", data_inicio="2025-03-01")])
+        self.assertEqual(self.carga.projetos, [cm.ProjetoDaCarga(codigo="26P001", nome="Reforma Teste",
+                                                                 data_inicio="2026-01-11")])
+
+    def test_categorias_das_saidas(self):
+        categorias = {l.categoria for l in self.carga.lancamentos if l.tipo == "SAIDA"}
+        self.assertEqual(categorias, {"Funcionárias", "Impostos", "Contratos", "Projetos", "Zeladoria", "Outros"})
+
+    def test_pendencias(self):
+        problemas = [p[4] for p in self.carga.pendencias]
+        self.assertEqual(sum(1 for p in problemas if "zero" in p), 1)
+        self.assertEqual(sum(1 for p in problemas if "sem projetização e sem categoria" in p), 1)
+        self.assertEqual(sum(1 for p in problemas if "funcionári" in p), 3)
+        self.assertEqual(sum(1 for p in problemas if "Resumo Mensal" in p), 1)
+
+    def test_resumo_mensal(self):
+        self.assertEqual(self.carga.resumo["entradas"][1], 105000)
+        self.assertEqual(self.carga.resumo["saidas"][2], 180000)
+        self.assertEqual(self.carga.resumo["rendimentos"][2], 9000)
+
+
+if __name__ == "__main__":
+    unittest.main()
