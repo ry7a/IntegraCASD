@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass
 
 CATEGORIA_SEM_CLASSIFICACAO = "Outros"
+CATEGORIA_DAS_FUNCIONARIAS = "Funcionárias"  # de "A - Funcionárias"; o MER pede vínculo com funcionário
 MESES_PARA_SER_MENSAL = 6  # contrato pago em 6 meses ou mais do ano é tratado como mensal
 
 _CODIGO = re.compile(r"^(\d{2})([CPZ])(\d{3})\s*-\s*(.*)$")

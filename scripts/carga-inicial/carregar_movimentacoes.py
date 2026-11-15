@@ -30,8 +30,10 @@ from pathlib import Path
 
 import openpyxl
 
+import anonimizar_movimentacoes
 from carregar_alunos import reais, sql_texto
 from regras_movimentacoes import (
+    CATEGORIA_DAS_FUNCIONARIAS,
     CATEGORIA_SEM_CLASSIFICACAO,
     Rotulo,
     categoria_da_saida,
@@ -52,7 +54,6 @@ MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "A
          "Outubro", "Novembro", "Dezembro"]
 TAMANHO_MAXIMO_DA_DESCRICAO = 300  # o mesmo limite do backend (movimentacao.ts)
 CATEGORIA_DO_RENDIMENTO = "Rendimento"  # regra 5 do MER
-CATEGORIA_DAS_FUNCIONARIAS = "Funcionárias"
 
 
 @dataclass
@@ -693,27 +694,60 @@ def resumir(carga: Carga) -> None:
     print("\nConferência com o Resumo Mensal:")
     for linha in conferencia(carga):
         print("  " + linha)
-    por_problema = Counter(p[4] for p in carga.pendencias)
-    print(f"\nPendências: {len(carga.pendencias)}")
-    for problema, quantidade in por_problema.most_common():
+
+
+def resumir_pendencias(pendencias) -> None:
+    """Contagem por problema. O texto do problema é fixo no código: não leva dado da planilha."""
+    print(f"\nPendências: {len(pendencias)}")
+    for problema, quantidade in Counter(p[4] for p in pendencias).most_common():
         print(f"  {quantidade:4d}  {problema}")
+
+
+def gravar_carga_anonimizada(carga: Carga) -> None:
+    """SQL com as trocas de anonimizar_movimentacoes, gravado só se a trava não achar texto pessoal nele.
+    O relatório de pendências não é gravado: ele tem os textos da planilha."""
+    anonima = anonimizar_movimentacoes.anonimizar(carga)
+    sql = gerar_sql(anonima, anonimizado=True)
+    achados = anonimizar_movimentacoes.textos_pessoais_no_sql(sql, carga, anonima)
+    if any(achados.values()):
+        campos = ", ".join(f"{campo}: {n}" for campo, n in achados.items() if n)
+        sys.exit(f"PARADO: o SQL anonimizado ainda tem textos da planilha ({campos}). Nada foi gravado.")
+
+    arquivo_sql = PASTA_DE_SAIDA / "movimentacoes-anonimizada.sql"
+    arquivo_sql.write_text(sql, encoding="utf-8")
+    resumir(anonima)
+    print(f"\nPendências da planilha: {len(carga.pendencias)} (o relatório não é gravado no modo anonimizado; "
+          "rode sem --anonimizar para vê-lo)")
+    unicos = anonimizar_movimentacoes.meses_com_um_pagamento_de_funcionaria(carga)
+    if unicos:
+        print(f"ATENÇÃO: {len(unicos)} mês(es) com um só pagamento de funcionária ({', '.join(unicos)}): "
+              "nesses meses a folha somada mostra o próprio pagamento.")
+    print("\nCarga ANONIMIZADA: descrições neutras, folha somada por mês e contraparte de pessoa trocada.")
+    print(f"Gerado (fora do git): {arquivo_sql.relative_to(RAIZ)}")
 
 
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Gera o SQL da carga das movimentações a partir da planilha do Fundo.")
     parser.add_argument("--planilha", type=Path, default=PLANILHA_PADRAO, help="caminho do .xlsx")
+    parser.add_argument("--anonimizar", action="store_true",
+                        help="gera dados/movimentacoes-anonimizada.sql, sem dado pessoal, para a homologação")
     argumentos = parser.parse_args()
     if not argumentos.planilha.exists():
         sys.exit(f"Planilha não encontrada: {argumentos.planilha}. Ela fica em data/, fora do git: peça à equipe.")
 
     carga = ler_planilha(argumentos.planilha)
     PASTA_DE_SAIDA.mkdir(exist_ok=True)
+    if argumentos.anonimizar:
+        gravar_carga_anonimizada(carga)
+        return
+
     arquivo_sql = PASTA_DE_SAIDA / "movimentacoes.sql"
     arquivo_pendencias = PASTA_DE_SAIDA / "pendencias-movimentacoes.csv"
     arquivo_sql.write_text(gerar_sql(carga), encoding="utf-8")
     gravar_pendencias(arquivo_pendencias, carga.pendencias)
     resumir(carga)
+    resumir_pendencias(carga.pendencias)
     print(f"\nGerados (fora do git, COM DADOS REAIS): {arquivo_sql.relative_to(RAIZ)} e "
           f"{arquivo_pendencias.relative_to(RAIZ)}")
 

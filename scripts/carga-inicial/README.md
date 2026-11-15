@@ -154,6 +154,50 @@ Gera só `dados/carga-anonimizada.sql` (o relatório de pendências não, porque
 
 Como aplicar na Railway: `docs/playbooks/implantacao.md` (TCP Proxy aberto só durante a carga).
 
+## Carga das movimentações
+
+`carregar_movimentacoes.py` lê a planilha do Fundo de Manutenção (padrão:
+`data/2026 AEITA-CASD Fundo de Manutenção do H8.xlsx`; outra com `--planilha`) como manda o MER
+(`docs/arquitetura/mer-financeiro.md`, "Da planilha para o modelo"):
+
+| Na planilha | Vira |
+| ----------- | ---- |
+| Abas Janeiro…Dezembro, Entradas | entradas da "Conta Corrente Fundo de Manutenção" |
+| Abas Janeiro…Dezembro, Saídas | saídas da mesma conta; a projetização vira o vínculo (`AAC NNN` contrato, `AAP NNN` projeto, `Z - X` centro de custo X) e `A - X` vira a categoria X |
+| Resumo Mensal, C8 e C13 | saldo inicial das duas contas (em 1º de janeiro) |
+| Investimentos, Rendimento | entradas da "Conta de Investimentos Fundo de Manutenção", categoria Rendimento |
+| Zeladoria e Administrativo | verba liberada de cada centro de custo em cada mês |
+| Contratos | data de início do contrato, quando o código está lá |
+
+Contratos e projetos entram só se aparecem nas saídas. O contrato leva como valor a mediana dos
+pagamentos do ano e é mensal se foi pago em 6 meses ou mais. Se o código da planilha já existe no banco
+com outro texto, o registro ganha o próximo código livre do ano e `(planilha: 26P001)` no nome ou objeto.
+Forma de pagamento: transferência (a planilha não diz).
+
+```powershell
+python scripts/carga-inicial/carregar_movimentacoes.py               # dados/movimentacoes.sql + pendencias-movimentacoes.csv
+python scripts/carga-inicial/carregar_movimentacoes.py --anonimizar  # dados/movimentacoes-anonimizada.sql (homologação)
+```
+
+- **Conferência:** o script compara, mês a mês, o que vai carregar com os totais do Resumo Mensal. As
+  entradas "Outros" ficam fora do resumo da planilha, então aparecem como diferença (decisão de
+  15/11/2026: elas entram).
+- **Mês a mês:** cada mês grava um marco na trilha (`movimentacoes-planilha-AAAA-MM`). Reaplicar o mesmo
+  arquivo não duplica nada, e uma planilha com um mês novo carrega só o mês novo. **Lançamento acrescentado
+  depois num mês já carregado não entra**: registre-o pela tela.
+- **Funcionárias:** a planilha não tem o cadastro delas, então no modo real os pagamentos entram sem
+  vínculo com funcionário (e vão para as pendências). Movimentação não se altera: a equipe decide antes
+  da carga de produção se aceita isso.
+- **`--anonimizar`** (homologação, [Padrões.NF001]): as descrições viram um texto neutro ("Pagamento do
+  contrato 24C002", "Zeladoria: Jardins", com o número da NF quando havia); os pagamentos às funcionárias
+  são somados por mês; a contraparte de contrato com mais de uma parte no rótulo vira "Contratada do contrato
+  <código>". Valores, datas, categorias, centros, projetos e objetos de contrato ficam como na planilha
+  (são do CASD, não de pessoas). Uma trava procura no SQL cada descrição e contraparte original e para sem
+  gravar se achar alguma. O relatório de pendências não é gravado nesse modo.
+
+Para aplicar: o mesmo comando dos alunos (`prisma db execute --file ...`) no banco local, ou o caminho da
+Railway descrito acima.
+
 ## Testes
 
 ```powershell

@@ -15,6 +15,7 @@ from pathlib import Path
 
 import openpyxl
 
+import anonimizar_movimentacoes as am
 import carregar_movimentacoes as cm
 
 MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro",
@@ -226,6 +227,75 @@ class TestConferencia(ComPlanilhaFicticia):
         alterada.resumo["entradas"][1] = 100000
         janeiro = next(l for l in cm.conferencia(alterada) if l.startswith("Janeiro"))
         self.assertIn("entradas difere em R$ 50,00", janeiro)
+
+
+def totais_por_mes_tipo_e_conta(carga) -> dict:
+    totais = {}
+    for l in carga.lancamentos:
+        chave = (l.data[:7], l.tipo, l.conta)
+        totais[chave] = totais.get(chave, 0) + l.valor_centavos
+    return totais
+
+
+class TestAnonimizado(ComPlanilhaFicticia):
+    def setUp(self):
+        self.anonima = am.anonimizar(self.carga)
+
+    def test_anonimizado_troca_descricoes(self):
+        descricoes = [l.descricao for l in self.anonima.lancamentos]
+        for texto_da_planilha in ("Fulano", "Maria", "Joana", "Lavanderia", "Tinta", "Adubo", "Sem classificação"):
+            self.assertFalse(any(texto_da_planilha in d for d in descricoes), texto_da_planilha)
+        self.assertIn("Pagamento do contrato 26C001 (NF 12)", descricoes)
+        self.assertIn("Zeladoria: Jardins", descricoes)
+
+    def test_entradas_e_rendimentos(self):
+        entradas = [l.descricao for l in self.anonima.lancamentos if l.tipo == "ENTRADA" and l.conta == "CORRENTE"]
+        self.assertEqual(sorted(entradas), ["Cobrança de Boletos", "Outros"])
+        rendimentos = [l.descricao for l in self.anonima.lancamentos if l.conta == "APLICACAO"]
+        self.assertEqual(rendimentos, ["Rendimento de 01/2026", "Rendimento de 02/2026"])
+
+    def test_folha_somada_por_mes(self):
+        folhas = [l for l in self.anonima.lancamentos if l.categoria == "Funcionárias"]
+        self.assertEqual([(l.data, l.valor_centavos, l.descricao) for l in folhas],
+                         [("2026-01-20", 290000, "Folha das funcionárias de 01/2026"),
+                          ("2026-02-15", 150000, "Folha das funcionárias de 02/2026")])
+
+    def test_contraparte_de_duas_partes_vira_contratada(self):
+        contrato = self.anonima.contratos[0]
+        self.assertEqual((contrato.contraparte, contrato.objeto),
+                         ("Contratada do contrato 26C001", "Manutenção das máquinas"))
+
+    def test_totais_por_mes_e_conta_iguais(self):
+        self.assertEqual(totais_por_mes_tipo_e_conta(self.carga), totais_por_mes_tipo_e_conta(self.anonima))
+
+    def test_nao_altera_a_carga_recebida(self):
+        self.assertIn("Pix de Fulano Teste", [l.descricao for l in self.carga.lancamentos])
+        self.assertEqual(self.carga.contratos[0].contraparte, "Lavanderia Bem Lavado")
+        self.assertTrue(self.carga.pendencias)
+        self.assertEqual(self.anonima.pendencias, [])
+
+
+class TestTravaDasMovimentacoes(ComPlanilhaFicticia):
+    def test_trava_acha_textos_no_sql_real(self):
+        anonima = am.anonimizar(self.carga)
+        achados = am.textos_pessoais_no_sql(cm.gerar_sql(self.carga), self.carga, anonima)
+        self.assertGreater(achados["descricao"], 0)
+        self.assertGreater(achados["contraparte"], 0)
+
+    def test_trava_nao_acha_nada_no_anonimizado(self):
+        anonima = am.anonimizar(self.carga)
+        achados = am.textos_pessoais_no_sql(cm.gerar_sql(anonima, anonimizado=True), self.carga, anonima)
+        self.assertEqual(achados, {"descricao": 0, "contraparte": 0})
+
+    def test_trava_ignora_texto_que_tambem_e_dado_mantido(self):
+        carga = copy.deepcopy(self.carga)
+        next(l for l in carga.lancamentos if l.categoria == "Impostos").descricao = "Impostos"
+        anonima = am.anonimizar(carga)
+        achados = am.textos_pessoais_no_sql(cm.gerar_sql(anonima, anonimizado=True), carga, anonima)
+        self.assertEqual(achados["descricao"], 0)
+
+    def test_avisa_mes_com_um_pagamento_de_funcionaria(self):
+        self.assertEqual(am.meses_com_um_pagamento_de_funcionaria(self.carga), ["2026-02"])
 
 
 if __name__ == "__main__":
