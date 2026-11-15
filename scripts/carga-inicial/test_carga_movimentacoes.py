@@ -7,6 +7,7 @@ Rodar, na raiz do repositório:
     python -m unittest discover -s scripts/carga-inicial -v
 """
 
+import copy
 import datetime
 import tempfile
 import unittest
@@ -165,6 +166,66 @@ class TestLeitura(ComPlanilhaFicticia):
         self.assertEqual(self.carga.resumo["entradas"][1], 105000)
         self.assertEqual(self.carga.resumo["saidas"][2], 180000)
         self.assertEqual(self.carga.resumo["rendimentos"][2], 9000)
+
+
+def trechos_da_trilha(sql: str) -> list[str]:
+    """O pedaço de cada comando que grava na trilha (depois de INSERT INTO registros_auditoria)."""
+    return [comando.split("INSERT INTO registros_auditoria", 1)[1]
+            for comando in sql.split(";\n") if "INSERT INTO registros_auditoria" in comando]
+
+
+class TestSql(ComPlanilhaFicticia):
+    def setUp(self):
+        self.sql = cm.gerar_sql(self.carga)
+
+    def test_sql_em_uma_transacao_com_marcos(self):
+        self.assertTrue(self.sql.startswith("--"))
+        self.assertIn("\nBEGIN;\n", self.sql)
+        self.assertTrue(self.sql.endswith("COMMIT;\n"))
+        self.assertIn("'movimentacoes-planilha-2026-01'", self.sql)
+        self.assertIn("'movimentacoes-planilha-2026-02'", self.sql)
+
+    def test_sql_faz_cast_dos_enums(self):
+        for tipo in ("tipo_movimentacao", "forma_pagamento", "origem_movimentacao", "tipo_categoria", "tipo_conta",
+                     "periodicidade_contrato", "situacao_contrato", "situacao_projeto"):
+            self.assertIn(f"::{tipo}", self.sql, tipo)
+
+    def test_sql_remapeia_codigo_em_colisao(self):
+        self.assertIn("'Reforma Teste (planilha: 26P001)'", self.sql)
+        self.assertIn("codigo ~ '^26P[0-9]{3}$'", self.sql)
+        self.assertIn("'Manutenção das máquinas (planilha: 26C001)'", self.sql)
+
+    def test_sql_confere_categoria_incompativel(self):
+        self.assertIn("RAISE EXCEPTION", self.sql)
+        self.assertIn("nome = 'Outros' AND tipo NOT IN ('AMBOS')", self.sql)
+        self.assertIn("nome = 'Impostos' AND tipo NOT IN ('SAIDA', 'AMBOS')", self.sql)
+        self.assertIn("nome = 'Rendimento' AND tipo NOT IN ('ENTRADA', 'AMBOS')", self.sql)
+
+    def test_trilha_nao_leva_descricao_nem_contraparte(self):
+        for texto_da_planilha in ("Pix de Fulano Teste", "Lavanderia Bem Lavado", "Salário Maria Teste"):
+            self.assertIn(texto_da_planilha, self.sql)
+            for trecho in trechos_da_trilha(self.sql):
+                self.assertNotIn(texto_da_planilha, trecho)
+
+    def test_cada_movimentacao_respeita_o_marco_do_mes(self):
+        movimentacoes = [c for c in self.sql.split(";\n") if "INSERT INTO movimentacoes" in c]
+        self.assertEqual(len(movimentacoes), 13)  # 2 entradas + 9 saídas + 2 rendimentos
+        self.assertTrue(all("WHERE NOT EXISTS (SELECT 1 FROM registros_auditoria WHERE entidade = 'CARGA'" in c
+                            for c in movimentacoes))
+
+
+class TestConferencia(ComPlanilhaFicticia):
+    def test_conferencia_por_mes(self):
+        linhas = cm.conferencia(self.carga)
+        janeiro = next(l for l in linhas if l.startswith("Janeiro"))
+        self.assertIn("entradas confere", janeiro)
+        self.assertIn("saídas confere", janeiro)
+        self.assertIn("rendimentos confere", janeiro)
+
+        alterada = copy.deepcopy(self.carga)
+        alterada.resumo["entradas"][1] = 100000
+        janeiro = next(l for l in cm.conferencia(alterada) if l.startswith("Janeiro"))
+        self.assertIn("entradas difere em R$ 50,00", janeiro)
 
 
 if __name__ == "__main__":

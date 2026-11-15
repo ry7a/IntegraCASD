@@ -18,20 +18,25 @@ Uso, na raiz do repositório:
     python scripts/carga-inicial/carregar_movimentacoes.py --anonimizar
 """
 
+import argparse
+import csv
 import datetime
 import sys
 import warnings
+from collections import Counter
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 
 import openpyxl
 
+from carregar_alunos import reais, sql_texto
 from regras_movimentacoes import (
     CATEGORIA_SEM_CLASSIFICACAO,
     Rotulo,
     categoria_da_saida,
     contraparte_e_objeto,
+    descricao_neutra,
     mediana_centavos,
     nome_do_rotulo,
     periodicidade,
@@ -387,3 +392,331 @@ def ler_abas(planilha) -> Carga:
     return Carga(ano=ano, saldo_corrente=saldo_corrente, saldo_aplicacao=saldo_aplicacao, lancamentos=lancamentos,
                  centros=centros, verbas=verbas, contratos=contratos, projetos=projetos, resumo=resumo,
                  pendencias=pendencias.lista)
+
+
+# ---------------------------------------------------------------------------
+# Saída: SQL, conferência e relatório de pendências
+# ---------------------------------------------------------------------------
+
+CONTA_CORRENTE = "Conta Corrente Fundo de Manutenção"
+CONTA_APLICACAO = "Conta de Investimentos Fundo de Manutenção"
+NOME_DA_CONTA = {"CORRENTE": CONTA_CORRENTE, "APLICACAO": CONTA_APLICACAO}
+DETALHE_DA_CARGA = "incluída pela carga inicial (planilha)."
+
+
+def marco_do_mes(mes: str) -> str:
+    """Registro da trilha que diz "as movimentações deste mês já entraram" (mes = "AAAA-MM")."""
+    return f"movimentacoes-planilha-{mes}"
+
+
+def com_trilha(insercao: str, entidade: str, detalhe: str, retorno: str = "id") -> str:
+    """Insere e, no mesmo comando, grava a inclusão na trilha (usuario_id nulo = rotina automática).
+    `detalhe` é uma expressão SQL; nunca leva descrição, contraparte ou nome (regra B14)."""
+    return (
+        f"WITH novo AS (\n{insercao}\n  RETURNING {retorno}\n)\n"
+        "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
+        f"SELECT gen_random_uuid(), NULL, 'INCLUSAO', '{entidade}', id::text, {detalhe}\n"
+        "FROM novo;\n"
+    )
+
+
+def tipos_das_categorias(carga: Carga) -> dict[str, str]:
+    """ENTRADA se a categoria só aparece em entradas, SAIDA se só em saídas, AMBOS se nas duas
+    ("Outros" é sempre AMBOS)."""
+    tipos: dict[str, set[str]] = {}
+    for l in carga.lancamentos:
+        tipos.setdefault(l.categoria, set()).add(l.tipo)
+    resultado = {}
+    for nome, encontrados in sorted(tipos.items()):
+        if nome == CATEGORIA_SEM_CLASSIFICACAO or len(encontrados) == 2:
+            resultado[nome] = "AMBOS"
+        else:
+            resultado[nome] = next(iter(encontrados))
+    return resultado
+
+
+def sql_das_categorias(carga: Carga) -> list[str]:
+    """Antes de incluir, confere se já existe uma categoria ativa com o nome e outro tipo: aí a carga
+    para com uma mensagem, em vez de gravar movimentação em categoria incompatível."""
+    partes = []
+    for nome, tipo in tipos_das_categorias(carga).items():
+        aceitos = "('AMBOS')" if tipo == "AMBOS" else f"('{tipo}', 'AMBOS')"
+        partes.append(
+            "DO $$ BEGIN\n"
+            f"  IF EXISTS (SELECT 1 FROM categorias WHERE ativo AND nome = {sql_texto(nome)} AND tipo NOT IN {aceitos}) THEN\n"
+            f"    RAISE EXCEPTION 'A categoria \"%\" já existe com outro tipo: ajuste-a antes da carga.', {sql_texto(nome)};\n"
+            "  END IF;\n"
+            "END $$;\n"
+        )
+        partes.append(com_trilha(
+            "  INSERT INTO categorias (id, nome, tipo, data_alteracao)\n"
+            f"  SELECT gen_random_uuid(), {sql_texto(nome)}, '{tipo}'::tipo_categoria, now()\n"
+            f"  WHERE NOT EXISTS (SELECT 1 FROM categorias WHERE ativo AND nome = {sql_texto(nome)})",
+            "CATEGORIA", f"'Categoria {DETALHE_DA_CARGA}'"))
+    return partes
+
+
+def sql_das_contas(carga: Carga) -> list[str]:
+    partes = []
+    for tipo, saldo in (("CORRENTE", carga.saldo_corrente), ("APLICACAO", carga.saldo_aplicacao)):
+        nome = sql_texto(NOME_DA_CONTA[tipo])
+        partes.append(com_trilha(
+            "  INSERT INTO contas (id, nome, tipo, saldo_inicial_centavos, data_saldo_inicial, data_alteracao)\n"
+            f"  SELECT gen_random_uuid(), {nome}, '{tipo}'::tipo_conta, {saldo}, DATE '{carga.ano}-01-01', now()\n"
+            f"  WHERE NOT EXISTS (SELECT 1 FROM contas WHERE nome = {nome})",
+            "CONTA", f"'Conta {DETALHE_DA_CARGA}'"))
+    return partes
+
+
+def sql_dos_centros_e_verbas(carga: Carga) -> list[str]:
+    partes = []
+    for centro in carga.centros:
+        partes.append(com_trilha(
+            "  INSERT INTO centros_custo (id, nome, data_alteracao)\n"
+            f"  SELECT gen_random_uuid(), {sql_texto(centro)}, now()\n"
+            f"  WHERE NOT EXISTS (SELECT 1 FROM centros_custo WHERE nome = {sql_texto(centro)})",
+            "CENTRO_CUSTO", f"'Centro de custo {DETALHE_DA_CARGA}'"))
+    for v in carga.verbas:
+        partes.append(com_trilha(
+            "  INSERT INTO verbas_mensais (id, centro_custo_id, ano, mes, valor_liberado_centavos, data_alteracao)\n"
+            f"  SELECT gen_random_uuid(), c.id, {v.ano}, {v.mes}, {v.valor_centavos}, now()\n"
+            f"  FROM centros_custo c WHERE c.nome = {sql_texto(v.centro)}\n"
+            "  ON CONFLICT (centro_custo_id, ano, mes) DO NOTHING",
+            "VERBA_MENSAL", f"'Verba mensal {DETALHE_DA_CARGA}'"))
+    return partes
+
+
+def sufixo_da_planilha(codigo: str) -> str:
+    return f" (planilha: {codigo})"
+
+
+def proximo_codigo(tabela: str, codigo: str) -> str:
+    """Próximo código livre do mesmo ano e tipo (26P001 já usado -> 26P007, se o maior é 26P006).
+    Fica no formato AAXNNN, que o gerador de códigos do backend espera."""
+    prefixo = codigo[:3]
+    return (f"(SELECT '{prefixo}' || lpad((coalesce(max(substring(codigo from 4)::int), 0) + 1)::text, 3, '0') "
+            f"FROM {tabela} WHERE codigo ~ '^{prefixo}[0-9]{{3}}$')")
+
+
+def identidade(coluna: str, codigo: str, texto_do_registro: str) -> str:
+    """Condição que acha o registro desta carga: o código da planilha com o mesmo texto, ou o texto com o sufixo."""
+    com_sufixo = sql_texto(texto_do_registro + sufixo_da_planilha(codigo))
+    return (f"(codigo = {sql_texto(codigo)} AND {coluna} = {sql_texto(texto_do_registro)}) "
+            f"OR {coluna} = {com_sufixo}")
+
+
+def insercao_do_contrato(c: ContratoDaCarga, codigo_sql: str, objeto: str) -> str:
+    return (
+        "  INSERT INTO contratos (id, codigo, contraparte, objeto, valor_centavos, periodicidade, data_inicio,\n"
+        "                         situacao, data_alteracao)\n"
+        f"  SELECT gen_random_uuid(), {codigo_sql}, {sql_texto(c.contraparte)}, {sql_texto(objeto)}, {c.valor_centavos},\n"
+        f"         '{c.periodicidade}'::periodicidade_contrato, DATE '{c.data_inicio}', 'ATIVO'::situacao_contrato, now()\n"
+    )
+
+
+def insercao_do_projeto(p: ProjetoDaCarga, codigo_sql: str, nome: str) -> str:
+    return (
+        "  INSERT INTO projetos (id, codigo, nome, data_inicio, situacao, data_alteracao)\n"
+        f"  SELECT gen_random_uuid(), {codigo_sql}, {sql_texto(nome)}, DATE '{p.data_inicio}',\n"
+        "         'EM_EXECUCAO'::situacao_projeto, now()\n"
+    )
+
+
+def sql_dos_contratos_e_projetos(carga: Carga) -> list[str]:
+    """Duas passadas: primeiro os códigos da planilha que estão livres; depois, os que colidiram com outro
+    registro (ex.: os projetos fictícios 26P001-26P003) ganham o próximo código livre e o sufixo no texto.
+    A ordem importa: assim o código novo nunca toma o lugar de um código que ainda vinha da planilha."""
+    registros = [("contratos", "objeto", "CONTRATO", "Contrato", c.codigo, c.objeto,
+                  lambda codigo_sql, texto_, c=c: insercao_do_contrato(c, codigo_sql, texto_))
+                 for c in carga.contratos]
+    registros += [("projetos", "nome", "PROJETO", "Projeto", p.codigo, p.nome,
+                   lambda codigo_sql, texto_, p=p: insercao_do_projeto(p, codigo_sql, texto_))
+                  for p in carga.projetos]
+    livres, colididos = [], []
+    for tabela, coluna, entidade, nome_da_entidade, codigo, texto_do_registro, insercao in registros:
+        com_sufixo = sql_texto(texto_do_registro + sufixo_da_planilha(codigo))
+        livres.append(com_trilha(
+            insercao(sql_texto(codigo), texto_do_registro)
+            + f"  WHERE NOT EXISTS (SELECT 1 FROM {tabela} WHERE codigo = {sql_texto(codigo)})\n"
+            + f"    AND NOT EXISTS (SELECT 1 FROM {tabela} WHERE {coluna} = {com_sufixo})",
+            entidade, f"'{nome_da_entidade} {codigo} incluído pela carga inicial (planilha).'"))
+        mesmo_registro = f"codigo = {sql_texto(codigo)} AND {coluna} = {sql_texto(texto_do_registro)}"
+        detalhe = (f"'{nome_da_entidade} ' || codigo || ' incluído pela carga inicial "
+                   f"(na planilha: {codigo}, código já usado).'")
+        colididos.append(com_trilha(
+            insercao(proximo_codigo(tabela, codigo), texto_do_registro + sufixo_da_planilha(codigo))
+            + f"  WHERE NOT EXISTS (SELECT 1 FROM {tabela} WHERE {mesmo_registro})\n"
+            + f"    AND NOT EXISTS (SELECT 1 FROM {tabela} WHERE {coluna} = {com_sufixo})",
+            entidade, detalhe, retorno="id, codigo"))
+    return livres + colididos
+
+
+def descricao_para_gravar(l: Lancamento) -> str:
+    """A descrição da planilha; vazia, a entrada leva o nome da categoria e a saída, o rótulo neutro."""
+    if l.descricao:
+        return l.descricao
+    return l.categoria if l.tipo == "ENTRADA" else descricao_neutra(l.rotulo, l.categoria)
+
+
+def vinculos(l: Lancamento, carga: Carga) -> tuple[str, str, str]:
+    """(contrato_id, projeto_id, centro_custo_id) como subconsultas SQL; no máximo um preenchido."""
+    nulo = "NULL"
+    r = l.rotulo
+    if r.tipo == "CONTRATO":
+        c = next(c for c in carga.contratos if c.codigo == r.codigo)
+        return (f"(SELECT id FROM contratos WHERE {identidade('objeto', c.codigo, c.objeto)} "
+                "ORDER BY data_criacao LIMIT 1)", nulo, nulo)
+    if r.tipo == "PROJETO":
+        p = next(p for p in carga.projetos if p.codigo == r.codigo)
+        return (nulo, f"(SELECT id FROM projetos WHERE {identidade('nome', p.codigo, p.nome)} "
+                      "ORDER BY data_criacao LIMIT 1)", nulo)
+    if r.tipo == "CENTRO":
+        return nulo, nulo, f"(SELECT id FROM centros_custo WHERE nome = {sql_texto(nome_do_rotulo(r))})"
+    return nulo, nulo, nulo
+
+
+def sql_da_movimentacao(l: Lancamento, carga: Carga, anonimizado: bool) -> str:
+    """Só entra se o marco do mês ainda não está na trilha: reaplicar o arquivo não duplica nada."""
+    contrato, projeto, centro = vinculos(l, carga)
+    marco = sql_texto(marco_do_mes(l.data[:7]))
+    # Na anonimizada, o comentário não aponta a linha da planilha.
+    comentario = f"-- {l.data}\n" if anonimizado else f"-- {l.aba}, linha {l.linha}\n"
+    categoria = (f"(SELECT id FROM categorias WHERE ativo AND nome = {sql_texto(l.categoria)} "
+                 f"AND tipo IN ('{l.tipo}', 'AMBOS') LIMIT 1)")
+    return comentario + com_trilha(
+        "  INSERT INTO movimentacoes (id, conta_id, tipo, valor_centavos, data, categoria_id, forma_pagamento, origem,\n"
+        "                             descricao, contrato_id, projeto_id, centro_custo_id, data_alteracao)\n"
+        "  SELECT gen_random_uuid(),\n"
+        f"         (SELECT id FROM contas WHERE nome = {sql_texto(NOME_DA_CONTA[l.conta])}),\n"
+        f"         '{l.tipo}'::tipo_movimentacao, {l.valor_centavos}, DATE '{l.data}',\n"
+        f"         {categoria},\n"
+        "         'TRANSFERENCIA'::forma_pagamento, 'MANUAL'::origem_movimentacao,\n"
+        f"         {sql_texto(descricao_para_gravar(l))},\n"
+        f"         {contrato}, {projeto}, {centro}, now()\n"
+        f"  WHERE NOT EXISTS (SELECT 1 FROM registros_auditoria WHERE entidade = 'CARGA' AND registro_id = {marco})",
+        "MOVIMENTACAO", f"'Movimentação {DETALHE_DA_CARGA}'")
+
+
+def sql_dos_marcos(carga: Carga) -> list[str]:
+    partes = []
+    for mes in sorted({l.data[:7] for l in carga.lancamentos}):
+        marco = sql_texto(marco_do_mes(mes))
+        partes.append(
+            "INSERT INTO registros_auditoria (id, usuario_id, operacao, entidade, registro_id, detalhe)\n"
+            f"SELECT gen_random_uuid(), NULL, 'INCLUSAO', 'CARGA', {marco}, "
+            f"'Movimentações de {mes} incluídas pela carga inicial.'\n"
+            f"WHERE NOT EXISTS (SELECT 1 FROM registros_auditoria WHERE entidade = 'CARGA' AND registro_id = {marco});\n"
+        )
+    return partes
+
+
+def gerar_sql(carga: Carga, anonimizado: bool = False) -> str:
+    if anonimizado:
+        partes = [
+            "-- Carga ANONIMIZADA das movimentações, gerada por scripts/carga-inicial/carregar_movimentacoes.py --anonimizar.",
+            "-- DADOS ANONIMIZADOS para a homologação ([Padrões.NF001]): descrições neutras, folha das funcionárias",
+            "-- somada por mês e contraparte de pessoa trocada. Valores, datas e categorias são os da planilha.",
+        ]
+    else:
+        partes = [
+            "-- Carga inicial das movimentações, gerada por scripts/carga-inicial/carregar_movimentacoes.py.",
+            "-- CONTÉM DADOS REAIS (LGPD): não versionar, não enviar, não usar em ambiente exposto.",
+        ]
+    partes += [
+        "-- Pode rodar de novo: cadastros que já existem são pulados, e as movimentações de um mês só entram",
+        "-- se o marco do mês ainda não está na trilha (lançamento acrescentado depois num mês já carregado NÃO entra).",
+        "BEGIN;",
+        "",
+    ]
+    partes += sql_das_categorias(carga)
+    partes += sql_das_contas(carga)
+    partes += sql_dos_centros_e_verbas(carga)
+    partes += sql_dos_contratos_e_projetos(carga)
+    partes += [sql_da_movimentacao(l, carga, anonimizado) for l in carga.lancamentos]
+    partes += sql_dos_marcos(carga)
+    partes.append("COMMIT;")
+    return "\n".join(partes) + "\n"
+
+
+def totais_por_mes(carga: Carga) -> dict[str, dict[int, int]]:
+    totais: dict[str, dict[int, int]] = {"entradas": {}, "saidas": {}, "rendimentos": {}}
+    for l in carga.lancamentos:
+        if int(l.data[:4]) != carga.ano:
+            continue
+        if l.conta == "APLICACAO":
+            chave = "rendimentos"
+        else:
+            chave = "entradas" if l.tipo == "ENTRADA" else "saidas"
+        mes = int(l.data[5:7])
+        totais[chave][mes] = totais[chave].get(mes, 0) + l.valor_centavos
+    return totais
+
+
+def conferencia(carga: Carga) -> list[str]:
+    """Uma linha por mês: o que a carga leva x o Resumo Mensal da planilha."""
+    nomes = {"entradas": "entradas", "saidas": "saídas", "rendimentos": "rendimentos"}
+    totais = totais_por_mes(carga)
+    linhas = []
+    for mes in range(1, 13):
+        if not any(totais[chave].get(mes) or carga.resumo[chave].get(mes) for chave in nomes):
+            continue
+        partes = []
+        for chave, nome in nomes.items():
+            da_carga, do_resumo = totais[chave].get(mes, 0), carga.resumo[chave].get(mes, 0)
+            if da_carga == do_resumo:
+                partes.append(f"{nome} confere ({reais(da_carga)})")
+            else:
+                partes.append(f"{nome} difere em {reais(abs(da_carga - do_resumo))} "
+                              f"(carga {reais(da_carga)}, resumo {reais(do_resumo)})")
+        linhas.append(f"{MESES[mes - 1]}: " + "; ".join(partes))
+    return linhas
+
+
+def gravar_pendencias(caminho: Path, pendencias) -> None:
+    # Ponto e vírgula e BOM: o Excel em português abre o arquivo direto, com acentos.
+    with caminho.open("w", encoding="utf-8-sig", newline="") as arquivo:
+        escritor = csv.writer(arquivo, delimiter=";")
+        escritor.writerow(["aba", "linha", "campo", "valor na planilha", "problema", "o que a carga fez"])
+        escritor.writerows(pendencias)
+
+
+def resumir(carga: Carga) -> None:
+    """Só totais: nada de descrição, contraparte ou nome no terminal."""
+    grupos: dict[tuple[str, str], list[int]] = {}
+    for l in carga.lancamentos:
+        grupos.setdefault((l.tipo, l.conta), []).append(l.valor_centavos)
+    for (tipo, conta), valores in sorted(grupos.items()):
+        print(f"{tipo:7s} {NOME_DA_CONTA[conta]}: {len(valores)} lançamentos, {reais(sum(valores))}")
+    print(f"Saldos iniciais: corrente {reais(carga.saldo_corrente)}, investimentos {reais(carga.saldo_aplicacao)}")
+    print(f"Categorias: {len(tipos_das_categorias(carga))}; centros de custo: {len(carga.centros)}; "
+          f"verbas: {len(carga.verbas)}; contratos: {len(carga.contratos)}; projetos: {len(carga.projetos)}")
+    print("\nConferência com o Resumo Mensal:")
+    for linha in conferencia(carga):
+        print("  " + linha)
+    por_problema = Counter(p[4] for p in carga.pendencias)
+    print(f"\nPendências: {len(carga.pendencias)}")
+    for problema, quantidade in por_problema.most_common():
+        print(f"  {quantidade:4d}  {problema}")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")
+    parser = argparse.ArgumentParser(description="Gera o SQL da carga das movimentações a partir da planilha do Fundo.")
+    parser.add_argument("--planilha", type=Path, default=PLANILHA_PADRAO, help="caminho do .xlsx")
+    argumentos = parser.parse_args()
+    if not argumentos.planilha.exists():
+        sys.exit(f"Planilha não encontrada: {argumentos.planilha}. Ela fica em data/, fora do git: peça à equipe.")
+
+    carga = ler_planilha(argumentos.planilha)
+    PASTA_DE_SAIDA.mkdir(exist_ok=True)
+    arquivo_sql = PASTA_DE_SAIDA / "movimentacoes.sql"
+    arquivo_pendencias = PASTA_DE_SAIDA / "pendencias-movimentacoes.csv"
+    arquivo_sql.write_text(gerar_sql(carga), encoding="utf-8")
+    gravar_pendencias(arquivo_pendencias, carga.pendencias)
+    resumir(carga)
+    print(f"\nGerados (fora do git, COM DADOS REAIS): {arquivo_sql.relative_to(RAIZ)} e "
+          f"{arquivo_pendencias.relative_to(RAIZ)}")
+
+
+if __name__ == "__main__":
+    main()
