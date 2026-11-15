@@ -1,0 +1,115 @@
+"""Anonimiza os alunos da carga inicial para o ambiente de homologação ([Padrões.NF001]).
+
+Trocar só o nome, o CPF e o e-mail não basta: quem conhece o H8 reconhece o aluno pela vaga, pela
+turma e pelo curso, e veria os débitos dele. Por isso, além de trocar os identificadores, este módulo
+embaralha os débitos entre alunos da mesma turma e as vagas entre os alunos ativos (e, à parte, entre
+os inativos). Os totais, a inadimplência por turma e a ocupação do H8 continuam iguais aos da planilha,
+mas nenhum aluno fictício corresponde a uma pessoa real.
+
+O módulo não conhece a planilha nem o banco: recebe os alunos já normalizados por
+carregar_alunos.normalizar e devolve uma lista nova, sem alterar a recebida.
+"""
+
+import dataclasses
+import random
+
+import regras
+
+# Nomes comuns, sem apóstrofo (o SQL dobraria a aspa, e a trava procura o nome real como literal SQL).
+PRIMEIROS_NOMES = [
+    "Ana", "Beatriz", "Bruna", "Camila", "Carolina", "Fernanda", "Gabriela", "Isabela", "Júlia", "Larissa",
+    "Letícia", "Mariana", "Natália", "Rafaela", "Sofia", "André", "Bruno", "Caio", "Daniel", "Eduardo",
+    "Felipe", "Gabriel", "Gustavo", "Henrique", "João", "Lucas", "Mateus", "Pedro", "Rafael", "Thiago",
+]
+SOBRENOMES = [
+    "Almeida", "Alves", "Andrade", "Barbosa", "Cardoso", "Carvalho", "Castro", "Correia", "Costa", "Dias",
+    "Duarte", "Fernandes", "Ferreira", "Freitas", "Gomes", "Lima", "Lopes", "Machado", "Martins", "Melo",
+    "Mendes", "Moreira", "Nogueira", "Oliveira", "Pereira", "Ramos", "Ribeiro", "Rocha", "Santos", "Teixeira",
+]
+DOMINIO_DOS_EMAILS = "exemplo.com"  # o mesmo do apps/api/prisma/dados-ficticios.sql
+MENOR_MATRICULA = 100000
+MAIOR_MATRICULA = 999999
+
+
+def cpf_ficticio(gerador: random.Random, valido: bool) -> str:
+    """CPF de 11 dígitos sorteado. Com `valido`, passa na conta dos dígitos verificadores;
+    sem, tem o último dígito errado (como os CPFs inválidos da planilha, que viram cadastro incompleto)."""
+    while True:
+        base = "".join(str(gerador.randint(0, 9)) for _ in range(9))
+        # Procura os dois dígitos verificadores com a mesma conta que a carga usa (regras.cpf_valido).
+        numero = next((base + f"{final:02d}" for final in range(100) if regras.cpf_valido(base + f"{final:02d}")), None)
+        if numero is None:
+            continue  # só acontece com os nove dígitos iguais, que nunca formam CPF válido
+        if valido:
+            return numero
+        return numero[:10] + str((int(numero[10]) + 1) % 10)
+
+
+def embaralhar_dentro_dos_grupos(valores: list, grupos: list, gerador: random.Random) -> list:
+    """Embaralha `valores` só entre posições do mesmo grupo: valores[i] pertence ao grupo grupos[i].
+    Devolve uma lista nova; a recebida não muda."""
+    posicoes_por_grupo: dict = {}
+    for posicao, grupo in enumerate(grupos):
+        posicoes_por_grupo.setdefault(grupo, []).append(posicao)
+    resultado = list(valores)
+    for posicoes in posicoes_por_grupo.values():
+        sorteados = [valores[p] for p in posicoes]
+        gerador.shuffle(sorteados)
+        for posicao, valor in zip(posicoes, sorteados):
+            resultado[posicao] = valor
+    return resultado
+
+
+def anonimizar(alunos: list, gerador: random.Random) -> list:
+    """Lista nova de alunos fictícios com a mesma "cara" dos recebidos (ver a docstring do módulo).
+
+    - nome, CPF, e-mail e matrícula fictícios, nunca iguais a um valor recebido; celular e apelido em branco;
+    - cadastro incompleto continua incompleto (e-mail vazio continua vazio; CPF inválido continua inválido);
+    - turma, curso, posto e situação ficam com o aluno; débitos e vagas são embaralhados;
+    - a ordem da lista é embaralhada e `linha` vira 0 (não aponta mais para a planilha).
+    """
+    nomes_reais = {a.nome for a in alunos}
+    cpfs_usados = {a.cpf for a in alunos}
+    emails_reais = {a.email for a in alunos}
+    matriculas_usadas = {a.matricula for a in alunos}
+
+    debitos = embaralhar_dentro_dos_grupos([a.debitos for a in alunos], [a.turma for a in alunos], gerador)
+    # Vaga de ativo só vai para ativo: o banco recusa dois alunos ativos na mesma vaga.
+    vagas = embaralhar_dentro_dos_grupos(
+        [a.alojamento for a in alunos], [(a.ativo, a.alojamento is not None) for a in alunos], gerador
+    )
+
+    anonimos = []
+    for numero, a in enumerate(alunos, start=1):
+        nome = None
+        while nome is None or nome in nomes_reais:
+            primeiro = gerador.choice(PRIMEIROS_NOMES)
+            sobrenome_do_meio, ultimo_sobrenome = gerador.sample(SOBRENOMES, 2)
+            nome = f"{primeiro} {sobrenome_do_meio} {ultimo_sobrenome}"
+
+        cpf = None
+        while cpf is None or cpf in cpfs_usados:
+            cpf = cpf_ficticio(gerador, valido=regras.cpf_valido(a.cpf))
+        cpfs_usados.add(cpf)
+
+        email = ""
+        if a.email != "":
+            # O número no fim garante e-mails diferentes mesmo com nomes iguais.
+            usuario = regras.sem_acento(f"{primeiro}.{ultimo_sobrenome}").lower()
+            email = f"{usuario}.{numero}@{DOMINIO_DOS_EMAILS}"
+            if email in emails_reais:
+                raise ValueError("e-mail fictício igual a um real: o domínio de exemplo foi usado na planilha?")
+
+        matricula = None
+        if a.matricula is not None:
+            while matricula is None or matricula in matriculas_usadas:
+                matricula = gerador.randint(MENOR_MATRICULA, MAIOR_MATRICULA)
+            matriculas_usadas.add(matricula)
+
+        anonimos.append(dataclasses.replace(
+            a, linha=0, nome=nome, cpf=cpf, email=email, celular=None, apelido=None,
+            matricula=matricula, alojamento=vagas[numero - 1], debitos=list(debitos[numero - 1]),
+        ))
+
+    gerador.shuffle(anonimos)
+    return anonimos
