@@ -1,0 +1,37 @@
+CT-NF-08 (Plano v1.0), Distribuição.NF002: testes das regras da carga inicial (só dados fictícios)
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Executado por: Claude, a pedido de Ryaj
+Python: Python 3.14.6
+Comando: python -m unittest discover -s scripts/carga-inicial -v
+Início: 2026-11-15T20:02:17Z
+
+test_alojamento (test_regras.TestCamposDoAluno.test_alojamento) ... ok
+test_apelido_numerico_nao_ganha_ponto_zero (test_regras.TestCamposDoAluno.test_apelido_numerico_nao_ganha_ponto_zero) ... ok
+test_ativo_segue_a_decisao_da_equipe (test_regras.TestCamposDoAluno.test_ativo_segue_a_decisao_da_equipe) ... ok
+test_celular_aceita_os_formatos_da_planilha (test_regras.TestCamposDoAluno.test_celular_aceita_os_formatos_da_planilha) ... ok
+test_curso (test_regras.TestCamposDoAluno.test_curso) ... ok
+test_email_invalido_vira_none (test_regras.TestCamposDoAluno.test_email_invalido_vira_none) ... ok
+test_matricula (test_regras.TestCamposDoAluno.test_matricula) ... ok
+test_nome_tira_espacos_repetidos (test_regras.TestCamposDoAluno.test_nome_tira_espacos_repetidos) ... ok
+test_posto (test_regras.TestCamposDoAluno.test_posto) ... ok
+test_turma_vem_do_ano_de_formatura (test_regras.TestCamposDoAluno.test_turma_vem_do_ano_de_formatura) ... ok
+test_digitos_verificadores (test_regras.TestCpf.test_digitos_verificadores) ... ok
+test_numero_do_excel_recupera_os_zeros_a_esquerda (test_regras.TestCpf.test_numero_do_excel_recupera_os_zeros_a_esquerda) ... ok
+test_texto_com_lixo_fica_so_com_os_digitos (test_regras.TestCpf.test_texto_com_lixo_fica_so_com_os_digitos) ... ok
+test_vazio_e_longo_demais_sao_recusados (test_regras.TestCpf.test_vazio_e_longo_demais_sao_recusados) ... ok
+test_divergencia_com_devendo_vira_pendencia (test_regras.TestDebitosDoAluno.test_divergencia_com_devendo_vira_pendencia) ... ok
+test_so_mes_vencido_vira_herdada (test_regras.TestDebitosDoAluno.test_so_mes_vencido_vira_herdada) ... ok
+test_centavos_sem_float (test_regras.TestMesesDoFundo.test_centavos_sem_float) ... ok
+test_descricao_usa_o_mes_da_referencia_e_cita_o_da_planilha (test_regras.TestMesesDoFundo.test_descricao_usa_o_mes_da_referencia_e_cita_o_da_planilha) ... ok
+test_rotulo_do_mes (test_regras.TestMesesDoFundo.test_rotulo_do_mes) ... ok
+test_so_nao_pago_e_debito (test_regras.TestMesesDoFundo.test_so_nao_pago_e_debito) ... ok
+test_inclusao_da_cobranca_herdada (test_regras.TestTrilhaDaCarga.test_inclusao_da_cobranca_herdada) ... ok
+test_inclusao_do_aluno (test_regras.TestTrilhaDaCarga.test_inclusao_do_aluno) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.470s
+
+OK
+
+código de saída: 0
+Fim: 2026-11-15T20:02:18Z

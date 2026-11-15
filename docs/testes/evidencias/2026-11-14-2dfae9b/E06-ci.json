@@ -1,0 +1,15 @@
+{
+  "consultadoEm": "2026-11-14 09:12:46 (UTC-03:00)",
+  "commit": "2dfae9b10b823f6b8d042d1a0d54c72b2562d77a",
+  "execucao": {
+    "conclusion": "success",
+    "createdAt": "2026-11-14T11:57:50Z",
+    "databaseId": 43592468731,
+    "event": "push",
+    "headSha": "2dfae9b10b823f6b8d042d1a0d54c72b2562d77a",
+    "status": "completed",
+    "updatedAt": "2026-11-14T11:58:48Z",
+    "url": "https://github.com/ry7a/IntegraCASD/actions/runs/43592468731"
+  },
+  "erro": null
+}

@@ -1,0 +1,17 @@
+Evidência E01: Lint
+Commit: 2dfae9b10b823f6b8d042d1a0d54c72b2562d77a
+Início: 2026-11-14 08:58:01 (UTC-03:00)
+
+$ pnpm lint
+$ pnpm -r lint
+Scope: 3 of 4 workspace projects
+apps/api lint$ oxlint --type-aware src/ test/
+apps/web lint$ eslint .
+apps/api lint: Done
+apps/web lint: Done
+
+(código de saída: 0)
+
+Fim: 2026-11-14 08:58:13 (UTC-03:00)
+Duração: 12 s
+Código de saída da etapa: 0
