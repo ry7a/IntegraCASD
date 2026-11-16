@@ -1,6 +1,6 @@
-# Roteiro de execução do Plano de Testes v1.2
+# Roteiro de execução do Plano de Testes v1.3
 
-Este roteiro diz **como** executar os 33 casos do `IntegraCASD_PlanoDeTestes_v1.2.pdf` e **que evidência**
+Este roteiro diz **como** executar os 33 casos do `IntegraCASD_PlanoDeTestes_v1.3.pdf` e **que evidência**
 guardar de cada um, para o relatório final em PDF poder ser auditado. Qualquer pessoa deve conseguir pegar
 o relatório, achar a evidência de cada caso e repetir a execução no mesmo commit.
 
@@ -18,9 +18,9 @@ A versão 1.1 do plano corrige a 1.0: a Seção 5.2 anunciava 8 casos não funci
 CT-NF-08, citado só no Apêndice A, nunca foi definido). O total passou de 34 para 33 casos.
 
 A versão 1.2 do plano acompanha a 1.2 do Documento de Requisitos: o reenvio do boleto por e-mail saiu do MVP
-(decisão de 15/11/2026, issue #29), e o CT-COB-03 passou a cobrir só a obtenção do boleto. Os casos, os ids e
-os testes automatizados não mudaram. A pasta `2026-11-14-2dfae9b`, executada pela v1.1, foi reavaliada pela
-v1.2: só o CT-COB-03 muda de resultado (Seção 8, D2).
+(decisão de 15/11/2026, issue #29), e o CT-COB-03 passou a cobrir só a obtenção do boleto. A 1.3 retira o método
+"manual: exploratório" (sessões de 60 min), sem mudar casos, ids ou testes. A pasta `2026-11-14-2dfae9b`,
+executada pela v1.1, foi reavaliada pela v1.3: só o CT-COB-03 muda de resultado (Seção 8, D2).
 
 ---
 
@@ -254,24 +254,6 @@ botão "Inativar aluno" fica desabilitado até a consulta das cobranças termina
 
 Gravar a tela (`Win + Alt + R`) também vale como evidência (`M03-gravacao.mp4`).
 
-### X01: sessão exploratória (método "manual: exploratório" do Capítulo 4 do plano)
-
-Não tem roteiro de passos: quem executa explora com um objetivo e anota o que tentou. É o único tipo de teste do
-plano em que o caminho não é escrito antes.
-
-- **Objetivo:** tentar deixar cobranças, movimentações e indicadores com totais diferentes entre as telas. Por
-  exemplo, registrar um pagamento manual, estornar uma movimentação ou cancelar uma cobrança, e conferir se o
-  painel, a lista de cobranças, a lista de movimentações e a página do aluno continuam batendo.
-- **Duração:** até 60 minutos. Anote a hora de início e de fim.
-- **Anotação:** em `verificacoes-manuais.json`, na chave `X01`. Na observação vão o objetivo, o horário, o que foi
-  tentado e, para cada achado, o esperado, o observado e o print correspondente. Achado que for defeito vira issue
-  e, segundo o plano, caso automatizado.
-- **Evidência:** prints `X01-*.png` de tela inteira, com a URL e o relógio visíveis, de antes e depois de cada ação
-  que mexe nos totais.
-
-A X01 não pertence a nenhum dos 33 casos: o `RESULTADOS.md` a mostra na tabela de verificações manuais como "fora
-dos 33 casos", e ela não entra no veredito.
-
 ---
 
 ## 6. Fase 5: inspeção (≈30 min)
@@ -342,7 +324,7 @@ de código da spec, e o `4df48b4` leva tudo para a `main`.
 Para cada caso Falhou ou Bloqueado na execução (Seção 6.2 do plano):
 
 ```powershell
-gh issue create --title "CT-XXX-NN: <o que falhou>" --body "Caso CT-XXX-NN do Plano de Testes v1.2, [<requisito>]. Esperado: ... Observado: ... Evidência: <pasta>/<arquivo> (teste <nome do teste>). Commit <hash>."
+gh issue create --title "CT-XXX-NN: <o que falhou>" --body "Caso CT-XXX-NN do Plano de Testes v1.3, [<requisito>]. Esperado: ... Observado: ... Evidência: <pasta>/<arquivo> (teste <nome do teste>). Commit <hash>."
 ```
 
 ---
@@ -375,12 +357,12 @@ depois? Rode o `--fechar` de novo.
 ```powershell
 git switch -c docs/resultados-testes-<AAAA-MM-DD>
 git add docs/testes/evidencias/<pasta>
-git commit -m "docs(testes): evidências da execução do plano v1.2 no commit <hash curto>"
+git commit -m "docs(testes): evidências da execução do plano v1.3 no commit <hash curto>"
 git switch main
 git merge --no-ff docs/resultados-testes-<AAAA-MM-DD>
 git push
 git branch -d docs/resultados-testes-<AAAA-MM-DD>
-gh issue comment 66 --body "Evidências do Plano de Testes v1.2: docs/testes/evidencias/<pasta>, commit testado <hash>, SHA-256 do MANIFESTO-sha256.txt: <hash do manifesto>"
+gh issue comment 66 --body "Evidências do Plano de Testes v1.3: docs/testes/evidencias/<pasta>, commit testado <hash>, SHA-256 do MANIFESTO-sha256.txt: <hash do manifesto>"
 ```
 
 O comentário na issue é o carimbo de data: o GitHub registra quando ele foi feito, e qualquer edição posterior
@@ -402,7 +384,7 @@ Mostra o SHA-256 do manifesto (para comparar com o da capa do PDF e o da issue #
 
 O `RESULTADOS.md` já traz as Seções 3 a 6 abaixo prontas: abra no GitHub ou no VS Code e copie, ou imprima em PDF.
 
-1. **Capa:** sistema, versão do plano (1.2; a pasta 2026-11-14-2dfae9b foi executada pela 1.1 e reavaliada pela 1.2), data da execução, executores, commit testado, commit das evidências e
+1. **Capa:** sistema, versão do plano (1.3; a pasta 2026-11-14-2dfae9b foi executada pela 1.1 e reavaliada pela 1.3), data da execução, executores, commit testado, commit das evidências e
    SHA-256 do manifesto.
 2. **Ambiente:** `E00-ambiente.txt`, endereço da homologação (`H00`), ambiente sandbox do Asaas.
 3. **Critério de aceite (Seção 6.1 do plano):** o veredito do `RESULTADOS.md`. Todo caso de requisito essencial
