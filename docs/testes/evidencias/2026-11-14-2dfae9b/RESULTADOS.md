@@ -1,6 +1,6 @@
 # Resultados do Plano de Testes v1.2
 
-Gerado por `pnpm evidencias` em 2026-11-15 21:33:59 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
+Gerado por `pnpm evidencias` em 2026-11-15 21:48:15 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
 Como cada evidência foi produzida: `docs/testes/roteiro-de-execucao.md`.
 
 | | |
@@ -18,20 +18,20 @@ Como cada evidência foi produzida: `docs/testes/roteiro-de-execucao.md`.
 O MVP pode ser entregue quando todos os casos de requisitos essenciais passam. Falha em requisito importante
 ou desejável só é aceita com decisão registrada da equipe (Seção 6.1 do plano).
 
-**INCOMPLETO: 1 caso(s) ainda dependem de verificação manual.**
+**ACEITO: todos os casos passaram.**
 
-- Casos de requisito essencial: 22 de 23 passaram.
+- Casos de requisito essencial: 23 de 23 passaram.
 - Casos de requisito importante ou desejável que não passaram: nenhum.
-- Casos pendentes de verificação manual: CT-CAD-01.
+- Casos pendentes de verificação manual: nenhum.
 
 ## Resumo por nível
 
 | Resultado | Unidade | Integração | Sistema | Total |
 |---|---|---|---|---|
-| Passou | 7 | 15 | 10 | 32 |
+| Passou | 7 | 16 | 10 | 33 |
 | Falhou | 0 | 0 | 0 | 0 |
 | Bloqueado | 0 | 0 | 0 | 0 |
-| Pendente | 0 | 1 | 0 | 1 |
+| Pendente | 0 | 0 | 0 | 0 |
 | **Total** | 7 | 16 | 10 | 33 |
 
 ## Fases automáticas
@@ -51,7 +51,7 @@ ou desejável só é aceita com decisão registrada da equipe (Seção 6.1 do pl
 
 | Caso | Nome | Requisitos | Prioridade | Nível | O que sustenta o resultado | Resultado |
 |---|---|---|---|---|---|---|
-| CT-CAD-01 | Cadastro de aluno | Cadastros.RF001 | Essencial | I | 4 de 4 testes passaram (E07); H00: passou; M02 pendente | **Pendente** |
+| CT-CAD-01 | Cadastro de aluno | Cadastros.RF001 | Essencial | I | 4 de 4 testes passaram (E07); H00: passou; M02: passou | Passou |
 | CT-CAD-02 | Cadastro de funcionário | Cadastros.RF002 | Essencial | I | 4 de 4 testes passaram (E07) | Passou |
 | CT-CAD-03 | Contratos | Cadastros.RF004 | Importante | U | 8 de 8 testes passaram (E02) | Passou |
 | CT-CAD-04 | Projetos | Cadastros.RF005 | Importante | I | 4 de 4 testes passaram (E07) | Passou |
@@ -96,7 +96,7 @@ Anotadas em `verificacoes-manuais.json`. Só contam com o resultado anotado e ao
 | H02 | Segurança do ambiente de homologação \[Segurança.NF004\] | fora dos 33 casos | H02-console.png, H02-cookie.png, H02-seguranca.txt, H02-tls.txt | Passou | Ryaj | 2026-11-15 | /api/docs 404; HSTS e CSP presentes; TLS 1.2 aceito e TLS 1.1 recusado (alerta 70); cookie integracasd\_sessao Secure/HttpOnly/SameSite Strict; console sem erro de CSP; sessão do print encerrada com Sair. O valor do cookie de sessão foi tarjado em H02-cookie.png antes da publicação (o repositório é público); os atributos continuam visíveis |
 | H03 | Webhook com token errado na homologação responde 401 | CT-COB-05 | H03-webhook-401.txt | Passou | Ryaj | 2026-11-15 | POST /api/webhooks/asaas com token errado: 401 (H03-webhook-401.txt) |
 | M01 | Ponta a ponta com o Asaas sandbox | CT-SIS-01 | M01a-emitida.png, M01a-sandbox-emitida.png, M01b-sandbox-pago.png, M01c-paga.png, M01d-entrada.png, M01e-painel.png | Passou | Ryaj | 2026-11-15 | Cobrança avulsa "Teste M01" (Ana Clara Ribeiro, R$ 120,00) emitida às 15:33 (M01a-emitida.png, M01a-sandbox-emitida.png); pagamento confirmado no sandbox às 15:35 (M01b); às 15:36 já Paga no IntegraCASD sem ação manual, pelo webhook (M01c); entrada de R$ 120,00 em Movimentações, forma Asaas, origem conciliação automática (M01d), e no painel de Indicadores (M01e). Uma tentativa anterior de emissão, para outro aluno, foi recusada pelo Asaas com 400 invalid\_value (campo valor) e nada foi gravado; o sistema só valida valor maior que zero e mostra mensagem genérica (achado de usabilidade, não bloqueia). |
-| M02 | Inativar aluno com débito vencido e com débito aberto | CT-CAD-01 | M02-confirmacao-aberta.png, M02a-sandbox-vencida.png | Pendente | Ryaj |  | Parte "aberta" feita em 15/11 (M02-confirmacao-aberta.png): Júlia Nogueira Prado só com cobrança aberta e não vencida (Teste M02, R$ 50,00, vencimento 05/12/2026); o diálogo de inativação mostra "Este aluno tem débito: R$ 50,00 em aberto, ainda sem cobrança vencida" e pede confirmação (D3 corrigido); inativação não confirmada. FALTA a parte "vencida". O "Forçar vencimento" do sandbox (M02a-sandbox-vencida.png) não muda a situação no IntegraCASD: Vencida é calculada pela data (decisão do MER, docs/arquitetura/mer-financeiro.md). |
+| M02 | Inativar aluno com débito vencido e com débito aberto | CT-CAD-01 | M02-confirmacao-aberta.png, M02-confirmacao-vencida.png, M02a-sandbox-vencida.png | Passou | Ryaj | 2026-11-15 | Parte "aberta" (M02-confirmacao-aberta.png): Júlia Nogueira Prado só com cobrança aberta e não vencida (Teste M02, R$ 50,00, vencimento 05/12/2026); o diálogo de inativação mostra "Este aluno tem débito: R$ 50,00 em aberto, ainda sem cobrança vencida" e pede confirmação (D3 corrigido). Parte "vencida" (M02-confirmacao-vencida.png, 21:27): aluno fictício da carga anonimizada da homologação com débito herdado já vencido; o diálogo mostra "Este aluno tem débito: R$ 120,00 em aberto, dos quais R$ 120,00 em 1 cobrança vencida", o resumo (total em aberto, cobranças vencidas) e o efeito da inativação, e pede confirmação. Nas duas partes a inativação não foi confirmada. O "Forçar vencimento" do sandbox (M02a-sandbox-vencida.png) não muda a situação no IntegraCASD: Vencida é calculada pela data (decisão do MER, docs/arquitetura/mer-financeiro.md). |
 | M03 | Usabilidade nas telas | CT-NF-01 | M03-confirma-cancelamento.png, M03-confirma-estorno.png, M03-emitir-cobranca.png, M03-graficos-tabela.png, M03-lancar-movimentacao.png, M03-localizar-aluno-interacao-0.png, M03-localizar-aluno-interacao-1.png, M03-localizar-aluno-interacao-2.png, M03-localizar-aluno-interacao-3.png, M03-selos.png | Passou | Ryaj | 2026-11-15 | Localizar aluno: 3 interações a partir da tela inicial (Cadastros, campo de busca, digitar o nome; M03-localizar-aluno-interacao-0 a 3). Lançar movimentação: 1 (botão Nova movimentação da barra superior). Emitir cobrança avulsa: 1 (botão Nova cobrança). Estorno de movimentação e cancelamento de cobrança mostram resumo, avisam que não pode ser desfeito e pedem motivo e confirmação (não confirmados). Situações em selos com texto e ícone: Aberta, Vencida, Paga, Paga com registro manual, Cancelada, Estornada (M03-selos.png). Gráfico Entradas e saídas: Ver os dados em tabela mostra os mesmos valores das barras (novembro R$ 1.187,03). Gastos por categoria não avaliado na tela: não houve saída em novembro e o bloco ficou vazio. |
 | I01 | Backup e restauração \[Confiabilidade.NF006\] | fora dos 33 casos | I01-backup.txt, I01-conferencia.txt, I01-restauracao.txt | Passou | Ryaj (conferência: Claude) | 2026-11-15 | Backup do banco local (Docker) com fazer-backup.ps1 (I01-backup.txt) e restauração no banco separado integracasd\_restaurado com restaurar-backup.ps1 (I01-restauracao.txt). Conferências do playbook (I01-conferencia.txt): contagens idênticas na origem e no restaurado (18 migrações, 1 usuário, 890 alunos, 1098 cobranças, 0 movimentações, 3097 registros da trilha, mesmo último registro) e mesma soma dos valores das cobranças; UPDATE na trilha do restaurado recusado (só inclusão). Não refeito agora: API subindo sobre o restaurado (feito em 26/10, registrado no playbook). Restaurar um backup da homologação baixado do R2 segue pendente (playbook, \#52). |
 | I02 | O gancho do git barra merge com teste falhando | CT-NF-07 | I02-gancho.txt | Passou | Ryaj | 2026-11-15 | Branch teste/gancho-bloqueia com uma quebra proposital em datas.spec.ts (commit 4f89d4c, 16:49). git merge --no-ff na main: o pre-merge-commit rodou lint e testes, 1 teste falhou (598 passaram) e o merge não foi concluído ("Merge bloqueado", "Not committing merge") — I02-gancho.txt. Depois: git merge --abort, branch apagada, main de volta em 2dfae9b sem alterações. Uma primeira tentativa às 16:45 não executou o teste (a branch ficou sem commit e o merge respondeu "Already up to date"); foi refeita. |
