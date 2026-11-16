@@ -13,7 +13,14 @@ const esquema = z.object({
   responsavel: z.string(),
   dataInicio: z.string().min(1, 'Informe a data de início.'),
   dataFim: z.string(),
-  orcamento: z.string(),
+  // Vazio = sem orçamento previsto. Sem esta checagem, um valor inválido (NaN) iria
+  // para a API como null e apagaria o orçamento sem aviso.
+  orcamento: z
+    .string()
+    .refine(
+      (texto) => texto.trim() === '' || paraCentavos(texto) >= 0,
+      'Informe o orçamento, por exemplo R$ 5.000,00, ou deixe em branco.',
+    ),
   situacao: z.enum(['A_LIBERAR', 'LIBERADO', 'EM_EXECUCAO', 'EXECUTADO', 'CANCELADO']),
 })
 type Formulario = z.infer<typeof esquema>
@@ -100,8 +107,20 @@ function DialogoProjeto({ projeto, aoFechar }: Props) {
         </div>
         <div className="campo">
           <label htmlFor="pj-orcamento">Orçamento previsto</label>
-          <input id="pj-orcamento" inputMode="decimal" placeholder="R$ 0,00" {...register('orcamento')} />
-          <span className="dica">Em branco: sem orçamento previsto.</span>
+          <input
+            id="pj-orcamento"
+            inputMode="decimal"
+            placeholder="R$ 0,00"
+            aria-invalid={!!erros.orcamento}
+            {...register('orcamento')}
+          />
+          {erros.orcamento ? (
+            <span className="dica" role="alert">
+              {erros.orcamento.message}
+            </span>
+          ) : (
+            <span className="dica">Em branco: sem orçamento previsto.</span>
+          )}
         </div>
         <div className="campo">
           <label htmlFor="pj-inicio">Início</label>
