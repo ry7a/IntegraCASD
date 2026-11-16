@@ -3,8 +3,8 @@
 // boleto; nos demais estados a operação é tentada e precisa ser recusada (fluxo E1). Os estados são
 // alcançados pelas rotas reais (sincronização, registro manual, cancelamento), como na Figura 3.1 do plano.
 //
-// "Reenviar boleto por e-mail" (passo 3 do fluxo principal e fluxo A2) não existe no backend: não há rota
-// para testar. Está registrado como defeito no relatório deste caso (issue #29 do GitHub).
+// O reenvio do boleto por e-mail saiu do MVP na v1.2 dos requisitos (issue #29 do GitHub): o caso cobre só
+// a obtenção do boleto.
 import type { Cobranca } from '../../../src/generated/prisma/client.js';
 import { type AplicacaoDeTeste, entrar, subirAplicacao } from '../../apoio/aplicacao.js';
 import {

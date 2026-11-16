@@ -588,6 +588,8 @@ Cronograma (1.13):
 - [ ] **7.5 E-mail com o domínio:** verifique o domínio no Resend (registros TXT/MX no registro.br),
   troque o `EMAIL_REMETENTE` do worker para `IntegraCASD <alertas@<domínio>>` e **apague
   `EMAIL_ALERTAS_PARA`**: a partir daí os alertas vão para todos os usuários ativos da diretoria.
+  Com o domínio verificado, já dá para implementar o reenvio do boleto por e-mail (issue #29), que a v1.2
+  dos requisitos tirou do MVP até o CASD ter domínio (decisão de 15/11/2026).
 
 ## Depois do ar
 

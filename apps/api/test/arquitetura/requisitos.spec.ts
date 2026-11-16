@@ -29,7 +29,7 @@ const idsCitados = new Set(testes.flatMap((texto) => [...texto.matchAll(ID_CITAD
 // Ids existentes no documento: cada \section{Categoria} seguida de \req{NFnnn}{...}.
 function lerIdsDoDocumento(): Set<string> {
   const tex = readFileSync(
-    path.join(RAIZ_REPO, 'docs', 'requisitos', 'IntegraCASD_DocRequisitos_v1.1.tex'),
+    path.join(RAIZ_REPO, 'docs', 'requisitos', 'IntegraCASD_DocRequisitos_v1.2.tex'),
     'utf8',
   );
   const ids = new Set<string>();

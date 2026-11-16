@@ -1,12 +1,13 @@
-# Resultados do Plano de Testes v1.1
+# Resultados do Plano de Testes v1.2
 
-Gerado por `pnpm evidencias` em 2026-11-15 17:08:33 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
+Gerado por `pnpm evidencias` em 2026-11-15 21:33:59 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
 Como cada evidência foi produzida: `docs/testes/roteiro-de-execucao.md`.
 
 | | |
 |---|---|
 | Commit testado | `2dfae9b10b823f6b8d042d1a0d54c72b2562d77a` (merge: coleta automática das evidências do plano de testes) |
 | Data do commit | 2026-11-14 08:51:40 -0300 |
+| Plano | executado pela IntegraCASD\_PlanoDeTestes\_v1.1; casos avaliados pela IntegraCASD\_PlanoDeTestes\_v1.2 (Seção 8 do roteiro) |
 | Publicado no GitHub | sim (origin/main) |
 | Executado por | Ryaj |
 | Início e fim das fases automáticas | 2026-11-14 08:57:57 (UTC-03:00) a 2026-11-14 09:12:48 (UTC-03:00) |
@@ -20,15 +21,15 @@ ou desejável só é aceita com decisão registrada da equipe (Seção 6.1 do pl
 **INCOMPLETO: 1 caso(s) ainda dependem de verificação manual.**
 
 - Casos de requisito essencial: 22 de 23 passaram.
-- Casos de requisito importante ou desejável que não passaram: CT-COB-03 (falhou).
+- Casos de requisito importante ou desejável que não passaram: nenhum.
 - Casos pendentes de verificação manual: CT-CAD-01.
 
 ## Resumo por nível
 
 | Resultado | Unidade | Integração | Sistema | Total |
 |---|---|---|---|---|
-| Passou | 7 | 14 | 10 | 31 |
-| Falhou | 0 | 1 | 0 | 1 |
+| Passou | 7 | 15 | 10 | 32 |
+| Falhou | 0 | 0 | 0 | 0 |
 | Bloqueado | 0 | 0 | 0 | 0 |
 | Pendente | 0 | 1 | 0 | 1 |
 | **Total** | 7 | 16 | 10 | 33 |
@@ -56,7 +57,7 @@ ou desejável só é aceita com decisão registrada da equipe (Seção 6.1 do pl
 | CT-CAD-04 | Projetos | Cadastros.RF005 | Importante | I | 4 de 4 testes passaram (E07) | Passou |
 | CT-COB-01 | Geração recorrente | Cobranças.RF001 | Essencial | I | 4 de 4 testes passaram (E07) | Passou |
 | CT-COB-02 | Emissão avulsa | Cobranças.RF002 | Essencial | I | 6 de 6 testes passaram (E07) | Passou |
-| CT-COB-03 | Boleto | Cobranças.RF003 | Importante | I | 5 de 5 testes passaram (E07); defeito D2 em aberto: "reenviar o boleto por e-mail" não existe (issue \#29) | **Falhou** |
+| CT-COB-03 | Boleto | Cobranças.RF003 | Importante | I | 5 de 5 testes passaram (E07) | Passou |
 | CT-COB-04 | Cancelamento | Cobranças.RF004 | Importante | I | 8 de 8 testes passaram (E07) | Passou |
 | CT-COB-05 | Webhook e baixa | Cobranças.RF005 | Essencial | S | 3 de 3 testes passaram (E07); H00: passou; H03: passou | Passou |
 | CT-COB-06 | Pagamento manual | Cobranças.RF006 | Importante | I | 5 de 5 testes passaram (E07) | Passou |
@@ -102,7 +103,7 @@ Anotadas em `verificacoes-manuais.json`. Só contam com o resultado anotado e ao
 
 ## Defeitos em aberto
 
-- D2 (CT-COB-03): "reenviar o boleto por e-mail" não existe. Issue #29.
+Nenhum.
 
 Todo teste que falhar nesta execução vira issue no GitHub, citando o caso e o requisito (Seção 8 do roteiro).
 
