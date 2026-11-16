@@ -37,10 +37,10 @@
   },
   "M02": {
     "o_que_e": "Inativar aluno com débito vencido e com débito aberto",
-    "resultado": "",
+    "resultado": "Passou",
     "responsavel": "Ryaj",
-    "data": "",
-    "observacao": "Parte \"aberta\" feita em 15/11 (M02-confirmacao-aberta.png): Júlia Nogueira Prado só com cobrança aberta e não vencida (Teste M02, R$ 50,00, vencimento 05/12/2026); o diálogo de inativação mostra \"Este aluno tem débito: R$ 50,00 em aberto, ainda sem cobrança vencida\" e pede confirmação (D3 corrigido); inativação não confirmada. FALTA a parte \"vencida\". O \"Forçar vencimento\" do sandbox (M02a-sandbox-vencida.png) não muda a situação no IntegraCASD: Vencida é calculada pela data (decisão do MER, docs/arquitetura/mer-financeiro.md)."
+    "data": "2026-11-15",
+    "observacao": "Parte \"aberta\" (M02-confirmacao-aberta.png): Júlia Nogueira Prado só com cobrança aberta e não vencida (Teste M02, R$ 50,00, vencimento 05/12/2026); o diálogo de inativação mostra \"Este aluno tem débito: R$ 50,00 em aberto, ainda sem cobrança vencida\" e pede confirmação (D3 corrigido). Parte \"vencida\" (M02-confirmacao-vencida.png, 21:27): aluno fictício da carga anonimizada da homologação com débito herdado já vencido; o diálogo mostra \"Este aluno tem débito: R$ 120,00 em aberto, dos quais R$ 120,00 em 1 cobrança vencida\", o resumo (total em aberto, cobranças vencidas) e o efeito da inativação, e pede confirmação. Nas duas partes a inativação não foi confirmada. O \"Forçar vencimento\" do sandbox (M02a-sandbox-vencida.png) não muda a situação no IntegraCASD: Vencida é calculada pela data (decisão do MER, docs/arquitetura/mer-financeiro.md)."
   },
   "M03": {
     "o_que_e": "Usabilidade nas telas",
