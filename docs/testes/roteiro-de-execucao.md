@@ -254,6 +254,24 @@ botão "Inativar aluno" fica desabilitado até a consulta das cobranças termina
 
 Gravar a tela (`Win + Alt + R`) também vale como evidência (`M03-gravacao.mp4`).
 
+### X01: sessão exploratória (método "manual: exploratório" do Capítulo 4 do plano)
+
+Não tem roteiro de passos: quem executa explora com um objetivo e anota o que tentou. É o único tipo de teste do
+plano em que o caminho não é escrito antes.
+
+- **Objetivo:** tentar deixar cobranças, movimentações e indicadores com totais diferentes entre as telas. Por
+  exemplo, registrar um pagamento manual, estornar uma movimentação ou cancelar uma cobrança, e conferir se o
+  painel, a lista de cobranças, a lista de movimentações e a página do aluno continuam batendo.
+- **Duração:** até 60 minutos. Anote a hora de início e de fim.
+- **Anotação:** em `verificacoes-manuais.json`, na chave `X01`. Na observação vão o objetivo, o horário, o que foi
+  tentado e, para cada achado, o esperado, o observado e o print correspondente. Achado que for defeito vira issue
+  e, segundo o plano, caso automatizado.
+- **Evidência:** prints `X01-*.png` de tela inteira, com a URL e o relógio visíveis, de antes e depois de cada ação
+  que mexe nos totais.
+
+A X01 não pertence a nenhum dos 33 casos: o `RESULTADOS.md` a mostra na tabela de verificações manuais como "fora
+dos 33 casos", e ela não entra no veredito.
+
 ---
 
 ## 6. Fase 5: inspeção (≈30 min)

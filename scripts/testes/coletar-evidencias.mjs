@@ -114,6 +114,7 @@ const VERIFICACOES_MANUAIS = [
   { id: 'M01', descricao: 'Ponta a ponta com o Asaas sandbox' },
   { id: 'M02', descricao: 'Inativar aluno com débito vencido e com débito aberto' },
   { id: 'M03', descricao: 'Usabilidade nas telas' },
+  { id: 'X01', descricao: 'Sessão exploratória: totais coerentes entre cobranças, movimentações e indicadores' },
   { id: 'I01', descricao: 'Backup e restauração [Confiabilidade.NF006]' },
   { id: 'I02', descricao: 'O gancho do git barra merge com teste falhando' },
 ];
