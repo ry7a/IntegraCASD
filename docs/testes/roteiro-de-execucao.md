@@ -1,6 +1,6 @@
-# Roteiro de execução do Plano de Testes v1.1
+# Roteiro de execução do Plano de Testes v1.2
 
-Este roteiro diz **como** executar os 33 casos do `IntegraCASD_PlanoDeTestes_v1.1.pdf` e **que evidência**
+Este roteiro diz **como** executar os 33 casos do `IntegraCASD_PlanoDeTestes_v1.2.pdf` e **que evidência**
 guardar de cada um, para o relatório final em PDF poder ser auditado. Qualquer pessoa deve conseguir pegar
 o relatório, achar a evidência de cada caso e repetir a execução no mesmo commit.
 
@@ -16,6 +16,11 @@ O caminho todo, em quatro passos:
 
 A versão 1.1 do plano corrige a 1.0: a Seção 5.2 anunciava 8 casos não funcionais, mas listava 7 (o
 CT-NF-08, citado só no Apêndice A, nunca foi definido). O total passou de 34 para 33 casos.
+
+A versão 1.2 do plano acompanha a 1.2 do Documento de Requisitos: o reenvio do boleto por e-mail saiu do MVP
+(decisão de 15/11/2026, issue #29), e o CT-COB-03 passou a cobrir só a obtenção do boleto. Os casos, os ids e
+os testes automatizados não mudaram. A pasta `2026-11-14-2dfae9b`, executada pela v1.1, foi reavaliada pela
+v1.2: só o CT-COB-03 muda de resultado (Seção 8, D2).
 
 ---
 
@@ -122,7 +127,7 @@ CT-CAD-01`): é assim que o `RESULTADOS.md` junta os testes de cada caso, e o an
 | CT-CAD-04 | I | `test/integracao/cadastros/ct-cad-04-projeto.spec.ts` | E07 | D1 corrigido (Seção 8) |
 | CT-COB-01 | I | `test/integracao/cobrancas/ct-cob-01-geracao-recorrente.spec.ts` | E07 | |
 | CT-COB-02 | I | `test/integracao/cobrancas/ct-cob-02-emissao-avulsa.spec.ts` | E07 | Tabela de decisão R1 a R5 |
-| CT-COB-03 | I | `test/integracao/cobrancas/ct-cob-03-boleto.spec.ts` | E07 | **Falha no "reenviar": defeito D2 em aberto (issue #29)**. O script marca o caso como Falhou até o D2 ser corrigido |
+| CT-COB-03 | I | `test/integracao/cobrancas/ct-cob-03-boleto.spec.ts` | E07 | Só a obtenção do boleto: o reenvio por e-mail saiu do MVP na v1.2 (D2, Seção 8) |
 | CT-COB-04 | I | `test/integracao/cobrancas/ct-cob-04-cancelamento.spec.ts` | E07 | |
 | CT-COB-05 | S | `test/sistema/cobrancas/ct-cob-05-webhook.spec.ts` | E07 + H03 | |
 | CT-COB-06 | I | `test/integracao/cobrancas/ct-cob-06-pagamento-manual.spec.ts` | E07 | |
@@ -307,7 +312,7 @@ de código da spec, e o `4df48b4` leva tudo para a `main`.
 | Id | Caso | O que acontece | Onde | Severidade | Situação |
 |---|---|---|---|---|---|
 | D1 | CT-CAD-04 ([Cadastros.RF005] E1, [Movimentações.RF001] A2) | Movimentação num projeto **cancelado** é aceita sem aviso. O sistema considera cancelado como "encerrado" (`GET /api/projetos` responde `encerrado: true`), mas o aviso só sai para EXECUTADO | `apps/api/src/modulos/movimentacoes/infra/movimentacoes.repositorio.ts:162` | Baixa: a tela não oferece projeto cancelado, mas a API aceita | **Corrigido:** merge `d24c0cc` (#59); revisão em `a54dfa1` (#57) |
-| D2 | CT-COB-03 ([Cobranças.RF003] passo 3 e A2) | "Reenviar boleto por e-mail" não existe: o backend só tem "baixar"; o botão da tela está desabilitado | `cobrancas.controller.ts:164-171`; issue #29 já aberta (a API v3 do Asaas não reenvia) | Requisito importante: precisa de decisão da equipe | Em aberto (issue #29). Registrado em `DEFEITOS_EM_ABERTO` no `scripts/testes/coletar-evidencias.mjs`: ao corrigir, apague a linha |
+| D2 | CT-COB-03 ([Cobranças.RF003] passo 3 e A2) | "Reenviar boleto por e-mail" não existe: o backend só tem "baixar"; o botão da tela está desabilitado | `cobrancas.controller.ts:164-171`; issue #29 já aberta (a API v3 do Asaas não reenvia) | Requisito importante | **Resolvido por mudança de requisito:** decisão de 15/11/2026 (issue #29) tirou o reenvio por e-mail do MVP; o [Cobranças.RF003] da v1.2 dos requisitos cobre só a obtenção do boleto, e o fluxo A1 (baixar e entregar por outro canal) é o que a dica do botão já diz. O D2 saiu de `DEFEITOS_EM_ABERTO` e o CT-COB-03 passa com os mesmos 5 testes. O reenvio por e-mail fica para depois do MVP, quando o CASD tiver domínio verificado no Resend (playbook de implantação, 7.5) |
 | D3 | CT-CAD-01 ([Cadastros.RF001] E2) | O diálogo de inativação só mostra o débito quando há cobrança **vencida**; o caso de uso fala em "Aberta ou Vencida" | `apps/web/src/features/cadastro/DialogoInativarAluno.tsx:24` | **Alta: [Cadastros.RF001] é essencial** | **Corrigido:** merge `027c634` (#60); revisão em `a54dfa1` (#57). Falta a M02 na homologação |
 | D4 | CT-FZ-02, CT-FZ-01 | **Data no formato certo, mas inexistente** (30/02, 31/04, mês 13 ou 00) não é recusada fora de Cadastros. Cobrança avulsa com 30/02 vai ao Asaas como 30/02 e é gravada aqui como 02/03 (divergência); com mês 13, a resposta é 500 **depois** de criar a cobrança no Asaas (cobrança só no Asaas). Movimentação, filtros de cobranças e da trilha e `mes=0000-01` dão 500 ou gravam a data errada. No worker, `paymentDate` 30/02 baixa com 02/03, e 13/45 trava o evento | `cobrancas/dominio/cobranca.ts:51-58` e `:146-152`, `movimentacoes/dominio/movimentacao.ts:45` e `:127-132`, `administracao/dominio/trilha.ts:47-53`, `cobrancas/dominio/conciliacao.ts:23-25`. A função certa já existe: `lerData` em `cadastros/dominio/comum.ts` | Alta: cobrança divergente do Asaas ([Confiabilidade.NF005]) | **Corrigido:** merges `916aae3` (#61), `e8064d3` (#62), `c3a097b` (#63) e `8b24259` (#65); revisão em `a54dfa1` (#57) |
 | D5 | CT-FZ-02, CT-FZ-01 | **Inteiro acima do limite da coluna** (2.147.483.647) passa na validação e dá 500: matrícula, valor da cobrança avulsa (500 depois de criar no Asaas), valor da movimentação, filtros de valor e página das cobranças; no worker, `payment.value` enorme trava o evento | `cadastros/dominio/aluno.ts:57-64`, `cobranca.ts:47-50` e `:154-159`, `movimentacao.ts:122-126`, `conciliacao.ts:34-38` | Média | **Corrigido:** merges `93c59c0` (#58), `916aae3` (#61), `e8064d3` (#62), `c3a097b` (#63) e `8b24259` (#65) |
@@ -319,7 +324,7 @@ de código da spec, e o `4df48b4` leva tudo para a `main`.
 Para cada caso Falhou ou Bloqueado na execução (Seção 6.2 do plano):
 
 ```powershell
-gh issue create --title "CT-XXX-NN: <o que falhou>" --body "Caso CT-XXX-NN do Plano de Testes v1.1, [<requisito>]. Esperado: ... Observado: ... Evidência: <pasta>/<arquivo> (teste <nome do teste>). Commit <hash>."
+gh issue create --title "CT-XXX-NN: <o que falhou>" --body "Caso CT-XXX-NN do Plano de Testes v1.2, [<requisito>]. Esperado: ... Observado: ... Evidência: <pasta>/<arquivo> (teste <nome do teste>). Commit <hash>."
 ```
 
 ---
@@ -352,12 +357,12 @@ depois? Rode o `--fechar` de novo.
 ```powershell
 git switch -c docs/resultados-testes-<AAAA-MM-DD>
 git add docs/testes/evidencias/<pasta>
-git commit -m "docs(testes): evidências da execução do plano v1.1 no commit <hash curto>"
+git commit -m "docs(testes): evidências da execução do plano v1.2 no commit <hash curto>"
 git switch main
 git merge --no-ff docs/resultados-testes-<AAAA-MM-DD>
 git push
 git branch -d docs/resultados-testes-<AAAA-MM-DD>
-gh issue comment 66 --body "Evidências do Plano de Testes v1.1: docs/testes/evidencias/<pasta>, commit testado <hash>, SHA-256 do MANIFESTO-sha256.txt: <hash do manifesto>"
+gh issue comment 66 --body "Evidências do Plano de Testes v1.2: docs/testes/evidencias/<pasta>, commit testado <hash>, SHA-256 do MANIFESTO-sha256.txt: <hash do manifesto>"
 ```
 
 O comentário na issue é o carimbo de data: o GitHub registra quando ele foi feito, e qualquer edição posterior
@@ -379,12 +384,12 @@ Mostra o SHA-256 do manifesto (para comparar com o da capa do PDF e o da issue #
 
 O `RESULTADOS.md` já traz as Seções 3 a 6 abaixo prontas: abra no GitHub ou no VS Code e copie, ou imprima em PDF.
 
-1. **Capa:** sistema, versão do plano (1.1), data da execução, executores, commit testado, commit das evidências e
+1. **Capa:** sistema, versão do plano (1.2; a pasta 2026-11-14-2dfae9b foi executada pela 1.1 e reavaliada pela 1.2), data da execução, executores, commit testado, commit das evidências e
    SHA-256 do manifesto.
 2. **Ambiente:** `E00-ambiente.txt`, endereço da homologação (`H00`), ambiente sandbox do Asaas.
 3. **Critério de aceite (Seção 6.1 do plano):** o veredito do `RESULTADOS.md`. Todo caso de requisito essencial
-   tem de passar. D2 é de requisito importante ([Cobranças.RF003]): pela Seção 6.1, só pode ser aceito com
-   decisão registrada da equipe (cite a decisão e a issue #29).
+   tem de passar. Cite a mudança de requisito que resolveu o D2: a v1.2 dos requisitos tirou o reenvio do boleto
+   por e-mail do MVP (decisão de 15/11/2026, issue #29; Seção 8).
 4. **Resumo:** dos 33 casos, quantos passaram, falharam, ficaram bloqueados ou pendentes, por nível (como a
    Tabela 5.3 do plano), e as fases automáticas: lint, unidade (E02), cobertura (E03), CI (E06, com o link),
    integração e sistema (E07).

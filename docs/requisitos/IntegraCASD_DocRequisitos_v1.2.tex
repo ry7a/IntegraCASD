@@ -1,6 +1,6 @@
-% Documento de Requisitos do IntegraCASD, versão 1.1.
+% Documento de Requisitos do IntegraCASD, versão 1.2.
 % Compilar a partir desta pasta (docs/requisitos), duas vezes para o sumário:
-%   pdflatex IntegraCASD_DocRequisitos_v1.1.tex
+%   pdflatex IntegraCASD_DocRequisitos_v1.2.tex
 % As figuras vêm de docs/telas/prints/ (protótipo navegável em docs/telas/).
 
 \documentclass[11pt,a4paper,oneside]{report}
@@ -60,15 +60,15 @@
 \renewcommand{\chaptermark}[1]{\markboth{#1}{}}
 \fancyhead[L]{\small Documento de Requisitos -- IntegraCASD}
 \fancyhead[R]{\small\leftmark}
-\fancyfoot[L]{\small Versão 1.1}
+\fancyfoot[L]{\small Versão 1.2}
 \fancyfoot[C]{\small\thepage}
-\fancyfoot[R]{\small Outubro/2026}
+\fancyfoot[R]{\small Novembro/2026}
 \fancypagestyle{plain}{%
   \fancyhf{}
   \fancyhead[L]{\small Documento de Requisitos -- IntegraCASD}
-  \fancyfoot[L]{\small Versão 1.1}
+  \fancyfoot[L]{\small Versão 1.2}
   \fancyfoot[C]{\small\thepage}
-  \fancyfoot[R]{\small Outubro/2026}}
+  \fancyfoot[R]{\small Novembro/2026}}
 
 % ---------------------------------------------------------------------------
 % Macros dos requisitos
@@ -145,7 +145,7 @@
 
   \vfill
   \begin{center}
-    {\large\bfseries Versão 1.1 -- São José dos Campos, Outubro de 2026\par}
+    {\large\bfseries Versão 1.2 -- São José dos Campos, Novembro de 2026\par}
   \end{center}
   \vspace{1em}
   Dúvidas, críticas e sugestões devem ser encaminhadas por escrito para um dos seguintes endereços
@@ -169,8 +169,26 @@
   1.1 & Outubro/2026  & Ajuste ao escopo do MVP definido pela equipe: retirada dos requisitos
                         fora do escopo, atualização dos casos de uso com as decisões tomadas desde
                         a versão 1.0 e inclusão das telas do protótipo navegável. \\
+  1.2 & Novembro/2026 & Retirada do MVP do reenvio do boleto por e-mail ([Cobranças.RF003]). \\
   \bottomrule
 \end{tabularx}
+
+\section*{Alterações em relação à versão 1.1}
+
+\textbf{Requisitos alterados.}
+\begin{itemize}
+  \item {[Cobranças.RF003]}: o reenvio do boleto por e-mail sai do MVP, e o caso de uso passa a
+        cobrir apenas a obtenção do boleto para download. A API do Asaas não oferece operação para
+        reenviar a notificação de uma cobrança, e o envio pelo próprio IntegraCASD depende de um
+        domínio próprio verificado no provedor de correio eletrônico, que o CASD ainda não possui.
+        O reenvio por e-mail fica para depois do MVP. Saem o passo de escolha entre baixar e
+        reenviar e o fluxo A2 (reenvio a partir da inadimplência).
+  \item {[Indicadores.RF002]}: no fluxo A1, a ação a partir da relação de devedores passa a ser
+        abrir as cobranças vencidas do aluno e obter o boleto, em vez de reenviá-lo.
+\end{itemize}
+
+\textbf{Telas.} As figuras do detalhe da cobrança, do painel de indicadores e da aba de cobranças
+do aluno foram atualizadas para refletir a retirada do reenvio.
 
 \section*{Alterações em relação à versão 1.0}
 
@@ -237,8 +255,8 @@ especificado tem por finalidade centralizar esses dados em um único ambiente, a
 e a conciliação de cobranças e disponibilizar indicadores que apoiem a tomada de decisão pela
 administração e pela diretoria do CASD.
 
-Esta versão 1.1 restringe a especificação ao escopo do produto mínimo viável (MVP), a ser entregue
-em dois meses. Os requisitos que ficaram de fora estão indicados no Histórico de revisões.
+Desde a versão 1.1, a especificação se restringe ao escopo do produto mínimo viável (MVP), a ser
+entregue em dois meses. Os requisitos que ficaram de fora estão indicados no Histórico de revisões.
 
 \section*{Visão geral deste documento}
 \addcontentsline{toc}{section}{Visão geral deste documento}
@@ -458,7 +476,8 @@ seguir.
 O envio do boleto por e-mail ao aluno é realizado pelo próprio Asaas, acionado pelo IntegraCASD no
 momento da criação da cobrança. O sistema não mantém servidor de correio próprio para essa
 finalidade, limitando-se a registrar que o envio foi solicitado e a oferecer o download do boleto
-para os casos em que a área administrativa opte por entregá-lo por outro meio.
+para os casos em que a área administrativa opte por entregá-lo por outro meio. O reenvio do boleto
+por e-mail a partir do IntegraCASD não faz parte do MVP ([Cobranças.RF003]).
 
 As planilhas hoje utilizadas pelo CASD não constituem um sistema relacionado, e sim a origem dos
 dados da carga inicial ([Distribuição.NF002]). Após a implantação, elas deixam de ser mantidas e o
@@ -897,8 +916,7 @@ solicita correção.
 % ---------------------------------------------------------------------------
 \req{RF003}{Obter o boleto de uma cobrança}
 
-Permite baixar o boleto de uma cobrança ou solicitar que o Asaas o envie novamente ao aluno por
-e-mail.
+Permite baixar o boleto de uma cobrança, para que a área administrativa o entregue ao aluno.
 
 \ator{Área administrativa.}
 \prioI
@@ -906,8 +924,8 @@ e-mail.
 \entradas existe uma cobrança com situação ``Aberta'' ou ``Vencida''. Entrada: identificação da
 cobrança.
 
-\saidas o arquivo do boleto é disponibilizado para download, ou um novo envio é solicitado ao
-Asaas. Em ambos os casos, a operação é registrada no histórico da cobrança, com autor, data e hora.
+\saidas o arquivo do boleto é disponibilizado para download, e a operação é registrada no
+histórico da cobrança, com autor, data e hora.
 
 \fluxoprincipal
 \begin{enumerate}
@@ -915,8 +933,8 @@ Asaas. Em ambos os casos, a operação é registrada no histórico da cobrança,
         (Figura~\ref{fig:cobranca}).
   \item O sistema apresenta os dados da cobrança, a data da última sincronização com o Asaas, o
         histórico de eventos e as ações disponíveis.
-  \item O usuário escolhe entre ``Baixar boleto'' e ``Reenviar boleto por e-mail''.
-  \item O sistema aciona o Asaas e conclui a operação escolhida.
+  \item O usuário aciona ``Baixar boleto''.
+  \item O sistema obtém o boleto no Asaas e o disponibiliza para download.
   \item O sistema registra a operação.
 \end{enumerate}
 
@@ -926,13 +944,12 @@ Asaas. Em ambos os casos, a operação é registrada no histórico da cobrança,
 Ao optar pelo download, o usuário obtém o arquivo e passa a ser responsável pela entrega, que pode
 ocorrer por qualquer canal. O sistema não acompanha essa entrega.
 
-\fluxo{A2}{Reenvio a partir da inadimplência}
-O reenvio também pode ser acionado a partir da relação de maiores devedores
-([Indicadores.RF002], fluxo A1).
-
 \fluxo{E1}{Cobrança já paga ou cancelada}
 O sistema não disponibiliza o boleto e informa a situação atual da cobrança, evitando que um
 documento sem validade circule.
+
+O reenvio do boleto por e-mail, previsto até a versão 1.1, foi retirado do MVP na versão 1.2 (ver
+o Histórico de revisões).
 
 \tela[0.5]{cobranca}{Detalhe da cobrança: ações, dados, situação da sincronização e histórico de
 eventos do Asaas.}{cobranca}
@@ -1426,8 +1443,9 @@ pagamento. O sistema não sofre alteração de estado.
 \fluxossecundarios
 
 \fluxo{A1}{Ação de cobrança a partir da relação}
-A partir da relação, o usuário com perfil administrativo pode reenviar o boleto de uma cobrança
-vencida ([Cobranças.RF003]), o que atende ao uso que a área administrativa faz deste indicador.
+A partir da relação, o usuário com perfil administrativo pode abrir as cobranças vencidas de um
+aluno e obter o boleto ([Cobranças.RF003]), para entregá-lo ao aluno, o que atende ao uso que a
+área administrativa faz deste indicador.
 
 \fluxo{A2}{Divergência suspeita}
 Se houver cobranças vencidas cuja última sincronização com o Asaas tenha ocorrido há mais de sete
@@ -2111,7 +2129,8 @@ e senha; os requisitos que a regem são [Segurança.NF001], [Segurança.NF005] e
   \midrule
   \endhead
   Indicadores & Página inicial: entradas, saídas, resultado e valor aguardando liberação; evolução
-                de seis meses; inadimplência com reenvio de boleto; gastos por categoria &
+                de seis meses; inadimplência com atalho para as cobranças vencidas; gastos por
+                categoria &
                 Indicadores.RF001 a RF003; Fig.~\ref{fig:indicadores} \\
   Cadastros & Abas de alunos, funcionários, contratos e projetos; formulário de novo aluno &
               Cadastros.RF001, RF002, RF004 e RF005; Figs.~\ref{fig:cadastros-alunos}
@@ -2123,7 +2142,7 @@ e senha; os requisitos que a regem são [Segurança.NF001], [Segurança.NF005] e
   Cobranças & Estado da conciliação, resumo por situação, filtros, lista de abertas e vencidas e
               sincronização geral & Cobranças.RF007 e RF008; Figs.~\ref{fig:cobrancas}
               e~\ref{fig:cobrancas-sincronizar} \\
-  Cobrança & Detalhe: boleto, reenvio, sincronização, pagamento manual, cancelamento e
+  Cobrança & Detalhe: boleto, sincronização, pagamento manual, cancelamento e
              renegociação, histórico de eventos do Asaas & Cobranças.RF003 a RF007;
              Figs.~\ref{fig:cobranca}, \ref{fig:cobranca-cancelar},
              \ref{fig:cobranca-pagamento-manual} e~\ref{fig:cobranca-sincronizar} \\

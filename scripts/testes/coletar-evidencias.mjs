@@ -1,4 +1,4 @@
-// Plano de Testes v1.1 (roteiro em docs/testes/roteiro-de-execucao.md): roda as fases automáticas, guarda a saída
+// Plano de Testes v1.2 (roteiro em docs/testes/roteiro-de-execucao.md): roda as fases automáticas, guarda a saída
 // de cada uma como evidência e monta o RESULTADOS.md com o resultado dos 33 casos e o critério de aceite.
 //
 // Uso (na raiz, com o Docker Desktop ligado):
@@ -20,12 +20,14 @@ import { parseEnv } from 'node:util';
 const RAIZ = path.resolve(import.meta.dirname, '..', '..');
 const PASTA_DAS_EVIDENCIAS = path.join(RAIZ, 'docs', 'testes', 'evidencias');
 const EXECUCAO = 'execucao.json';
+// Plano vigente: pelo qual os casos são avaliados. Uma pasta executada por um plano anterior é reavaliada por ele.
+const PLANO = 'IntegraCASD_PlanoDeTestes_v1.2';
 const VERIFICACOES = 'verificacoes-manuais.json';
 const RESULTADOS = 'RESULTADOS.md';
 const MANIFESTO = 'MANIFESTO-sha256.txt';
 const RESULTADOS_VALIDOS = ['Passou', 'Falhou', 'Bloqueado'];
 
-// Prioridade de cada requisito citado pelo plano, copiada do Documento de Requisitos v1.1
+// Prioridade de cada requisito citado pelo plano, copiada do Documento de Requisitos v1.2
 // (E = essencial, I = importante, D = desejável). A prioridade de um caso é a maior entre os requisitos dele.
 const PRIORIDADE_DOS_REQUISITOS = {
   'Cadastros.RF001': 'E', 'Cadastros.RF002': 'E', 'Cadastros.RF004': 'I', 'Cadastros.RF005': 'I',
@@ -98,10 +100,10 @@ const CASOS = [
 ];
 
 // Defeitos em aberto que fazem um caso falhar mesmo com os testes automatizados passando (Seção 8 do roteiro).
-// Quando o defeito for corrigido (com teste), apague a linha.
-const DEFEITOS_EM_ABERTO = [
-  { caso: 'CT-COB-03', id: 'D2', descricao: '"reenviar o boleto por e-mail" não existe', issue: 29 },
-];
+// Quando o defeito for corrigido (com teste), apague a linha. Formato:
+//   { caso: 'CT-XXX-NN', id: 'Dn', descricao: '<o que falta>', issue: <número> },
+// O D2 (CT-COB-03, reenvio do boleto por e-mail) saiu em 15/11/2026: a v1.2 dos requisitos tirou o reenvio do MVP.
+const DEFEITOS_EM_ABERTO = [];
 
 // Verificações feitas à mão (Seções 5 a 7 do roteiro). Os arquivos de cada uma começam pelo id (ex.: M02-...png).
 const VERIFICACOES_MANUAIS = [
@@ -344,7 +346,7 @@ async function executar(rascunho) {
     .map((linha) => linha.trim())
     .filter((linha) => linha && linha !== 'não disponível' && !linha.includes('->'));
   const execucao = {
-    plano: 'IntegraCASD_PlanoDeTestes_v1.1',
+    plano: PLANO,
     rascunho,
     commit,
     assunto: saidaDe('git log -1 --format=%s'),
@@ -553,7 +555,7 @@ function montarResultados(pasta) {
   const adicionar = (...novas) => linhas.push(...novas);
   const celula = (texto) => textoSeguro(texto);
 
-  adicionar('# Resultados do Plano de Testes v1.1', '');
+  adicionar('# Resultados do Plano de Testes v1.2', '');
   if (execucao.rascunho) adicionar('> **RASCUNHO:** executado com mudanças não commitadas ou sem o CT-NF-05. Não vale como evidência.', '');
   adicionar(
     `Gerado por \`pnpm evidencias\` em ${dataHora()}. Não edite à mão: rode \`pnpm evidencias -- --fechar ${path.basename(pasta)}\`.`,
@@ -563,6 +565,9 @@ function montarResultados(pasta) {
     '|---|---|',
     `| Commit testado | \`${execucao.commit}\` (${celula(execucao.assunto)}) |`,
     `| Data do commit | ${execucao.dataDoCommit} |`,
+    ...(execucao.plano === PLANO
+      ? []
+      : [`| Plano | executado pela ${celula(execucao.plano)}; casos avaliados pela ${celula(PLANO)} (Seção 8 do roteiro) |`]),
     `| Publicado no GitHub | ${execucao.publicadoEm.length ? `sim (${execucao.publicadoEm.join(', ')})` : '**não**: sem push, ninguém consegue repetir'} |`,
     `| Executado por | ${celula(execucao.executor)} |`,
     `| Início e fim das fases automáticas | ${execucao.inicio} a ${execucao.fim ?? 'não terminou'} |`,

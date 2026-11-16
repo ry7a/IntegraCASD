@@ -14,11 +14,11 @@ Para apontar uma aba ou um diálogo específico na revisão, use o id no fim do 
 
 | Tela                 | Feature          | O que mostra                                                                                                                                  | Requisitos                |
 | -------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `indicadores.html`   | `indicadores/`   | Página inicial: entradas, saídas, resultado e valor aguardando liberação; evolução de 6 meses; inadimplência com reenvio de boleto; gastos por categoria | Indicadores.RF001 a RF003 |
+| `indicadores.html`   | `indicadores/`   | Página inicial: entradas, saídas, resultado e valor aguardando liberação; evolução de 6 meses; inadimplência com atalho para as cobranças vencidas; gastos por categoria | Indicadores.RF001 a RF003 |
 | `cadastros.html`     | `cadastro/`      | Abas de alunos, funcionários, contratos (com aviso de vencimento e contraparte em texto) e projetos (orçamento x realizado); formulário de novo aluno | Cadastros.RF001 a RF005   |
 | `aluno.html`         | `cadastro/`      | Detalhe do aluno: dados editáveis, cobranças, movimentações, nova cobrança já com o aluno preenchido e inativação com aviso de débito         | Cadastros.RF001           |
 | `cobrancas.html`     | `cobrancas/`     | Resumo por situação, filtros, lista de abertas e vencidas com link para o detalhe, e sincronização geral                                       | Cobranças.RF002 a RF008   |
-| `cobranca.html`      | `cobrancas/`     | Detalhe da cobrança, centro das ações: boleto, reenvio, sincronização, pagamento manual, cancelar/renegociar e histórico de eventos do Asaas  | Cobranças.RF003 a RF008   |
+| `cobranca.html`      | `cobrancas/`     | Detalhe da cobrança, centro das ações: boleto, sincronização, pagamento manual, cancelar/renegociar e histórico de eventos do Asaas  | Cobranças.RF003 a RF008   |
 | `movimentacoes.html` | `movimentacoes/` | Totais do recorte, filtros, estorno (só lançamento manual) e movimentação estornada com seu espelho                                            | Movimentações.RF001 a RF003 |
 | `administracao.html` | `administracao/` | Usuários, categorias, parâmetros com conferência e execuções, integração com o Asaas (chave nunca exibida), trilha de auditoria               | Administração.RF001 a RF005 |
 
@@ -35,7 +35,7 @@ Para apontar uma aba ou um diálogo específico na revisão, use o id no fim do 
 
 - **Fora do MVP e do protótipo, por ora:** cadastro de fornecedores (o contrato guarda só o nome da contraparte), assinaturas internas, exportar relatório, anexo de comprovante e tela de login.
 - **Estorno continua direto da lista** de Movimentações, sem passar por uma tela de detalhe.
-- **O detalhe da cobrança é o centro das ações** (boleto, reenvio, sincronização, pagamento manual, cancelar/renegociar). A lista só mostra e leva ao detalhe.
+- **O detalhe da cobrança é o centro das ações** (boleto, sincronização, pagamento manual, cancelar/renegociar). A lista só mostra e leva ao detalhe.
 - **A lista de cobranças abre só com abertas e vencidas**, ordenadas por vencimento; as demais situações se ligam pelos cartões de resumo.
 
 ## Em aberto para a equipe validar

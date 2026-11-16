@@ -97,7 +97,7 @@ Também são conferidas as versões fixadas: `typescript` 6.0.3 (o 7 quebra a CL
 
 ## Requisitos verificáveis (G5)
 
-[`requisitos-verificaveis.json`](requisitos-verificaveis.json) lista os requisitos não funcionais que o código precisa respeitar, cada um `coberto` ou `pendente` (com motivo). Para marcar como `coberto`, escreva um teste `*.spec.ts` em `apps/api` que cite o requisito entre colchetes, no formato do documento de requisitos (`[Categoria.NFnnn]`) e troque a situação. Os testes de integração e de sistema (`apps/api/test/integracao` e `apps/api/test/sistema`, rodados à mão com `pnpm test:integracao`, fora do CI) também contam como citação. Um requisito citado num teste precisa estar na lista, e todo id da lista precisa existir em `docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex`.
+[`requisitos-verificaveis.json`](requisitos-verificaveis.json) lista os requisitos não funcionais que o código precisa respeitar, cada um `coberto` ou `pendente` (com motivo). Para marcar como `coberto`, escreva um teste `*.spec.ts` em `apps/api` que cite o requisito entre colchetes, no formato do documento de requisitos (`[Categoria.NFnnn]`) e troque a situação. Os testes de integração e de sistema (`apps/api/test/integracao` e `apps/api/test/sistema`, rodados à mão com `pnpm test:integracao`, fora do CI) também contam como citação. Um requisito citado num teste precisa estar na lista, e todo id da lista precisa existir em `docs/requisitos/IntegraCASD_DocRequisitos_v1.2.tex`.
 
 ## Revisão arquitetural por sprint (G6)
 

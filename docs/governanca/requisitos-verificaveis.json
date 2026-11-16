@@ -1,5 +1,5 @@
 {
-  "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md, ADRs e no Plano de Testes. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api, inclusive os de integração e de sistema, que rodam à mão com pnpm test:integracao) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.1.tex.",
+  "comentario": "Requisitos não funcionais citados em CLAUDE.md, apps/*/CLAUDE.md, ADRs e no Plano de Testes. situacao 'coberto' exige ao menos um teste (*.spec.ts em apps/api, inclusive os de integração e de sistema, que rodam à mão com pnpm test:integracao) que cite [<id>]; 'pendente' exige o motivo. Ids conferidos em docs/requisitos/IntegraCASD_DocRequisitos_v1.2.tex.",
   "requisitos": [
     {
       "id": "Confiabilidade.NF001",
