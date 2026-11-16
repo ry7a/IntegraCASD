@@ -31,6 +31,8 @@ export function formatarValorParaCampo(centavos: number): string {
 // Texto digitado pelo usuário ("R$ 1.200,00", "85", "85,5") -> centavos. NaN se não der para entender.
 // É só conveniência do formulário: quem valida o valor de verdade é a API.
 export function paraCentavos(texto: string): number {
+  // Com sinal de menos ("-" ou o "−" das telas) é inválido: o replace abaixo apagaria o sinal (#67).
+  if (/[-−]/.test(texto)) return NaN
   const limpo = texto.replace(/[^\d,]/g, '').replace(',', '.')
   if (limpo === '') return NaN
   return Math.round(Number(limpo) * 100)
