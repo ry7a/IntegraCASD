@@ -1,13 +1,13 @@
-# Resultados do Plano de Testes v1.2
+# Resultados do Plano de Testes v1.3
 
-Gerado por `pnpm evidencias` em 2026-11-15 23:55:39 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
+Gerado por `pnpm evidencias` em 2026-11-16 06:47:58 (UTC-03:00). Não edite à mão: rode `pnpm evidencias -- --fechar 2026-11-14-2dfae9b`.
 Como cada evidência foi produzida: `docs/testes/roteiro-de-execucao.md`.
 
 | | |
 |---|---|
 | Commit testado | `2dfae9b10b823f6b8d042d1a0d54c72b2562d77a` (merge: coleta automática das evidências do plano de testes) |
 | Data do commit | 2026-11-14 08:51:40 -0300 |
-| Plano | executado pela IntegraCASD\_PlanoDeTestes\_v1.1; casos avaliados pela IntegraCASD\_PlanoDeTestes\_v1.2 (Seção 8 do roteiro) |
+| Plano | executado pela IntegraCASD\_PlanoDeTestes\_v1.1; casos avaliados pela IntegraCASD\_PlanoDeTestes\_v1.3 (Seção 8 do roteiro) |
 | Publicado no GitHub | sim (origin/main) |
 | Executado por | Ryaj |
 | Início e fim das fases automáticas | 2026-11-14 08:57:57 (UTC-03:00) a 2026-11-14 09:12:48 (UTC-03:00) |

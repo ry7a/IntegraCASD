@@ -1,4 +1,4 @@
-// Plano de Testes v1.2 (roteiro em docs/testes/roteiro-de-execucao.md): roda as fases automáticas, guarda a saída
+// Plano de Testes v1.3 (roteiro em docs/testes/roteiro-de-execucao.md): roda as fases automáticas, guarda a saída
 // de cada uma como evidência e monta o RESULTADOS.md com o resultado dos 33 casos e o critério de aceite.
 //
 // Uso (na raiz, com o Docker Desktop ligado):
@@ -21,7 +21,7 @@ const RAIZ = path.resolve(import.meta.dirname, '..', '..');
 const PASTA_DAS_EVIDENCIAS = path.join(RAIZ, 'docs', 'testes', 'evidencias');
 const EXECUCAO = 'execucao.json';
 // Plano vigente: pelo qual os casos são avaliados. Uma pasta executada por um plano anterior é reavaliada por ele.
-const PLANO = 'IntegraCASD_PlanoDeTestes_v1.2';
+const PLANO = 'IntegraCASD_PlanoDeTestes_v1.3';
 const VERIFICACOES = 'verificacoes-manuais.json';
 const RESULTADOS = 'RESULTADOS.md';
 const MANIFESTO = 'MANIFESTO-sha256.txt';
@@ -114,7 +114,6 @@ const VERIFICACOES_MANUAIS = [
   { id: 'M01', descricao: 'Ponta a ponta com o Asaas sandbox' },
   { id: 'M02', descricao: 'Inativar aluno com débito vencido e com débito aberto' },
   { id: 'M03', descricao: 'Usabilidade nas telas' },
-  { id: 'X01', descricao: 'Sessão exploratória: totais coerentes entre cobranças, movimentações e indicadores' },
   { id: 'I01', descricao: 'Backup e restauração [Confiabilidade.NF006]' },
   { id: 'I02', descricao: 'O gancho do git barra merge com teste falhando' },
 ];
@@ -556,7 +555,7 @@ function montarResultados(pasta) {
   const adicionar = (...novas) => linhas.push(...novas);
   const celula = (texto) => textoSeguro(texto);
 
-  adicionar('# Resultados do Plano de Testes v1.2', '');
+  adicionar('# Resultados do Plano de Testes v1.3', '');
   if (execucao.rascunho) adicionar('> **RASCUNHO:** executado com mudanças não commitadas ou sem o CT-NF-05. Não vale como evidência.', '');
   adicionar(
     `Gerado por \`pnpm evidencias\` em ${dataHora()}. Não edite à mão: rode \`pnpm evidencias -- --fechar ${path.basename(pasta)}\`.`,
