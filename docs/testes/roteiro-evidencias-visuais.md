@@ -11,13 +11,13 @@ por causa deles. Se um print mostrar algo diferente do esperado, vale a Seção 
 
 ## Situação em 16/11/2026
 
-- **Parte do Claude:** feita das 18:35 às 19:40, com 54 prints. O que cada um mostra, a URL e a hora estão no
+- **Prints de tela:** feitos das 18:35 às 19:40, 54 ao todo. O que cada um mostra, a URL e a hora estão no
   `registro.md` da pasta.
 - **Inadimplência e gastos por categoria:** prints `CT-IND-02a` e `CT-IND-03a`, de 19:39 e 19:40.
 - **Divergência:** no CT-FZ-02, a tela de movimentação gravou "-5,00" como saída de R$ 5,00, em vez de recusar.
   Defeito D10, issue #67, corrigido (detalhes no `registro.md`).
-- **Sem print:** CT-ADM-01, CT-NF-02, CT-NF-03, CT-NF-05 e CT-NF-06. No Resultado de Testes, aparecem como
-  "Realizado".
+- **Sem print:** CT-ADM-01, CT-NF-02, CT-NF-03, CT-NF-05 e CT-NF-06. No Resultado de Testes, a evidência deles
+  é o resultado dos testes automatizados e, no CT-NF-03, a medição do `H01`.
 
 ---
 
@@ -32,10 +32,11 @@ por causa deles. Se um print mostrar algo diferente do esperado, vale a Seção 
   print V00 registra o commit no ar.
 - **Nome do arquivo:** começa pelo id do caso, como em `CT-COB-04a-cancelada.png`. Um print que serve a vários
   casos começa por `CI-` ou `V00-`.
-- **Quem faz:** **C** é o Claude, pelo Claude in Chrome, e **U** é você.
-- **Prints do Claude:** pegam só a área da página, sem a barra de endereço e sem o relógio do Windows. Para
+- **Tipo de print:** **C** é print da área da página no navegador, com a sessão da diretoria; **U** é print
+  com outro usuário, com uma chave ou do terminal.
+- **Prints C:** pegam só a área da página, sem a barra de endereço e sem o relógio do Windows. Para
   compensar, cada um ganha uma linha no `registro.md` da pasta, com a URL, a data e a hora da captura.
-- **Seus prints:** `Win + Shift + S`, tela cheia, como no roteiro principal (Regra 4).
+- **Prints U:** `Win + Shift + S`, tela cheia, como no roteiro principal (Regra 4).
 - **Só dados fictícios ([Padrões.NF001]):** os alunos de `dados-ficticios` (Ana Clara Ribeiro, Júlia Nogueira
   Prado, Carlos Eduardo Vasconcelos...) e os da carga anonimizada. Os registros novos levam "Teste Visual" no
   nome e e-mail `@exemplo.com`.
@@ -44,14 +45,12 @@ por causa deles. Se um print mostrar algo diferente do esperado, vale a Seção 
   fica só com registros fictícios: recorte a tela ou cubra de preto o total, e anote o ajuste no `registro.md`.
   Isso vale para os cartões de Movimentações, a inadimplência e os gráficos do painel, os contratos e projetos da
   carga, o total de vencidas em Cobranças e o "Total previsto" dos parâmetros.
-- **Formato:** os prints do Claude saem em `.jpg` (captura inteira) ou `.png` (recortado ou tarjado).
-- **O Claude não digita senha nem chave.** O login, a senha inicial de usuário e a chave do Asaas ficam com
-  você.
+- **Formato:** os prints C saem em `.jpg` (captura inteira) ou `.png` (recortado ou tarjado).
 
-## 2. Antes de começar (U)
+## 2. Antes de começar
 
-1. Entre no Chrome na homologação (`https://integracasd-homolog.up.railway.app`) com o usuário da diretoria e
-   no sandbox do Asaas (`https://sandbox.asaas.com`). Se quiser que o Claude faça o V00, entre também na Railway.
+1. Entre no Chrome na homologação (`https://integracasd-homolog.up.railway.app`) com o usuário da diretoria, no
+   sandbox do Asaas (`https://sandbox.asaas.com`) e na Railway (para o V00).
 2. Para os prints de terminal (Seção 4), rode `docker compose up -d` na raiz.
 
 ## 3. Os prints, caso a caso
@@ -75,8 +74,8 @@ pelo E07.
 | | (`M02-*` da pasta 2dfae9b) | Inativar aluno com débito pede confirmação | já existe | | |
 | CT-CAD-02 | `CT-CAD-02a-desligamento.png` | Novo funcionário "Teste Visual CAD-02" com desligamento hoje: aparece inativo | C | **sim: 1 funcionário** | |
 | CT-CAD-03 | `CT-CAD-03a-termino-anterior.png` | Novo contrato com término antes do início: recusado, com a mensagem no campo | C | não (recusado) | |
-| | `CT-CAD-03b-contratos.png` | Aba Contratos com os contratos gravados. Se a lista estiver vazia, o Claude cadastra 1 contrato fictício antes | C | só se vazia | |
-| CT-CAD-04 | `CT-CAD-04a-aviso-projeto.png` | Nova movimentação ligada a um projeto encerrado: o formulário mostra o aviso e deixa registrar. O print é tirado antes de salvar. Se não houver projeto encerrado, o Claude cadastra 1 projeto fictício executado | C | só se não houver projeto | a gravação (D1) |
+| | `CT-CAD-03b-contratos.png` | Aba Contratos com os contratos gravados. Se a lista estiver vazia, cadastre 1 contrato fictício antes | C | só se vazia | |
+| CT-CAD-04 | `CT-CAD-04a-aviso-projeto.png` | Nova movimentação ligada a um projeto encerrado: o formulário mostra o aviso e deixa registrar. O print é tirado antes de salvar. Se não houver projeto encerrado, cadastre 1 projeto fictício executado | C | só se não houver projeto | a gravação (D1) |
 
 ### Cobranças
 
@@ -133,7 +132,7 @@ print `CI-unidade.png`.
 
 | Caso | Arquivo | O que o print mostra | Quem | Muda dados | Fica só no teste |
 |---|---|---|---|---|---|
-| CT-ADM-01 | `CT-ADM-01a-novo-usuario.png` | Usuários › novo usuário "Administrativo Teste" (`administrativo.teste@exemplo.com`), perfil Administrativo. Você digita a senha inicial. Também serve reativar o "Usuario de Teste" (`usuarioteste@exemplo.com`, administrativo, hoje inativo) com uma senha nova. A lista de usuários mostra o seu e-mail pessoal: recorte ou tarje antes de salvar | U | **sim: 1 usuário** | |
+| CT-ADM-01 | `CT-ADM-01a-novo-usuario.png` | Usuários › novo usuário "Administrativo Teste" (`administrativo.teste@exemplo.com`), perfil Administrativo, com a senha inicial digitada à mão. Também serve reativar o "Usuario de Teste" (`usuarioteste@exemplo.com`, administrativo, hoje inativo) com uma senha nova. A lista de usuários mostra o e-mail pessoal do diretor: recorte ou tarje antes de salvar | U | **sim: 1 usuário** | |
 | | `CT-ADM-01b-sem-administracao.png` | Logado como ele, numa janela anônima: o menu não tem Administração, e `/administracao` mostra que não há permissão | U | não | 403 nas 9 rotas; inativar o último diretor |
 | CT-ADM-02 | `CT-ADM-02a-nome-repetido.png` | Nova categoria com o nome de uma categoria ativa: recusada | C | não (recusado) | |
 | CT-ADM-03 | `CT-ADM-03a-dia-invalido.png` | Parâmetros com o dia da geração depois do vencimento: recusado. O print também mostra o aviso de que os parâmetros valem só para as próximas cobranças | C | não (recusado) | |
@@ -170,7 +169,7 @@ cenário fica só no teste.
 | | `CT-FZ-02c-busca-sql.png` | Busca de cobranças com `' OR 1=1 --` e com `%`: lista vazia, sem erro (D9) | C | não |
 | | `CT-FZ-02e-terminal.png` | Os 206 testes passando | U | não |
 
-O CT-NF-06 usa o usuário criado no CT-ADM-01. Assim, o bloqueio nunca atinge a sua conta.
+O CT-NF-06 usa o usuário criado no CT-ADM-01. Assim, o bloqueio nunca atinge a conta da diretoria.
 
 ## 4. Prints de terminal (U)
 
@@ -213,13 +212,13 @@ centenas de alunos da carga.
 
 ## 6. Fechar
 
-1. O `registro.md` da pasta tem uma linha por print: arquivo, caso, o que mostra, URL, data e hora, quem
-   capturou e se deu o esperado. O Claude preenche as linhas dele; você acrescenta as suas.
-2. Confira que nenhum print mostra dado real, token ou chave (o Claude confere os dele antes de salvar).
+1. O `registro.md` da pasta tem uma linha por print: arquivo, caso, o que mostra, URL, data e hora e se deu o
+   esperado.
+2. Confira que nenhum print mostra dado real, token ou chave antes de salvar.
 3. Grave o manifesto (Git Bash):
    `cd docs/testes/evidencias/2026-11-16-4eb497b-telas; sha256sum *.png *.jpg registro.md > MANIFESTO-sha256.txt`.
 4. Branch `docs/evidencias-visuais`, commit, `git merge --no-ff`, `git push`, `git branch -d`.
-5. Se quiser, os prints entram depois no Resultado de Testes (v1.3) e na apresentação.
+5. Os prints entram no Resultado de Testes (versão 2.1) e na apresentação.
 
-Tempo estimado: a parte do Claude leva de 1h30 a 2h; a sua, uns 40 minutos (10 no CT-ADM-01 e no CT-NF-06, 2
-no CT-ADM-04 e o resto nos prints de terminal).
+Tempo estimado: de 1h30 a 2h para os prints C; uns 40 minutos para os prints U (10 no CT-ADM-01 e no
+CT-NF-06, 2 no CT-ADM-04 e o resto nos prints de terminal).
