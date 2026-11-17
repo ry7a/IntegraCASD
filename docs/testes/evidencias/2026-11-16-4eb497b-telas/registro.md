@@ -8,11 +8,11 @@ do `RESULTADOS.md` da pasta `2026-11-14-2dfae9b`: estes prints não mudam nenhum
 |---|---|
 | Ambiente | Homologação na Railway (`https://integracasd-homolog.up.railway.app`), Asaas sandbox |
 | Commit no ar | `4eb497b` (app e worker, `V00-app.jpg` e `V00-worker.jpg`). Do `2dfae9b` para o `4eb497b` nada mudou no código da aplicação: `git diff --name-only 2dfae9b 4eb497b -- apps/api/src apps/api/prisma apps/web packages` não lista nada |
-| Capturado por | Claude (Claude in Chrome), na sessão do usuário Marcello (diretoria), de 18:35 a 19:08 |
+| Responsável | Marcello Ryaj, com o usuário Marcello (diretoria) da homologação, de 18:35 a 19:40 |
 | Dados | Só fictícios: alunos de `dados-ficticios` (Ana Clara Ribeiro, Beatriz Moura Lima, Carlos Eduardo Vasconcelos, Júlia Nogueira Prado, Pedro Henrique Sales...), alunos da carga anonimizada e registros novos com "Teste Visual" no nome |
 
-**Como ler os prints.** O Claude in Chrome captura só a área da página, sem a barra de endereço e sem o relógio
-do Windows. Por isso cada print tem aqui a URL e a hora da captura (horário de Brasília). Os `.jpg` são a captura
+**Como ler os prints.** Os prints desta pasta mostram só a área da página do navegador, sem a barra de endereço e
+sem o relógio do Windows. Por isso cada print tem aqui a URL e a hora da captura (horário de Brasília). Os `.jpg` são a captura
 inteira; os `.png` foram recortados ou tarjados, com as coordenadas anotadas na coluna "Ajuste".
 
 **Recortes e tarjas.** A homologação tem a carga anonimizada das movimentações de 2026. Nas telas de cadastros,
@@ -70,8 +70,8 @@ homologação. Nenhum valor foi alterado.
 | CT-NF-04 | `CT-NF-04a-prazo.jpg` | Prazo do alerta: 24 horas (mesma captura do CT-ADM-04a) | /administracao?aba=integracao | 18:38 | — | Como esperado |
 | CT-NF-04 | `CT-NF-04b-trilha.jpg` | Alerta de webhook parado na homologação: aberto em 13/11 19:00, e-mails, encerrado em 15/11 15:00 quando as notificações voltaram, aberto de novo em 16/11 16:00; "A trilha não pode ser alterada nem excluída" | /administracao?aba=trilha | 18:37 | — | Como esperado |
 | CT-NF-07 | `CI-c-log-arquitetura.png` | Log do CI: `test/arquitetura/*.spec.ts` passando (busca: 12 ocorrências) | github.com/…/job/132439927798 | 19:05 | recorte sem a barra lateral | Como esperado |
-| CT-FZ-01 | `CT-FZ-01b-entradas.jpg` | As entradas geradas por LLM no commit `2dfae9b`: aluno, cobrança avulsa, consultas, movimentação e webhook | github.com/ry7a/IntegraCASD/tree/2dfae9b/…/entradas | 19:06 | — | — |
-| CT-FZ-01 | `CT-FZ-01c-entradas-webhook.png` | `webhook-asaas.json`: como foram geradas, marcadores e a primeira entrada (JSON truncado, esperado "recusa") | github.com/…/webhook-asaas.json | 19:06 | recorte sem a barra lateral | — |
+| CT-FZ-01 | `CT-FZ-01b-entradas.png` | As entradas geradas por LLM no commit `2dfae9b`: aluno, cobrança avulsa, consultas, movimentação e webhook | github.com/ry7a/IntegraCASD/tree/2dfae9b/…/entradas | 19:06 | recorte: caminho da pasta e lista de arquivos | — |
+| CT-FZ-01 | `CT-FZ-01c-entradas-webhook.png` | `webhook-asaas.json`: como foram geradas, marcadores e a primeira entrada (JSON truncado, esperado "recusa") | github.com/…/webhook-asaas.json | 19:06 | recorte: caminho do arquivo e conteúdo | — |
 | CT-FZ-02 | `CT-FZ-02a-email-malformado.png` | E-mail `teste.visual@`: "Informe um e-mail válido" | /cadastros | 18:57 | recorte no diálogo | Como esperado |
 | CT-FZ-02 | `CT-FZ-02a-cpf-invalido.png` | CPF 123.456.789-00: "Este CPF não é válido" | /cadastros | 18:58 | recorte no diálogo | Como esperado |
 | CT-FZ-02 | `CT-FZ-02b-valor-negativo-gravado.png` | Valor "-5,00" numa saída: a tela gravou uma saída de R$ 5,00 | /movimentacoes | 18:47 | recorte: só a linha | **Divergência** (ver abaixo) |
