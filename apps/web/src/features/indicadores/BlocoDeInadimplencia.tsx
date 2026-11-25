@@ -14,7 +14,7 @@ function BlocoDeInadimplencia() {
       <div className="cartao-cabecalho">
         <div>
           <h2>Inadimplência</h2>
-          <p>Valores originais, sem multa e juros. [Indicadores.RF002]</p>
+          <p>Valores originais, sem multa e juros.</p>
         </div>
       </div>
       <EstadoDaConsulta carregando={consulta.isPending} erro={consulta.error} aoTentarDeNovo={() => void consulta.refetch()}>

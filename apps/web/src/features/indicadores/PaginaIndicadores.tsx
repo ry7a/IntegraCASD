@@ -40,7 +40,7 @@ function PaginaIndicadores() {
       <div className="cabecalho-pagina">
         <div>
           <h1>Indicadores</h1>
-          <p>Posição financeira do CASD no período. [Indicadores.RF001]</p>
+          <p>Posição financeira do CASD no período.</p>
         </div>
         <div className="acoes">
           <div className="campo">
