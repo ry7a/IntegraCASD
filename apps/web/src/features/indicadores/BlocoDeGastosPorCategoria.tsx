@@ -26,7 +26,7 @@ function BlocoDeGastosPorCategoria({ mes }: { mes: string }) {
           <h2>Gastos por categoria</h2>
           <p>
             Saídas de {formatarMes(mes).toLowerCase()}, ordenadas por valor. Clique em uma categoria para ver as
-            movimentações. [Indicadores.RF003]
+            movimentações.
           </p>
         </div>
         <label className="campo-check">
